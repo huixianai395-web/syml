@@ -158,7 +158,7 @@
     .preview img{width:100%;height:100%;object-fit:cover}
 
     .tabs{
-      display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px 10px;
+      display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:8px 10px;
       border-top:1px solid var(--bd);background:rgba(18,26,44,.9)
     }
     .tab{
@@ -272,6 +272,40 @@
       </div>
     </section>
 
+    <section id="page-worldbook" class="page">
+      <div class="wrap">
+        <div class="card">
+          <div class="ct">世界书</div>
+          <div class="note" style="margin-bottom:8px">按关键词命中，发送时自动注入上下文。</div>
+          <div id="wbList" class="list"></div>
+        </div>
+
+        <div class="card">
+          <div class="ct">新增 / 编辑词条</div>
+          <input type="hidden" id="wbId" />
+          <div class="f">
+            <div class="fl">关键词（逗号分隔）</div>
+            <input id="wbKeys" class="fi" placeholder="例如：沈厌,弥洛,小窝" />
+          </div>
+          <div class="f">
+            <div class="fl">内容</div>
+            <textarea id="wbContent" class="ta" placeholder="命中关键词时注入给模型"></textarea>
+          </div>
+          <div class="row">
+            <label class="btn2" style="display:flex;align-items:center;gap:6px">
+              <input id="wbEnabled" type="checkbox" checked />
+              启用
+            </label>
+          </div>
+          <div class="row">
+            <button class="btn" onclick="saveWB()">保存词条</button>
+            <button class="btn2" onclick="resetWBForm()">清空表单</button>
+            <button class="btn2 btnDanger" onclick="deleteWB()">删除当前</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="page-settings" class="page">
       <div class="wrap">
         <div class="card">
@@ -342,7 +376,10 @@
           <div class="row">
             <button class="btn2" onclick="clearCurrentChat()">清空当前角色聊天</button>
             <button class="btn2" onclick="clearStickers()">清空表情包库</button>
+            <button class="btn2" onclick="exportAllData()">导出全部数据</button>
+            <button class="btn2" onclick="openImportFile()">导入数据</button>
             <button class="btn2 btnDanger" onclick="clearAllLocal()">清空全部本地数据</button>
+            <input id="importFile" type="file" accept="application/json" style="display:none" onchange="importAllData(event)" />
           </div>
         </div>
       </div>
@@ -352,6 +389,7 @@
   <div class="tabs">
     <button class="tab active" data-page="chat" onclick="switchTab('chat',this)">聊天</button>
     <button class="tab" data-page="roles" onclick="switchTab('roles',this)">角色</button>
+    <button class="tab" data-page="worldbook" onclick="switchTab('worldbook',this)">世界书</button>
     <button class="tab" data-page="settings" onclick="switchTab('settings',this)">设置</button>
   </div>
 
@@ -380,6 +418,7 @@
   let streaming = false;
   let currentPage = 'chat';
   let stickers = [];
+  let worldbook = [];
   const EMOJIS = ['😀','😎','🥺','🥰','😭','😤','🤍','💙','💜','💛','🔥','✨','🎀','🍓','🫶','😴','🙄','😈','📌','✅'];
 
   const $ = s => document.querySelector(s);
@@ -718,6 +757,7 @@
     localStorage.removeItem('nx_active_role');
     localStorage.removeItem('nx_hmap');
     localStorage.removeItem('nx_stickers');
+    localStorage.removeItem('nx_worldbook');
     location.reload();
   }
 
@@ -801,6 +841,146 @@
     renderChat();
   }
 
+  function wbId(){ return 'wb_' + Math.random().toString(36).slice(2,10); }
+
+  function resetWBForm(){
+    $('#wbId').value = '';
+    $('#wbKeys').value = '';
+    $('#wbContent').value = '';
+    $('#wbEnabled').checked = true;
+  }
+
+  function renderWB(){
+    const box = $('#wbList');
+    if(!box) return;
+    if(!worldbook.length){
+      box.innerHTML = `<div class="mini">还没有词条，先创建一个。</div>`;
+      return;
+    }
+    box.innerHTML = worldbook.map(x => `
+      <div class="roleItem">
+        <div class="roleL" style="align-items:flex-start">
+          <div style="min-width:0">
+            <div class="rName">${esc((x.keys||[]).join(', ') || '无关键词')}</div>
+            <div class="rSub">${esc((x.content||'').slice(0,90))}${(x.content||'').length>90?'…':''}</div>
+            <div class="mini">${x.enabled ? '已启用' : '已停用'}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn2" onclick="editWB('${x.id}')">编辑</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function saveWB(){
+    const id = $('#wbId').value || wbId();
+    const keys = $('#wbKeys').value.split(',').map(s=>s.trim()).filter(Boolean);
+    const content = $('#wbContent').value.trim();
+    const enabled = $('#wbEnabled').checked;
+    if(!keys.length){ toast('关键词不能为空'); return; }
+    if(!content){ toast('内容不能为空'); return; }
+
+    const obj = {id, keys, content, enabled};
+    const i = worldbook.findIndex(x=>x.id===id);
+    if(i>=0) worldbook[i]=obj; else worldbook.unshift(obj);
+
+    save('nx_worldbook', worldbook);
+    renderWB();
+    resetWBForm();
+    toast('世界书已保存');
+  }
+
+  function editWB(id){
+    const x = worldbook.find(v=>v.id===id);
+    if(!x) return;
+    $('#wbId').value = x.id;
+    $('#wbKeys').value = (x.keys||[]).join(', ');
+    $('#wbContent').value = x.content || '';
+    $('#wbEnabled').checked = !!x.enabled;
+    switchTab('worldbook', document.querySelector('.tab[data-page="worldbook"]'));
+  }
+
+  function deleteWB(){
+    const id = $('#wbId').value;
+    if(!id){ toast('没有可删除词条'); return; }
+    const x = worldbook.find(v=>v.id===id);
+    if(!x){ toast('词条不存在'); return; }
+    if(!confirm('删除当前词条？')) return;
+    worldbook = worldbook.filter(v=>v.id!==id);
+    save('nx_worldbook', worldbook);
+    renderWB();
+    resetWBForm();
+    toast('已删除');
+  }
+
+  function buildWBSystemPrompt(userText){
+    const t = (userText||'').toLowerCase();
+    const hits = worldbook.filter(x=>{
+      if(!x.enabled) return false;
+      return (x.keys||[]).some(k => t.includes(String(k).toLowerCase()));
+    });
+    if(!hits.length) return '';
+    return hits.map((h,i)=>`[世界书${i+1}] ${h.content}`).join('\n');
+  }
+
+  function exportAllData(){
+    const data = {
+      version: 1,
+      nx_cfg: C,
+      nx_roles: roles,
+      nx_active_role: activeRoleId,
+      nx_hmap: HMap,
+      nx_stickers: stickers,
+      nx_worldbook: worldbook
+    };
+    const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `noctis-backup-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('已导出');
+  }
+
+  function openImportFile(){ $('#importFile').click(); }
+
+  async function importAllData(e){
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if(!f) return;
+    try{
+      const txt = await f.text();
+      const j = JSON.parse(txt);
+
+      if(j.nx_cfg) C = j.nx_cfg;
+      if(Array.isArray(j.nx_roles)) roles = j.nx_roles;
+      if(typeof j.nx_active_role === 'string') activeRoleId = j.nx_active_role;
+      if(j.nx_hmap && typeof j.nx_hmap === 'object') HMap = j.nx_hmap;
+      if(Array.isArray(j.nx_stickers)) stickers = j.nx_stickers;
+      if(Array.isArray(j.nx_worldbook)) worldbook = j.nx_worldbook;
+
+      save('nx_cfg', C);
+      save('nx_roles', roles);
+      save('nx_active_role', activeRoleId);
+      save('nx_hmap', HMap);
+      save('nx_stickers', stickers);
+      save('nx_worldbook', worldbook);
+
+      fillCfgForm();
+      renderRoles();
+      renderStickerPanel();
+      renderWB();
+      refreshHeader();
+      setStatus();
+      renderChat();
+
+      toast('导入成功');
+    }catch{
+      toast('导入失败：JSON格式不对');
+    }
+  }
+
   async function fetchModels(){
     const url=normBaseUrl($('#cUrl').value), key=$('#cKey').value.trim();
     if(!url){toast('先填反代地址');return;}
@@ -864,7 +1044,12 @@
       role:x.role==='assistant'?'assistant':'user',
       content:x.type==='image'?'[图片]':(x.content||'')
     }));
-    const systemMsgs=role.prompt?[{role:'system',content:role.prompt}]:[];
+
+    const wbPrompt = buildWBSystemPrompt(text);
+    const systemMsgs = [];
+    if(role.prompt) systemMsgs.push({role:'system',content:role.prompt});
+    if(wbPrompt) systemMsgs.push({role:'system',content:wbPrompt});
+
     const payload={model:C.model,messages:[...systemMsgs,...M.slice(-40)],temperature:C.temp,max_tokens:C.max};
 
     try{
@@ -942,6 +1127,7 @@
     activeRoleId=load('nx_active_role','');
     HMap=load('nx_hmap',{});
     stickers = load('nx_stickers', []);
+    worldbook = load('nx_worldbook', []);
 
     if(typeof C.selfAvatarImg!=='string') C.selfAvatarImg='';
     if(typeof C.lockEnabled!=='boolean') C.lockEnabled=false;
@@ -953,6 +1139,7 @@
 
     buildEmojiPanel();
     renderStickerPanel();
+    renderWB();
     fillCfgForm();
     renderRoles();
     refreshHeader();
