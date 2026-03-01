@@ -46,6 +46,35 @@
     .page{height:100%;overflow:auto;display:none}
     .page.active{display:block}
 
+    /* 会话列表 */
+    .inboxWrap{padding:12px}
+    .inboxHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .inboxTitle{font-size:22px;font-weight:800}
+    .inboxSub{font-size:12px;color:var(--tx3)}
+    .sessionList{display:flex;flex-direction:column;gap:10px}
+    .sessionItem{
+      background:rgba(26,36,64,.78);
+      border:1px solid var(--bd);
+      border-radius:14px;
+      padding:10px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      box-shadow:var(--shadow);
+    }
+    .sessionAvatar{
+      width:52px;height:52px;border-radius:50%;overflow:hidden;flex-shrink:0;
+      background:linear-gradient(135deg,var(--ac1),var(--ac2));
+      display:grid;place-items:center;color:#111;font-weight:800
+    }
+    .sessionAvatar img{width:100%;height:100%;object-fit:cover}
+    .sessionMid{flex:1;min-width:0}
+    .sessionName{font-size:18px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sessionLast{font-size:13px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+    .sessionTime{font-size:12px;color:var(--tx3);margin-left:6px;flex-shrink:0}
+    .dotBtn{border:none;background:transparent;color:var(--tx3);font-size:20px;padding:0 4px}
+
+    /* 聊天 */
     .chatWrap{height:100%;display:flex;flex-direction:column}
     .chat{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
     .welcome{
@@ -107,8 +136,17 @@
     }
     .emojiPanel.show{display:flex}
     .emoji{width:32px;height:32px;border:none;background:#111a2d;border:1px solid var(--bd);border-radius:8px;color:#fff;font-size:18px;line-height:1}
-    .stickerBtn{width:54px;height:54px;border:1px solid var(--bd);border-radius:10px;background:#111a2d;padding:0;overflow:hidden}
+    .stickerBtn{
+      width:54px;height:54px;border:1px solid var(--bd);border-radius:10px;background:#111a2d;padding:0;overflow:hidden;
+      position:relative
+    }
     .stickerBtn img{width:100%;height:100%;object-fit:cover;display:block}
+    .stickerName{
+      position:absolute;left:0;right:0;bottom:0;
+      font-size:10px;line-height:1.3;
+      background:rgba(0,0,0,.45);color:#fff;
+      padding:1px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
     .stickerEmpty{font-size:12px;color:var(--tx3)}
 
     .wrap{padding:14px;display:flex;flex-direction:column;gap:12px}
@@ -158,7 +196,7 @@
     .preview img{width:100%;height:100%;object-fit:cover}
 
     .tabs{
-      display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:8px 10px;
+      display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:8px 10px;
       border-top:1px solid var(--bd);background:rgba(18,26,44,.9)
     }
     .tab{
@@ -181,7 +219,7 @@
     }
     .lockMask.show{display:flex}
     .lockCard{
-      width:min(92vw,360px);background:var(--bg2);border:1px solid var(--bd);border-radius:16px;
+      width:min(92vw,420px);background:var(--bg2);border:1px solid var(--bd);border-radius:16px;
       padding:16px;box-shadow:var(--shadow);text-align:center
     }
     .lockTitle{font-size:16px;font-weight:700;margin-bottom:8px}
@@ -203,7 +241,21 @@
   </div>
 
   <div class="main">
-    <section id="page-chat" class="page active">
+    <!-- 会话列表 -->
+    <section id="page-inbox" class="page active">
+      <div class="inboxWrap">
+        <div class="inboxHead">
+          <div>
+            <div class="inboxTitle">聊天</div>
+            <div class="inboxSub">我的联系人</div>
+          </div>
+        </div>
+        <div id="sessionList" class="sessionList"></div>
+      </div>
+    </section>
+
+    <!-- 聊天 -->
+    <section id="page-chat" class="page">
       <div class="chatWrap">
         <div id="chat" class="chat"></div>
         <div class="inputBar">
@@ -212,6 +264,7 @@
             <button class="toolBtn" onclick="toggleEmoji()">😊</button>
             <button class="toolBtn" onclick="openStickerPicker()">🧩+</button>
             <button class="toolBtn" onclick="toggleStickerPanel()">🧩</button>
+            <button class="toolBtn" onclick="openStickerImportModal()">📥</button>
             <input id="imgPick" type="file" accept="image/*" style="display:none" onchange="pickImage(event)" />
             <input id="stickerPick" type="file" accept="image/*" multiple style="display:none" onchange="pickSticker(event)" />
           </div>
@@ -225,6 +278,7 @@
       </div>
     </section>
 
+    <!-- 角色 -->
     <section id="page-roles" class="page">
       <div class="wrap">
         <div class="card">
@@ -272,6 +326,7 @@
       </div>
     </section>
 
+    <!-- 世界书 -->
     <section id="page-worldbook" class="page">
       <div class="wrap">
         <div class="card">
@@ -306,6 +361,7 @@
       </div>
     </section>
 
+    <!-- 设置 -->
     <section id="page-settings" class="page">
       <div class="wrap">
         <div class="card">
@@ -387,7 +443,8 @@
   </div>
 
   <div class="tabs">
-    <button class="tab active" data-page="chat" onclick="switchTab('chat',this)">聊天</button>
+    <button class="tab active" data-page="inbox" onclick="switchTab('inbox',this)">会话</button>
+    <button class="tab" data-page="chat" onclick="switchTab('chat',this)">聊天</button>
     <button class="tab" data-page="roles" onclick="switchTab('roles',this)">角色</button>
     <button class="tab" data-page="worldbook" onclick="switchTab('worldbook',this)">世界书</button>
     <button class="tab" data-page="settings" onclick="switchTab('settings',this)">设置</button>
@@ -405,6 +462,26 @@
     </div>
   </div>
 
+  <div id="stickerImportMask" class="lockMask" onclick="maskCloseStickerImport(event)">
+    <div class="lockCard" style="text-align:left">
+      <div class="lockTitle">批量添加表情包</div>
+      <div class="note" style="margin-bottom:8px">
+        每行一个，支持：<br>
+        1) URL<br>
+        2) 名字 URL<br>
+        3) URL 名字
+      </div>
+      <textarea id="stickerBatchInput" class="ta" style="min-height:180px" placeholder="示例：
+https://xxx/a.png
+心碎 https://xxx/b.webp
+https://xxx/c.gif 炸毛"></textarea>
+      <div class="row" style="margin-top:10px;justify-content:flex-end">
+        <button class="btn2" onclick="closeStickerImportModal()">取消</button>
+        <button class="btn" onclick="importStickerBatch()">导入表情</button>
+      </div>
+    </div>
+  </div>
+
 <script>
   let C = {
     url:'',key:'',model:'',temp:0.8,max:800,
@@ -416,8 +493,8 @@
   let activeRoleId = '';
   let HMap = {};
   let streaming = false;
-  let currentPage = 'chat';
-  let stickers = [];
+  let currentPage = 'inbox';
+  let stickers = []; // [{name,src}]
   let worldbook = [];
   const EMOJIS = ['😀','😎','🥺','🥰','😭','😤','🤍','💙','💜','💛','🔥','✨','🎀','🍓','🫶','😴','🙄','😈','📌','✅'];
 
@@ -496,13 +573,15 @@
     $('#page-'+name).classList.add('active');
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
     if(btn) btn.classList.add('active');
+    if(name==='inbox') renderInbox();
   }
 
   function goBack(){
     if($('#lockMask').classList.contains('show')) return;
-    if(currentPage !== 'chat'){
-      const t = document.querySelector('.tab[data-page="chat"]');
-      switchTab('chat', t);
+    if($('#stickerImportMask').classList.contains('show')){ closeStickerImportModal(); return; }
+    if(currentPage !== 'inbox'){
+      const t = document.querySelector('.tab[data-page="inbox"]');
+      switchTab('inbox', t);
       return;
     }
     toast('已在首页');
@@ -545,7 +624,7 @@
     }
 
     if(!H.length){
-      chat.innerHTML=`<div class="welcome"><b>${esc(r.name)}</b> 已就位。<br>${r.greeting?esc(r.greeting):'你可以开始聊天了。'}<br><br>支持：文本 / 图片消息 / 表情包。</div>`;
+      chat.innerHTML=`<div class="welcome"><b>${esc(r.name)}</b> 已就位。<br>${r.greeting?esc(r.greeting):'你可以开始聊天了。'}<br><br>支持：文本 / 图片 / 表情包。</div>`;
       return;
     }
 
@@ -564,6 +643,47 @@
       </div>`;
     }).join('');
     chat.scrollTop=chat.scrollHeight;
+  }
+
+  function renderInbox(){
+    const box = $('#sessionList');
+    if(!roles.length){
+      box.innerHTML = `<div class="welcome">还没有联系人，先去“角色”页创建。</div>`;
+      return;
+    }
+    const items = roles.map(r=>{
+      const H = Array.isArray(HMap[r.id]) ? HMap[r.id] : [];
+      const last = H[H.length-1];
+      let preview = r.greeting || '点击进入聊天';
+      if(last){
+        if(last.type==='image') preview = '[图片]';
+        else preview = (last.role==='user'?'我: ':'') + (last.content||'');
+      }
+      const time = last?.time || '--:--';
+      return {r, preview, time};
+    });
+
+    box.innerHTML = items.map(({r,preview,time})=>`
+      <div class="sessionItem" onclick="openRoleChat('${r.id}')">
+        <div class="sessionAvatar">${avatarHTML(r.avatarImg, r.avatar||'AI')}</div>
+        <div class="sessionMid">
+          <div class="sessionName">${esc(r.name||'未命名')} <span style="font-size:14px">🔥</span></div>
+          <div class="sessionLast">${esc(preview)}</div>
+        </div>
+        <div class="sessionTime">${esc(time)}</div>
+        <button class="dotBtn" onclick="event.stopPropagation();editRole('${r.id}')">⋮</button>
+      </div>
+    `).join('');
+  }
+
+  function openRoleChat(id){
+    activeRoleId=id;
+    save('nx_active_role',activeRoleId);
+    refreshHeader();
+    renderRoles();
+    renderChat();
+    const t = document.querySelector('.tab[data-page="chat"]');
+    switchTab('chat', t);
   }
 
   function addTyping(){
@@ -641,7 +761,7 @@
     if(idx>=0) roles[idx]=obj; else roles.unshift(obj);
     if(!activeRoleId) activeRoleId=id;
     save('nx_roles',roles); save('nx_active_role',activeRoleId);
-    renderRoles(); refreshHeader(); renderChat(); toast('角色已保存');
+    renderRoles(); refreshHeader(); renderChat(); renderInbox(); toast('角色已保存');
   }
 
   function editRole(id){
@@ -655,7 +775,7 @@
 
   function pickRole(id){
     activeRoleId=id; save('nx_active_role',activeRoleId);
-    refreshHeader(); renderRoles(); renderChat(); toast('已切换角色');
+    refreshHeader(); renderRoles(); renderChat(); renderInbox(); toast('已切换角色');
   }
 
   function deleteRole(){
@@ -666,7 +786,7 @@
     roles=roles.filter(x=>x.id!==id); delete HMap[id];
     if(activeRoleId===id) activeRoleId=roles[0]?.id||'';
     save('nx_roles',roles); save('nx_active_role',activeRoleId); save('nx_hmap',HMap);
-    resetRoleForm(); renderRoles(); refreshHeader(); renderChat(); toast('已删除');
+    resetRoleForm(); renderRoles(); refreshHeader(); renderChat(); renderInbox(); toast('已删除');
   }
 
   function setMePreview(img){
@@ -681,13 +801,13 @@
     try{
       const data=await compressImageFile(f, 512, 512, 0.82);
       C.selfAvatarImg=data; $('#meAvatarImg').value=data;
-      setMePreview(data); save('nx_cfg',C); renderChat();
+      setMePreview(data); save('nx_cfg',C); renderChat(); renderInbox();
     }catch{toast('读取图片失败')}
   }
 
   function clearMeAvatar(){
     C.selfAvatarImg=''; $('#meAvatarImg').value=''; $('#meAvatarFile').value='';
-    setMePreview(''); save('nx_cfg',C); renderChat();
+    setMePreview(''); save('nx_cfg',C); renderChat(); renderInbox();
   }
 
   function fillCfgForm(){
@@ -739,7 +859,14 @@
   function clearCurrentChat(){
     if(!activeRoleId){toast('先选角色');return;}
     if(!confirm('清空当前角色聊天记录？')) return;
-    HMap[activeRoleId]=[]; save('nx_hmap',HMap); renderChat(); toast('已清空');
+    HMap[activeRoleId]=[]; save('nx_hmap',HMap); renderChat(); renderInbox(); toast('已清空');
+  }
+
+  function normalizeSticker(x){
+    if(!x) return null;
+    if(typeof x === 'string') return {name:'表情', src:x};
+    if(typeof x === 'object' && x.src) return {name:(x.name||'表情').trim()||'表情', src:x.src};
+    return null;
   }
 
   function clearStickers(){
@@ -774,7 +901,7 @@
       const H=currentHistory();
       H.push({role:'user',type:'image',content:data,time:now()});
       save('nx_hmap',HMap);
-      renderChat();
+      renderChat(); renderInbox();
     }catch{
       toast('图片发送失败');
     }
@@ -801,6 +928,10 @@
     $('#emojiPanel').classList.remove('show');
   }
 
+  function fileNameNoExt(n=''){
+    return String(n).replace(/\.[^.]+$/,'').trim() || '表情';
+  }
+
   async function pickSticker(e){
     const files = Array.from(e.target.files || []);
     e.target.value='';
@@ -810,10 +941,10 @@
       if(!f.type.startsWith('image/')) continue;
       try{
         const data = await compressImageFile(f, 420, 420, 0.78);
-        stickers.unshift(data);
+        stickers.unshift({name:fileNameNoExt(f.name), src:data});
         added++;
       }catch{}
-      if(stickers.length > 120) stickers = stickers.slice(0,120);
+      if(stickers.length > 200) stickers = stickers.slice(0,200);
     }
     save('nx_stickers', stickers);
     renderStickerPanel();
@@ -823,22 +954,71 @@
   function renderStickerPanel(){
     const p = $('#stickerPanel');
     if(!stickers.length){
-      p.innerHTML = `<div class="stickerEmpty">还没有表情包，点“🧩+”批量上传。</div>`;
+      p.innerHTML = `<div class="stickerEmpty">还没有表情包，点“🧩+”或“📥”。</div>`;
       return;
     }
-    p.innerHTML = stickers.map((src,i)=>`
-      <button class="stickerBtn" onclick="sendSticker(${i})"><img src="${src}" alt="sticker"></button>
+    p.innerHTML = stickers.map((it,i)=>`
+      <button class="stickerBtn" onclick="sendSticker(${i})" title="${esc(it.name||'表情')}">
+        <img src="${it.src}" alt="${esc(it.name||'sticker')}">
+        <span class="stickerName">${esc(it.name||'表情')}</span>
+      </button>
     `).join('');
   }
 
   function sendSticker(i){
-    const src = stickers[i];
-    if(!src) return;
+    const it = stickers[i];
+    if(!it || !it.src) return;
     if(!activeRoleId){toast('先创建并选择角色');return;}
     const H=currentHistory();
-    H.push({role:'user',type:'image',content:src,time:now()});
+    H.push({role:'user',type:'image',content:it.src,time:now(),meta:{stickerName:it.name||''}});
     save('nx_hmap',HMap);
-    renderChat();
+    renderChat(); renderInbox();
+  }
+
+  function openStickerImportModal(){
+    $('#stickerBatchInput').value = '';
+    $('#stickerImportMask').classList.add('show');
+  }
+  function closeStickerImportModal(){
+    $('#stickerImportMask').classList.remove('show');
+  }
+  function maskCloseStickerImport(e){
+    if(e.target.id==='stickerImportMask') closeStickerImportModal();
+  }
+
+  function importStickerBatch(){
+    const raw = $('#stickerBatchInput').value || '';
+    const lines = raw.split('\n').map(s=>s.trim()).filter(Boolean);
+    if(!lines.length){ toast('先填内容'); return; }
+
+    let ok = 0;
+    for(const line of lines){
+      const m = line.match(/https?:\/\/\S+/i);
+      if(!m) continue;
+      const url = m[0];
+      const left = line.slice(0, m.index).trim();
+      const right = line.slice((m.index||0) + url.length).trim();
+
+      let name = (left || right || '');
+      if(!name){
+        try{
+          const u = new URL(url);
+          const seg = u.pathname.split('/').pop() || '';
+          name = decodeURIComponent(seg).replace(/\.[^.]+$/,'') || '表情';
+        }catch{
+          name = '表情';
+        }
+      }
+
+      stickers.unshift({name, src:url});
+      ok++;
+      if(stickers.length > 200) stickers = stickers.slice(0,200);
+    }
+
+    save('nx_stickers', stickers);
+    renderStickerPanel();
+    closeStickerImportModal();
+    toast(ok ? `已导入${ok}条` : '没有识别到有效URL');
   }
 
   function wbId(){ return 'wb_' + Math.random().toString(36).slice(2,10); }
@@ -960,6 +1140,8 @@
       if(Array.isArray(j.nx_stickers)) stickers = j.nx_stickers;
       if(Array.isArray(j.nx_worldbook)) worldbook = j.nx_worldbook;
 
+      stickers = stickers.map(normalizeSticker).filter(Boolean);
+
       save('nx_cfg', C);
       save('nx_roles', roles);
       save('nx_active_role', activeRoleId);
@@ -974,6 +1156,7 @@
       refreshHeader();
       setStatus();
       renderChat();
+      renderInbox();
 
       toast('导入成功');
     }catch{
@@ -1022,6 +1205,8 @@
 
   async function send(){
     if($('#lockMask').classList.contains('show')) return;
+    if($('#stickerImportMask').classList.contains('show')) return;
+
     const inp=$('#inp');
     const text=inp.value.trim();
     if(!text||streaming) return;
@@ -1035,6 +1220,7 @@
     H.push({role:'user',type:'text',content:text,time:now()});
     save('nx_hmap',HMap);
     renderChat();
+    renderInbox();
 
     streaming=true; $('#sendBtn').disabled=true; $('#status').textContent='正在输入…';
     addTyping();
@@ -1065,7 +1251,7 @@
         const j=await r.json();
         const out=j?.choices?.[0]?.message?.content?.trim()||'……';
         H.push({role:'assistant',type:'text',content:out,time:now()});
-        save('nx_hmap',HMap); removeTyping(); renderChat();
+        save('nx_hmap',HMap); removeTyping(); renderChat(); renderInbox();
       }else{
         removeTyping();
         const at=now();
@@ -1103,11 +1289,12 @@
         holder.innerHTML=markdownToHtml(full);
         H.push({role:'assistant',type:'text',content:full,time:at});
         save('nx_hmap',HMap);
+        renderInbox();
       }
     }catch(e){
       removeTyping();
       H.push({role:'assistant',type:'text',content:'[请求失败] '+String(e.message||e).slice(0,220),time:now()});
-      save('nx_hmap',HMap); renderChat();
+      save('nx_hmap',HMap); renderChat(); renderInbox();
     }finally{
       streaming=false; $('#sendBtn').disabled=false; setStatus();
     }
@@ -1129,6 +1316,9 @@
     stickers = load('nx_stickers', []);
     worldbook = load('nx_worldbook', []);
 
+    stickers = stickers.map(normalizeSticker).filter(Boolean);
+    save('nx_stickers', stickers);
+
     if(typeof C.selfAvatarImg!=='string') C.selfAvatarImg='';
     if(typeof C.lockEnabled!=='boolean') C.lockEnabled=false;
     if(typeof C.lockPin!=='string') C.lockPin='';
@@ -1145,6 +1335,7 @@
     refreshHeader();
     setStatus();
     renderChat();
+    renderInbox();
 
     if(C.lockEnabled && /^\d{4,8}$/.test(C.lockPin||'')){
       $('#lockMask').classList.add('show');
