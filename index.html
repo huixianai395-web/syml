@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
@@ -280,117 +279,114 @@
       </div>
     </section>
 
-```
-<section id="page-roles" class="page">
-  <div class="wrap">
-    <div class="card">
-      <div class="ct">角色列表</div>
-      <div id="roleList" class="list"></div>
-      <div class="mini" style="margin-top:8px">切换角色会切换对应聊天记录。</div>
-    </div>
-    <div class="card">
-      <div class="ct">新建 / 编辑角色</div>
-      <input type="hidden" id="rId" />
-      <input type="hidden" id="rAvatarImg" />
-      <div class="row">
-        <div class="f"><div class="fl">角色名</div><input id="rName" class="fi" placeholder="例如：冷淡男友 / 温柔姐姐" /></div>
-        <div class="f"><div class="fl">头像字</div><input id="rAvatar" class="fi" maxlength="2" placeholder="AI" /></div>
-      </div>
-      <div class="f">
-        <div class="fl">角色头像</div>
-        <div class="row" style="align-items:center">
-          <div id="rPreview" class="preview">无图</div>
-          <input id="rAvatarFile" type="file" accept="image/*" class="fi" onchange="onRoleAvatarPick(event)" />
-          <button class="btn2" onclick="clearRoleAvatar()">清空</button>
+    <section id="page-roles" class="page">
+      <div class="wrap">
+        <div class="card">
+          <div class="ct">角色列表</div>
+          <div id="roleList" class="list"></div>
+          <div class="mini" style="margin-top:8px">切换角色会切换对应聊天记录。</div>
+        </div>
+        <div class="card">
+          <div class="ct">新建 / 编辑角色</div>
+          <input type="hidden" id="rId" />
+          <input type="hidden" id="rAvatarImg" />
+          <div class="row">
+            <div class="f"><div class="fl">角色名</div><input id="rName" class="fi" placeholder="例如：冷淡男友 / 温柔姐姐" /></div>
+            <div class="f"><div class="fl">头像字</div><input id="rAvatar" class="fi" maxlength="2" placeholder="AI" /></div>
+          </div>
+          <div class="f">
+            <div class="fl">角色头像</div>
+            <div class="row" style="align-items:center">
+              <div id="rPreview" class="preview">无图</div>
+              <input id="rAvatarFile" type="file" accept="image/*" class="fi" onchange="onRoleAvatarPick(event)" />
+              <button class="btn2" onclick="clearRoleAvatar()">清空</button>
+            </div>
+          </div>
+          <div class="f"><div class="fl">开场白</div><input id="rGreeting" class="fi" placeholder="第一次进入该角色时显示" /></div>
+          <div class="f"><div class="fl">System Prompt</div><textarea id="rPrompt" class="ta" placeholder="留空则无默认人设"></textarea></div>
+          <div class="row">
+            <button class="btn" onclick="saveRole()">保存角色</button>
+            <button class="btn2" onclick="resetRoleForm()">清空表单</button>
+            <button class="btn2 btnDanger" onclick="deleteRole()">删除当前</button>
+          </div>
         </div>
       </div>
-      <div class="f"><div class="fl">开场白</div><input id="rGreeting" class="fi" placeholder="第一次进入该角色时显示" /></div>
-      <div class="f"><div class="fl">System Prompt</div><textarea id="rPrompt" class="ta" placeholder="留空则无默认人设"></textarea></div>
-      <div class="row">
-        <button class="btn" onclick="saveRole()">保存角色</button>
-        <button class="btn2" onclick="resetRoleForm()">清空表单</button>
-        <button class="btn2 btnDanger" onclick="deleteRole()">删除当前</button>
-      </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<section id="page-worldbook" class="page">
-  <div class="wrap">
-    <div class="card">
-      <div class="ct">世界书</div>
-      <div class="note" style="margin-bottom:8px">按关键词命中，发送时自动注入上下文。</div>
-      <div id="wbList" class="list"></div>
-    </div>
-    <div class="card">
-      <div class="ct">新增 / 编辑词条</div>
-      <input type="hidden" id="wbId" />
-      <div class="f"><div class="fl">关键词（逗号分隔）</div><input id="wbKeys" class="fi" placeholder="例如：沈厌,弥洛,小窝" /></div>
-      <div class="f"><div class="fl">内容</div><textarea id="wbContent" class="ta" placeholder="命中关键词时注入给模型"></textarea></div>
-      <div class="row"><label class="btn2" style="display:flex;align-items:center;gap:6px"><input id="wbEnabled" type="checkbox" checked />启用</label></div>
-      <div class="row">
-        <button class="btn" onclick="saveWB()">保存词条</button>
-        <button class="btn2" onclick="resetWBForm()">清空表单</button>
-        <button class="btn2 btnDanger" onclick="deleteWB()">删除当前</button>
+    <section id="page-worldbook" class="page">
+      <div class="wrap">
+        <div class="card">
+          <div class="ct">世界书</div>
+          <div class="note" style="margin-bottom:8px">按关键词命中，发送时自动注入上下文。</div>
+          <div id="wbList" class="list"></div>
+        </div>
+        <div class="card">
+          <div class="ct">新增 / 编辑词条</div>
+          <input type="hidden" id="wbId" />
+          <div class="f"><div class="fl">关键词（逗号分隔）</div><input id="wbKeys" class="fi" placeholder="例如：沈厌,弥洛,小窝" /></div>
+          <div class="f"><div class="fl">内容</div><textarea id="wbContent" class="ta" placeholder="命中关键词时注入给模型"></textarea></div>
+          <div class="row"><label class="btn2" style="display:flex;align-items:center;gap:6px"><input id="wbEnabled" type="checkbox" checked />启用</label></div>
+          <div class="row">
+            <button class="btn" onclick="saveWB()">保存词条</button>
+            <button class="btn2" onclick="resetWBForm()">清空表单</button>
+            <button class="btn2 btnDanger" onclick="deleteWB()">删除当前</button>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<section id="page-settings" class="page">
-  <div class="wrap">
-    <div class="card">
-      <div class="ct">我的头像</div>
-      <input type="hidden" id="meAvatarImg" />
-      <div class="row" style="align-items:center">
-        <div id="mePreview" class="preview">我</div>
-        <input id="meAvatarFile" type="file" accept="image/*" class="fi" onchange="onMeAvatarPick(event)" />
-        <button class="btn2" onclick="clearMeAvatar()">清空</button>
+    <section id="page-settings" class="page">
+      <div class="wrap">
+        <div class="card">
+          <div class="ct">我的头像</div>
+          <input type="hidden" id="meAvatarImg" />
+          <div class="row" style="align-items:center">
+            <div id="mePreview" class="preview">我</div>
+            <input id="meAvatarFile" type="file" accept="image/*" class="fi" onchange="onMeAvatarPick(event)" />
+            <button class="btn2" onclick="clearMeAvatar()">清空</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ct">API 设置</div>
+          <div class="f"><div class="fl">反代地址（不用带 /v1）</div><input id="cUrl" class="fi" placeholder="https://api.example.com" /></div>
+          <div class="f"><div class="fl">API 密钥</div><input id="cKey" class="fi" type="password" placeholder="sk-xxxx" /></div>
+          <div class="row">
+            <div class="f" style="flex:2"><div class="fl">模型</div><select id="cModel" class="fs"><option value="">先拉取模型</option></select></div>
+            <div class="f" style="flex:0 0 auto;align-self:flex-end"><button id="fetchBtn" class="btn2" onclick="fetchModels()">拉取</button></div>
+          </div>
+          <div class="row">
+            <div class="f"><div class="fl">Temperature</div><input id="cTemp" class="fi" type="number" min="0" max="2" step="0.1" value="0.8" /></div>
+            <div class="f"><div class="fl">最大回复</div><input id="cMax" class="fi" type="number" min="50" max="8192" step="50" value="800" /></div>
+          </div>
+          <div class="row">
+            <button class="btn" onclick="saveCfg()">保存配置</button>
+            <button class="btn2" onclick="testOnce()">测试连接</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ct">安全</div>
+          <div class="switchRow f">
+            <div class="fl" style="margin:0">启用锁屏（PIN）</div>
+            <input id="lockEnabled" type="checkbox" onchange="toggleLockEnabled(this.checked)" />
+          </div>
+          <div class="f"><div class="fl">PIN（4~8位数字）</div><input id="lockPin" class="fi" type="password" inputmode="numeric" maxlength="8" placeholder="1234" /></div>
+          <div class="row">
+            <button class="btn2" onclick="saveLock()">保存锁屏</button>
+            <button class="btn2" onclick="lockNow()">立即锁屏</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ct">数据管理</div>
+          <div class="row">
+            <button class="btn2" onclick="clearCurrentChat()">清空当前聊天</button>
+            <button class="btn2" onclick="exportAllData()">导出数据</button>
+            <button class="btn2" onclick="openImportFile()">导入数据</button>
+            <button class="btn2 btnDanger" onclick="clearAllLocal()">清空全部</button>
+            <input id="importFile" type="file" accept="application/json" style="display:none" onchange="importAllData(event)" />
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="card">
-      <div class="ct">API 设置</div>
-      <div class="f"><div class="fl">反代地址（不用带 /v1）</div><input id="cUrl" class="fi" placeholder="https://api.example.com" /></div>
-      <div class="f"><div class="fl">API 密钥</div><input id="cKey" class="fi" type="password" placeholder="sk-xxxx" /></div>
-      <div class="row">
-        <div class="f" style="flex:2"><div class="fl">模型</div><select id="cModel" class="fs"><option value="">先拉取模型</option></select></div>
-        <div class="f" style="flex:0 0 auto;align-self:flex-end"><button id="fetchBtn" class="btn2" onclick="fetchModels()">拉取</button></div>
-      </div>
-      <div class="row">
-        <div class="f"><div class="fl">Temperature</div><input id="cTemp" class="fi" type="number" min="0" max="2" step="0.1" value="0.8" /></div>
-        <div class="f"><div class="fl">最大回复</div><input id="cMax" class="fi" type="number" min="50" max="8192" step="50" value="800" /></div>
-      </div>
-      <div class="row">
-        <button class="btn" onclick="saveCfg()">保存配置</button>
-        <button class="btn2" onclick="testOnce()">测试连接</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="ct">安全</div>
-      <div class="switchRow f">
-        <div class="fl" style="margin:0">启用锁屏（PIN）</div>
-        <input id="lockEnabled" type="checkbox" onchange="toggleLockEnabled(this.checked)" />
-      </div>
-      <div class="f"><div class="fl">PIN（4~8位数字）</div><input id="lockPin" class="fi" type="password" inputmode="numeric" maxlength="8" placeholder="1234" /></div>
-      <div class="row">
-        <button class="btn2" onclick="saveLock()">保存锁屏</button>
-        <button class="btn2" onclick="lockNow()">立即锁屏</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="ct">数据管理</div>
-      <div class="row">
-        <button class="btn2" onclick="clearCurrentChat()">清空当前聊天</button>
-        <button class="btn2" onclick="exportAllData()">导出数据</button>
-        <button class="btn2" onclick="openImportFile()">导入数据</button>
-        <button class="btn2 btnDanger" onclick="clearAllLocal()">清空全部</button>
-        <input id="importFile" type="file" accept="application/json" style="display:none" onchange="importAllData(event)" />
-      </div>
-    </div>
-  </div>
-</section>
-```
-
+    </section>
   </div>
 
   <div class="tabs">
@@ -526,435 +522,444 @@ function markdownToHtml(src){
   s=s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
   s=s.replace(/\n/g,"<br>");
   s=s.replace(/@@CODE_(\d+)@@/g,function(_,i){return "<pre><code>"+(blocks[Number(i)]?blocks[Number(i)].code:"")+"</code></pre>"});
-
-return ‘<div class="md">’+s+”</div>”;
+  return '<div class="md">'+s+"</div>";
 }
 
 function renderMsgContent(m){
-if(m.type===“image”) return ‘<img class="chatImg" src="'+m.content+'" alt="img" />’;
-if(m.type===“sticker”) return ‘<img class="chatSticker" src="'+m.content+'" alt="sticker" />’;
-return markdownToHtml(m.content||””);
+  if(m.type==="image") return '<img class="chatImg" src="'+m.content+'" alt="img" />';
+  if(m.type==="sticker") return '<img class="chatSticker" src="'+m.content+'" alt="sticker" />';
+  return markdownToHtml(m.content||"");
 }
 
 function renderChat(){
-var r=currentRole(),H=currentHistory();
-if(!r){chatEl.innerHTML=’<div class="welcome"><b>欢迎使用 Noctis</b><br>先去「角色」页创建角色，再去「设置」页填 API。</div>’;return}
-if(!H.length){chatEl.innerHTML=’<div class="welcome"><b>’+esc(r.name)+’</b> 已就位。<br>’+(r.greeting?esc(r.greeting):“你可以开始聊天了。”)+”<br><br>支持：文本 · 图片 · 表情包</div>”;return}
-var html=””;
-for(var i=0;i<H.length;i++){
-var m=H[i];
-var isMe=m.role===“user”;
-var avImg=isMe?(C.selfAvatarImg||””):(r.avatarImg||””);
-var avTxt=isMe?“我”:(r.avatar||“AI”);
-var isSticker=m.type===“sticker”;
-var bubbleClass=isSticker?””:(isMe?“meBubble”:“ai”);
-var bubbleStyle=isSticker?‘style=“background:none;border:none;box-shadow:none;padding:2px”’:””;
-html+=’<div class=“line ‘+(isMe?“me”:””)+’”>’;
-if(!isMe) html+=’<div class="msgAv">’+avatarHTML(avImg,avTxt)+”</div>”;
-html+=’<div class=“msg ‘+bubbleClass+’” ‘+bubbleStyle+”>”;
-html+=renderMsgContent(m);
-html+=’<div class="tm">’+(m.time||””)+”</div></div>”;
-if(isMe) html+=’<div class="msgAv">’+avatarHTML(avImg,avTxt)+”</div>”;
-html+=”</div>”;
-}
-chatEl.innerHTML=html;
-chatEl.scrollTop=chatEl.scrollHeight;
+  var r=currentRole(),H=currentHistory();
+  if(!r){chatEl.innerHTML='<div class="welcome"><b>欢迎使用 Noctis</b><br>先去「角色」页创建角色，再去「设置」页填 API。</div>';return}
+  if(!H.length){chatEl.innerHTML='<div class="welcome"><b>'+esc(r.name)+'</b> 已就位。<br>'+(r.greeting?esc(r.greeting):"你可以开始聊天了。")+"<br><br>支持：文本 · 图片 · 表情包</div>";return}
+  var html="";
+  for(var i=0;i<H.length;i++){
+    var m=H[i];
+    var isMe=m.role==="user";
+    var avImg=isMe?(C.selfAvatarImg||""):(r.avatarImg||"");
+    var avTxt=isMe?"我":(r.avatar||"AI");
+    var isSticker=m.type==="sticker";
+    var bubbleClass=isSticker?"":(isMe?"meBubble":"ai");
+    var bubbleStyle=isSticker?'style="background:none;border:none;box-shadow:none;padding:2px"':"";
+    html+='<div class="line '+(isMe?"me":"")+'">';
+    if(!isMe) html+='<div class="msgAv">'+avatarHTML(avImg,avTxt)+"</div>";
+    html+='<div class="msg '+bubbleClass+'" '+bubbleStyle+">";
+    html+=renderMsgContent(m);
+    html+='<div class="tm">'+(m.time||"")+"</div></div>";
+    if(isMe) html+='<div class="msgAv">'+avatarHTML(avImg,avTxt)+"</div>";
+    html+="</div>";
+  }
+  chatEl.innerHTML=html;
+  chatEl.scrollTop=chatEl.scrollHeight;
 }
 
 function addTyping(){
-var r=currentRole();
-var d=document.createElement(“div”);d.className=“line”;d.id=“typing”;
-d.innerHTML=’<div class="msgAv">’+avatarHTML(r?r.avatarImg:””,r?r.avatar:“AI”)+’</div><div class="typ"><i></i><i></i><i></i></div>’;
-chatEl.appendChild(d);chatEl.scrollTop=chatEl.scrollHeight;
+  var r=currentRole();
+  var d=document.createElement("div");d.className="line";d.id="typing";
+  d.innerHTML='<div class="msgAv">'+avatarHTML(r?r.avatarImg:"",r?r.avatar:"AI")+'</div><div class="typ"><i></i><i></i><i></i></div>';
+  chatEl.appendChild(d);chatEl.scrollTop=chatEl.scrollHeight;
 }
-function removeTyping(){var t=$(”#typing”);if(t)t.remove()}
+function removeTyping(){var t=$("#typing");if(t)t.remove()}
 
 function renderRoles(){
-var list=$(”#roleList”);
-if(!roles.length){list.innerHTML=’<div class="mini">还没有角色，先创建一个。</div>’;return}
-var html=””;
-for(var i=0;i<roles.length;i++){
-var r=roles[i];
-html+=’<div class=“roleItem ‘+(r.id===activeRoleId?“active”:””)+’”>’;
-html+=’<div class="roleL"><div class="rAv">’+avatarHTML(r.avatarImg,r.avatar||“AI”)+”</div>”;
-html+=’<div style="min-width:0"><div class="rName">’+esc(r.name||“未命名”)+’</div><div class="rSub">’+(r.prompt?“已设置人设”:“无默认人设”)+”</div></div></div>”;
-html+=’<div style="display:flex;gap:6px"><button class=“btn2” style=“padding:8px 12px” onclick=“pickRole('’+r.id+”’)">使用</button>”;
-html+=’<button class=“btn2” style=“padding:8px 12px” onclick=“editRole('’+r.id+”’)">编辑</button></div></div>”;
-}
-list.innerHTML=html;
+  var list=$("#roleList");
+  if(!roles.length){list.innerHTML='<div class="mini">还没有角色，先创建一个。</div>';return}
+  var html="";
+  for(var i=0;i<roles.length;i++){
+    var r=roles[i];
+    html+='<div class="roleItem '+(r.id===activeRoleId?"active":"")+'">';
+    html+='<div class="roleL"><div class="rAv">'+avatarHTML(r.avatarImg,r.avatar||"AI")+"</div>";
+    html+='<div style="min-width:0"><div class="rName">'+esc(r.name||"未命名")+'</div><div class="rSub">'+(r.prompt?"已设置人设":"无默认人设")+"</div></div></div>";
+    html+='<div style="display:flex;gap:6px"><button class="btn2" style="padding:8px 12px" onclick="pickRole(\''+r.id+'\')">使用</button>';
+    html+='<button class="btn2" style="padding:8px 12px" onclick="editRole(\''+r.id+'\')">编辑</button></div></div>';
+  }
+  list.innerHTML=html;
 }
 
-function setRolePreview(img,text){$(”#rPreview”).innerHTML=img?’<img src="'+img+'" alt="">’:esc(text||“无图”)}
-function resetRoleForm(){$(”#rId”).value=””;$(”#rName”).value=””;$(”#rAvatar”).value=””;$(”#rGreeting”).value=””;$(”#rPrompt”).value=””;$(”#rAvatarImg”).value=””;$(”#rAvatarFile”).value=””;setRolePreview(””,“无图”)}
-function onRoleAvatarPick(e){var f=e.target.files?e.target.files[0]:null;if(!f)return;if(f.size>2*1024*1024){toast(“图片请小于2MB”);return}compressImageFile(f,512,512,0.82).then(function(d){$(”#rAvatarImg”).value=d;setRolePreview(d)}).catch(function(){toast(“读取失败”)})}
-function clearRoleAvatar(){$(”#rAvatarImg”).value=””;$(”#rAvatarFile”).value=””;setRolePreview(””,“无图”)}
+function setRolePreview(img,text){$("#rPreview").innerHTML=img?'<img src="'+img+'" alt="">':esc(text||"无图")}
+function resetRoleForm(){$("#rId").value="";$("#rName").value="";$("#rAvatar").value="";$("#rGreeting").value="";$("#rPrompt").value="";$("#rAvatarImg").value="";$("#rAvatarFile").value="";setRolePreview("","无图")}
+function onRoleAvatarPick(e){var f=e.target.files?e.target.files[0]:null;if(!f)return;if(f.size>2*1024*1024){toast("图片请小于2MB");return}compressImageFile(f,512,512,0.82).then(function(d){$("#rAvatarImg").value=d;setRolePreview(d)}).catch(function(){toast("读取失败")})}
+function clearRoleAvatar(){$("#rAvatarImg").value="";$("#rAvatarFile").value="";setRolePreview("","无图")}
 
 function saveRole(){
-var id=$(”#rId”).value||uid(),name=$(”#rName”).value.trim(),avatar=($(”#rAvatar”).value.trim()||“AI”).slice(0,2);
-var avatarImg=$(”#rAvatarImg”).value||””,greeting=$(”#rGreeting”).value.trim(),prompt=$(”#rPrompt”).value.trim();
-if(!name){toast(“角色名不能为空”);return}
-var obj={id:id,name:name,avatar:avatar,avatarImg:avatarImg,prompt:prompt,greeting:greeting};
-var idx=-1;for(var i=0;i<roles.length;i++){if(roles[i].id===id){idx=i;break}}
-if(idx>=0)roles[idx]=obj;else roles.unshift(obj);
-if(!activeRoleId)activeRoleId=id;
-save(“nx_roles”,roles);save(“nx_active_role”,activeRoleId);
-renderRoles();refreshHeader();renderChat();toast(“角色已保存”);
+  var id=$("#rId").value||uid(),name=$("#rName").value.trim(),avatar=($("#rAvatar").value.trim()||"AI").slice(0,2);
+  var avatarImg=$("#rAvatarImg").value||"",greeting=$("#rGreeting").value.trim(),prompt=$("#rPrompt").value.trim();
+  if(!name){toast("角色名不能为空");return}
+  var obj={id:id,name:name,avatar:avatar,avatarImg:avatarImg,prompt:prompt,greeting:greeting};
+  var idx=-1;for(var i=0;i<roles.length;i++){if(roles[i].id===id){idx=i;break}}
+  if(idx>=0)roles[idx]=obj;else roles.unshift(obj);
+  if(!activeRoleId)activeRoleId=id;
+  save("nx_roles",roles);save("nx_active_role",activeRoleId);
+  renderRoles();refreshHeader();renderChat();toast("角色已保存");
 }
 
 function editRole(id){
-var r=null;for(var i=0;i<roles.length;i++){if(roles[i].id===id){r=roles[i];break}}if(!r)return;
-$(”#rId”).value=r.id;$(”#rName”).value=r.name||””;$(”#rAvatar”).value=r.avatar||””;
-$(”#rGreeting”).value=r.greeting||””;$(”#rPrompt”).value=r.prompt||””;
-$(”#rAvatarImg”).value=r.avatarImg||””;$(”#rAvatarFile”).value=””;
-setRolePreview(r.avatarImg||””,r.avatar||“无图”);
-switchTab(“roles”,document.querySelector(’.tab[data-page=“roles”]’));
+  var r=null;for(var i=0;i<roles.length;i++){if(roles[i].id===id){r=roles[i];break}}if(!r)return;
+  $("#rId").value=r.id;$("#rName").value=r.name||"";$("#rAvatar").value=r.avatar||"";
+  $("#rGreeting").value=r.greeting||"";$("#rPrompt").value=r.prompt||"";
+  $("#rAvatarImg").value=r.avatarImg||"";$("#rAvatarFile").value="";
+  setRolePreview(r.avatarImg||"",r.avatar||"无图");
+  switchTab("roles",document.querySelector('.tab[data-page="roles"]'));
 }
 
-function pickRole(id){activeRoleId=id;save(“nx_active_role”,activeRoleId);refreshHeader();renderRoles();renderChat();toast(“已切换”)}
+function pickRole(id){activeRoleId=id;save("nx_active_role",activeRoleId);refreshHeader();renderRoles();renderChat();toast("已切换")}
 
 function deleteRole(){
-var id=$(”#rId”).value||activeRoleId;if(!id){toast(“无角色”);return}
-var r=null;for(var i=0;i<roles.length;i++){if(roles[i].id===id){r=roles[i];break}}if(!r){toast(“不存在”);return}
-if(!confirm(“删除角色「”+r.name+”」？”))return;
-roles=roles.filter(function(x){return x.id!==id});delete HMap[id];
-if(activeRoleId===id)activeRoleId=roles.length?roles[0].id:””;
-save(“nx_roles”,roles);save(“nx_active_role”,activeRoleId);save(“nx_hmap”,HMap);
-resetRoleForm();renderRoles();refreshHeader();renderChat();toast(“已删除”);
+  var id=$("#rId").value||activeRoleId;if(!id){toast("无角色");return}
+  var r=null;for(var i=0;i<roles.length;i++){if(roles[i].id===id){r=roles[i];break}}if(!r){toast("不存在");return}
+  if(!confirm("删除角色「"+r.name+"」？"))return;
+  roles=roles.filter(function(x){return x.id!==id});delete HMap[id];
+  if(activeRoleId===id)activeRoleId=roles.length?roles[0].id:"";
+  save("nx_roles",roles);save("nx_active_role",activeRoleId);save("nx_hmap",HMap);
+  resetRoleForm();renderRoles();refreshHeader();renderChat();toast("已删除");
 }
 
-function setMePreview(img){$(”#mePreview”).innerHTML=img?’<img src="'+img+'" alt="">’:“我”}
-function onMeAvatarPick(e){var f=e.target.files?e.target.files[0]:null;if(!f)return;if(f.size>2*1024*1024){toast(“图片请小于2MB”);return}compressImageFile(f,512,512,0.82).then(function(d){C.selfAvatarImg=d;setMePreview(d);save(“nx_cfg”,C);renderChat()}).catch(function(){toast(“失败”)})}
-function clearMeAvatar(){C.selfAvatarImg=””;$(”#meAvatarImg”).value=””;$(”#meAvatarFile”).value=””;setMePreview(””);save(“nx_cfg”,C);renderChat()}
+function setMePreview(img){$("#mePreview").innerHTML=img?'<img src="'+img+'" alt="">':"我"}
+function onMeAvatarPick(e){var f=e.target.files?e.target.files[0]:null;if(!f)return;if(f.size>2*1024*1024){toast("图片请小于2MB");return}compressImageFile(f,512,512,0.82).then(function(d){C.selfAvatarImg=d;setMePreview(d);save("nx_cfg",C);renderChat()}).catch(function(){toast("失败")})}
+function clearMeAvatar(){C.selfAvatarImg="";$("#meAvatarImg").value="";$("#meAvatarFile").value="";setMePreview("");save("nx_cfg",C);renderChat()}
 
 function fillCfgForm(){
-$(”#cUrl”).value=C.url||””;$(”#cKey”).value=C.key||””;$(”#cTemp”).value=C.temp!=null?C.temp:0.8;$(”#cMax”).value=C.max||800;
-$(”#meAvatarImg”).value=C.selfAvatarImg||””;setMePreview(C.selfAvatarImg||””);
-$(”#lockEnabled”).checked=!!C.lockEnabled;$(”#lockPin”).value=C.lockPin||””;
-var sel=$(”#cModel”);
-if(C.model){
-var found=false;for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===C.model)found=true}
-if(!found){var o=document.createElement(“option”);o.value=C.model;o.textContent=C.model;sel.appendChild(o)}
-sel.value=C.model;
-}
+  $("#cUrl").value=C.url||"";$("#cKey").value=C.key||"";$("#cTemp").value=C.temp!=null?C.temp:0.8;$("#cMax").value=C.max||800;
+  $("#meAvatarImg").value=C.selfAvatarImg||"";setMePreview(C.selfAvatarImg||"");
+  $("#lockEnabled").checked=!!C.lockEnabled;$("#lockPin").value=C.lockPin||"";
+  var sel=$("#cModel");
+  if(C.model){
+    var found=false;for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===C.model)found=true}
+    if(!found){var o=document.createElement("option");o.value=C.model;o.textContent=C.model;sel.appendChild(o)}
+    sel.value=C.model;
+  }
 }
 
 function saveCfg(){
-C.url=normBaseUrl($(”#cUrl”).value);C.key=$(”#cKey”).value.trim();C.model=$(”#cModel”).value;
-C.temp=parseFloat($(”#cTemp”).value)||0.8;C.max=parseInt($(”#cMax”).value)||800;
-C.selfAvatarImg=$(”#meAvatarImg”).value||C.selfAvatarImg||””;
-save(“nx_cfg”,C);setStatus();toast(“配置已保存”);renderChat();
+  C.url=normBaseUrl($("#cUrl").value);C.key=$("#cKey").value.trim();C.model=$("#cModel").value;
+  C.temp=parseFloat($("#cTemp").value)||0.8;C.max=parseInt($("#cMax").value)||800;
+  C.selfAvatarImg=$("#meAvatarImg").value||C.selfAvatarImg||"";
+  save("nx_cfg",C);setStatus();toast("配置已保存");renderChat();
 }
 
 function toggleLockEnabled(v){C.lockEnabled=!!v}
-function saveLock(){var pin=$(”#lockPin”).value.trim();if(C.lockEnabled&&!/^\d{4,8}$/.test(pin)){toast(“PIN需4~8位数字”);return}C.lockPin=pin&&/^\d{4,8}$/.test(pin)?pin:””;save(“nx_cfg”,C);toast(“锁屏已保存”)}
-function lockNow(){if(!C.lockEnabled){toast(“先启用锁屏”);return}if(!/^\d{4,8}$/.test(C.lockPin||””)){toast(“先保存PIN”);return}$(”#unlockPin”).value=””;$(”#lockMask”).classList.add(“show”)}
-function unlock(){if($(”#unlockPin”).value.trim()===(C.lockPin||””)){$(”#lockMask”).classList.remove(“show”);$(”#unlockPin”).value=””;toast(“已解锁”)}else toast(“PIN错误”)}
+function saveLock(){var pin=$("#lockPin").value.trim();if(C.lockEnabled&&!/^\d{4,8}$/.test(pin)){toast("PIN需4~8位数字");return}C.lockPin=pin&&/^\d{4,8}$/.test(pin)?pin:"";save("nx_cfg",C);toast("锁屏已保存")}
+function lockNow(){if(!C.lockEnabled){toast("先启用锁屏");return}if(!/^\d{4,8}$/.test(C.lockPin||"")){toast("先保存PIN");return}$("#unlockPin").value="";$("#lockMask").classList.add("show")}
+function unlock(){if($("#unlockPin").value.trim()===(C.lockPin||"")){$("#lockMask").classList.remove("show");$("#unlockPin").value="";toast("已解锁")}else toast("PIN错误")}
 
-function clearCurrentChat(){if(!activeRoleId){toast(“先选角色”);return}if(!confirm(“清空当前聊天？”))return;HMap[activeRoleId]=[];save(“nx_hmap”,HMap);renderChat();toast(“已清空”)}
-function clearAllLocal(){if(!confirm(“清空全部数据？不可恢复。”))return;[“nx_cfg”,“nx_roles”,“nx_active_role”,“nx_hmap”,“nx_sticker_groups”,“nx_worldbook”].forEach(function(k){localStorage.removeItem(k)});location.reload()}
+function clearCurrentChat(){if(!activeRoleId){toast("先选角色");return}if(!confirm("清空当前聊天？"))return;HMap[activeRoleId]=[];save("nx_hmap",HMap);renderChat();toast("已清空")}
+function clearAllLocal(){if(!confirm("清空全部数据？不可恢复。"))return;["nx_cfg","nx_roles","nx_active_role","nx_hmap","nx_sticker_groups","nx_worldbook"].forEach(function(k){localStorage.removeItem(k)});location.reload()}
 
 function exportAllData(){
-var data={version:2,nx_cfg:C,nx_roles:roles,nx_active_role:activeRoleId,nx_hmap:HMap,nx_sticker_groups:stickerGroups,nx_worldbook:worldbook};
-var blob=new Blob([JSON.stringify(data,null,2)],{type:“application/json”});
-var a=document.createElement(“a”);a.href=URL.createObjectURL(blob);a.download=“noctis-backup-”+Date.now()+”.json”;a.click();URL.revokeObjectURL(a.href);toast(“已导出”);
+  var data={version:2,nx_cfg:C,nx_roles:roles,nx_active_role:activeRoleId,nx_hmap:HMap,nx_sticker_groups:stickerGroups,nx_worldbook:worldbook};
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="noctis-backup-"+Date.now()+".json";a.click();URL.revokeObjectURL(a.href);toast("已导出");
 }
-function openImportFile(){$(”#importFile”).click()}
+function openImportFile(){$("#importFile").click()}
 function importAllData(e){
-var f=e.target.files?e.target.files[0]:null;e.target.value=””;if(!f)return;
-f.text().then(function(txt){
-var j=JSON.parse(txt);
-if(j.nx_cfg)C=j.nx_cfg;if(Array.isArray(j.nx_roles))roles=j.nx_roles;
-if(typeof j.nx_active_role===“string”)activeRoleId=j.nx_active_role;
-if(j.nx_hmap&&typeof j.nx_hmap===“object”)HMap=j.nx_hmap;
-if(Array.isArray(j.nx_sticker_groups))stickerGroups=j.nx_sticker_groups;
-else if(Array.isArray(j.nx_stickers)){stickerGroups=[{id:“default”,name:“默认分组”,stickers:j.nx_stickers.map(function(s){return{src:s,name:””}})}]}
-if(Array.isArray(j.nx_worldbook))worldbook=j.nx_worldbook;
-save(“nx_cfg”,C);save(“nx_roles”,roles);save(“nx_active_role”,activeRoleId);
-save(“nx_hmap”,HMap);save(“nx_sticker_groups”,stickerGroups);save(“nx_worldbook”,worldbook);
-fillCfgForm();renderRoles();renderStickerPanel();renderWB();refreshHeader();setStatus();renderChat();toast(“导入成功”);
-}).catch(function(){toast(“导入失败”)});
+  var f=e.target.files?e.target.files[0]:null;e.target.value="";if(!f)return;
+  f.text().then(function(txt){
+    var j=JSON.parse(txt);
+    if(j.nx_cfg)C=j.nx_cfg;if(Array.isArray(j.nx_roles))roles=j.nx_roles;
+    if(typeof j.nx_active_role==="string")activeRoleId=j.nx_active_role;
+    if(j.nx_hmap&&typeof j.nx_hmap==="object")HMap=j.nx_hmap;
+    if(Array.isArray(j.nx_sticker_groups))stickerGroups=j.nx_sticker_groups;
+    else if(Array.isArray(j.nx_stickers)){stickerGroups=[{id:"default",name:"默认分组",stickers:j.nx_stickers.map(function(s){return{src:s,name:""}})}]}
+    if(Array.isArray(j.nx_worldbook))worldbook=j.nx_worldbook;
+    save("nx_cfg",C);save("nx_roles",roles);save("nx_active_role",activeRoleId);
+    save("nx_hmap",HMap);save("nx_sticker_groups",stickerGroups);save("nx_worldbook",worldbook);
+    fillCfgForm();renderRoles();renderStickerPanel();renderWB();refreshHeader();setStatus();renderChat();toast("导入成功");
+  }).catch(function(){toast("导入失败")});
 }
 
-function openImagePick(){$(”#imgPick”).click()}
+function openImagePick(){$("#imgPick").click()}
 function pickImage(e){
-var f=e.target.files?e.target.files[0]:null;e.target.value=””;if(!f)return;
-if(!activeRoleId){toast(“先选角色”);return}if(f.size>12*1024*1024){toast(“图片太大”);return}
-compressImageFile(f,1280,1280,0.82).then(function(d){currentHistory().push({role:“user”,type:“image”,content:d,time:now()});save(“nx_hmap”,HMap);renderChat()}).catch(function(){toast(“发送失败”)});
+  var f=e.target.files?e.target.files[0]:null;e.target.value="";if(!f)return;
+  if(!activeRoleId){toast("先选角色");return}if(f.size>12*1024*1024){toast("图片太大");return}
+  compressImageFile(f,1280,1280,0.82).then(function(d){currentHistory().push({role:"user",type:"image",content:d,time:now()});save("nx_hmap",HMap);renderChat()}).catch(function(){toast("发送失败")});
 }
 
 function buildEmojiPanel(){
-var html=””;
-for(var i=0;i<EMOJIS.length;i++){
-html+=’<button class="emoji" onclick="addEmoji(\''+EMOJIS[i]+'\')">’+EMOJIS[i]+”</button>”;
+  var html="";
+  for(var i=0;i<EMOJIS.length;i++){
+    html+='<button class="emoji" onclick="addEmoji(\''+EMOJIS[i]+'\')">'+EMOJIS[i]+"</button>";
+  }
+  $("#emojiGrid").innerHTML=html;
 }
-$(”#emojiGrid”).innerHTML=html;
-}
-function addEmoji(x){var inp=$(”#inp”);inp.value+=x;inp.focus();autoGrow(inp)}
+function addEmoji(x){var inp=$("#inp");inp.value+=x;inp.focus();autoGrow(inp)}
 
 function togglePanel(which){
-var ep=$(”#emojiPanel”),sp=$(”#stickerPanel”);
-if(which===“emoji”){ep.classList.toggle(“show”);sp.classList.remove(“show”)}
-else{sp.classList.toggle(“show”);ep.classList.remove(“show”);renderStickerPanel()}
+  var ep=$("#emojiPanel"),sp=$("#stickerPanel");
+  if(which==="emoji"){ep.classList.toggle("show");sp.classList.remove("show")}
+  else{sp.classList.toggle("show");ep.classList.remove("show");renderStickerPanel()}
 }
 
-function ensureDefaultGroup(){if(!stickerGroups.length)stickerGroups=[{id:“default”,name:“默认分组”,stickers:[]}];var found=false;for(var i=0;i<stickerGroups.length;i++){if(stickerGroups[i].id===activeStickerGroup)found=true}if(!found)activeStickerGroup=stickerGroups[0].id}
+function ensureDefaultGroup(){if(!stickerGroups.length)stickerGroups=[{id:"default",name:"默认分组",stickers:[]}];var found=false;for(var i=0;i<stickerGroups.length;i++){if(stickerGroups[i].id===activeStickerGroup)found=true}if(!found)activeStickerGroup=stickerGroups[0].id}
 
 function renderStickerPanel(){
-ensureDefaultGroup();
-var tabs=$(”#stickerTabs”),grid=$(”#stickerGrid”);
-var tabsHtml=””;
-for(var i=0;i<stickerGroups.length;i++){
-var g=stickerGroups[i];
-tabsHtml+=’<button class=“panelTab ‘+(g.id===activeStickerGroup?“active”:””)+’” onclick=“switchStickerGroup('’+g.id+’')”>’+esc(g.name)+”</button>”;
-}
-tabs.innerHTML=tabsHtml;
-var grp=null;for(var i=0;i<stickerGroups.length;i++){if(stickerGroups[i].id===activeStickerGroup)grp=stickerGroups[i]}
-if(!grp||!grp.stickers.length){grid.innerHTML=’<div class="stickerEmpty">这个分组还没有表情包，点工具栏齿轮添加。</div>’;return}
-var html=””;
-for(var j=0;j<grp.stickers.length;j++){
-var s=grp.stickers[j];
-html+=’<button class=“stickerBtn” onclick=“sendSticker('’+activeStickerGroup+”’,”+j+’)”><img src=”’+s.src+’” alt=”’+esc(s.name||””)+’”></button>’;
-}
-grid.innerHTML=html;
+  ensureDefaultGroup();
+  var tabs=$("#stickerTabs"),grid=$("#stickerGrid");
+  var tabsHtml="";
+  for(var i=0;i<stickerGroups.length;i++){
+    var g=stickerGroups[i];
+    tabsHtml+='<button class="panelTab '+(g.id===activeStickerGroup?"active":"")+'" onclick="switchStickerGroup(\''+g.id+'\')">'+esc(g.name)+"</button>";
+  }
+  tabs.innerHTML=tabsHtml;
+  var grp=null;for(var j=0;j<stickerGroups.length;j++){if(stickerGroups[j].id===activeStickerGroup)grp=stickerGroups[j]}
+  if(!grp||!grp.stickers.length){grid.innerHTML='<div class="stickerEmpty">这个分组还没有表情包，点工具栏齿轮添加。</div>';return}
+  var html="";
+  for(var k=0;k<grp.stickers.length;k++){
+    var s=grp.stickers[k];
+    html+='<button class="stickerBtn" onclick="sendSticker(\''+activeStickerGroup+'\','+k+')"><img src="'+s.src+'" alt="'+esc(s.name||"")+'"></button>';
+  }
+  grid.innerHTML=html;
 }
 
 function switchStickerGroup(id){activeStickerGroup=id;renderStickerPanel()}
 
 function sendSticker(gid,i){
-var grp=null;for(var k=0;k<stickerGroups.length;k++){if(stickerGroups[k].id===gid)grp=stickerGroups[k]}if(!grp)return;
-var s=grp.stickers[i];if(!s)return;
-if(!activeRoleId){toast(“先选角色”);return}
-currentHistory().push({role:“user”,type:“sticker”,content:s.src,time:now()});
-save(“nx_hmap”,HMap);renderChat();
+  var grp=null;for(var k=0;k<stickerGroups.length;k++){if(stickerGroups[k].id===gid)grp=stickerGroups[k]}if(!grp)return;
+  var s=grp.stickers[i];if(!s)return;
+  if(!activeRoleId){toast("先选角色");return}
+  currentHistory().push({role:"user",type:"sticker",content:s.src,time:now()});
+  save("nx_hmap",HMap);renderChat();
 }
 
-function openStickerManager(){ensureDefaultGroup();renderGroupMgrList();updateImportGroupSel();$(”#stickerMgr”).classList.add(“show”)}
-function closeStickerManager(){$(”#stickerMgr”).classList.remove(“show”);renderStickerPanel()}
+function openStickerManager(){ensureDefaultGroup();renderGroupMgrList();updateImportGroupSel();$("#stickerMgr").classList.add("show")}
+function closeStickerManager(){$("#stickerMgr").classList.remove("show");renderStickerPanel()}
 
 function renderGroupMgrList(){
-var el=$(”#groupMgrList”);var html=””;
-for(var i=0;i<stickerGroups.length;i++){
-var g=stickerGroups[i];
-html+=’<div class="roleItem"><div class="roleL"><div style="min-width:0"><div class="rName">’+esc(g.name)+’</div><div class="rSub">’+g.stickers.length+’ 张</div></div></div>’;
-html+=’<div style="display:flex;gap:6px"><button class=“btn2” style=“padding:6px 10px;font-size:12px” onclick=“clearGroupStickers('’+g.id+”’)">清空</button>”;
-if(g.id!==“default”) html+=’<button class=“btn2 btnDanger” style=“padding:6px 10px;font-size:12px” onclick=“deleteGroup('’+g.id+”’)">删除</button>”;
-html+=”</div></div>”;
-}
-el.innerHTML=html;
+  var el=$("#groupMgrList");var html="";
+  for(var i=0;i<stickerGroups.length;i++){
+    var g=stickerGroups[i];
+    html+='<div class="roleItem"><div class="roleL"><div style="min-width:0"><div class="rName">'+esc(g.name)+'</div><div class="rSub">'+g.stickers.length+' 张</div></div></div>';
+    html+='<div style="display:flex;gap:6px"><button class="btn2" style="padding:6px 10px;font-size:12px" onclick="clearGroupStickers(\''+g.id+'\')">清空</button>';
+    if(g.id!=="default") html+='<button class="btn2 btnDanger" style="padding:6px 10px;font-size:12px" onclick="deleteGroup(\''+g.id+'\')">删除</button>';
+    html+="</div></div>";
+  }
+  el.innerHTML=html;
 }
 
 function updateImportGroupSel(){
-var html=””;
-for(var i=0;i<stickerGroups.length;i++){
-html+=’<option value="'+stickerGroups[i].id+'">’+esc(stickerGroups[i].name)+”</option>”;
-}
-$(”#importGroupSel”).innerHTML=html;
+  var html="";
+  for(var i=0;i<stickerGroups.length;i++){
+    html+='<option value="'+stickerGroups[i].id+'">'+esc(stickerGroups[i].name)+"</option>";
+  }
+  $("#importGroupSel").innerHTML=html;
 }
 
 function addStickerGroup(){
-var name=$(”#newGroupName”).value.trim();if(!name){toast(“名称不能为空”);return}
-var id=“sg_”+Math.random().toString(36).slice(2,8);
-stickerGroups.push({id:id,name:name,stickers:[]});
-save(“nx_sticker_groups”,stickerGroups);
-$(”#newGroupName”).value=””;renderGroupMgrList();updateImportGroupSel();toast(“分组已创建”);
+  var name=$("#newGroupName").value.trim();if(!name){toast("名称不能为空");return}
+  var id="sg_"+Math.random().toString(36).slice(2,8);
+  stickerGroups.push({id:id,name:name,stickers:[]});
+  save("nx_sticker_groups",stickerGroups);
+  $("#newGroupName").value="";renderGroupMgrList();updateImportGroupSel();toast("分组已创建");
 }
 
 function deleteGroup(id){
-if(!confirm(“删除此分组？”))return;
-stickerGroups=stickerGroups.filter(function(g){return g.id!==id});
-if(activeStickerGroup===id)activeStickerGroup=stickerGroups.length?stickerGroups[0].id:“default”;
-ensureDefaultGroup();save(“nx_sticker_groups”,stickerGroups);renderGroupMgrList();updateImportGroupSel();toast(“已删除”);
+  if(!confirm("删除此分组？"))return;
+  stickerGroups=stickerGroups.filter(function(g){return g.id!==id});
+  if(activeStickerGroup===id)activeStickerGroup=stickerGroups.length?stickerGroups[0].id:"default";
+  ensureDefaultGroup();save("nx_sticker_groups",stickerGroups);renderGroupMgrList();updateImportGroupSel();toast("已删除");
 }
 
 function clearGroupStickers(id){
-var g=null;for(var i=0;i<stickerGroups.length;i++){if(stickerGroups[i].id===id)g=stickerGroups[i]}if(!g)return;
-if(!confirm(“清空「”+g.name+”」的表情包？”))return;
-g.stickers=[];save(“nx_sticker_groups”,stickerGroups);renderGroupMgrList();toast(“已清空”);
+  var g=null;for(var i=0;i<stickerGroups.length;i++){if(stickerGroups[i].id===id)g=stickerGroups[i]}if(!g)return;
+  if(!confirm("清空「"+g.name+"」的表情包？"))return;
+  g.stickers=[];save("nx_sticker_groups",stickerGroups);renderGroupMgrList();toast("已清空");
 }
 
 function importStickerURLs(){
-var gid=$(”#importGroupSel”).value;
-var grp=null;for(var i=0;i<stickerGroups.length;i++){if(stickerGroups[i].id===gid)grp=stickerGroups[i]}
-if(!grp){toast(“先选分组”);return}
-var text=$(”#urlImportArea”).value.trim();if(!text){toast(“内容为空”);return}
-var lines=text.split(”\n”);var added=0;
-for(var i=0;i<lines.length;i++){
-var line=lines[i].trim();if(!line)continue;
-var parts=line.split(/\s+/);var url=””,name=””;
-if(parts.length===1){url=parts[0]}
-else if(parts[0].indexOf(“http”)===0){url=parts[0];name=parts.slice(1).join(” “)}
-else{name=parts[0];for(var k=1;k<parts.length;k++){if(parts[k].indexOf(“http”)===0){url=parts[k];break}}if(!url)url=parts[parts.length-1]}
-if(!url||url.indexOf(“http”)!==0)continue;
-grp.stickers.push({src:url,name:name||””});added++;
-}
-if(grp.stickers.length>500)grp.stickers=grp.stickers.slice(0,500);
-save(“nx_sticker_groups”,stickerGroups);$(”#urlImportArea”).value=””;
-renderGroupMgrList();toast(added?(“导入”+added+“张”):“没有有效URL”);
+  var gid=$("#importGroupSel").value;
+  var grp=null;for(var i=0;i<stickerGroups.length;i++){if(stickerGroups[i].id===gid)grp=stickerGroups[i]}
+  if(!grp){toast("先选分组");return}
+  var text=$("#urlImportArea").value.trim();if(!text){toast("内容为空");return}
+  var lines=text.split("\n");var added=0;
+  for(var j=0;j<lines.length;j++){
+    var line=lines[j].trim();if(!line)continue;
+    var parts=line.split(/\s+/);var url="",name="";
+    if(parts.length===1){url=parts[0]}
+    else if(parts[0].indexOf("http")===0){url=parts[0];name=parts.slice(1).join(" ")}
+    else{name=parts[0];for(var k=1;k<parts.length;k++){if(parts[k].indexOf("http")===0){url=parts[k];break}}if(!url)url=parts[parts.length-1]}
+    if(!url||url.indexOf("http")!==0)continue;
+    grp.stickers.push({src:url,name:name||""});added++;
+  }
+  if(grp.stickers.length>500)grp.stickers=grp.stickers.slice(0,500);
+  save("nx_sticker_groups",stickerGroups);$("#urlImportArea").value="";
+  renderGroupMgrList();toast(added?("导入"+added+"张"):"没有有效URL");
 }
 
-function openStickerFilePick(){$(”#stickerFilePick”).click()}
+function openStickerFilePick(){$("#stickerFilePick").click()}
 function pickStickerFiles(e){
-var files=Array.from(e.target.files||[]);e.target.value=””;if(!files.length)return;
-var gid=$(”#importGroupSel”).value;
-var grp=null;for(var i=0;i<stickerGroups.length;i++){if(stickerGroups[i].id===gid)grp=stickerGroups[i]}
-if(!grp){toast(“先选分组”);return}
-var added=0;var idx=0;
-function next(){
-if(idx>=files.length||grp.stickers.length>500){
-save(“nx_sticker_groups”,stickerGroups);renderGroupMgrList();toast(added?(“已加入”+added+“张”):“无可用图片”);return;
-}
-var f=files[idx];idx++;
-if(!f.type||f.type.indexOf(“image/”)!==0){next();return}
-compressImageFile(f,420,420,0.78).then(function(d){grp.stickers.push({src:d,name:f.name||””});added++;next()}).catch(function(){next()});
-}
-next();
+  var files=Array.from(e.target.files||[]);e.target.value="";if(!files.length)return;
+  var gid=$("#importGroupSel").value;
+  var grp=null;for(var i=0;i<stickerGroups.length;i++){if(stickerGroups[i].id===gid)grp=stickerGroups[i]}
+  if(!grp){toast("先选分组");return}
+  var added=0;var idx=0;
+  function next(){
+    if(idx>=files.length||grp.stickers.length>500){
+      save("nx_sticker_groups",stickerGroups);renderGroupMgrList();toast(added?("已加入"+added+"张"):"无可用图片");return;
+    }
+    var f=files[idx];idx++;
+    if(!f.type||f.type.indexOf("image/")!==0){next();return}
+    compressImageFile(f,420,420,0.78).then(function(d){grp.stickers.push({src:d,name:f.name||""});added++;next()}).catch(function(){next()});
+  }
+  next();
 }
 
-function resetWBForm(){$(”#wbId”).value=””;$(”#wbKeys”).value=””;$(”#wbContent”).value=””;$(”#wbEnabled”).checked=true}
+function resetWBForm(){$("#wbId").value="";$("#wbKeys").value="";$("#wbContent").value="";$("#wbEnabled").checked=true}
 function renderWB(){
-var box=$(”#wbList”);if(!box)return;
-if(!worldbook.length){box.innerHTML=’<div class="mini">还没有词条。</div>’;return}
-var html=””;
-for(var i=0;i<worldbook.length;i++){
-var x=worldbook[i];
-var keysStr=(x.keys||[]).join(”, “)||“无”;
-var contentPrev=(x.content||””).slice(0,80);if((x.content||””).length>80)contentPrev+=”…”;
-html+=’<div class="roleItem"><div class="roleL" style="align-items:flex-start"><div style="min-width:0">’;
-html+=’<div class="rName">’+esc(keysStr)+’</div><div class="rSub">’+esc(contentPrev)+’</div>’;
-html+=’<div class="mini">’+(x.enabled?“已启用”:“已停用”)+”</div></div></div>”;
-html+=’<button class=“btn2” style=“padding:8px 12px” onclick=“editWB('’+x.id+”’)">编辑</button></div>”;
-}
-box.innerHTML=html;
+  var box=$("#wbList");if(!box)return;
+  if(!worldbook.length){box.innerHTML='<div class="mini">还没有词条。</div>';return}
+  var html="";
+  for(var i=0;i<worldbook.length;i++){
+    var x=worldbook[i];
+    var keysStr=(x.keys||[]).join(", ")||"无";
+    var contentPrev=(x.content||"").slice(0,80);if((x.content||"").length>80)contentPrev+="...";
+    html+='<div class="roleItem"><div class="roleL" style="align-items:flex-start"><div style="min-width:0">';
+    html+='<div class="rName">'+esc(keysStr)+'</div><div class="rSub">'+esc(contentPrev)+'</div>';
+    html+='<div class="mini">'+(x.enabled?"已启用":"已停用")+"</div></div></div>";
+    html+='<button class="btn2" style="padding:8px 12px" onclick="editWB(\''+x.id+'\')">编辑</button></div>';
+  }
+  box.innerHTML=html;
 }
 
 function saveWB(){
-var id=$(”#wbId”).value||(“wb_”+Math.random().toString(36).slice(2,8));
-var keys=$(”#wbKeys”).value.split(”,”).map(function(s){return s.trim()}).filter(Boolean);
-var content=$(”#wbContent”).value.trim(),enabled=$(”#wbEnabled”).checked;
-if(!keys.length){toast(“关键词不能为空”);return}if(!content){toast(“内容不能为空”);return}
-var obj={id:id,keys:keys,content:content,enabled:enabled};
-var idx=-1;for(var i=0;i<worldbook.length;i++){if(worldbook[i].id===id){idx=i;break}}
-if(idx>=0)worldbook[idx]=obj;else worldbook.unshift(obj);
-save(“nx_worldbook”,worldbook);renderWB();resetWBForm();toast(“已保存”);
+  var id=$("#wbId").value||("wb_"+Math.random().toString(36).slice(2,8));
+  var keys=$("#wbKeys").value.split(",").map(function(s){return s.trim()}).filter(Boolean);
+  var content=$("#wbContent").value.trim(),enabled=$("#wbEnabled").checked;
+  if(!keys.length){toast("关键词不能为空");return}if(!content){toast("内容不能为空");return}
+  var obj={id:id,keys:keys,content:content,enabled:enabled};
+  var idx=-1;for(var i=0;i<worldbook.length;i++){if(worldbook[i].id===id){idx=i;break}}
+  if(idx>=0)worldbook[idx]=obj;else worldbook.unshift(obj);
+  save("nx_worldbook",worldbook);renderWB();resetWBForm();toast("已保存");
 }
 
 function editWB(id){
-var x=null;for(var i=0;i<worldbook.length;i++){if(worldbook[i].id===id){x=worldbook[i];break}}if(!x)return;
-$(”#wbId”).value=x.id;$(”#wbKeys”).value=(x.keys||[]).join(”, “);$(”#wbContent”).value=x.content||””;$(”#wbEnabled”).checked=!!x.enabled;
-switchTab(“worldbook”,document.querySelector(’.tab[data-page=“worldbook”]’));
+  var x=null;for(var i=0;i<worldbook.length;i++){if(worldbook[i].id===id){x=worldbook[i];break}}if(!x)return;
+  $("#wbId").value=x.id;$("#wbKeys").value=(x.keys||[]).join(", ");$("#wbContent").value=x.content||"";$("#wbEnabled").checked=!!x.enabled;
+  switchTab("worldbook",document.querySelector('.tab[data-page="worldbook"]'));
 }
 
 function deleteWB(){
-var id=$(”#wbId”).value;if(!id){toast(“无词条”);return}
-if(!confirm(“删除当前词条？”))return;
-worldbook=worldbook.filter(function(v){return v.id!==id});save(“nx_worldbook”,worldbook);renderWB();resetWBForm();toast(“已删除”);
+  var id=$("#wbId").value;if(!id){toast("无词条");return}
+  if(!confirm("删除当前词条？"))return;
+  worldbook=worldbook.filter(function(v){return v.id!==id});save("nx_worldbook",worldbook);renderWB();resetWBForm();toast("已删除");
 }
 
 function buildWBSystemPrompt(t){
-t=(t||””).toLowerCase();
-var hits=worldbook.filter(function(x){if(!x.enabled)return false;return(x.keys||[]).some(function(k){return t.indexOf(String(k).toLowerCase())>=0})});
-if(!hits.length)return””;
-return hits.map(function(h,i){return “[世界书”+(i+1)+”] “+h.content}).join(”\n”);
+  t=(t||"").toLowerCase();
+  var hits=worldbook.filter(function(x){if(!x.enabled)return false;return (x.keys||[]).some(function(k){return t.indexOf(String(k).toLowerCase())>=0})});
+  if(!hits.length)return"";
+  return hits.map(function(h,i){return "[世界书"+(i+1)+"] "+h.content}).join("\n");
 }
 
 function fetchModels(){
-var url=normBaseUrl($(”#cUrl”).value),key=$(”#cKey”).value.trim();
-if(!url){toast(“先填地址”);return}
-var btn=$(”#fetchBtn”);btn.disabled=true;btn.textContent=”…”;
-var h={“Content-Type”:“application/json”};if(key)h[“Authorization”]=“Bearer “+key;
-fetch(apiUrl(url,”/models”),{headers:h}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()}).then(function(j){
-var list=[];
-if(Array.isArray(j&&j.data))list=j.data.map(function(x){return x.id}).filter(Boolean);
-else if(Array.isArray(j))list=j.map(function(x){return typeof x===“string”?x:(x&&x.id)}).filter(Boolean);
-var unique={};list.forEach(function(m){unique[m]=1});list=Object.keys(unique).sort();
-if(!list.length)throw new Error(“无模型”);
-var sel=$(”#cModel”);sel.innerHTML=””;
-list.forEach(function(m){var o=document.createElement(“option”);o.value=m;o.textContent=m;sel.appendChild(o)});
-if(C.model&&unique[C.model])sel.value=C.model;
-toast(list.length+” 个模型”);
-}).catch(function(e){toast(“失败: “+String(e.message||e).slice(0,100))}).finally(function(){btn.disabled=false;btn.textContent=“拉取”});
+  var url=normBaseUrl($("#cUrl").value),key=$("#cKey").value.trim();
+  if(!url){toast("先填地址");return}
+  var btn=$("#fetchBtn");btn.disabled=true;btn.textContent="...";
+  var h={"Content-Type":"application/json"};if(key)h["Authorization"]="Bearer "+key;
+  fetch(apiUrl(url,"/models"),{headers:h}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()}).then(function(j){
+    var list=[];
+    if(Array.isArray(j&&j.data))list=j.data.map(function(x){return x.id}).filter(Boolean);
+    else if(Array.isArray(j))list=j.map(function(x){return typeof x==="string"?x:(x&&x.id)}).filter(Boolean);
+    var unique={};list.forEach(function(m){unique[m]=1});list=Object.keys(unique).sort();
+    if(!list.length)throw new Error("无模型");
+    var sel=$("#cModel");sel.innerHTML="";
+    list.forEach(function(m){var o=document.createElement("option");o.value=m;o.textContent=m;sel.appendChild(o)});
+    if(C.model&&unique[C.model])sel.value=C.model;
+    toast(list.length+" 个模型");
+  }).catch(function(e){toast("失败: "+String(e.message||e).slice(0,100))}).finally(function(){btn.disabled=false;btn.textContent="拉取"});
 }
 
 function testOnce(){
-var u=normBaseUrl($(”#cUrl”).value),k=$(”#cKey”).value.trim(),m=$(”#cModel”).value;
-if(!u||!k||!m){toast(“没填全”);return}
-fetch(apiUrl(u,”/chat/completions”),{method:“POST”,headers:{“Content-Type”:“application/json”,“Authorization”:“Bearer “+k},body:JSON.stringify({model:m,messages:[{role:“user”,content:“回1”}],temperature:0,max_tokens:5,stream:false})}).then(function(r){if(!r.ok)throw new Error(r.status);toast(“连接正常”)}).catch(function(e){toast(“失败: “+String(e.message||e).slice(0,100))});
+  var u=normBaseUrl($("#cUrl").value),k=$("#cKey").value.trim(),m=$("#cModel").value;
+  if(!u||!k||!m){toast("没填全");return}
+  fetch(apiUrl(u,"/chat/completions"),{
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+k},
+    body:JSON.stringify({model:m,messages:[{role:"user",content:"回1"}],temperature:0,max_tokens:5,stream:false})
+  }).then(function(r){if(!r.ok)throw new Error(r.status);toast("连接正常")}).catch(function(e){toast("失败: "+String(e.message||e).slice(0,100))});
 }
 
 function send(){
-if($(”#lockMask”).classList.contains(“show”))return;
-var inp=$(”#inp”),text=inp.value.trim();
-if(!text||streaming)return;
-var role=currentRole();if(!role){toast(“先选角色”);return}
-if(!C.url||!C.key||!C.model){toast(“先配置API”);return}
-inp.value=””;inp.style.height=“auto”;
-var H=currentHistory();H.push({role:“user”,type:“text”,content:text,time:now()});save(“nx_hmap”,HMap);renderChat();
-streaming=true;$(”#sendBtn”).disabled=true;$(”#status”).textContent=“输入中…”;addTyping();
-var headers={“Content-Type”:“application/json”,“Authorization”:“Bearer “+C.key};
-var M=H.map(function(x){return{role:x.role===“assistant”?“assistant”:“user”,content:x.type===“image”||x.type===“sticker”?”[图片]”:(x.content||””)}});
-var wbP=buildWBSystemPrompt(text),sys=[];
-if(role.prompt)sys.push({role:“system”,content:role.prompt});
-if(wbP)sys.push({role:“system”,content:wbP});
-var payload={model:C.model,messages:sys.concat(M.slice(-40)),temperature:C.temp,max_tokens:C.max};
+  if($("#lockMask").classList.contains("show"))return;
+  var inp=$("#inp"),text=inp.value.trim();
+  if(!text||streaming)return;
+  var role=currentRole();if(!role){toast("先选角色");return}
+  if(!C.url||!C.key||!C.model){toast("先配置API");return}
+  inp.value="";inp.style.height="auto";
+  var H=currentHistory();H.push({role:"user",type:"text",content:text,time:now()});save("nx_hmap",HMap);renderChat();
+  streaming=true;$("#sendBtn").disabled=true;$("#status").textContent="输入中...";addTyping();
+  var headers={"Content-Type":"application/json","Authorization":"Bearer "+C.key};
+  var M=H.map(function(x){return{role:x.role==="assistant"?"assistant":"user",content:x.type==="image"||x.type==="sticker"?"[图片]":(x.content||"")}});
+  var wbP=buildWBSystemPrompt(text),sys=[];
+  if(role.prompt)sys.push({role:"system",content:role.prompt});
+  if(wbP)sys.push({role:"system",content:wbP});
+  var payload={model:C.model,messages:sys.concat(M.slice(-40)),temperature:C.temp,max_tokens:C.max};
 
-fetch(apiUrl(C.url,”/chat/completions”),{method:“POST”,headers:headers,body:JSON.stringify(Object.assign({},payload,{stream:true}))}).then(function(r){
-if(!r.ok){
-return fetch(apiUrl(C.url,”/chat/completions”),{method:“POST”,headers:headers,body:JSON.stringify(Object.assign({},payload,{stream:false}))}).then(function(r2){
-if(!r2.ok)return r2.text().then(function(t){throw new Error(r2.status+”: “+t.slice(0,200))});
-return r2.json().then(function(j){
-var out=(j&&j.choices&&j.choices[0]&&j.choices[0].message)?j.choices[0].message.content:”……”;
-if(!out)out=”……”;
-H.push({role:“assistant”,type:“text”,content:out.trim(),time:now()});save(“nx_hmap”,HMap);removeTyping();renderChat();
-});
-});
-}
-removeTyping();var at=now();
-var ln=document.createElement(“div”);ln.className=“line”;
-ln.innerHTML=’<div class="msgAv">’+avatarHTML(role.avatarImg,role.avatar||“AI”)+’</div><div class="msg ai"><div class="md"><span class="cur">\u2588</span></div><div class="tm">’+at+”</div></div>”;
-chatEl.appendChild(ln);chatEl.scrollTop=chatEl.scrollHeight;
-var holder=ln.querySelector(”.msg .md”);
-var full=””,buf=””;
-var reader=r.body.getReader();var dec=new TextDecoder();
-function readChunk(){
-return reader.read().then(function(result){
-if(result.done){
-if(!full)full=”……”;
-holder.innerHTML=markdownToHtml(full);
-H.push({role:“assistant”,type:“text”,content:full,time:at});save(“nx_hmap”,HMap);
-return;
-}
-buf+=dec.decode(result.value,{stream:true});
-var lines=buf.split(”\n”);buf=lines.pop();
-for(var i=0;i<lines.length;i++){
-var s=lines[i].trim();if(s.indexOf(“data:”)!==0)continue;
-var data=s.slice(5).trim();if(data===”[DONE]”)continue;
-try{var j=JSON.parse(data);var delta=j&&j.choices&&j.choices[0]&&j.choices[0].delta?j.choices[0].delta.content:null;
-if(delta){full+=delta;holder.innerHTML=markdownToHtml(full)+’<span class="cur">\u2588</span>’;chatEl.scrollTop=chatEl.scrollHeight}
-}catch(e){}
-}
-return readChunk();
-});
-}
-return readChunk();
-}).catch(function(e){
-removeTyping();H.push({role:“assistant”,type:“text”,content:”[请求失败] “+String(e.message||e).slice(0,200),time:now()});save(“nx_hmap”,HMap);renderChat();
-}).finally(function(){streaming=false;$(”#sendBtn”).disabled=false;setStatus()});
+  fetch(apiUrl(C.url,"/chat/completions"),{method:"POST",headers:headers,body:JSON.stringify(Object.assign({},payload,{stream:true}))}).then(function(r){
+    if(!r.ok){
+      return fetch(apiUrl(C.url,"/chat/completions"),{method:"POST",headers:headers,body:JSON.stringify(Object.assign({},payload,{stream:false}))}).then(function(r2){
+        if(!r2.ok)return r2.text().then(function(t){throw new Error(r2.status+": "+t.slice(0,200))});
+        return r2.json().then(function(j){
+          var out=(j&&j.choices&&j.choices[0]&&j.choices[0].message)?j.choices[0].message.content:"......";
+          if(!out)out="......";
+          H.push({role:"assistant",type:"text",content:out.trim(),time:now()});save("nx_hmap",HMap);removeTyping();renderChat();
+        });
+      });
+    }
+    removeTyping();var at=now();
+    var ln=document.createElement("div");ln.className="line";
+    ln.innerHTML='<div class="msgAv">'+avatarHTML(role.avatarImg,role.avatar||"AI")+'</div><div class="msg ai"><div class="md"><span class="cur">█</span></div><div class="tm">'+at+"</div></div>";
+    chatEl.appendChild(ln);chatEl.scrollTop=chatEl.scrollHeight;
+    var holder=ln.querySelector(".msg .md");
+    var full="",buf="";
+    var reader=r.body.getReader();var dec=new TextDecoder();
+    function readChunk(){
+      return reader.read().then(function(result){
+        if(result.done){
+          if(!full)full="......";
+          holder.innerHTML=markdownToHtml(full);
+          H.push({role:"assistant",type:"text",content:full,time:at});save("nx_hmap",HMap);
+          return;
+        }
+        buf+=dec.decode(result.value,{stream:true});
+        var lines=buf.split("\n");buf=lines.pop();
+        for(var i=0;i<lines.length;i++){
+          var s=lines[i].trim();if(s.indexOf("data:")!==0)continue;
+          var data=s.slice(5).trim();if(data==="[DONE]")continue;
+          try{
+            var j=JSON.parse(data);
+            var delta=j&&j.choices&&j.choices[0]&&j.choices[0].delta?j.choices[0].delta.content:null;
+            if(delta){full+=delta;holder.innerHTML=markdownToHtml(full)+'<span class="cur">█</span>';chatEl.scrollTop=chatEl.scrollHeight}
+          }catch(e){}
+        }
+        return readChunk();
+      });
+    }
+    return readChunk();
+  }).catch(function(e){
+    removeTyping();H.push({role:"assistant",type:"text",content:"[请求失败] "+String(e.message||e).slice(0,200),time:now()});save("nx_hmap",HMap);renderChat();
+  }).finally(function(){streaming=false;$("#sendBtn").disabled=false;setStatus()});
 }
 
 function init(){
-C=load(“nx_cfg”,C);roles=load(“nx_roles”,[]);activeRoleId=load(“nx_active_role”,””);
-HMap=load(“nx_hmap”,{});
-stickerGroups=load(“nx_sticker_groups”,[{id:“default”,name:“默认分组”,stickers:[]}]);
-worldbook=load(“nx_worldbook”,[]);
-if(typeof C.selfAvatarImg!==“string”)C.selfAvatarImg=””;
-if(typeof C.lockEnabled!==“boolean”)C.lockEnabled=false;
-if(typeof C.lockPin!==“string”)C.lockPin=””;
-if(typeof HMap!==“object”||!HMap)HMap={};
-ensureDefaultGroup();
-if(!roles.length){var id=uid();roles=[{id:id,name:“默认助手”,avatar:“AI”,avatarImg:””,greeting:“先去角色页设置你的人设。”,prompt:””}];activeRoleId=id;save(“nx_roles”,roles);save(“nx_active_role”,activeRoleId)}
-if(!activeRoleId&&roles.length)activeRoleId=roles[0].id;
-buildEmojiPanel();renderStickerPanel();renderWB();fillCfgForm();renderRoles();refreshHeader();setStatus();renderChat();
-if(C.lockEnabled&&/^\d{4,8}$/.test(C.lockPin||””))$(”#lockMask”).classList.add(“show”);
+  C=load("nx_cfg",C);roles=load("nx_roles",[]);activeRoleId=load("nx_active_role","");
+  HMap=load("nx_hmap",{});
+  stickerGroups=load("nx_sticker_groups",[{id:"default",name:"默认分组",stickers:[]}]);
+  worldbook=load("nx_worldbook",[]);
+  if(typeof C.selfAvatarImg!=="string")C.selfAvatarImg="";
+  if(typeof C.lockEnabled!=="boolean")C.lockEnabled=false;
+  if(typeof C.lockPin!=="string")C.lockPin="";
+  if(typeof HMap!=="object"||!HMap)HMap={};
+  ensureDefaultGroup();
+  if(!roles.length){
+    var id=uid();
+    roles=[{id:id,name:"默认助手",avatar:"AI",avatarImg:"",greeting:"先去角色页设置你的人设。",prompt:""}];
+    activeRoleId=id;save("nx_roles",roles);save("nx_active_role",activeRoleId);
+  }
+  if(!activeRoleId&&roles.length)activeRoleId=roles[0].id;
+  buildEmojiPanel();renderStickerPanel();renderWB();fillCfgForm();renderRoles();refreshHeader();setStatus();renderChat();
+  if(C.lockEnabled&&/^\d{4,8}$/.test(C.lockPin||""))$("#lockMask").classList.add("show");
 }
 init();
 </script>
