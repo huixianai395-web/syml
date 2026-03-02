@@ -287,7 +287,7 @@
           <input type="hidden" id="rId" />
           <input type="hidden" id="rAvatarImg" />
           <div class="row">
-            <div class="f"><div class="fl">角色名</div><input id="rName" class="fi" placeholder="例如：冷淡男友 / 帅气姐姐" /></div>
+            <div class="f"><div class="fl">角色名</div><input id="rName" class="fi" placeholder="例如：冷淡男友 / 温柔姐姐" /></div>
             <div class="f"><div class="fl">头像字</div><input id="rAvatar" class="fi" maxlength="2" placeholder="AI" /></div>
           </div>
           <div class="f">
@@ -462,8 +462,7 @@ var C={
   url:"",key:"",model:"",temp:0.8,max:800,selfAvatarImg:"",
   lockEnabled:false,lockPin:"",avatarShape:"circle",
   multiReplyEnabled:false,multiReplyMin:2,multiReplyMax:4,
-  chatMode:"online",onlineModel:"",offlineModel:"",
-  offlineMinChars:320,offlineMaxChars:900
+  chatMode:"online",onlineModel:"",offlineModel:""
 };
 var roles=[],activeRoleId="",HMap={},streaming=false,currentPage="chat";
 var stickerGroups=[{id:"default",name:"默认分组",stickers:[]}];
@@ -488,70 +487,28 @@ function hotKey(e){if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDef
 function shapeRadius(shape){if(shape==="square")return "4px";if(shape==="round")return "12px";return "50%"}
 function applyAvatarShape(){document.documentElement.style.setProperty("--avRadius",shapeRadius(C.avatarShape||"circle"))}
 function toggleMultiReplyUI(){var on=!!($("#multiReplyEnabled")&&$("#multiReplyEnabled").checked);if($("#multiReplyMin"))$("#multiReplyMin").disabled=!on;if($("#multiReplyMax"))$("#multiReplyMax").disabled=!on}
-function toggleOfflineCharsUI(){var off=(($("#chatMode")&&$("#chatMode").value)||C.chatMode)==="offline";if($("#offlineMinChars"))$("#offlineMinChars").disabled=!off;if($("#offlineMaxChars"))$("#offlineMaxChars").disabled=!off}
 function pickReplyCount(){var a=parseInt(C.multiReplyMin,10)||1,b=parseInt(C.multiReplyMax,10)||1;if(a<1)a=1;if(b<1)b=1;if(a>b){var t=a;a=b;b=t}return Math.floor(Math.random()*(b-a+1))+a}
-function pickCharsRange(){var a=parseInt(C.offlineMinChars,10)||320,b=parseInt(C.offlineMaxChars,10)||900;if(a<120)a=120;if(b<120)b=120;if(a>b){var t=a;a=b;b=t}return {min:a,max:b}}
-
-function applyModeUI(){
-  var off=C.chatMode==="offline";
-  document.body.classList.toggle("mode-offline",off);
-  var inp=$("#inp");
-  if(inp) inp.placeholder=off?"写下场景、情绪或动作…":"说点什么……（回车=暂存）";
-}
-
-function injectOfflineStyle(){
-  if($("#offlineLongStyle"))return;
-  var st=document.createElement("style");
-  st.id="offlineLongStyle";
-  st.textContent=
-    '.msg.offlineLong{width:100%;max-width:100%;line-height:1.95;border-radius:14px;padding:14px 16px}' +
-    '.line.offlineRow{width:100%;padding:0 6px}' +
-    '.line.offlineRow .msg{margin-right:0}' +
-    'body.mode-offline .chat{padding:16px 10px;gap:12px}' +
-    'body.mode-offline .ai{background:#151e33;border:1px solid #33425f}' +
-    'body.mode-offline .tools .toolBtn:nth-child(-n+3){opacity:.45}';
-  document.head.appendChild(st);
-}
 
 function injectModeControls(){
   if($("#chatMode"))return;
-  var cards=document.querySelectorAll("#page-settings .card"),apiCard=null;
+  var cards=document.querySelectorAll("#page-settings .card");
+  var apiCard=null;
   for(var i=0;i<cards.length;i++){
     var t=cards[i].querySelector(".ct");
     if(t&&t.textContent.indexOf("API 设置")>=0){apiCard=cards[i];break}
   }
   if(!apiCard)return;
-
   var row=apiCard.querySelector(".row:last-of-type");
   var box=document.createElement("div");
   box.innerHTML=
-    '<div class="f"><div class="fl">对话模式</div><select id="chatMode" class="fs"><option value="online">线上模式（自然聊天）</option><option value="offline">线下模式（沉浸长文）</option></select></div>'+
+    '<div class="f"><div class="fl">对话模式</div><select id="chatMode" class="fs"><option value="online">线上模式（自然聊天）</option><option value="offline">线下模式（长文本）</option></select></div>'+
     '<div class="row">'+
       '<div class="f"><div class="fl">线上模型（可空）</div><input id="onlineModel" class="fi" placeholder="留空则用主模型" /></div>'+
       '<div class="f"><div class="fl">线下模型（可空）</div><input id="offlineModel" class="fi" placeholder="留空则用主模型" /></div>'+
     '</div>'+
-    '<div class="row">'+
-      '<div class="f"><div class="fl">线下最少字数</div><input id="offlineMinChars" class="fi" type="number" min="120" max="3000" step="10" value="320" /></div>'+
-      '<div class="f"><div class="fl">线下最多字数</div><input id="offlineMaxChars" class="fi" type="number" min="120" max="3000" step="10" value="900" /></div>'+
-    '</div>'+
-    '<div class="mini" style="margin-bottom:10px">线上=短消息气泡；线下=单条沉浸长文（同剧情）。</div>';
-
+    '<div class="mini" style="margin-bottom:10px">线上=短句自然聊；线下=更完整长文。</div>';
   if(row&&row.parentNode===apiCard) apiCard.insertBefore(box,row);
   else apiCard.appendChild(box);
-
-  $("#chatMode").addEventListener("change",function(){
-    C.chatMode=this.value;
-    toggleOfflineCharsUI();
-    applyModeUI();
-    save("nx_cfg",C);
-    refreshHeader();
-    renderChat();
-  });
-}
-
-function historyKey(){
-  if(!activeRoleId) return "";
-  return activeRoleId;
 }
 
 function fileToDataURL(file){return new Promise(function(r,j){var fr=new FileReader();fr.onload=function(){r(fr.result)};fr.onerror=j;fr.readAsDataURL(file)})}
@@ -570,12 +527,7 @@ function compressImageFile(file,maxW,maxH,q){
 function roughSizeOf(obj){try{return new Blob([JSON.stringify(obj)]).size}catch(e){return JSON.stringify(obj).length}}
 
 function currentRole(){return roles.find(function(r){return r.id===activeRoleId})||null}
-function currentHistory(){
-  var k=historyKey();
-  if(!k)return [];
-  if(!Array.isArray(HMap[k]))HMap[k]=[];
-  return HMap[k];
-}
+function currentHistory(){if(!activeRoleId)return[];if(!Array.isArray(HMap[activeRoleId]))HMap[activeRoleId]=[];return HMap[activeRoleId]}
 function avatarHTML(img,text){return img?'<img src="'+img+'" alt="">':esc((text||"AI").slice(0,2))}
 
 function setStatus(){
@@ -584,8 +536,8 @@ function setStatus(){
   else{s.textContent="未配置";s.className="st off"}
 }
 function refreshHeader(){
-  var r=currentRole(),mode=(C.chatMode==="offline")?"线下":"线上";
-  $("#topRole").textContent="当前角色："+(r?r.name:"未选择")+" · "+mode;
+  var r=currentRole();
+  $("#topRole").textContent="当前角色："+(r?r.name:"未选择");
   $("#topAv").innerHTML=avatarHTML(r?r.avatarImg:"",r?r.avatar:"N");
 }
 function switchTab(name,btn){
@@ -621,15 +573,14 @@ function renderMsgContent(m){
 function renderChat(){
   var r=currentRole(),H=currentHistory();
   if(!r){chatEl.innerHTML='<div class="welcome"><b>欢迎使用 Noctis</b><br>先去「角色」页创建角色，再去「设置」页填 API。</div>';return}
-  if(!H.length){chatEl.innerHTML='<div class="welcome"><b>'+esc(r.name)+'</b> 已就位。<br>'+(r.greeting?esc(r.greeting):"你可以开始聊天了。")+"<br><br>支持：文本 · 图片 · 表情包</div>';return}
+  if(!H.length){chatEl.innerHTML='<div class="welcome"><b>'+esc(r.name)+'</b> 已就位。<br>'+(r.greeting?esc(r.greeting):"你可以开始聊天了。")+"<br><br>支持：文本 · 图片 · 表情包</div>";return}
   var html="";
   for(var i=0;i<H.length;i++){
-    var m=H[i],isMe=m.role==="user",isOfflineLong=(!isMe&&m.type==="text"&&m.mode==="offline");
-    var avImg=isMe?(C.selfAvatarImg||""):(r.avatarImg||""),avTxt=isMe?"我":(r.avatar||"AI");
+    var m=H[i],isMe=m.role==="user",avImg=isMe?(C.selfAvatarImg||""):(r.avatarImg||""),avTxt=isMe?"我":(r.avatar||"AI");
     var isSticker=m.type==="sticker",bubbleClass=isSticker?"":(isMe?"meBubble":"ai"),bubbleStyle=isSticker?'style="background:none;border:none;box-shadow:none;padding:2px"':"";
-    html+='<div class="line '+(isMe?"me":"")+(isOfflineLong?' offlineRow':'')+'">';
-    if(!isMe && !isOfflineLong) html+='<div class="msgAv">'+avatarHTML(avImg,avTxt)+"</div>";
-    html+='<div class="msg '+bubbleClass+(isOfflineLong?' offlineLong':'')+'" '+bubbleStyle+">"+renderMsgContent(m)+'<div class="tm">'+(m.time||"")+"</div></div>";
+    html+='<div class="line '+(isMe?"me":"")+'">';
+    if(!isMe) html+='<div class="msgAv">'+avatarHTML(avImg,avTxt)+"</div>";
+    html+='<div class="msg '+bubbleClass+'" '+bubbleStyle+">"+renderMsgContent(m)+'<div class="tm">'+(m.time||"")+"</div></div>";
     if(isMe) html+='<div class="msgAv">'+avatarHTML(avImg,avTxt)+"</div>";
     html+="</div>";
   }
@@ -675,8 +626,7 @@ function deleteRole(){
   var id=$("#rId").value||activeRoleId;if(!id){toast("无角色");return}
   var r=null;for(var i=0;i<roles.length;i++){if(roles[i].id===id){r=roles[i];break}}if(!r){toast("不存在");return}
   if(!confirm("删除角色「"+r.name+"」？"))return;
-  roles=roles.filter(function(x){return x.id!==id});
-  Object.keys(HMap).forEach(function(k){if(k===id||k.indexOf(id+"__")===0)delete HMap[k]});
+  roles=roles.filter(function(x){return x.id!==id});delete HMap[id];
   if(activeRoleId===id)activeRoleId=roles.length?roles[0].id:"";
   save("nx_roles",roles);save("nx_active_role",activeRoleId);save("nx_hmap",HMap);
   resetRoleForm();renderRoles();refreshHeader();renderChat();toast("已删除");
@@ -697,9 +647,7 @@ function fillCfgForm(){
   if($("#chatMode"))$("#chatMode").value=C.chatMode||"online";
   if($("#onlineModel"))$("#onlineModel").value=C.onlineModel||"";
   if($("#offlineModel"))$("#offlineModel").value=C.offlineModel||"";
-  if($("#offlineMinChars"))$("#offlineMinChars").value=C.offlineMinChars||320;
-  if($("#offlineMaxChars"))$("#offlineMaxChars").value=C.offlineMaxChars||900;
-  toggleMultiReplyUI();toggleOfflineCharsUI();applyAvatarShape();applyModeUI();
+  toggleMultiReplyUI();applyAvatarShape();
   var sel=$("#cModel");
   if(C.model){
     var found=false;for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===C.model)found=true}
@@ -720,13 +668,8 @@ function saveCfg(){
   if($("#chatMode"))C.chatMode=$("#chatMode").value||"online";
   if($("#onlineModel"))C.onlineModel=$("#onlineModel").value.trim();
   if($("#offlineModel"))C.offlineModel=$("#offlineModel").value.trim();
-  if($("#offlineMinChars"))C.offlineMinChars=parseInt($("#offlineMinChars").value,10)||320;
-  if($("#offlineMaxChars"))C.offlineMaxChars=parseInt($("#offlineMaxChars").value,10)||900;
-  if(C.offlineMinChars<120)C.offlineMinChars=120;
-  if(C.offlineMaxChars<120)C.offlineMaxChars=120;
-  if(C.offlineMinChars>C.offlineMaxChars){var x=C.offlineMinChars;C.offlineMinChars=C.offlineMaxChars;C.offlineMaxChars=x}
-  applyAvatarShape();toggleMultiReplyUI();toggleOfflineCharsUI();applyModeUI();
-  save("nx_cfg",C);setStatus();refreshHeader();toast("配置已保存");renderChat();
+  applyAvatarShape();toggleMultiReplyUI();
+  save("nx_cfg",C);setStatus();toast("配置已保存");renderChat();
 }
 
 function toggleLockEnabled(v){C.lockEnabled=!!v}
@@ -734,10 +677,10 @@ function saveLock(){var pin=$("#lockPin").value.trim();if(C.lockEnabled&&!/^\d{4
 function lockNow(){if(!C.lockEnabled){toast("先启用锁屏");return}if(!/^\d{4,8}$/.test(C.lockPin||"")){toast("先保存PIN");return}$("#unlockPin").value="";$("#lockMask").classList.add("show")}
 function unlock(){if($("#unlockPin").value.trim()===(C.lockPin||"")){$("#lockMask").classList.remove("show");$("#unlockPin").value="";toast("已解锁")}else toast("PIN错误")}
 
-function clearCurrentChat(){if(!activeRoleId){toast("先选角色");return}if(!confirm("清空当前聊天？"))return;HMap[historyKey()]=[];save("nx_hmap",HMap);renderChat();toast("已清空")}
+function clearCurrentChat(){if(!activeRoleId){toast("先选角色");return}if(!confirm("清空当前聊天？"))return;HMap[activeRoleId]=[];save("nx_hmap",HMap);renderChat();toast("已清空")}
 function clearAllLocal(){if(!confirm("清空全部数据？不可恢复。"))return;["nx_cfg","nx_roles","nx_active_role","nx_hmap","nx_sticker_groups","nx_worldbook"].forEach(function(k){localStorage.removeItem(k)});location.reload()}
 function exportAllData(){
-  var data={version:3,nx_cfg:C,nx_roles:roles,nx_active_role:activeRoleId,nx_hmap:HMap,nx_sticker_groups:stickerGroups,nx_worldbook:worldbook};
+  var data={version:2,nx_cfg:C,nx_roles:roles,nx_active_role:activeRoleId,nx_hmap:HMap,nx_sticker_groups:stickerGroups,nx_worldbook:worldbook};
   var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
   var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="noctis-backup-"+Date.now()+".json";a.click();URL.revokeObjectURL(a.href);toast("已导出");
 }
@@ -761,7 +704,7 @@ function openImagePick(){$("#imgPick").click()}
 function pickImage(e){
   var f=e.target.files?e.target.files[0]:null;e.target.value="";if(!f)return;
   if(!activeRoleId){toast("先选角色");return}if(f.size>12*1024*1024){toast("图片太大");return}
-  compressImageFile(f,1280,1280,0.82).then(function(d){currentHistory().push({role:"user",type:"image",content:d,time:now(),mode:C.chatMode});save("nx_hmap",HMap);renderChat()}).catch(function(){toast("发送失败")});
+  compressImageFile(f,1280,1280,0.82).then(function(d){currentHistory().push({role:"user",type:"image",content:d,time:now()});save("nx_hmap",HMap);renderChat()}).catch(function(){toast("发送失败")});
 }
 
 function buildEmojiPanel(){var html="";for(var i=0;i<EMOJIS.length;i++)html+='<button class="emoji" onclick="addEmoji(\''+EMOJIS[i]+'\')">'+EMOJIS[i]+"</button>";$("#emojiGrid").innerHTML=html}
@@ -783,7 +726,7 @@ function sendSticker(gid,i){
   var grp=null;for(var k=0;k<stickerGroups.length;k++){if(stickerGroups[k].id===gid)grp=stickerGroups[k]}if(!grp)return;
   var s=grp.stickers[i];if(!s)return;
   if(!activeRoleId){toast("先选角色");return}
-  currentHistory().push({role:"user",type:"sticker",content:s.src,stickerName:(s.name||("贴图"+(i+1))),time:now(),mode:C.chatMode});
+  currentHistory().push({role:"user",type:"sticker",content:s.src,stickerName:(s.name||("贴图"+(i+1))),time:now()});
   save("nx_hmap",HMap);renderChat();
 }
 function openStickerManager(){ensureDefaultGroup();renderGroupMgrList();updateImportGroupSel();$("#stickerMgr").classList.add("show")}
@@ -871,7 +814,7 @@ function queueMessage(){
   var inp=$("#inp"),text=inp.value.trim();if(!text)return;
   var role=currentRole();if(!role){toast("先选角色");return}
   inp.value="";inp.style.height="auto";
-  currentHistory().push({role:"user",type:"text",content:text,time:now(),mode:C.chatMode});
+  currentHistory().push({role:"user",type:"text",content:text,time:now()});
   save("nx_hmap",HMap);renderChat();toast("已暂存");
 }
 function normalizeAssistantText(out,mode){
@@ -879,11 +822,8 @@ function normalizeAssistantText(out,mode){
   if(mode==="online"){
     out=out.replace(/\[表情包:[^\]]+\]/g,"（表情）");
     out=out.replace(/\n{3,}/g,"\n\n");
-    return out||"继续。";
   }
-  out=out.replace(/\n{4,}/g,"\n\n");
-  if(!out || /^(\.{3,}|…{2,}|。{2,}|\.{2,}\s*)$/.test(out)) return "我在，别只丢半句话。把场景说完整。";
-  return out;
+  return out||"......";
 }
 function callChatOnce(messages,modelName){
   return fetch(apiUrl(C.url,"/chat/completions"),{
@@ -921,44 +861,36 @@ function requestReply(){
   for(var i=H.length-1;i>=0;i--){if(H[i].role==="user"){lastUser=H[i].content||"";break}}
   var wbP=buildWBSystemPrompt(lastUser),sys=[];
   if(role.prompt)sys.push({role:"system",content:role.prompt});
-
   if(mode==="online"){
-    sys.push({role:"system",content:"你在即时聊天模式。必须自然、贴人设、像真人发消息。可一次1~3条短消息，自行决定；若多条请用 <msg>内容</msg> 包裹每条。不要写舞台说明。"});
+    sys.push({role:"system",content:"你在即时聊天模式。回复自然、口语化、连贯，不要写舞台说明，不要强行长文。"});
   }else{
-    var rg=pickCharsRange();
-    sys.push({role:"system",content:"你在线下沉浸模式。只输出一条长文本，不分条，不解释规则。必须紧贴角色人设、关系与情绪递进；多写细节、动作、心理与对话。禁止只回省略号、禁止敷衍、禁止模板腔。目标字数"+rg.min+"~"+rg.max+"字。"});
+    sys.push({role:"system",content:"你在长文本模式。可更完整展开，但必须逻辑清晰、段落完整。"});
   }
   if(wbP)sys.push({role:"system",content:wbP});
 
-  var forceMulti=(mode==="online"&&!!C.multiReplyEnabled),count=forceMulti?pickReplyCount():1;
-  if(forceMulti){
+  var doMulti=!!C.multiReplyEnabled,count=doMulti?pickReplyCount():1;
+  if(doMulti){
     sys.push({role:"system",content:"你需要连续回复"+count+"条消息。请严格用 <msg>内容</msg> 包裹每一条，共"+count+"条；不要输出任何解释。"});
   }
 
   callChatOnce(sys.concat(M.slice(-60)),modelName).then(function(out){
     removeTyping();
     var arr=[];
-    if(mode==="offline"){
-      arr=[normalizeAssistantText(out,"offline")];
-    }else if(forceMulti){
+    if(doMulti){
       var reg=/<msg>([\s\S]*?)<\/msg>/g,m;
       while((m=reg.exec(out))!==null){var t=(m[1]||"").trim();if(t)arr.push(t)}
       if(!arr.length)arr=out.split(/\n+/).map(function(x){return x.trim()}).filter(Boolean).slice(0,count);
-      if(!arr.length)arr=["继续。"];
+      if(!arr.length)arr=["......"];
     }else{
-      var reg2=/<msg>([\s\S]*?)<\/msg>/g,m2;
-      while((m2=reg2.exec(out))!==null){var t2=(m2[1]||"").trim();if(t2)arr.push(t2)}
-      if(!arr.length)arr=[normalizeAssistantText(out,"online")];
-      if(arr.length>3)arr=arr.slice(0,3);
+      arr=[normalizeAssistantText(out,mode)];
     }
-
     for(var k=0;k<arr.length;k++){
-      H.push({role:"assistant",type:"text",content:normalizeAssistantText(arr[k],mode),time:now(),mode:mode});
+      H.push({role:"assistant",type:"text",content:normalizeAssistantText(arr[k],mode),time:now()});
     }
     save("nx_hmap",HMap);renderChat();
   }).catch(function(e){
     removeTyping();
-    H.push({role:"assistant",type:"text",content:"[请求失败] "+String(e.message||e).slice(0,200),time:now(),mode:mode});
+    H.push({role:"assistant",type:"text",content:"[请求失败] "+String(e.message||e).slice(0,200),time:now()});
     save("nx_hmap",HMap);renderChat();
   }).finally(function(){streaming=false;$("#replyBtn").disabled=false;setStatus()});
 }
@@ -976,22 +908,12 @@ function init(){
   if(typeof C.chatMode!=="string")C.chatMode="online";
   if(typeof C.onlineModel!=="string")C.onlineModel="";
   if(typeof C.offlineModel!=="string")C.offlineModel="";
-  if(typeof C.offlineMinChars!=="number")C.offlineMinChars=320;
-  if(typeof C.offlineMaxChars!=="number")C.offlineMaxChars=900;
   if(typeof HMap!=="object"||!HMap)HMap={};
-
   ensureDefaultGroup();
-  if(!roles.length){
-    var id=uid();
-    roles=[{id:id,name:"默认助手",avatar:"AI",avatarImg:"",greeting:"先去角色页设置你的人设。",prompt:""}];
-    activeRoleId=id;save("nx_roles",roles);save("nx_active_role",activeRoleId);
-  }
+  if(!roles.length){var id=uid();roles=[{id:id,name:"默认助手",avatar:"AI",avatarImg:"",greeting:"先去角色页设置你的人设。",prompt:""}];activeRoleId=id;save("nx_roles",roles);save("nx_active_role",activeRoleId)}
   if(!activeRoleId&&roles.length)activeRoleId=roles[0].id;
-
-  injectOfflineStyle();
   injectModeControls();
-
-  buildEmojiPanel();renderStickerPanel();renderWB();fillCfgForm();renderRoles();refreshHeader();setStatus();renderChat();applyAvatarShape();applyModeUI();
+  buildEmojiPanel();renderStickerPanel();renderWB();fillCfgForm();renderRoles();refreshHeader();setStatus();renderChat();applyAvatarShape();
   if(C.lockEnabled&&/^\d{4,8}$/.test(C.lockPin||""))$("#lockMask").classList.add("show");
 }
 init();
