@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -578,5 +577,168 @@ function init(){
 }
 init();
 </script>
-</body>
+<script>
+(function(){
+  /* ===== 样式补丁 ===== */
+  const st = document.createElement('style');
+  st.textContent = `
+  .msg.stickerBubble{background:transparent!important;border:none!important;box-shadow:none!important;padding:0!important}
+  .msg.stickerBubble .tm{margin-top:2px;padding-left:2px}
+  .chatImg.stickerMsgImg{width:88px!important;max-width:88px!important;max-height:88px!important;object-fit:contain}
+  .moneyCard{min-width:170px;border-radius:12px;padding:10px 12px;background:linear-gradient(135deg,#f6d6a7,#e8b97d);color:#2c1a06}
+  .moneyCard .t{font-size:12px;opacity:.82}
+  .moneyCard .a{font-size:20px;font-weight:800;line-height:1.2}
+  .moneyCard .n{font-size:12px;opacity:.86;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .plusMask{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;z-index:88}
+  .plusPanel{position:fixed;left:12px;right:12px;bottom:84px;background:#17223b;border:1px solid #2a3655;border-radius:14px;padding:10px;display:none;z-index:89}
+  .plusGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .pbtn{height:38px;border:1px solid #2a3655;border-radius:10px;background:#1f2b4a;color:#cbd5ee;font-size:12px}
+  `;
+  document.head.appendChild(st);
+
+  /* ===== 工具栏改成：😊 + ===== */
+  function rebuildTools(){
+    const tools = document.querySelector('.tools');
+    if(!tools) return;
+    tools.innerHTML = `
+      <button class="toolBtn" onclick="toggleDock('emoji')">😊</button>
+      <button class="toolBtn" onclick="openPlusMenu()">＋</button>
+      <input id="imgPick" type="file" accept="image/*" style="display:none" onchange="pickImage(event)" />
+      <input id="stickerPick" type="file" accept="image/*" multiple style="display:none" onchange="pickSticker(event)" />
+    `;
+  }
+
+  /* ===== + 面板 ===== */
+  const mask = document.createElement('div');
+  mask.className = 'plusMask';
+  mask.id = 'plusMask';
+  mask.onclick = () => closePlusMenu();
+
+  const panel = document.createElement('div');
+  panel.className = 'plusPanel';
+  panel.id = 'plusPanel';
+  panel.innerHTML = `
+    <div class="plusGrid">
+      <button class="pbtn" onclick="openImagePick();closePlusMenu()">相册</button>
+      <button class="pbtn" onclick="openStickerPicker();closePlusMenu()">入库</button>
+      <button class="pbtn" onclick="toggleDock('sticker');closePlusMenu()">贴纸</button>
+      <button class="pbtn" onclick="openStickerImportModal();closePlusMenu()">导入</button>
+
+      <button class="pbtn" onclick="sendMoneyCard('user','红包');closePlusMenu()">我发红包</button>
+      <button class="pbtn" onclick="sendMoneyCard('user','转账');closePlusMenu()">我转账</button>
+      <button class="pbtn" onclick="sendMoneyCard('assistant','红包');closePlusMenu()">TA红包</button>
+      <button class="pbtn" onclick="sendMoneyCard('assistant','转账');closePlusMenu()">TA转账</button>
+
+      <button class="pbtn" onclick="sendAssistantStickerRandom();closePlusMenu()">TA贴纸</button>
+    </div>
+  `;
+  document.body.appendChild(mask);
+  document.body.appendChild(panel);
+
+  window.openPlusMenu = function(){
+    document.getElementById('plusMask').style.display = 'block';
+    document.getElementById('plusPanel').style.display = 'block';
+  };
+  window.closePlusMenu = function(){
+    document.getElementById('plusMask').style.display = 'none';
+    document.getElementById('plusPanel').style.display = 'none';
+  };
+
+  /* ===== 红包/转账消息（双方可发） ===== */
+  window.sendMoneyCard = function(side, kind){
+    if(!window.activeRoleId){ toast('先创建并选择角色'); return; }
+    const amount = prompt(`${kind}金额`, '52.00');
+    if(amount===null) return;
+    const note = prompt('备注', kind==='红包' ? '恭喜发财' : '已转你');
+    const H = currentHistory();
+    H.push({
+      role: side==='assistant' ? 'assistant' : 'user',
+      type: 'text',
+      content: `[${kind}]`,
+      time: now(),
+      meta: {
+        moneyKind: kind,
+        moneyAmount: String(amount||'0').trim(),
+        moneyNote: String(note||'').trim()
+      }
+    });
+    save('nx_hmap', HMap);
+    renderChat();
+    renderInbox();
+  };
+
+  /* ===== 角色端发送贴纸 ===== */
+  window.sendAssistantStickerRandom = function(){
+    if(!window.activeRoleId){ toast('先创建并选择角色'); return; }
+    if(!Array.isArray(window.stickers) || !window.stickers.length){ toast('先入库贴纸'); return; }
+    const it = window.stickers[Math.floor(Math.random()*window.stickers.length)];
+    if(!it || !it.src) return;
+    const H = currentHistory();
+    H.push({
+      role:'assistant',
+      type:'image',
+      content:it.src,
+      time:now(),
+      meta:{ stickerName: it.name || '表情' }
+    });
+    save('nx_hmap', HMap);
+    renderChat();
+    renderInbox();
+  };
+
+  /* ===== 覆盖渲染：贴纸无气泡 + 金额卡片 ===== */
+  const oldMarkdown = window.markdownToHtml;
+  window.renderMsgContent = function(m){
+    if(m.type === 'image'){
+      const isSticker = !!(m.meta && m.meta.stickerName);
+      return `<img class="chatImg ${isSticker?'stickerMsgImg':''}" src="${m.content}" alt="img" />`;
+    }
+    if(m.meta && m.meta.moneyKind){
+      return `<div class="moneyCard">
+        <div class="t">${esc(String(m.meta.moneyKind||''))}</div>
+        <div class="a">¥ ${esc(String(m.meta.moneyAmount||'0'))}</div>
+        <div class="n">${esc(String(m.meta.moneyNote||''))}</div>
+      </div>`;
+    }
+    return oldMarkdown(m.content || '');
+  };
+
+  window.renderChat = function(){
+    const r = currentRole();
+    const H = currentHistory();
+    const chat = document.querySelector('#chat');
+
+    if(!r){
+      chat.innerHTML = `<div class="welcome"><b>欢迎使用 Noctis</b><br>先去「角色」页创建角色，再去「设置」页填 API。</div>`;
+      return;
+    }
+    if(!H.length){
+      chat.innerHTML = `<div class="welcome"><b>${esc(r.name)}</b> 已就位。<br>${r.greeting?esc(r.greeting):'你可以开始聊天了。'}<br><br>支持：文本 / 图片 / 表情包。</div>`;
+      return;
+    }
+
+    chat.innerHTML = H.map(m=>{
+      const isMe = m.role==='user';
+      const avImg = isMe ? (C.selfAvatarImg||'') : (r.avatarImg||'');
+      const avTxt = isMe ? '我' : (r.avatar||'AI');
+      const isSticker = (m.type==='image' && m.meta && m.meta.stickerName);
+
+      return `
+      <div class="line ${isMe?'me':''}">
+        ${isMe ? '' : `<div class="msgAv">${avatarHTML(avImg,avTxt)}</div>`}
+        <div class="msg ${isMe?'meBubble':'ai'} ${isSticker?'stickerBubble':''}">
+          ${renderMsgContent(m)}
+          <div class="tm">${m.time||''}</div>
+        </div>
+        ${isMe ? `<div class="msgAv">${avatarHTML(avImg,avTxt)}</div>` : ''}
+      </div>`;
+    }).join('');
+
+    chat.scrollTop = chat.scrollHeight;
+  };
+
+  rebuildTools();
+  renderChat();
+})();
+</script></body>
 </html>
