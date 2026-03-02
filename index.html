@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -88,12 +89,35 @@
       max-width:78%;padding:10px 12px;border-radius:14px;font-size:14px;line-height:1.6;word-break:break-word;
       box-shadow:0 6px 18px rgba(0,0,0,.18); animation:pop .18s ease-out;
     }
+    .msg.imgMsg{padding:6px 6px 4px}
+    .msg.stickerMsg{
+      padding:4px 4px 2px !important;
+      background:transparent !important;
+      border:none !important;
+      box-shadow:none !important;
+    }
+    .msg.stickerMsg .tm{margin-top:2px;text-align:right;opacity:.55}
     @keyframes pop{from{opacity:.2;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}
     .ai{background:var(--bg3);border:1px solid var(--bd);border-bottom-left-radius:4px}
     .meBubble{background:linear-gradient(135deg,var(--ac1),var(--ac2));color:#111;border-bottom-right-radius:4px}
     .tm{font-size:10px;opacity:.6;margin-top:4px}
-    .chatImg{max-width:min(56vw,220px);max-height:220px;border-radius:12px;display:block;border:1px solid rgba(255,255,255,.15)}
-    .stickerMsgImg{max-width:140px;max-height:140px}
+    .chatImg{
+      max-width:min(48vw,180px);
+      max-height:180px;
+      border-radius:12px;
+      display:block;
+      border:1px solid rgba(255,255,255,.15);
+      object-fit:cover;
+    }
+    .msg.stickerMsg .chatImg{
+      width:108px;
+      max-width:108px;
+      max-height:108px;
+      border:none;
+      border-radius:10px;
+      object-fit:contain;
+      background:transparent;
+    }
 
     .typ{align-self:flex-start;background:var(--bg3);border:1px solid var(--bd);border-radius:14px;padding:10px 12px}
     .typ i{display:inline-block;width:5px;height:5px;margin-right:4px;background:var(--tx2);border-radius:50%;animation:b 1.1s infinite}
@@ -128,9 +152,13 @@
     #sendBtn:disabled{opacity:.35}
 
     .panelDock{
-      position:fixed;left:0;right:0;bottom:58px;height:42vh;max-height:360px;
+      position:fixed;left:0;right:0;
+      bottom:calc(58px + env(safe-area-inset-bottom));
+      height:38vh;max-height:320px;
       background:rgba(18,26,44,.98);border-top:1px solid var(--bd);
+      border-top-left-radius:14px;border-top-right-radius:14px;
       transform:translateY(105%);transition:.22s ease;z-index:50;display:flex;flex-direction:column;
+      box-shadow:0 -10px 30px rgba(0,0,0,.35);
     }
     .panelDock.show{transform:translateY(0)}
     .panelHd{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid var(--bd)}
@@ -390,6 +418,11 @@ function uid(){return 'r_'+Math.random().toString(36).slice(2,10)}
 function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
 function autoGrow(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px'}
 function hotKey(e){if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();send()}}
+function makeHeaders(key='',json=true){
+  const h={}; if(json) h['Content-Type']='application/json';
+  const k=String(key||'').trim(); if(k) h['Authorization']='Bearer '+k;
+  return h;
+}
 
 function fileToDataURL(file){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(file)})}
 async function compressImageFile(file,maxW=1280,maxH=1280,quality=0.82){
@@ -403,7 +436,7 @@ async function compressImageFile(file,maxW=1280,maxH=1280,quality=0.82){
 function currentRole(){return roles.find(r=>r.id===activeRoleId)||null}
 function currentHistory(){if(!activeRoleId) return [];if(!Array.isArray(HMap[activeRoleId])) HMap[activeRoleId]=[];return HMap[activeRoleId]}
 function avatarHTML(img,text){if(img) return `<img src="${img}" alt="">`;return esc((text||'AI').slice(0,2))}
-function setStatus(){const s=$('#status');if(C.url&&C.key&&C.model){s.textContent='在线';s.className='st'}else{s.textContent='未配置';s.className='st off'}}
+function setStatus(){const s=$('#status');if(C.url&&C.model){s.textContent='在线';s.className='st'}else{s.textContent='未配置';s.className='st off'}}
 function refreshHeader(){const r=currentRole();$('#topRole').textContent='当前角色：'+(r?r.name:'未选择');$('#topAv').innerHTML=avatarHTML(r?.avatarImg,r?.avatar||'N')}
 
 function switchTab(name,btn){
@@ -426,13 +459,20 @@ function goBack(){
 function toggleDock(mode){
   if(currentPage!=='chat') return;
   const dock=$('#panelDock'), ep=$('#emojiPanel'), sp=$('#stickerPanel'), title=$('#panelTitle');
+  const chatEl=$('#chat');
   if(dock.classList.contains('show')&&dockMode===mode){closeDock();return;}
   dock.classList.add('show'); dockMode=mode;
   ep.classList.remove('show'); sp.classList.remove('show');
   if(mode==='emoji'){title.textContent='表情';ep.classList.add('show')}
   else{title.textContent='贴纸';sp.classList.add('show')}
+  chatEl.style.paddingBottom='calc(14px + 38vh)';
+  chatEl.scrollTop=chatEl.scrollHeight;
 }
-function closeDock(){ $('#panelDock').classList.remove('show'); dockMode=''; }
+function closeDock(){
+  $('#panelDock').classList.remove('show');
+  dockMode='';
+  $('#chat').style.paddingBottom='14px';
+}
 
 function markdownToHtml(src=''){
   let s=String(src??''); const blocks=[];
@@ -446,8 +486,8 @@ function markdownToHtml(src=''){
 }
 function renderMsgContent(m){
   if(m.type==='image'){
-    const cls=m?.meta?.stickerName?'chatImg stickerMsgImg':'chatImg';
-    return `<img class="${cls}" src="${m.content}" alt="img" />`;
+    const isSticker=!!m?.meta?.stickerName;
+    return `<img class="chatImg ${isSticker?'stickerMsgImg':''}" src="${m.content}" alt="img" />`;
   }
   return markdownToHtml(m.content||'');
 }
@@ -457,9 +497,12 @@ function renderChat(){
   if(!H.length){chat.innerHTML=`<div class="welcome"><b>${esc(r.name)}</b> 已就位。<br>${r.greeting?esc(r.greeting):'你可以开始聊天了。'}<br><br>支持：文本 / 图片 / 表情包。</div>`;return;}
   chat.innerHTML=H.map(m=>{
     const isMe=m.role==='user',avImg=isMe?(C.selfAvatarImg||''):(r.avatarImg||''),avTxt=isMe?'我':(r.avatar||'AI');
+    const isImage = m.type==='image';
+    const isSticker = !!m?.meta?.stickerName;
+    const msgClass = ['msg',isMe?'meBubble':'ai',isImage?'imgMsg':'',isSticker?'stickerMsg':''].filter(Boolean).join(' ');
     return `<div class="line ${isMe?'me':''}">
       ${isMe?'':`<div class="msgAv">${avatarHTML(avImg,avTxt)}</div>`}
-      <div class="msg ${isMe?'meBubble':'ai'}">${renderMsgContent(m)}<div class="tm">${m.time||''}</div></div>
+      <div class="${msgClass}">${renderMsgContent(m)}<div class="tm">${m.time||''}</div></div>
       ${isMe?`<div class="msgAv">${avatarHTML(avImg,avTxt)}</div>`:''}
     </div>`;
   }).join('');
@@ -597,34 +640,56 @@ async function fetchModels(){
   const url=normBaseUrl($('#cUrl').value),key=$('#cKey').value.trim();if(!url){toast('先填反代地址');return;}
   const btn=$('#fetchBtn');btn.disabled=true;btn.textContent='拉取中…';
   try{
-    const headers={'Content-Type':'application/json'};if(key)headers.Authorization='Bearer '+key;
-    const r=await fetch(apiUrl(url,'/models'),{headers});if(!r.ok) throw new Error(`${r.status} ${await r.text()}`);
-    const j=await r.json();let list=[];if(Array.isArray(j?.data)) list=j.data.map(x=>x.id).filter(Boolean); else if(Array.isArray(j)) list=j.map(x=>typeof x==='string'?x:x?.id).filter(Boolean);
+    const r=await fetch(apiUrl(url,'/models'),{headers:makeHeaders(key,false)});
+    if(!r.ok) throw new Error(`${r.status} ${await r.text()}`);
+    const j=await r.json();let list=[];
+    if(Array.isArray(j?.data)) list=j.data.map(x=>x.id).filter(Boolean);
+    else if(Array.isArray(j)) list=j.map(x=>typeof x==='string'?x:x?.id).filter(Boolean);
     list=[...new Set(list)].sort();if(!list.length) throw new Error('没拿到模型');
-    const sel=$('#cModel');sel.innerHTML='';list.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o)});if(C.model&&list.includes(C.model)) sel.value=C.model;toast(`模型 ${list.length} 个`);
+    const sel=$('#cModel');sel.innerHTML='';
+    list.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o)});
+    if(C.model&&list.includes(C.model)) sel.value=C.model;
+    toast(`模型 ${list.length} 个`);
   }catch(e){toast('拉取失败: '+String(e.message||e).slice(0,120))}
   finally{btn.disabled=false;btn.textContent='拉取模型'}
 }
 async function testOnce(){
-  const tUrl=normBaseUrl($('#cUrl').value),tKey=$('#cKey').value.trim(),tModel=$('#cModel').value;if(!tUrl||!tKey||!tModel){toast('URL/Key/模型没填全');return;}
-  try{const headers={'Content-Type':'application/json','Authorization':'Bearer '+tKey};const body={model:tModel,messages:[{role:'user',content:'回1'}],temperature:0,max_tokens:5,stream:false};const r=await fetch(apiUrl(tUrl,'/chat/completions'),{method:'POST',headers,body:JSON.stringify(body)});if(!r.ok) throw new Error(`${r.status} ${await r.text()}`);toast('连接正常')}
-  catch(e){toast('测试失败: '+String(e.message||e).slice(0,120))}
+  const tUrl=normBaseUrl($('#cUrl').value),tKey=$('#cKey').value.trim(),tModel=$('#cModel').value;
+  if(!tUrl||!tModel){toast('URL/模型没填全');return;}
+  try{
+    const body={model:tModel,messages:[{role:'user',content:'回1'}],temperature:0.2,max_tokens:16,stream:false};
+    const r=await fetch(apiUrl(tUrl,'/chat/completions'),{
+      method:'POST',
+      headers:makeHeaders(tKey,true),
+      body:JSON.stringify(body)
+    });
+    if(!r.ok) throw new Error(`${r.status} ${await r.text()}`);
+    const j=await r.json();
+    const out=j?.choices?.[0]?.message?.content ?? '';
+    if(!String(out).trim()) throw new Error('返回为空或模型不支持chat');
+    toast('连接正常');
+  }catch(e){toast('测试失败: '+String(e.message||e).slice(0,160))}
 }
 async function send(){
   if($('#lockMask').classList.contains('show')||$('#stickerImportMask').classList.contains('show')) return;
   const inp=$('#inp'),text=inp.value.trim(); if(!text||streaming) return;
-  const role=currentRole(); if(!role){toast('先创建并选择角色');return;} if(!C.url||!C.key||!C.model){toast('先配置URL/Key/模型');return;}
+  const role=currentRole(); if(!role){toast('先创建并选择角色');return;} if(!C.url||!C.model){toast('先配置URL/模型');return;}
   inp.value='';inp.style.height='auto';const H=currentHistory();H.push({role:'user',type:'text',content:text,time:now()});save('nx_hmap',HMap);renderChat();renderInbox();
   streaming=true;$('#sendBtn').disabled=true;$('#status').textContent='正在输入…';addTyping();
-  const headers={'Content-Type':'application/json','Authorization':'Bearer '+C.key};
+
   const M=H.map(x=>({role:x.role==='assistant'?'assistant':'user',content:x.type==='image'?'[图片]':(x.content||'')}));
   const wbPrompt=buildWBSystemPrompt(text),systemMsgs=[]; if(role.prompt) systemMsgs.push({role:'system',content:role.prompt}); if(wbPrompt) systemMsgs.push({role:'system',content:wbPrompt});
   const payload={model:C.model,messages:[...systemMsgs,...M.slice(-40)],temperature:C.temp,max_tokens:C.max};
+
   try{
-    let r=await fetch(apiUrl(C.url,'/chat/completions'),{method:'POST',headers,body:JSON.stringify({...payload,stream:true})});
+    let r=await fetch(apiUrl(C.url,'/chat/completions'),{method:'POST',headers:makeHeaders(C.key,true),body:JSON.stringify({...payload,stream:true})});
     if(!r.ok){
-      r=await fetch(apiUrl(C.url,'/chat/completions'),{method:'POST',headers,body:JSON.stringify({...payload,stream:false})});
-      if(!r.ok) throw new Error(`${r.status}: ${(await r.text()).slice(0,200)}`);
+      const err1=await r.text().catch(()=> '');
+      r=await fetch(apiUrl(C.url,'/chat/completions'),{method:'POST',headers:makeHeaders(C.key,true),body:JSON.stringify({...payload,stream:false})});
+      if(!r.ok){
+        const err2=await r.text().catch(()=> '');
+        throw new Error(`${r.status}: ${(err2||err1||'请求失败').slice(0,220)}`);
+      }
       const out=(await r.json())?.choices?.[0]?.message?.content?.trim()||'……';
       H.push({role:'assistant',type:'text',content:out,time:now()});save('nx_hmap',HMap);removeTyping();renderChat();renderInbox();
     }else{
