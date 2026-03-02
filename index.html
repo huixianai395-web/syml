@@ -151,15 +151,25 @@
     }
     #sendBtn:disabled{opacity:.35}
 
-    .panelDock{
-      position:fixed;left:0;right:0;
-      bottom:calc(58px + env(safe-area-inset-bottom));
-      height:38vh;max-height:320px;
-      background:rgba(18,26,44,.98);border-top:1px solid var(--bd);
-      border-top-left-radius:14px;border-top-right-radius:14px;
-      transform:translateY(105%);transition:.22s ease;z-index:50;display:flex;flex-direction:column;
-      box-shadow:0 -10px 30px rgba(0,0,0,.35);
-    }
+  .panelDock{
+  position:fixed;
+  left:0;right:0;
+  bottom:calc(58px + env(safe-area-inset-bottom));
+  height:38vh;max-height:320px;
+  background:rgba(18,26,44,.98);
+  border-top:1px solid var(--bd);
+  border-top-left-radius:14px;border-top-right-radius:14px;
+  transform:translateY(calc(100% + 20px)); /* 彻底藏到屏幕外 */
+  transition:.22s ease;
+  z-index:50;
+  display:flex;flex-direction:column;
+  box-shadow:0 -10px 30px rgba(0,0,0,.35);
+  pointer-events:none; /* 隐藏时不挡点击 */
+}
+.panelDock.show{
+  transform:translateY(0);
+  pointer-events:auto;
+}
     .panelDock.show{transform:translateY(0)}
     .panelHd{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid var(--bd)}
     .panelT{font-size:13px;font-weight:700}
@@ -374,8 +384,8 @@
   </div>
 
   <div class="tabs">
-    <button class="tab active" data-page="inbox" onclick="switchTab('inbox',this)">会话</button>
-    <button class="tab" data-page="chat" onclick="switchTab('chat',this)">聊天</button>
+    <button class="tab active" data-page="inbox" onclick="('inbox',this)">会话</button>
+    <button class="tab" data-page="chat" onclick="('chat',this)">聊天</button>
     <button class="tab" data-page="roles" onclick="switchTab('roles',this)">角色</button>
     <button class="tab" data-page="worldbook" onclick="switchTab('worldbook',this)">世界书</button>
     <button class="tab" data-page="settings" onclick="switchTab('settings',this)">设置</button>
@@ -719,6 +729,104 @@ function init(){
   if(C.lockEnabled&&/^\d{4,8}$/.test(C.lockPin||'')) $('#lockMask').classList.add('show');
 }
 init();
+<script>
+/* ===== 一键补丁：修底部挡住 + API测试 ===== */
+(function () {
+  // 1) 强制修复 panelDock 隐藏仍挡住
+  const st = document.createElement('style');
+  st.textContent = `
+  .panelDock{
+    transform:translateY(calc(100% + 24px)) !important;
+    pointer-events:none !important;
+    bottom:calc(58px + env(safe-area-inset-bottom)) !important;
+    height:38vh !important;
+    max-height:320px !important;
+  }
+  .panelDock.show{
+    transform:translateY(0) !important;
+    pointer-events:auto !important;
+  }`;
+  document.head.appendChild(st);
+
+  // 2) 覆盖函数（不用删原函数）
+  window.closeDock = function(){
+    const d=document.querySelector('#panelDock');
+    const c=document.querySelector('#chat');
+    if(d) d.classList.remove('show');
+    window.dockMode='';
+    if(c) c.style.paddingBottom='14px';
+  };
+
+  window.switchTab = function(name,btn){
+    window.closeDock();
+    window.currentPage=name;
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    const page=document.querySelector('#page-'+name);
+    if(page) page.classList.add('active');
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    if(name==='inbox' && typeof window.renderInbox==='function') window.renderInbox();
+  };
+
+  window.toggleDock = function(mode){
+    if(window.currentPage!=='chat') return;
+    const dock=document.querySelector('#panelDock');
+    const ep=document.querySelector('#emojiPanel');
+    const sp=document.querySelector('#stickerPanel');
+    const title=document.querySelector('#panelTitle');
+    const chatEl=document.querySelector('#chat');
+    if(!dock||!ep||!sp||!title||!chatEl) return;
+
+    if(dock.classList.contains('show') && window.dockMode===mode){ window.closeDock(); return; }
+
+    dock.classList.add('show');
+    window.dockMode=mode;
+    ep.classList.remove('show'); sp.classList.remove('show');
+    if(mode==='emoji'){ title.textContent='表情'; ep.classList.add('show'); }
+    else { title.textContent='贴纸'; sp.classList.add('show'); }
+
+    chatEl.style.paddingBottom='calc(14px + 38vh)';
+    chatEl.scrollTop=chatEl.scrollHeight;
+  };
+
+  // 页面初始化后再收一次，防残留
+  setTimeout(()=>{ try{ window.closeDock(); }catch(e){} }, 50);
+
+  // 3) API测试：自动尝试多种鉴权头
+  function _k(v){ return String(v||'').replace(/\s+/g,'').trim(); }
+  window.testOnce = async function(){
+    const tUrl=(window.normBaseUrl?window.normBaseUrl(document.querySelector('#cUrl')?.value||''):'');
+    const tKey=_k(document.querySelector('#cKey')?.value||'');
+    const tModel=document.querySelector('#cModel')?.value||'';
+    if(!tUrl||!tModel){ window.toast&&toast('URL/模型没填全'); return; }
+
+    const body={model:tModel,messages:[{role:'user',content:'回1'}],temperature:0.2,max_tokens:16,stream:false};
+    const authModes=[
+      {'Authorization':'Bearer '+tKey},
+      {'x-api-key':tKey},
+      {'api-key':tKey},
+      {'Authorization':tKey}
+    ];
+    let last='';
+
+    for(const m of authModes){
+      try{
+        const headers={'Content-Type':'application/json',...m};
+        if(!tKey){ delete headers.Authorization; delete headers['x-api-key']; delete headers['api-key']; }
+        const r=await fetch((window.apiUrl?apiUrl(tUrl,'/chat/completions'):tUrl+'/v1/chat/completions'),{
+          method:'POST',headers,body:JSON.stringify(body)
+        });
+        if(!r.ok){ last=`${r.status} ${await r.text()}`; continue; }
+        const j=await r.json();
+        const out=j?.choices?.[0]?.message?.content ?? '';
+        if(String(out).trim()){ window.toast&&toast('连接正常'); return; }
+        last='empty output';
+      }catch(e){ last=String(e.message||e); }
+    }
+    window.toast&&toast('测试失败: '+String(last).slice(0,160));
+  };
+})();
+</script>
 </script>
 </body>
 </html>
