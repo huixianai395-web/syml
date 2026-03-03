@@ -1777,6 +1777,174 @@ window.requestReply = function(){
       setStatus();
     }
   };
+})();/* ===== Offline full-reply patch v5 ===== */
+(function () {
+  function tlen(s){ return String(s||"").replace(/\s+/g,"").length; }
+  function getRange(){
+    var minEl = document.getElementById("offlineMinChars");
+    var maxEl = document.getElementById("offlineMaxChars");
+    var min = parseInt((minEl && minEl.value) || C.offlineMinChars || 800, 10);
+    var max = parseInt((maxEl && maxEl.value) || C.offlineMaxChars || 1900, 10);
+    if(!min || min < 200) min = 800;
+    if(!max || max < min) max = Math.max(min + 300, 1900);
+    return {min:min, max:max};
+  }
+
+  async function callChatRaw(messages, modelName){
+    var body = {
+      model: modelName || C.model,
+      messages: messages,
+      temperature: C.temp,
+      max_tokens: C.max,
+      max_completion_tokens: C.max, // 兼容部分接口
+      stream: false
+    };
+    var r = await fetch(apiUrl(C.url, "/chat/completions"), {
+      method: "POST",
+      headers: {"Content-Type":"application/json","Authorization":"Bearer "+C.key},
+      body: JSON.stringify(body)
+    });
+    if(!r.ok){
+      var tx = await r.text();
+      throw new Error(r.status + ": " + tx.slice(0,220));
+    }
+    var j = await r.json();
+    var ch = j && j.choices && j.choices[0] ? j.choices[0] : {};
+    var out = ch && ch.message ? (ch.message.content || "") : "";
+    var reason = ch.finish_reason || "";
+    return { text: String(out).trim(), reason: reason };
+  }
+
+  async function genOfflineOnce(H, role){
+    var rg = getRange();
+    var min = rg.min, max = rg.max;
+
+    var M = H.map(function(x){
+      var c = x.content || "";
+      if(x.type==="image") c = "（用户发送了一张图片）";
+      if(x.type==="sticker") c = "（用户发送了一个表情包："+(x.stickerName||"未命名")+"）";
+      return { role: x.role==="assistant" ? "assistant" : "user", content: c };
+    });
+
+    var lastUser = "";
+    for(var i=H.length-1;i>=0;i--){
+      if(H[i].role==="user"){ lastUser = H[i].content || ""; break; }
+    }
+
+    var sys = [];
+    if(role && role.prompt) sys.push({role:"system",content:role.prompt});
+    var wbP = buildWBSystemPrompt(lastUser);
+    if(wbP) sys.push({role:"system",content:wbP});
+
+    sys.push({
+      role:"system",
+      content:
+`你现在只做沉浸式角色扮演叙事。硬性要求：
+1）仅输出剧情内容，不要解释规则，不要提“模式/系统/AI”。
+2）先给状态栏，再写正文。格式：
+『时间』：
+『地点』：
+『人物』：
+『关系』：
+『状态』：
+—— 正文 ——
+3）状态栏必须具体，不得写“此刻/当前场景/你我/按既定人设”这类空词。
+4）正文要有动作、心理、环境、对话推进，连续，不总结。
+5）本次总长度目标：${min}-${max}字。`
+    });
+
+    var convo = M.slice(-60);
+    var full = "";
+    var rounds = 0;
+
+    while(rounds < 6){
+      rounds++;
+      var res = await callChatRaw(sys.concat(convo), C.model);
+      var part = normalizeAssistantText(res.text, "offline")
+        .replace(/^(.*?(线下模式|线上模式|系统提示|提示词|作为AI).*)$/gmi, "")
+        .trim();
+
+      if(!part) break;
+
+      if(!full){
+        full = part;
+      }else{
+        // 后续轮只接正文，避免重复状态栏
+        var body = part.replace(/^[\s\S]*?——\s*正文\s*——/, "").trim();
+        full += "\n\n" + (body || part);
+      }
+
+      if(tlen(full) >= min) break;
+
+      // 被截断 or 字数不够 => 自动续写
+      convo.push({role:"assistant", content: part});
+      convo.push({
+        role:"user",
+        content:"继续上一句往后写，直接续正文，不要重复，不要总结，补足到目标字数。"
+      });
+    }
+
+    if(!full){
+      full =
+`『时间』：夜间
+『地点』：当前场景
+『人物』：你、${(role&&role.name)||"我"}
+『关系』：按当前人设关系
+『状态』：气氛紧绷，话锋未落
+
+—— 正文 ——
+我在，继续。`;
+    }
+
+    return full;
+  }
+
+  // 只接管线下；线上保持你当前可用逻辑
+  var oldRequestReply = window.requestReply;
+  window.requestReply = async function(){
+    if((C.chatMode||"online") !== "offline"){
+      return oldRequestReply && oldRequestReply();
+    }
+
+    if($("#lockMask").classList.contains("show") || streaming) return;
+    var role = currentRole();
+    if(!role){ toast("先选角色"); return; }
+    if(!C.url || !C.key || !C.model){ toast("先配置API"); return; }
+
+    var inp = $("#inp"), text = (inp && inp.value ? inp.value : "").trim();
+    if(text){
+      currentHistory().push({role:"user",type:"text",content:text,time:now(),mode:"offline"});
+      save("nx_hmap", HMap);
+      inp.value = "";
+      inp.style.height = "auto";
+      renderChat();
+    }
+
+    var H = currentHistory();
+    if(!H.length){ toast("先发点内容"); return; }
+
+    streaming = true;
+    $("#replyBtn").disabled = true;
+    $("#status").textContent = "输入中...";
+    addTyping();
+
+    try{
+      var full = await genOfflineOnce(H, role);
+      removeTyping();
+      H.push({role:"assistant",type:"text",content:full,time:now(),mode:"offline"});
+      save("nx_hmap", HMap);
+      renderChat();
+    }catch(e){
+      removeTyping();
+      H.push({role:"assistant",type:"text",content:"[请求失败] "+String(e.message||e).slice(0,220),time:now(),mode:"offline"});
+      save("nx_hmap", HMap);
+      renderChat();
+    }finally{
+      streaming = false;
+      $("#replyBtn").disabled = false;
+      setStatus();
+    }
+  };
 })();</script>
 </body>
 </html>
