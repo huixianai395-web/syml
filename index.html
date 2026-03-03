@@ -2256,6 +2256,164 @@ window.requestReply = function(){
       setStatus();
     }
   };
+})();/* ===== v7: 仅修“线上自由模式”分泡 ===== */
+(function () {
+  var _oldRequestReply = window.requestReply;
+
+  function suggestFreeCount(userText){
+    var s = String(userText || "");
+    var q = (s.match(/[?？]/g) || []).length;
+    var n = s.replace(/\s+/g,"").length;
+    var lines = s.split(/\n+/).filter(Boolean).length;
+    if (q >= 2 || lines >= 2 || n > 40) return 3;
+    if (q >= 1 || n > 12) return 2;
+    return 1;
+  }
+
+  function parseMsgBubbles(out){
+    out = String(out || "").trim();
+    var arr = [], m;
+    var reg = /<msg>([\s\S]*?)<\/msg>/g;
+    while ((m = reg.exec(out)) !== null){
+      var t = (m[1] || "").trim();
+      if (t) arr.push(t);
+    }
+    if (arr.length) return arr;
+
+    // 兜底1：按空行
+    arr = out.split(/\n{2,}/).map(function(x){return x.trim();}).filter(Boolean);
+    if (arr.length >= 2) return arr;
+
+    // 兜底2：按单行
+    arr = out.split(/\n+/).map(function(x){return x.trim();}).filter(Boolean);
+    if (arr.length >= 2) return arr;
+
+    // 兜底3：按句号问号切（避免一大坨）
+    var sents = out.split(/(?<=[。！？!?])/).map(function(x){return x.trim();}).filter(Boolean);
+    if (sents.length >= 2){
+      var merged = [], buf = "";
+      for (var i=0;i<sents.length;i++){
+        if ((buf + sents[i]).length > 42 && buf){
+          merged.push(buf.trim()); buf = sents[i];
+        } else {
+          buf += sents[i];
+        }
+      }
+      if (buf.trim()) merged.push(buf.trim());
+      if (merged.length) return merged;
+    }
+
+    return out ? [out] : ["继续。"];
+  }
+
+  // 只接管：线上 + 关闭区间多条
+  window.requestReply = async function(){
+    var modeEl = document.getElementById("chatMode");
+    var liveMode = modeEl ? (modeEl.value || "online") : (C.chatMode || "online");
+    var isFreeOnline = (liveMode === "online" && !C.multiReplyEnabled);
+
+    if (!isFreeOnline){
+      return _oldRequestReply && _oldRequestReply();
+    }
+
+    if ($("#lockMask").classList.contains("show") || streaming) return;
+    var role = currentRole();
+    if (!role){ toast("先选角色"); return; }
+    if (!C.url || !C.key || !C.model){ toast("先配置API"); return; }
+
+    // 输入框自动入队
+    var inp = $("#inp"), text = (inp && inp.value ? inp.value : "").trim();
+    if (text){
+      currentHistory().push({role:"user",type:"text",content:text,time:now(),mode:"online"});
+      save("nx_hmap", HMap);
+      inp.value = "";
+      inp.style.height = "auto";
+      renderChat();
+    }
+
+    var H = currentHistory();
+    if (!H.length){ toast("先发点内容"); return; }
+
+    // 取最后用户消息
+    var lastUser = "";
+    for (var i=H.length-1;i>=0;i--){
+      if (H[i].role === "user"){ lastUser = H[i].content || ""; break; }
+    }
+    var hintCount = suggestFreeCount(lastUser);
+
+    streaming = true;
+    $("#replyBtn").disabled = true;
+    $("#status").textContent = "输入中...";
+    addTyping();
+
+    try{
+      var M = H.map(function(x){
+        var c = x.content || "";
+        if (x.type === "image") c = "（用户发送了一张图片）";
+        if (x.type === "sticker") c = "（用户发送了一个表情包："+(x.stickerName||"未命名")+"）";
+        return {role: x.role === "assistant" ? "assistant" : "user", content: c};
+      });
+
+      var sys = [];
+      if (role.prompt) sys.push({role:"system",content:role.prompt});
+      var wbP = buildWBSystemPrompt(lastUser);
+      if (wbP) sys.push({role:"system",content:wbP});
+
+      sys.push({
+        role:"system",
+        content:
+"你在即时聊天。按人设与剧情自由决定条数，不要固定每次一条。简单确认可1条；有情绪推进/追问/转折时通常2-4条。无论回几条，每条都必须用<msg>...</msg>包裹，像真人连续发消息。"
+      });
+      sys.push({
+        role:"system",
+        content:"本轮建议约"+hintCount+"条（仅建议，不强制），核心是贴合人设与当前互动。"
+      });
+
+      var out = await callChatOnce(sys.concat(M.slice(-60)), C.model);
+      var arr = parseMsgBubbles(out).map(function(x){ return normalizeAssistantText(x, "online"); }).filter(Boolean);
+
+      // 如果仍只有1条且本轮建议>=2，再自动补一条跟进
+      if (arr.length === 1 && hintCount >= 2){
+        var sys2 = [];
+        if (role.prompt) sys2.push({role:"system",content:role.prompt});
+        if (wbP) sys2.push({role:"system",content:wbP});
+        sys2.push({
+          role:"system",
+          content:"补1条自然跟进短消息，不重复上一条，必须<msg>...</msg>。"
+        });
+
+        var out2 = await callChatOnce(sys2.concat(M.slice(-60)).concat([
+          {role:"assistant",content:arr[0]}
+        ]), C.model);
+
+        var add = parseMsgBubbles(out2).map(function(x){ return normalizeAssistantText(x, "online"); }).filter(Boolean);
+        if (add.length) arr.push(add[0]);
+      }
+
+      removeTyping();
+      for (var k=0;k<arr.length;k++){
+        H.push({role:"assistant",type:"text",content:arr[k],time:now(),mode:"online"});
+      }
+      save("nx_hmap", HMap);
+      renderChat();
+
+    }catch(e){
+      removeTyping();
+      H.push({
+        role:"assistant",
+        type:"text",
+        content:"[请求失败] " + String(e.message||e).slice(0,220),
+        time:now(),
+        mode:"online"
+      });
+      save("nx_hmap", HMap);
+      renderChat();
+    }finally{
+      streaming = false;
+      $("#replyBtn").disabled = false;
+      setStatus();
+    }
+  };
 })();</script>
 </body>
 </html>
