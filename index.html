@@ -2414,6 +2414,443 @@ window.requestReply = function(){
       setStatus();
     }
   };
-})();</script>
+})();/* ===== Noctis v8 unified patch ===== */
+(function () {
+  if (window.__NX_V8_PATCHED__) return;
+  window.__NX_V8_PATCHED__ = true;
+
+  /* ---------- 样式：线上窄、线下宽；多选高亮；工具条 ---------- */
+  var st = document.createElement("style");
+  st.textContent = `
+    .chat.online .msg{max-width:72% !important;}
+    .chat.offline .msg{max-width:94% !important;}
+    .chat.offline .line{gap:6px;}
+    .msg.sel{outline:2px solid rgba(201,168,124,.9); box-shadow:0 0 0 2px rgba(201,168,124,.25) inset;}
+    .msg.hiddenAI{opacity:.42; filter:saturate(.7);}
+    #msgTools{
+      position:fixed; left:10px; right:10px; bottom:72px; z-index:9998;
+      display:none; gap:6px; flex-wrap:wrap;
+      background:rgba(17,24,39,.92); border:1px solid #2a3553; border-radius:14px; padding:8px;
+      backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    }
+    #msgTools.show{display:flex;}
+    #msgTools .tbtn{
+      border:1px solid #2a3553; background:#1e2740; color:#f0ebe3; border-radius:10px;
+      padding:8px 10px; font-size:12px;
+    }
+  `;
+  document.head.appendChild(st);
+
+  /* ---------- 工具 ---------- */
+  function liveMode(){
+    var el = document.getElementById("chatMode");
+    var m = (el ? el.value : C.chatMode) || "online";
+    C.chatMode = m;
+    save("nx_cfg", C);
+    return m === "offline" ? "offline" : "online";
+  }
+  function txtLen(s){ return String(s||"").replace(/\s+/g,"").length; }
+  function endOk(s){
+    s = String(s||"").trim();
+    if(!s) return false;
+    return /[。！？!?…】》）」』"']$/.test(s);
+  }
+  function cleanOnlineLine(t){
+    t = String(t||"").trim();
+    // 去掉明显舞台说明/内心独白样式
+    t = t.replace(/^\s*\*.*?\*\s*$/gm,"");
+    t = t.replace(/^\s*（[^）]{0,40}）\s*$/gm,"");
+    t = t.replace(/^\s*\([^)]{0,40}\)\s*$/gm,"");
+    return t.trim();
+  }
+  function extractMsgBubbles(out){
+    out = String(out||"").trim();
+    var arr = [], m, reg = /<msg>([\s\S]*?)<\/msg>/g;
+    while((m = reg.exec(out)) !== null){
+      var t = (m[1]||"").trim();
+      if(t) arr.push(t);
+    }
+    if(arr.length) return arr;
+
+    // 无 <msg> 时兜底拆泡
+    arr = out.split(/\n{2,}/).map(function(x){return x.trim()}).filter(Boolean);
+    if(arr.length >= 2) return arr;
+    arr = out.split(/\n+/).map(function(x){return x.trim()}).filter(Boolean);
+    if(arr.length >= 2) return arr;
+
+    var sents = out.split(/(?<=[。！？!?])/).map(function(x){return x.trim()}).filter(Boolean);
+    if(sents.length >= 2){
+      var merged=[], buf="";
+      for(var i=0;i<sents.length;i++){
+        if((buf + sents[i]).length > 46 && buf){ merged.push(buf); buf=sents[i]; }
+        else buf += sents[i];
+      }
+      if(buf) merged.push(buf);
+      if(merged.length) return merged;
+    }
+    return out ? [out] : ["继续。"];
+  }
+  function onlineSuggestCount(lastUser){
+    var s = String(lastUser||"");
+    var n = txtLen(s), q = (s.match(/[?？]/g)||[]).length, l = s.split(/\n+/).filter(Boolean).length;
+    if(q>=2 || l>=2 || n>45) return 3;
+    if(q>=1 || n>14) return 2;
+    return 1;
+  }
+  function getOfflineRange(){
+    var minEl = document.getElementById("offlineMinChars");
+    var maxEl = document.getElementById("offlineMaxChars");
+    var min = parseInt((minEl && minEl.value) || C.offlineMinChars || 800, 10);
+    var max = parseInt((maxEl && maxEl.value) || C.offlineMaxChars || 1900, 10);
+    if(!min || min<200) min=800;
+    if(!max || max<min) max=Math.max(min+300,1900);
+    C.offlineMinChars=min; C.offlineMaxChars=max; save("nx_cfg",C);
+    return {min:min,max:max};
+  }
+
+  async function callChatRaw(messages){
+    var body = {
+      model: C.model, messages: messages, temperature: C.temp, stream: false,
+      max_tokens: C.max, max_completion_tokens: C.max
+    };
+    var r = await fetch(apiUrl(C.url, "/chat/completions"), {
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+C.key},
+      body:JSON.stringify(body)
+    });
+    if(!r.ok){
+      var tx = await r.text();
+      throw new Error(r.status + ": " + tx.slice(0,220));
+    }
+    var j = await r.json();
+    var ch = (j && j.choices && j.choices[0]) ? j.choices[0] : {};
+    var txt = ch && ch.message ? (ch.message.content || "") : "";
+    return {text:String(txt||"").trim(), reason:ch.finish_reason||""};
+  }
+
+  function modelHistory(H){
+    // 隐藏给AI：hiddenFromAI=true 的不喂给模型
+    return H.filter(function(x){ return !x.hiddenFromAI; }).map(function(x){
+      var c = x.content || "";
+      if(x.type==="image") c="（用户发送了一张图片）";
+      if(x.type==="sticker") c="（用户发送了一个表情包："+(x.stickerName||"未命名")+"）";
+      return {role:x.role==="assistant"?"assistant":"user", content:c};
+    });
+  }
+
+  function getLastUser(H){
+    for(var i=H.length-1;i>=0;i--) if(H[i].role==="user") return H[i].content||"";
+    return "";
+  }
+
+  /* ---------- 覆盖 renderChat：模式 class + 索引 + 隐藏标记 ---------- */
+  var _renderChat = window.renderChat;
+  window.renderChat = function(){
+    _renderChat && _renderChat();
+    var ch = document.getElementById("chat");
+    if(!ch) return;
+    ch.classList.remove("online","offline");
+    ch.classList.add((C.chatMode==="offline")?"offline":"online");
+
+    var H = currentHistory();
+    var nodes = ch.querySelectorAll(".line .msg");
+    nodes.forEach(function(el,idx){
+      el.dataset.idx = String(idx);
+      el.classList.toggle("hiddenAI", !!(H[idx] && H[idx].hiddenFromAI));
+      el.classList.remove("sel");
+    });
+    __selSet.clear();
+    hideTools();
+  };
+
+  /* ---------- 线上生成 ---------- */
+  async function genOnline(sysBase, convo, lastUser){
+    var arr = [];
+    if(!!C.multiReplyEnabled){
+      var target = pickReplyCount();
+      var got = [], rounds = 0, local = convo.slice(-60);
+
+      while(got.length < target && rounds < 4){
+        rounds++;
+        var need = target - got.length;
+        var sys = sysBase.slice();
+        sys.push({role:"system",content:"即时聊天。严格回复"+need+"条，每条必须用<msg>...</msg>。禁止舞台说明、禁止内心独白叙述。"});
+        var r = await callChatRaw(sys.concat(local));
+        var chunk = extractMsgBubbles(r.text).map(cleanOnlineLine).filter(Boolean);
+        if(!chunk.length) break;
+        if(chunk.length > need) chunk = chunk.slice(0, need);
+        got = got.concat(chunk);
+        for(var i=0;i<chunk.length;i++) local.push({role:"assistant",content:chunk[i]});
+      }
+      arr = got.length ? got : ["继续。"];
+    }else{
+      var soft = onlineSuggestCount(lastUser); // 1~3
+      // 稍微扰动，避免死板
+      if(Math.random() < 0.35 && soft < 4) soft += 1;
+
+      var sys1 = sysBase.slice();
+      sys1.push({
+        role:"system",
+        content:"即时聊天。按人设和当前剧情自由决定条数，不要长期固定1条。一般简单确认1条；有情绪推进/追问/转折时常用2-4条。若分条必须<msg>...</msg>。禁止舞台说明、禁止“他想/他在做”这类旁白。"
+      });
+      sys1.push({role:"system",content:"本轮建议约"+soft+"条（建议，不强制）。重点：贴人设。"});
+      var r1 = await callChatRaw(sys1.concat(convo.slice(-60)));
+
+      var got1 = extractMsgBubbles(r1.text).map(cleanOnlineLine).filter(Boolean);
+      if(!got1.length) got1 = [cleanOnlineLine(r1.text)].filter(Boolean);
+      arr = got1;
+
+      // 如果语境应展开但只出1条，补1条跟进
+      if(arr.length===1 && soft>=2){
+        var sys2 = sysBase.slice();
+        sys2.push({role:"system",content:"补1条自然跟进短消息，不重复上一条，必须<msg>...</msg>，仍贴人设。"});
+        var r2 = await callChatRaw(sys2.concat(convo.slice(-60)).concat([{role:"assistant",content:arr[0]}]));
+        var add = extractMsgBubbles(r2.text).map(cleanOnlineLine).filter(Boolean);
+        if(add.length) arr.push(add[0]);
+      }
+    }
+    return arr.map(function(x){ return normalizeAssistantText(x,"online"); }).filter(Boolean);
+  }
+
+  /* ---------- 线下生成（完整收尾 + 承接线上） ---------- */
+  async function genOffline(sysBase, convo){
+    var rg = getOfflineRange(), min = rg.min, max = rg.max;
+    var full = "", rounds = 0, local = convo.slice(-60);
+
+    while(rounds < 6){
+      rounds++;
+      var need = Math.max(0, min - txtLen(full));
+      var sys = sysBase.slice();
+
+      if(rounds===1){
+        sys.push({
+          role:"system",
+          content:
+`沉浸式角色扮演叙事：
+1）只输出剧情，不提模式/系统/AI。
+2）先状态栏：
+『时间』：
+『地点』：
+『人物』：
+『关系』：
+『状态』：
+—— 正文 ——
+3）正文以“对话推进剧情”为主，不要整段小说独白，不要替用户决定想法。
+4）紧接上一轮聊天内容，不要时间地点大跳跃。
+5）目标总长度${min}-${max}字，末句必须完整收束。`
+        });
+      }else{
+        sys.push({role:"system",content:"继续上一句往后写，只续正文，不重复状态栏，不总结，补约"+need+"字并完整收尾。"});
+      }
+
+      var r = await callChatRaw(sys.concat(local));
+      var part = normalizeAssistantText(r.text,"offline").trim();
+      if(!part) break;
+
+      if(!full) full = part;
+      else{
+        var body = part.replace(/^[\s\S]*?——\s*正文\s*——/,"").trim();
+        full += "\n\n" + (body || part);
+      }
+
+      if(txtLen(full)>=min && endOk(full) && r.reason!=="length") break;
+      local.push({role:"assistant",content:part});
+      local.push({role:"user",content:"继续，直接接上文，不重复，补完并收束结尾。"});
+    }
+
+    // 最后收尾修复
+    if(!endOk(full)){
+      var fix = await callChatRaw([
+        {role:"system",content:"只补最后1-3句收尾，保持连续，不重写前文。"},
+        {role:"user",content:full}
+      ]);
+      if(fix.text) full += "\n\n" + fix.text.trim();
+    }
+
+    return full || "『时间』：夜间\n『地点』：当前场景\n『人物』：你、我\n『关系』：按当前人设\n『状态』：气氛未散\n\n—— 正文 ——\n我看着你，等你接下一句。";
+  }
+
+  /* ---------- 覆盖 requestReply ---------- */
+  window.requestReply = async function(){
+    if($("#lockMask").classList.contains("show") || streaming) return;
+    var role = currentRole();
+    if(!role){ toast("先选角色"); return; }
+    if(!C.url || !C.key || !C.model){ toast("先配置API"); return; }
+
+    var mode = liveMode();
+
+    // 按钮发送时自动入队输入框
+    var inp = $("#inp"), text = (inp && inp.value ? inp.value : "").trim();
+    if(text){
+      currentHistory().push({role:"user",type:"text",content:text,time:now(),mode:mode});
+      save("nx_hmap",HMap);
+      inp.value=""; inp.style.height="auto";
+      renderChat();
+    }
+
+    var H = currentHistory();
+    if(!H.length){ toast("先发点内容"); return; }
+
+    streaming = true;
+    $("#replyBtn").disabled = true;
+    $("#status").textContent = "输入中...";
+    addTyping();
+
+    try{
+      var lastUser = getLastUser(H);
+      var convo = modelHistory(H); // 关键：隐藏消息不喂模型
+      var sys = [];
+
+      // 关键：告诉模型“你是谁”
+      sys.push({
+        role:"system",
+        content:"你当前扮演角色名："+(role.name||"未命名角色")+"。必须始终以此身份说话，贴合该角色人设。"
+      });
+
+      if(role.prompt) sys.push({role:"system",content:role.prompt});
+      var wbP = buildWBSystemPrompt(lastUser);
+      if(wbP) sys.push({role:"system",content:wbP});
+
+      var outArr = (mode==="offline")
+        ? [await genOffline(sys, convo)]
+        : await genOnline(sys, convo, lastUser);
+
+      removeTyping();
+      for(var i=0;i<outArr.length;i++){
+        H.push({role:"assistant",type:"text",content:outArr[i],time:now(),mode:mode});
+      }
+      save("nx_hmap",HMap);
+      renderChat();
+    }catch(e){
+      removeTyping();
+      H.push({role:"assistant",type:"text",content:"[请求失败] "+String(e.message||e).slice(0,220),time:now(),mode:mode});
+      save("nx_hmap",HMap);
+      renderChat();
+    }finally{
+      streaming=false;
+      $("#replyBtn").disabled=false;
+      setStatus();
+    }
+  };
+
+  /* ---------- 长按多选工具 ---------- */
+  var __selMode = false;
+  var __selSet = new Set();
+  var __pressTimer = null;
+  var __chat = document.getElementById("chat");
+
+  function ensureTools(){
+    if(document.getElementById("msgTools")) return;
+    var box = document.createElement("div");
+    box.id = "msgTools";
+    box.innerHTML = [
+      '<button class="tbtn" data-act="hide">隐藏(不给AI)</button>',
+      '<button class="tbtn" data-act="unhide">取消隐藏</button>',
+      '<button class="tbtn" data-act="quote">引用</button>',
+      '<button class="tbtn" data-act="edit">编辑</button>',
+      '<button class="tbtn" data-act="regen">重刷</button>',
+      '<button class="tbtn" data-act="del">删除</button>',
+      '<button class="tbtn" data-act="cancel">取消</button>'
+    ].join("");
+    document.body.appendChild(box);
+
+    box.addEventListener("click", function(e){
+      var b = e.target.closest("button.tbtn"); if(!b) return;
+      var act = b.dataset.act;
+      var H = currentHistory();
+      var idxs = Array.from(__selSet).sort(function(a,b){return a-b});
+
+      if(act==="cancel"){ exitSel(); return; }
+      if(!idxs.length){ toast("未选消息"); return; }
+
+      if(act==="hide"){
+        idxs.forEach(function(i){ if(H[i]) H[i].hiddenFromAI = true; });
+        save("nx_hmap",HMap); renderChat(); toast("已隐藏给AI");
+      }else if(act==="unhide"){
+        idxs.forEach(function(i){ if(H[i]) H[i].hiddenFromAI = false; });
+        save("nx_hmap",HMap); renderChat(); toast("已取消隐藏");
+      }else if(act==="del"){
+        for(var i=idxs.length-1;i>=0;i--) H.splice(idxs[i],1);
+        save("nx_hmap",HMap); renderChat(); toast("已删除");
+      }else if(act==="quote"){
+        if(idxs.length!==1){ toast("引用需选1条"); return; }
+        var m = H[idxs[0]]; if(!m){ toast("无效"); return; }
+        var inp = $("#inp");
+        inp.value = (inp.value?inp.value+"\n":"") + "> " + (m.content||"");
+        autoGrow(inp); inp.focus();
+        exitSel();
+      }else if(act==="edit"){
+        if(idxs.length!==1){ toast("编辑需选1条"); return; }
+        var em = H[idxs[0]]; if(!em || em.type!=="text"){ toast("仅文本可编辑"); return; }
+        var nv = prompt("编辑消息", em.content||"");
+        if(nv==null) return;
+        em.content = nv.trim();
+        em.edited = true;
+        save("nx_hmap",HMap); renderChat(); toast("已编辑");
+      }else if(act==="regen"){
+        if(idxs.length!==1){ toast("重刷需选1条"); return; }
+        var ri = idxs[0], rm = H[ri];
+        if(!rm || rm.role!=="assistant"){ toast("请选AI消息"); return; }
+        H.splice(ri,1); // 删除这条再重刷
+        save("nx_hmap",HMap); renderChat(); exitSel();
+        requestReply();
+      }
+    });
+  }
+
+  function showTools(){ ensureTools(); document.getElementById("msgTools").classList.add("show"); }
+  function hideTools(){ var x=document.getElementById("msgTools"); if(x) x.classList.remove("show"); }
+  function enterSel(idx){
+    __selMode = true; __selSet.clear(); __selSet.add(idx);
+    paintSel(); showTools();
+  }
+  function exitSel(){
+    __selMode = false; __selSet.clear(); paintSel(); hideTools();
+  }
+  function toggleSel(idx){
+    if(__selSet.has(idx)) __selSet.delete(idx); else __selSet.add(idx);
+    if(!__selSet.size){ exitSel(); return; }
+    paintSel();
+  }
+  function paintSel(){
+    var nodes = document.querySelectorAll("#chat .line .msg");
+    nodes.forEach(function(el){
+      var i = parseInt(el.dataset.idx,10);
+      el.classList.toggle("sel", __selSet.has(i));
+    });
+  }
+
+  if(__chat){
+    __chat.addEventListener("touchstart", function(e){
+      var m = e.target.closest(".msg");
+      if(!m) return;
+      var idx = parseInt(m.dataset.idx,10);
+      if(isNaN(idx)) return;
+
+      __pressTimer = setTimeout(function(){
+        enterSel(idx);
+      }, 420);
+    }, {passive:true});
+
+    __chat.addEventListener("touchend", function(){ clearTimeout(__pressTimer); }, {passive:true});
+    __chat.addEventListener("touchmove", function(){ clearTimeout(__pressTimer); }, {passive:true});
+
+    __chat.addEventListener("click", function(e){
+      var m = e.target.closest(".msg");
+      if(!m) return;
+      var idx = parseInt(m.dataset.idx,10);
+      if(isNaN(idx)) return;
+
+      if(__selMode){
+        e.preventDefault();
+        toggleSel(idx);
+      }
+    });
+  }
+
+  // 初始刷新一次
+  renderChat();
+})();
+</script>
 </body>
 </html>
