@@ -3796,6 +3796,342 @@ window.requestReply = function(){
   ensureQuickUI();
   renderChat();
 })();
-</script>
+/* ===== v11-A: 收藏管理 + 悬浮工具 + 我的人人设绑定 ===== */
+(function(){
+  if(window.__NX_V11A__) return;
+  window.__NX_V11A__ = true;
+
+  /* ---------- 数据 ---------- */
+  var meProfiles = load("nx_me_profiles", []);
+  var roleMeMap  = load("nx_role_me_map", {}); // roleId -> meProfileId
+
+  function saveMeData(){
+    save("nx_me_profiles", meProfiles);
+    save("nx_role_me_map", roleMeMap);
+  }
+  function uid2(){ return "me_"+Math.random().toString(36).slice(2,9); }
+
+  function getMeById(id){
+    for(var i=0;i<meProfiles.length;i++) if(meProfiles[i].id===id) return meProfiles[i];
+    return null;
+  }
+  function getMeForRole(roleId){
+    return getMeById(roleMeMap[roleId] || "");
+  }
+
+  /* ---------- 把“我的人设”注入到当前请求 ---------- */
+  var _req = window.requestReply;
+  window.requestReply = async function(){
+    var r = currentRole ? currentRole() : null;
+    var bak = null;
+    if(r){
+      bak = r.prompt || "";
+      var me = getMeForRole(r.id);
+      if(me && me.content){
+        r.prompt =
+          (bak ? bak + "\n\n" : "") +
+          "【用户人设档案】\n" +
+          "名称：" + (me.name || "未命名") + "\n" +
+          (me.content || "") + "\n\n" +
+          "要求：你必须把用户视为该人设对象与其互动，贴合关系与称呼；不要复述这段规则。";
+      }
+    }
+    try{
+      return await _req.apply(this, arguments);
+    }finally{
+      if(r) r.prompt = bak || "";
+    }
+  };
+
+  /* ---------- 样式：隐藏旧排排坐，改悬浮按钮 ---------- */
+  var st = document.createElement("style");
+  st.textContent = `
+    #nxQuick{display:none !important;}
+    #nxFab{
+      position:fixed; right:14px; bottom:88px; z-index:9997;
+      width:48px; height:48px; border-radius:50%;
+      border:1px solid var(--bd);
+      background:linear-gradient(135deg,var(--ac1),var(--ac2));
+      color:#111; font-size:20px; font-weight:700;
+      box-shadow:0 8px 22px rgba(0,0,0,.35);
+    }
+    #nxOps{
+      position:fixed; right:14px; bottom:144px; z-index:9998;
+      display:none; width:min(84vw,280px);
+      background:var(--bg2); border:1px solid var(--bd); border-radius:14px;
+      padding:8px; box-shadow:0 10px 30px rgba(0,0,0,.35);
+    }
+    #nxOps.show{display:block;}
+    #nxOps .op{
+      width:100%; margin:4px 0; padding:10px 12px; text-align:left;
+      border:1px solid var(--bd); border-radius:10px; background:var(--bg3); color:var(--tx);
+      font-size:13px;
+    }
+
+    /* 收藏项按钮 */
+    .favIt{position:relative;}
+    .favDel{
+      position:absolute; top:6px; right:6px;
+      border:1px solid rgba(242,139,168,.35); background:rgba(242,139,168,.08);
+      color:#f28ba8; border-radius:8px; padding:3px 7px; font-size:11px;
+    }
+    #favActions{display:flex;gap:6px}
+    #favActions .btnMini{
+      border:1px solid var(--bd); background:var(--bg3); color:var(--tx2);
+      border-radius:8px; padding:4px 8px; font-size:11px;
+    }
+  `;
+  document.head.appendChild(st);
+
+  /* ---------- 悬浮操作面板（复用你现有按钮逻辑） ---------- */
+  function clickById(id){
+    var b = document.getElementById(id);
+    if(b) b.click(); else toast("功能还没就绪");
+  }
+  function ensureFab(){
+    if(document.getElementById("nxFab")) return;
+
+    var fab = document.createElement("button");
+    fab.id = "nxFab";
+    fab.textContent = "⋯";
+
+    var ops = document.createElement("div");
+    ops.id = "nxOps";
+    ops.innerHTML = [
+      '<button class="op" data-id="selToggle">选择模式</button>',
+      '<button class="op" data-id="selAll">全选</button>',
+      '<button class="op" data-id="actQuote">引用</button>',
+      '<button class="op" data-id="actFav">收藏</button>',
+      '<button class="op" data-id="openFav">打开收藏夹</button>',
+      '<button class="op" data-id="actHide">隐藏给AI</button>',
+      '<button class="op" data-id="actDel">删除</button>',
+      '<button class="op" data-id="actUndo">撤销</button>'
+    ].join("");
+
+    fab.onclick = function(){
+      ops.classList.toggle("show");
+    };
+    ops.addEventListener("click", function(e){
+      var btn = e.target.closest(".op");
+      if(!btn) return;
+      var id = btn.getAttribute("data-id");
+      clickById(id);
+      ops.classList.remove("show");
+    });
+
+    document.body.appendChild(ops);
+    document.body.appendChild(fab);
+
+    document.addEventListener("click", function(e){
+      if(!ops.contains(e.target) && e.target!==fab) ops.classList.remove("show");
+    });
+  }
+
+  /* ---------- 收藏夹：单删/全删 ---------- */
+  function ensureFavActions(){
+    var hd = document.getElementById("favHd");
+    if(!hd) return;
+    if(document.getElementById("favActions")) return;
+
+    var box = document.createElement("div");
+    box.id = "favActions";
+    box.innerHTML = [
+      '<button class="btnMini" id="favRefreshBtn">刷新</button>',
+      '<button class="btnMini" id="favClearBtn">全部清空</button>'
+    ].join("");
+    hd.appendChild(box);
+
+    document.getElementById("favRefreshBtn").onclick = renderFavWithDelete;
+    document.getElementById("favClearBtn").onclick = function(){
+      var H = currentHistory();
+      var changed = 0;
+      for(var i=0;i<H.length;i++){
+        if(H[i] && H[i].fav){ H[i].fav = false; changed++; }
+      }
+      save("nx_hmap", HMap);
+      renderFavWithDelete();
+      toast(changed ? ("已清空 "+changed+" 条收藏") : "收藏夹已空");
+    };
+  }
+
+  function renderFavWithDelete(){
+    var body = document.getElementById("favBd");
+    if(!body) return;
+    var H = currentHistory();
+    var html = "";
+    var count = 0;
+
+    for(var i=0;i<H.length;i++){
+      var m = H[i];
+      if(m && m.fav){
+        count++;
+        html +=
+          '<div class="favIt" data-idx="'+i+'">' +
+            '<button class="favDel" data-idx="'+i+'">删除</button>' +
+            '<div class="favMeta">#'+i+' · '+(m.role==="assistant"?"AI":"你")+' · '+(m.time||"")+'</div>' +
+            '<div>'+escHtml((m.content||"").slice(0,240))+'</div>' +
+          '</div>';
+      }
+    }
+
+    if(!count) html = '<div class="favIt">还没有收藏。</div>';
+    body.innerHTML = html;
+
+    body.querySelectorAll(".favDel").forEach(function(btn){
+      btn.onclick = function(){
+        var idx = parseInt(this.getAttribute("data-idx"),10);
+        if(isNaN(idx)) return;
+        var H2 = currentHistory();
+        if(H2[idx]) H2[idx].fav = false;
+        save("nx_hmap", HMap);
+        renderFavWithDelete();
+        toast("已从收藏删除");
+      };
+    });
+  }
+
+  // 接管“打开收藏夹”按钮，确保每次进来都可删
+  function hookOpenFav(){
+    var b = document.getElementById("openFav");
+    if(!b || b.dataset.v11a==="1") return;
+    b.dataset.v11a = "1";
+    b.onclick = function(){
+      var modal = document.getElementById("favModal");
+      if(!modal){ toast("收藏面板未就绪"); return; }
+      ensureFavActions();
+      renderFavWithDelete();
+      modal.classList.add("show");
+    };
+  }
+
+  /* ---------- 设置页注入：我的人设 + 角色绑定 ---------- */
+  function injectMeProfileCard(){
+    if(document.getElementById("meProfileCard")) return;
+    var wrap = document.querySelector("#page-settings .wrap");
+    if(!wrap) return;
+
+    var card = document.createElement("div");
+    card.className = "card";
+    card.id = "meProfileCard";
+    card.innerHTML =
+      '<div class="ct">我的人设（可按角色绑定）</div>'+
+      '<div class="row">'+
+        '<div class="f"><div class="fl">人设名称</div><input id="mePName" class="fi" placeholder="例如：弥洛 / 学妹形态 / 主理人"></div>'+
+      '</div>'+
+      '<div class="f"><div class="fl">人设内容</div><textarea id="mePContent" class="ta" placeholder="姓名、身份、说话习惯、关系定位、边界偏好等"></textarea></div>'+
+      '<div class="row">'+
+        '<button class="btn2" id="mePSave">保存人设</button>'+
+        '<button class="btn2 btnDanger" id="mePDelete">删除当前</button>'+
+      '</div>'+
+      '<div class="f" style="margin-top:10px"><div class="fl">已有人设</div><select id="mePList" class="fs"></select></div>'+
+      '<div class="row">'+
+        '<div class="f"><div class="fl">绑定角色</div><select id="bindRoleSel" class="fs"></select></div>'+
+        '<div class="f"><div class="fl">绑定我的人设</div><select id="bindMeSel" class="fs"></select></div>'+
+      '</div>'+
+      '<div class="row"><button class="btn" id="bindSaveBtn">保存绑定</button></div>'+
+      '<div class="mini">该绑定会在对话时自动注入给模型，AI会知道“你是谁”。</div>';
+
+    wrap.appendChild(card);
+
+    function renderMeList(){
+      var list = document.getElementById("mePList");
+      var bindMe = document.getElementById("bindMeSel");
+      var html = '<option value="">-- 选择 --</option>';
+      for(var i=0;i<meProfiles.length;i++){
+        html += '<option value="'+meProfiles[i].id+'">'+escHtml(meProfiles[i].name||("人设"+(i+1)))+'</option>';
+      }
+      list.innerHTML = html;
+      bindMe.innerHTML = '<option value="">-- 不绑定 --</option>'+html.replace('<option value="">-- 选择 --</option>','');
+    }
+
+    function renderRoleList(){
+      var sel = document.getElementById("bindRoleSel");
+      var html = "";
+      for(var i=0;i<roles.length;i++){
+        html += '<option value="'+roles[i].id+'">'+escHtml(roles[i].name||"未命名")+'</option>';
+      }
+      sel.innerHTML = html || '<option value="">无角色</option>';
+    }
+
+    document.getElementById("mePList").onchange = function(){
+      var p = getMeById(this.value);
+      document.getElementById("mePName").value = p ? (p.name||"") : "";
+      document.getElementById("mePContent").value = p ? (p.content||"") : "";
+    };
+
+    document.getElementById("mePSave").onclick = function(){
+      var id = document.getElementById("mePList").value || uid2();
+      var name = (document.getElementById("mePName").value||"").trim();
+      var content = (document.getElementById("mePContent").value||"").trim();
+      if(!name || !content){ toast("名称和内容都要填"); return; }
+
+      var idx = -1;
+      for(var i=0;i<meProfiles.length;i++) if(meProfiles[i].id===id){ idx=i; break; }
+      var obj = {id:id,name:name,content:content};
+      if(idx>=0) meProfiles[idx]=obj; else meProfiles.unshift(obj);
+      saveMeData();
+      renderMeList();
+      document.getElementById("mePList").value = id;
+      toast("我的人设已保存");
+    };
+
+    document.getElementById("mePDelete").onclick = function(){
+      var id = document.getElementById("mePList").value;
+      if(!id){ toast("先选一个人设"); return; }
+      meProfiles = meProfiles.filter(function(x){ return x.id!==id; });
+      Object.keys(roleMeMap).forEach(function(rid){
+        if(roleMeMap[rid]===id) delete roleMeMap[rid];
+      });
+      saveMeData();
+      document.getElementById("mePName").value="";
+      document.getElementById("mePContent").value="";
+      renderMeList();
+      toast("已删除");
+    };
+
+    document.getElementById("bindSaveBtn").onclick = function(){
+      var rid = document.getElementById("bindRoleSel").value;
+      var mid = document.getElementById("bindMeSel").value;
+      if(!rid){ toast("先选角色"); return; }
+      if(mid) roleMeMap[rid]=mid; else delete roleMeMap[rid];
+      saveMeData();
+      toast("绑定已保存");
+    };
+
+    document.getElementById("bindRoleSel").onchange = function(){
+      var rid = this.value;
+      document.getElementById("bindMeSel").value = roleMeMap[rid] || "";
+    };
+
+    renderRoleList();
+    renderMeList();
+    var br = document.getElementById("bindRoleSel");
+    if(br && br.value) document.getElementById("bindMeSel").value = roleMeMap[br.value] || "";
+  }
+
+  // 角色列表刷新时，同步绑定角色下拉
+  var _renderRoles = window.renderRoles;
+  window.renderRoles = function(){
+    _renderRoles && _renderRoles();
+    var sel = document.getElementById("bindRoleSel");
+    if(sel){
+      var cur = sel.value;
+      var html = "";
+      for(var i=0;i<roles.length;i++) html += '<option value="'+roles[i].id+'">'+escHtml(roles[i].name||"未命名")+'</option>';
+      sel.innerHTML = html || '<option value="">无角色</option>';
+      sel.value = cur || (roles[0]?roles[0].id:"");
+    }
+  };
+
+  /* ---------- 初始化 ---------- */
+  function boot(){
+    ensureFab();
+    injectMeProfileCard();
+    hookOpenFav();
+    setTimeout(hookOpenFav, 800);
+    setTimeout(hookOpenFav, 1600);
+  }
+  boot();
+})();</script>
 </body>
 </html>
