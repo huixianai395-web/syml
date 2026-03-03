@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -1002,7 +1003,141 @@ function init(){
   buildEmojiPanel();renderStickerPanel();renderWB();fillCfgForm();renderRoles();refreshHeader();setStatus();renderChat();applyAvatarShape();
   if(C.lockEnabled&&/^\d{4,8}$/.test(C.lockPin||""))$("#lockMask").classList.add("show");
 }
-init();
+init();/* ===== Noctis mobile hotfix: 覆盖多条限制 + 线下自由长度 ===== */
+window.splitOnlineBubbles = function(out, limit){
+  out = (out || "").trim();
+  var arr = [];
+
+  // 优先解析 <msg>...</msg>
+  var reg = /<msg>([\s\S]*?)<\/msg>/g, m;
+  while((m = reg.exec(out)) !== null){
+    var t = (m[1] || "").trim();
+    if(t) arr.push(t);
+  }
+
+  // 没有 <msg> 就按换行拆
+  if(!arr.length){
+    arr = out.split(/\n+/).map(function(x){ return x.trim(); }).filter(Boolean);
+  }
+
+  // 保底
+  if(!arr.length && out) arr = [out];
+  if(!arr.length) arr = ["继续。"];
+
+  // limit>0 才截断；0/undefined=不限制
+  if(typeof limit === "number" && limit > 0 && arr.length > limit){
+    arr = arr.slice(0, limit);
+  }
+  return arr;
+};
+
+window.requestReply = function(){
+  if($("#lockMask").classList.contains("show") || streaming) return;
+
+  var role = currentRole();
+  if(!role){ toast("先选角色"); return; }
+  if(!C.url || !C.key || !C.model){ toast("先配置API"); return; }
+
+  // 发送键自动把输入框内容入队
+  var inp = $("#inp"), text = (inp && inp.value ? inp.value : "").trim();
+  if(text){
+    currentHistory().push({role:"user",type:"text",content:text,time:now(),mode:C.chatMode});
+    save("nx_hmap", HMap);
+    inp.value = "";
+    inp.style.height = "auto";
+    renderChat();
+  }
+
+  var H = currentHistory();
+  if(!H.length){ toast("先发点内容"); return; }
+
+  var mode = (C.chatMode === "offline") ? "offline" : "online";
+  var modelName = C.model;
+
+  streaming = true;
+  $("#replyBtn").disabled = true;
+  $("#status").textContent = "输入中...";
+  addTyping();
+
+  var M = H.map(function(x){
+    var c = x.content || "";
+    if(x.type === "image") c = "（用户发送了一张图片）";
+    if(x.type === "sticker") c = "（用户发送了一个表情包："+(x.stickerName||"未命名")+"）";
+    return { role: x.role === "assistant" ? "assistant" : "user", content: c };
+  });
+
+  var lastUser = "";
+  for(var i=H.length-1; i>=0; i--){
+    if(H[i].role === "user"){ lastUser = H[i].content || ""; break; }
+  }
+
+  var wbP = buildWBSystemPrompt(lastUser), sys = [];
+  if(role.prompt) sys.push({role:"system", content: role.prompt});
+
+  var forcedCount = 1;
+
+  if(mode === "online"){
+    if(!!C.multiReplyEnabled){
+      forcedCount = pickReplyCount();
+      sys.push({
+        role:"system",
+        content:"你在即时聊天模式。请严格回复"+forcedCount+"条，每条必须用<msg>...</msg>包裹。语气自然、贴人设、不要舞台说明。"
+      });
+    }else{
+      // 关闭多条模式：完全不限制条数，模型自行判断
+      sys.push({
+        role:"system",
+        content:"你在即时聊天模式。根据当前情境和人设自由决定回复条数与长短；若分多条，请使用<msg>...</msg>包裹每条。不要舞台说明，不要模板腔。"
+      });
+    }
+  }else{
+    // 线下：不再限制字数
+    sys.push({
+      role:"system",
+      content:"你在线下沉浸模式。只输出一条完整回复，长短自由，但必须贴合人设和上下文，内容具体，不要只回省略号。"
+    });
+  }
+
+  if(wbP) sys.push({role:"system", content: wbP});
+
+  callChatOnce(sys.concat(M.slice(-60)), modelName).then(function(out){
+    removeTyping();
+    var arr = [];
+
+    if(mode === "offline"){
+      var t = normalizeAssistantText(out, "offline");
+      if(!t || /^(\.{2,}|…{1,}|。{2,})$/.test(t)) t = "我在，说完整一点。";
+      arr = [t];
+    }else{
+      var limit = !!C.multiReplyEnabled ? forcedCount : 0; // 0=不限制
+      arr = splitOnlineBubbles(out, limit).map(function(x){
+        return normalizeAssistantText(x, "online");
+      });
+    }
+
+    for(var k=0; k<arr.length; k++){
+      H.push({role:"assistant",type:"text",content:arr[k],time:now(),mode:mode});
+    }
+    save("nx_hmap", HMap);
+    renderChat();
+  }).catch(function(e){
+    removeTyping();
+    H.push({
+      role:"assistant",
+      type:"text",
+      content:"[请求失败] " + String(e.message||e).slice(0,200),
+      time:now(),
+      mode:mode
+    });
+    save("nx_hmap", HMap);
+    renderChat();
+  }).finally(function(){
+    streaming = false;
+    $("#replyBtn").disabled = false;
+    setStatus();
+  });
+};
+/* ===== hotfix end ===== */
 </script>
 </body>
 </html>
