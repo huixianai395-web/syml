@@ -887,15 +887,43 @@ function splitOnlineBubbles(out, limit){
 
   if(limit && arr.length>limit) arr=arr.slice(0,limit);
   return arr;
+	}
+	function splitOnlineBubbles(out, limit){
+  out=(out||"").trim();
+  var arr=[];
+
+  var reg=/<msg>([\s\S]*?)<\/msg>/g,m;
+  while((m=reg.exec(out))!==null){
+    var t=(m[1]||"").trim();
+    if(t) arr.push(t);
+  }
+
+  if(!arr.length){
+    arr=out.split(/\n+/).map(function(x){return x.trim()}).filter(Boolean);
+  }
+
+  if(!arr.length && out) arr=[out];
+  if(!arr.length) arr=["继续。"];
+
+  if(limit && arr.length>limit) arr=arr.slice(0,limit);
+  return arr;
 	}function requestReply(){
-  if($("#lockMask").classList.contains("show"))return;
-  if(streaming)return;
+  if($("#lockMask").classList.contains("show")||streaming)return;
   var role=currentRole();if(!role){toast("先选角色");return}
   if(!C.url||!C.key||!C.model){toast("先配置API");return}
-  var H=currentHistory();if(!H.length){toast("先发点内容");return}
 
+  // 关键：发送键自动把输入框内容入队（不再需要先点+）
+  var inp=$("#inp"),text=(inp&&inp.value?inp.value:"").trim();
+  if(text){
+    currentHistory().push({role:"user",type:"text",content:text,time:now(),mode:C.chatMode});
+    save("nx_hmap",HMap);
+    inp.value="";inp.style.height="auto";
+    renderChat();
+  }
+
+  var H=currentHistory();if(!H.length){toast("先发点内容");return}
   var mode=(C.chatMode==="offline")?"offline":"online";
-  var modelName=(mode==="online"?(C.onlineModel||C.model):(C.offlineModel||C.model));
+  var modelName=C.model; // 不再走线上/线下可空模型
 
   streaming=true;$("#replyBtn").disabled=true;$("#status").textContent="输入中...";addTyping();
 
@@ -910,41 +938,48 @@ function splitOnlineBubbles(out, limit){
   for(var i=H.length-1;i>=0;i--){if(H[i].role==="user"){lastUser=H[i].content||"";break}}
   var wbP=buildWBSystemPrompt(lastUser),sys=[];
   if(role.prompt)sys.push({role:"system",content:role.prompt});
-  if(mode==="online"){
-    sys.push({role:"system",content:"你在即时聊天模式。回复自然、口语化、连贯，不要写舞台说明，不要强行长文。"});
-  }else{
-    sys.push({role:"system",content:"你在长文本模式。可更完整展开，但必须逻辑清晰、段落完整。"});
-  }
-  if(wbP)sys.push({role:"system",content:wbP});
 
-  var doMulti=!!C.multiReplyEnabled,count=doMulti?pickReplyCount():1;
-  if(doMulti){
-    sys.push({role:"system",content:"你需要连续回复"+count+"条消息。请严格用 <msg>内容</msg> 包裹每一条，共"+count+"条；不要输出任何解释。"});
+  var forcedCount=1;
+  if(mode==="online"){
+    if(!!C.multiReplyEnabled) forcedCount=pickReplyCount();
+    sys.push({role:"system",content:"你在即时聊天模式。自然、贴人设、像真人发消息。默认自适应1~3条；若多条请使用<msg>内容</msg>包裹每条。不要舞台说明，不要模板腔。"});
+    if(!!C.multiReplyEnabled){
+      sys.push({role:"system",content:"这次请回复"+forcedCount+"条，严格使用<msg>...</msg>包裹每条。"});
+    }
+  }else{
+    var rg=pickCharsRange();
+    sys.push({role:"system",content:"你在线下沉浸模式。只输出一条长文本，不分条。紧贴角色人设和情绪递进，强化动作、心理、环境细节。目标字数"+rg.min+"~"+rg.max+"字。禁止只回省略号。"});
   }
+
+  if(wbP)sys.push({role:"system",content:wbP});
 
   callChatOnce(sys.concat(M.slice(-60)),modelName).then(function(out){
     removeTyping();
     var arr=[];
 
-if(mode==="offline"){
-  arr=[normalizeAssistantText(out,"offline")];
-}else{
-  var limit=3;
-  if(!!C.multiReplyEnabled){
-    limit=pickReplyCount(); // 勾选时按区间条数
-  }
-  arr=splitOnlineBubbles(out,limit);
-	}
-	for(var k=0;k<arr.length;k++){
-  H.push({role:"assistant",type:"text",content:normalizeAssistantText(arr[k],mode),time:now(),mode:mode});
-	}
+    if(mode==="offline"){
+      var t=normalizeAssistantText(out,"offline");
+      if(!t || /^(\.{2,}|…{1,}|。{2,})$/.test(t)){
+        t="我在，别只给省略号。把场景、情绪、动作说完整。";
+      }
+      arr=[t];
+    }else{
+      var limit=!!C.multiReplyEnabled?forcedCount:3;
+      arr=splitOnlineBubbles(out,limit).map(function(x){return normalizeAssistantText(x,"online")});
+    }
+
+    for(var k=0;k<arr.length;k++){
+      H.push({role:"assistant",type:"text",content:arr[k],time:now(),mode:mode});
+    }
     save("nx_hmap",HMap);renderChat();
   }).catch(function(e){
     removeTyping();
-    H.push({role:"assistant",type:"text",content:"[请求失败] "+String(e.message||e).slice(0,200),time:now()});
+    H.push({role:"assistant",type:"text",content:"[请求失败] "+String(e.message||e).slice(0,200),time:now(),mode:mode});
     save("nx_hmap",HMap);renderChat();
-  }).finally(function(){streaming=false;$("#replyBtn").disabled=false;setStatus()});
-}
+  }).finally(function(){
+    streaming=false;$("#replyBtn").disabled=false;setStatus();
+  });
+	}
 
 function init(){
   C=load("nx_cfg",C);roles=load("nx_roles",[]);activeRoleId=load("nx_active_role","");
