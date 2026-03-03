@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -490,26 +491,44 @@ function toggleMultiReplyUI(){var on=!!($("#multiReplyEnabled")&&$("#multiReplyE
 function pickReplyCount(){var a=parseInt(C.multiReplyMin,10)||1,b=parseInt(C.multiReplyMax,10)||1;if(a<1)a=1;if(b<1)b=1;if(a>b){var t=a;a=b;b=t}return Math.floor(Math.random()*(b-a+1))+a}
 
 function injectModeControls(){
-  if($("#chatMode"))return;
-  var cards=document.querySelectorAll("#page-settings .card");
-  var apiCard=null;
+  if($("#chatMode")) return;
+
+  var cards=document.querySelectorAll("#page-settings .card"),apiCard=null;
   for(var i=0;i<cards.length;i++){
     var t=cards[i].querySelector(".ct");
     if(t&&t.textContent.indexOf("API 设置")>=0){apiCard=cards[i];break}
   }
-  if(!apiCard)return;
-  var row=apiCard.querySelector(".row:last-of-type");
+  if(!apiCard) return;
+
   var box=document.createElement("div");
   box.innerHTML=
-    '<div class="f"><div class="fl">对话模式</div><select id="chatMode" class="fs"><option value="online">线上模式（自然聊天）</option><option value="offline">线下模式（长文本）</option></select></div>'+
+    '<div class="f"><div class="fl">对话模式</div><select id="chatMode" class="fs"><option value="online">线上模式（自然聊天）</option><option value="offline">线下模式（沉浸长文）</option></select></div>'+
     '<div class="row">'+
-      '<div class="f"><div class="fl">线上模型（可空）</div><input id="onlineModel" class="fi" placeholder="留空则用主模型" /></div>'+
-      '<div class="f"><div class="fl">线下模型（可空）</div><input id="offlineModel" class="fi" placeholder="留空则用主模型" /></div>'+
+      '<div class="f"><div class="fl">线下最少字数</div><input id="offlineMinChars" class="fi" type="number" min="120" max="3000" step="10" value="320" /></div>'+
+      '<div class="f"><div class="fl">线下最多字数</div><input id="offlineMaxChars" class="fi" type="number" min="120" max="3000" step="10" value="900" /></div>'+
     '</div>'+
-    '<div class="mini" style="margin-bottom:10px">线上=短句自然聊；线下=更完整长文。</div>';
-  if(row&&row.parentNode===apiCard) apiCard.insertBefore(box,row);
+    '<div class="mini" style="margin-bottom:10px">线上自适应短消息；线下单条沉浸长文。</div>';
+
+  var anchor=apiCard.querySelector(".switchRow.f");
+  if(anchor) apiCard.insertBefore(box,anchor);
   else apiCard.appendChild(box);
-}
+
+  function syncOfflineInputs(){
+    var off=(($("#chatMode")&&$("#chatMode").value)||"online")==="offline";
+    if($("#offlineMinChars")) $("#offlineMinChars").disabled=!off;
+    if($("#offlineMaxChars")) $("#offlineMaxChars").disabled=!off;
+  }
+
+  $("#chatMode").addEventListener("change",function(){
+    C.chatMode=this.value||"online";
+    save("nx_cfg",C);
+    syncOfflineInputs();
+    refreshHeader();
+    renderChat();
+  });
+
+  syncOfflineInputs();
+	}
 
 function fileToDataURL(file){return new Promise(function(r,j){var fr=new FileReader();fr.onload=function(){r(fr.result)};fr.onerror=j;fr.readAsDataURL(file)})}
 function compressImageFile(file,maxW,maxH,q){
