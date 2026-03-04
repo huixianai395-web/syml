@@ -179,7 +179,8 @@
       display:flex;justify-content:space-between;align-items:center;gap:8px;transition:all .15s;
     }
     .roleItem.active{border-color:var(--ac1);background:rgba(201,168,124,.06);box-shadow:0 0 0 1px rgba(201,168,124,.15) inset}
-    .roleL{display:flex;gap:10px;align-items:center;min-width:0}.rAv{
+    .roleL{display:flex;gap:10px;align-items:center;min-width:0}
+    .rAv{
       width:30px;height:30px;border-radius:var(--avRadius);display:grid;place-items:center;
       background:linear-gradient(135deg,var(--ac1),var(--ac2));color:#111;font-weight:700;font-size:12px;overflow:hidden;flex-shrink:0
     }
@@ -306,9 +307,7 @@
           </div>
         </div>
       </div>
-    </section>
-
-    <section id="page-worldbook" class="page">
+	</section><section id="page-worldbook" class="page">
       <div class="wrap">
         <div class="card">
           <div class="ct">世界书</div>
@@ -581,7 +580,8 @@ function markdownToHtml(src){
   s=s.replace(/\n/g,"<br>");
   s=s.replace(/@@CODE_(\d+)@@/g,function(_,i){return "<pre><code>"+(blocks[Number(i)]?blocks[Number(i)].code:"")+"</code></pre>"});
   return '<div class="md">'+s+"</div>";
-}function renderMsgContent(m){
+}
+function renderMsgContent(m){
   if(m.type==="image") return '<img class="chatImg" src="'+m.content+'" alt="img" />';
   if(m.type==="sticker") return '<img class="chatSticker" src="'+m.content+'" alt="sticker" />';
   return markdownToHtml(m.content||"");
@@ -757,8 +757,7 @@ function renderGroupMgrList(){
 }
 function updateImportGroupSel(){var html="";for(var i=0;i<stickerGroups.length;i++)html+='<option value="'+stickerGroups[i].id+'">'+esc(stickerGroups[i].name)+"</option>";$("#importGroupSel").innerHTML=html}
 function addStickerGroup(){var name=$("#newGroupName").value.trim();if(!name){toast("名称不能为空");return}var id="sg_"+Math.random().toString(36).slice(2,8);stickerGroups.push({id:id,name:name,stickers:[]});save("nx_sticker_groups",stickerGroups);$("#newGroupName").value="";renderGroupMgrList();updateImportGroupSel();toast("分组已创建")}
-function deleteGroup(id){if(!confirm("删除此分组？"))return;stickerGroups=stickerGroups.filter(function(g){return g.id!==id});if(activeStickerGroup===id)activeStickerGroup=stickerGroups.length?stickerGroups[0].id:"default";ensureDefaultGroup();save("nx_sticker_groups",stickerGroups);renderGroupMgrList();updateImportGroupSel();toast("已删除")}
-function clearGroupStickers(id){var g=null;for(var i=0;i<stickerGroups.length;i++){if(stickerGroups[i].id===id)g=stickerGroups[i]}if(!g)return;if(!confirm("清空「"+g.name+"」的表情包？"))return;g.stickers=[];save("nx_sticker_groups",stickerGroups);renderGroupMgrList();toast("已清空")}
+function deleteGroup(id){if(!confirm("删除此分组？"))return;stickerGroups=stickerGroups.filter(function(g){return g.id!==id});if(activeStickerGroup===id)activeStickerGroup=stickerGroups.length?stickerGroups[0].id:"default";ensureDefaultGroup();save("nx_sticker_groups",stickerGroups);rederGroupMgrList();updateImportGroupSel();toast("已删除")}function clearGroupStickers(id){var g=null;for(var i=0;i<stickerGroups.length;i++){if(stickerGroups[i].id===id)g=stickerGroups[i]}if(!g)return;if(!confirm("清空「"+g.name+"」的表情包？"))return;g.stickers=[];save("nx_sticker_groups",stickerGroups);renderGroupMgrList();toast("已清空")}
 function importStickerURLs(){
   var gid=$("#importGroupSel").value,grp=null;for(var i=0;i<stickerGroups.length;i++){if(stickerGroups[i].id===gid)grp=stickerGroups[i]}
   if(!grp){toast("先选分组");return}
@@ -940,7 +939,7 @@ function splitOnlineBubbles(out, limit){
   var forcedCount=1;
   if(mode==="online"){
     if(!!C.multiReplyEnabled) forcedCount=pickReplyCount();
-    sys.push({role:"system",content:"你在即时聊天模式。自然、贴人设、像真人发消息。默认自适应1~3条；若多条请使用<msg>内容</msg>包裹每条。不要舞台说明，不要模板腔。"});
+    sys.push({role:"system",content:"你在即时聊天模式。自然、贴人设、像真人发消息。多条请使用<msg>内容</msg>包裹每条。不要舞台说明，不要模板腔。"});
     if(!!C.multiReplyEnabled){
       sys.push({role:"system",content:"这次请回复"+forcedCount+"条，严格使用<msg>...</msg>包裹每条。"});
     }
@@ -1172,7 +1171,9 @@ window.requestReply = function(){
       .split(/\n+/)
       .map(function(x){ return x.trim(); })
       .filter(Boolean);
-  }// 覆盖：仅在需要时才限制条数
+  }
+
+  // 覆盖：仅在需要时才限制条数
   window.splitOnlineBubbles = function(out, limit){
     out = (out || "").trim();
     var arr = extractMsgTags(out);
@@ -1629,7 +1630,8 @@ window.requestReply = function(){
           role:"system",
           content:
 `你正在进行沉浸式角色扮演，必须严格遵守：
-1）只输出剧情，不解释规则，不提“模式/系统/AI”。2）先写状态栏，再写正文。格式必须是：
+1）只输出剧情，不解释规则，不提“模式/系统/AI”。
+2）先写状态栏，再写正文。格式必须是：
 『时间』：
 『地点』：
 『人物』：
@@ -2727,7 +2729,411 @@ window.requestReply = function(){
     }
   };
 
-  
+  /* ---------- 长按多选工具 ---------- */
+  var __selMode = false;
+  var __selSet = new Set();
+  var __pressTimer = null;
+  var __chat = document.getElementById("chat");
+
+  function ensureTools(){
+    if(document.getElementById("msgTools")) return;
+    var box = document.createElement("div");
+    box.id = "msgTools";
+    box.innerHTML = [
+      '<button class="tbtn" data-act="hide">隐藏(不给AI)</button>',
+      '<button class="tbtn" data-act="unhide">取消隐藏</button>',
+      '<button class="tbtn" data-act="quote">引用</button>',
+      '<button class="tbtn" data-act="edit">编辑</button>',
+      '<button class="tbtn" data-act="regen">重刷</button>',
+      '<button class="tbtn" data-act="del">删除</button>',
+      '<button class="tbtn" data-act="cancel">取消</button>'
+    ].join("");
+    document.body.appendChild(box);
+
+    box.addEventListener("click", function(e){
+      var b = e.target.closest("button.tbtn"); if(!b) return;
+      var act = b.dataset.act;
+      var H = currentHistory();
+      var idxs = Array.from(__selSet).sort(function(a,b){return a-b});
+
+      if(act==="cancel"){ exitSel(); return; }
+      if(!idxs.length){ toast("未选消息"); return; }
+
+      if(act==="hide"){
+        idxs.forEach(function(i){ if(H[i]) H[i].hiddenFromAI = true; });
+        save("nx_hmap",HMap); renderChat(); toast("已隐藏给AI");
+      }else if(act==="unhide"){
+        idxs.forEach(function(i){ if(H[i]) H[i].hiddenFromAI = false; });
+        save("nx_hmap",HMap); renderChat(); toast("已取消隐藏");
+      }else if(act==="del"){
+        for(var i=idxs.length-1;i>=0;i--) H.splice(idxs[i],1);
+        save("nx_hmap",HMap); renderChat(); toast("已删除");
+      }else if(act==="quote"){
+        if(idxs.length!==1){ toast("引用需选1条"); return; }
+        var m = H[idxs[0]]; if(!m){ toast("无效"); return; }
+        var inp = $("#inp");
+        inp.value = (inp.value?inp.value+"\n":"") + "> " + (m.content||"");
+        autoGrow(inp); inp.focus();
+        exitSel();
+      }else if(act==="edit"){
+        if(idxs.length!==1){ toast("编辑需选1条"); return; }
+        var em = H[idxs[0]]; if(!em || em.type!=="text"){ toast("仅文本可编辑"); return; }
+        var nv = prompt("编辑消息", em.content||"");
+        if(nv==null) return;
+        em.content = nv.trim();
+        em.edited = true;
+        save("nx_hmap",HMap); renderChat(); toast("已编辑");
+      }else if(act==="regen"){
+        if(idxs.length!==1){ toast("重刷需选1条"); return; }
+        var ri = idxs[0], rm = H[ri];
+        if(!rm || rm.role!=="assistant"){ toast("请选AI消息"); return; }
+        H.splice(ri,1); // 删除这条再重刷
+        save("nx_hmap",HMap); renderChat(); exitSel();
+        requestReply();
+      }
+    });
+  }
+
+  function showTools(){ ensureTools(); document.getElementById("msgTools").classList.add("show"); }
+  function hideTools(){ var x=document.getElementById("msgTools"); if(x) x.classList.remove("show"); }
+  function enterSel(idx){
+    __selMode = true; __selSet.clear(); __selSet.add(idx);
+    paintSel(); showTools();
+  }
+  function exitSel(){
+    __selMode = false; __selSet.clear(); paintSel(); hideTools();
+  }
+  function toggleSel(idx){
+    if(__selSet.has(idx)) __selSet.delete(idx); else __selSet.add(idx);
+    if(!__selSet.size){ exitSel(); return; }
+    paintSel();
+  }
+  function paintSel(){
+    var nodes = document.querySelectorAll("#chat .line .msg");
+    nodes.forEach(function(el){
+      var i = parseInt(el.dataset.idx,10);
+      el.classList.toggle("sel", __selSet.has(i));
+    });
+  }
+
+  if(__chat){
+    __chat.addEventListener("touchstart", function(e){
+      var m = e.target.closest(".msg");
+      if(!m) return;
+      var idx = parseInt(m.dataset.idx,10);
+      if(isNaN(idx)) return;
+
+      __pressTimer = setTimeout(function(){
+        enterSel(idx);
+      }, 420);
+    }, {passive:true});
+
+    __chat.addEventListener("touchend", function(){ clearTimeout(__pressTimer); }, {passive:true});
+    __chat.addEventListener("touchmove", function(){ clearTimeout(__pressTimer); }, {passive:true});
+
+    __chat.addEventListener("click", function(e){
+      var m = e.target.closest(".msg");
+      if(!m) return;
+      var idx = parseInt(m.dataset.idx,10);
+      if(isNaN(idx)) return;
+
+      if(__selMode){
+        e.preventDefault();
+        toggleSel(idx);
+      }
+    });
+  }
+
+  // 初始刷新一次
+  renderChat();
+})();
+/* ===== Noctis v9 patch: undo + favorites + better quote + online free natural ===== */
+(function () {
+  if (window.__NX_V9_PATCHED__) return;
+  window.__NX_V9_PATCHED__ = true;
+
+  /* -------------------- style -------------------- */
+  const st = document.createElement("style");
+  st.textContent = `
+    .chat.online .msg{max-width:66% !important;} /* 再窄一点，像QQ微信 */
+    .chat.offline .msg{max-width:94% !important;}
+
+    .qbar{
+      display:none; align-items:center; justify-content:space-between; gap:8px;
+      border:1px solid var(--bd); background:var(--bg2); border-radius:10px;
+      padding:7px 10px; font-size:12px; color:var(--tx2);
+    }
+    .qbar.show{display:flex;}
+    .qtxt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80%}
+    .qclose{border:none;background:var(--bg3);color:var(--tx2);border-radius:8px;padding:2px 8px}
+
+    .quoteBlock{
+      border-left:3px solid #5aa3ff; background:rgba(90,163,255,.12);
+      border-radius:8px; padding:6px 8px; margin-bottom:7px; font-size:12px; color:#cfe2ff;
+    }
+
+    .favBtn{
+      width:30px;height:30px;border:1px solid var(--bd);border-radius:10px;background:var(--bg3);color:#f8d67a;
+      display:grid;place-items:center;font-size:14px;margin-left:8px;
+    }
+
+    .favModal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;z-index:10000;align-items:center;justify-content:center}
+    .favModal.show{display:flex}
+    .favCard{width:min(94vw,430px);max-height:80vh;background:var(--bg2);border:1px solid var(--bd);border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
+    .favHd{padding:10px 12px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center}
+    .favBd{padding:10px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+    .favIt{border:1px solid var(--bd);border-radius:10px;background:var(--bg3);padding:8px 10px;font-size:12px;line-height:1.55}
+    .favMeta{font-size:11px;color:var(--tx3);margin-bottom:4px}
+  `;
+  document.head.appendChild(st);
+
+  /* -------------------- state -------------------- */
+  let __undoStack = [];
+  let __quote = null; // {idx, role, time, content}
+  const MAX_UNDO = 30;
+
+  function pushUndo(op){
+    __undoStack.push(op);
+    if(__undoStack.length > MAX_UNDO) __undoStack.shift();
+  }
+  function getSelIdx(){
+    return Array.from(document.querySelectorAll("#chat .msg.sel"))
+      .map(n => parseInt(n.dataset.idx,10))
+      .filter(n => !isNaN(n))
+      .sort((a,b)=>a-b);
+  }
+  function clearSelDom(){
+    document.querySelectorAll("#chat .msg.sel").forEach(n=>n.classList.remove("sel"));
+  }
+  function toastX(t){ try{toast(t)}catch(e){alert(t)} }
+
+  function ensureQuoteBar(){
+    if(document.getElementById("quoteBar")) return;
+    const bar = document.createElement("div");
+    bar.id = "quoteBar";
+    bar.className = "qbar";
+    bar.innerHTML = `<div id="quoteText" class="qtxt"></div><button class="qclose" id="quoteClose">取消</button>`;
+    const inputBar = document.querySelector(".inputBar");
+    if(inputBar){
+      const sendRow = inputBar.querySelector(".sendRow");
+      inputBar.insertBefore(bar, sendRow);
+    }
+    document.getElementById("quoteClose").onclick = function(){
+      __quote = null;
+      refreshQuoteBar();
+    };
+  }
+  function refreshQuoteBar(){
+    ensureQuoteBar();
+    const bar = document.getElementById("quoteBar");
+    const txt = document.getElementById("quoteText");
+    if(!bar || !txt) return;
+    if(!__quote){ bar.classList.remove("show"); txt.textContent = ""; return; }
+    txt.textContent = `引用 ${__quote.role==="assistant"?"AI":"你"} ${__quote.time||""}：${String(__quote.content||"").slice(0,60)}`;
+    bar.classList.add("show");
+  }
+
+  /* -------------------- 收藏夹 -------------------- */
+  function ensureFavModal(){
+    if(document.getElementById("favModal")) return;
+    const m = document.createElement("div");
+    m.id = "favModal";
+    m.className = "favModal";
+    m.innerHTML = `
+      <div class="favCard">
+        <div class="favHd"><b>收藏夹</b><button class="modalClose" id="favClose">✕</button></div>
+        <div id="favBody" class="favBd"></div>
+      </div>`;
+    document.body.appendChild(m);
+    document.getElementById("favClose").onclick = ()=>m.classList.remove("show");
+    m.addEventListener("click",e=>{ if(e.target===m) m.classList.remove("show"); });
+  }
+  function openFav(){
+    ensureFavModal();
+    const body = document.getElementById("favBody");
+    const H = currentHistory();
+    const items = [];
+    H.forEach((m,idx)=>{ if(m && m.fav) items.push({m,idx}); });
+
+    if(!items.length){
+      body.innerHTML = `<div class="favIt">还没有收藏消息。</div>`;
+    }else{
+      body.innerHTML = items.map(({m,idx})=>`
+        <div class="favIt">
+          <div class="favMeta">#${idx} · ${m.role==="assistant"?"AI":"你"} · ${m.time||""}</div>
+          <div>${(m.content||"").replace(/</g,"<").replace(/>/g,">").slice(0,220)}</div>
+        </div>
+      `).join("");
+    }
+    document.getElementById("favModal").classList.add("show");
+  }
+  function ensureFavBtn(){
+    const hd = document.querySelector(".hd");
+    if(!hd || document.getElementById("favOpenBtn")) return;
+    const btn = document.createElement("button");
+    btn.id = "favOpenBtn";
+    btn.className = "favBtn";
+    btn.textContent = "★";
+    btn.onclick = openFav;
+    hd.appendChild(btn);
+  }
+
+  /* -------------------- 引用渲染（QQ/微信样式） -------------------- */
+  const oldRenderMsgContent = window.renderMsgContent;
+  window.renderMsgContent = function(m){
+    if(m && m.type==="text" && m.quote && m.quote.text){
+      const q = m.quote;
+      const quoteHtml = `<div class="quoteBlock"><b>${q.from||"引用"}</b> ${q.time||""}<br>${String(q.text).replace(/</g,"<").replace(/>/g,">").slice(0,120)}</div>`;
+      return quoteHtml + markdownToHtml(m.content||"");
+    }
+    return oldRenderMsgContent ? oldRenderMsgContent(m) : markdownToHtml((m&&m.content)||"");
+  };
+
+  /* -------------------- 多选工具增强：全选/撤销/收藏 -------------------- */
+  function patchMsgTools(){
+    const tools = document.getElementById("msgTools");
+    if(!tools || tools.dataset.v9patched==="1") return;
+    tools.dataset.v9patched = "1";
+
+    const ext = document.createElement("div");
+    ext.style.display = "contents";
+    ext.innerHTML = `
+      <button class="tbtn" data-act="all">全选</button>
+      <button class="tbtn" data-act="undo">撤销</button>
+      <button class="tbtn" data-act="fav">收藏</button>
+      <button class="tbtn" data-act="unfav">取消收藏</button>
+    `;
+    tools.appendChild(ext);
+
+    tools.addEventListener("click", function(e){
+      const b = e.target.closest("button.tbtn");
+      if(!b) return;
+      const act = b.dataset.act;
+      if(!act) return;
+
+      const H = currentHistory();
+      const idxs = getSelIdx();
+
+      // 拦截新动作
+      if(["all","undo","fav","unfav","quote","hide","unhide","del","edit"].includes(act)){
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+
+      if(act==="all"){
+        document.querySelectorAll("#chat .msg").forEach(n=>n.classList.add("sel"));
+        return;
+      }
+      if(act==="undo"){
+        const op = __undoStack.pop();
+        if(!op){ toastX("没有可撤销操作"); return; }
+        if(op.type==="hide"){
+          op.data.forEach(x=>{ if(H[x.idx]) H[x.idx].hiddenFromAI = x.prev; });
+        }else if(op.type==="fav"){
+          op.data.forEach(x=>{ if(H[x.idx]) H[x.idx].fav = x.prev; });
+        }else if(op.type==="edit"){
+          if(H[op.idx]) H[op.idx].content = op.prev;
+        }else if(op.type==="del"){
+          // 逆序插回
+          op.items.forEach(x=>H.splice(x.idx,0,x.msg));
+        }
+        save("nx_hmap",HMap); renderChat(); toastX("已撤销");
+        return;
+      }
+      if(act==="fav" || act==="unfav"){
+        if(!idxs.length){ toastX("先选消息"); return; }
+        const to = act==="fav";
+        const memo = [];
+        idxs.forEach(i=>{ if(H[i]){ memo.push({idx:i,prev:!!H[i].fav}); H[i].fav = to; }});
+        pushUndo({type:"fav",data:memo});
+        save("nx_hmap",HMap); renderChat(); toastX(to?"已收藏":"已取消收藏");
+        return;
+      }
+
+      // 覆盖旧引用逻辑：改成引用条
+      if(act==="quote"){
+        if(idxs.length!==1){ toastX("引用需选1条"); return; }
+        const m = H[idxs[0]];
+        if(!m){ toastX("无效消息"); return; }
+        __quote = {
+          idx: idxs[0],
+          role: m.role,
+          time: m.time || "",
+          content: m.content || ""
+        };
+        refreshQuoteBar();
+        clearSelDom();
+        return;
+      }
+
+      // hide/unhide/del/edit 做撤销记录
+      if(act==="hide" || act==="unhide"){
+        if(!idxs.length){ toastX("先选消息"); return; }
+        const target = (act==="hide");
+        const memo = [];
+        idxs.forEach(i=>{ if(H[i]){ memo.push({idx:i,prev:!!H[i].hiddenFromAI}); H[i].hiddenFromAI = target; }});
+        pushUndo({type:"hide",data:memo});
+        save("nx_hmap",HMap); renderChat(); toastX(target?"已隐藏给AI":"已取消隐藏");
+        return;
+      }
+      if(act==="edit"){
+        if(idxs.length!==1){ toastX("编辑需选1条"); return; }
+        const i = idxs[0], m = H[i];
+        if(!m || m.type!=="text"){ toastX("仅文本可编辑"); return; }
+        const nv = prompt("编辑消息", m.content||"");
+        if(nv==null) return;
+        pushUndo({type:"edit",idx:i,prev:m.content||""});
+        m.content = nv.trim();
+        save("nx_hmap",HMap); renderChat(); toastX("已编辑");
+        return;
+      }
+      if(act==="del"){
+        if(!idxs.length){ toastX("先选消息"); return; }
+        const removed = [];
+        for(let k=idxs.length-1;k>=0;k--){
+          const i = idxs[k];
+          if(H[i]) removed.push({idx:i,msg:JSON.parse(JSON.stringify(H[i]))});
+          H.splice(i,1);
+        }
+        removed.sort((a,b)=>a.idx-b.idx);
+        pushUndo({type:"del",items:removed});
+        save("nx_hmap",HMap); renderChat(); toastX("已删除");
+        return;
+      }
+    }, true);
+  }
+
+  /* -------------------- 发送时挂载引用 -------------------- */
+  function buildQuoteObj(){
+    if(!__quote) return null;
+    return {
+      from: __quote.role==="assistant" ? "AI" : "你",
+      time: __quote.time || "",
+      text: String(__quote.content||"")
+    };
+  }
+
+  // 覆盖 queueMessage（点+暂存时也能带引用）
+  const oldQueue = window.queueMessage;
+  window.queueMessage = function(){
+    const inp = document.getElementById("inp");
+    const text = (inp && inp.value ? inp.value : "").trim();
+    if(!text) return oldQueue && oldQueue();
+
+    const role = currentRole();
+    if(!role){ toastX("先选角色"); return; }
+
+    const H = currentHistory();
+    H.push({
+      role:"user", type:"text", content:text, time:now(), mode:C.chatMode||"online",
+      quote: buildQuoteObj()
+    });
+    save("nx_hmap",HMap);
+    inp.value=""; inp.style.height="auto";
+    __quote = null; refreshQuoteBar();
+    renderChat(); toastX("已暂存");
+  };
+
   /* -------------------- 线上自由模式重写（更自然 + 禁出戏 + 动态条数） -------------------- */
   function parseMsgs(out){
     out = String(out||"").trim();
@@ -3148,7 +3554,8 @@ window.requestReply = function(){
     #nxQuick{display:flex;gap:6px;margin:6px 0;}
     #nxQuick .qbtn{border:1px solid var(--bd);background:var(--bg3);color:var(--tx2);border-radius:10px;padding:6px 8px;font-size:12px;}
     #quoteBar{display:none;border:1px solid var(--bd);background:var(--bg2);border-radius:10px;padding:6px 8px;font-size:12px;color:var(--tx2);}
-    #quoteBar.show{display:flex;justify-content:space-between;gap:8px;}#favModal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:10000;}
+    #quoteBar.show{display:flex;justify-content:space-between;gap:8px;}
+    #favModal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:10000;}
     #favModal.show{display:flex;}
     #favCard{width:min(94vw,420px);max-height:80vh;background:var(--bg2);border:1px solid var(--bd);border-radius:14px;display:flex;flex-direction:column;}
     #favHd{padding:10px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;}
@@ -3307,7 +3714,132 @@ window.requestReply = function(){
     paintSel();
     refreshQuoteBar();
   };
-/* ---------- 样式：隐藏旧排排坐，改悬浮按钮 ---------- */
+
+  // 导出：带隐藏/收藏统计
+  window.exportAllData=function(){
+    const data={version:4,nx_cfg:C,nx_roles:roles,nx_active_role:activeRoleId,nx_hmap:HMap,nx_sticker_groups:stickerGroups,nx_worldbook:worldbook};
+    let hidden=0,fav=0;
+    Object.keys(HMap||{}).forEach(k=>(HMap[k]||[]).forEach(m=>{ if(m&&m.hiddenFromAI) hidden++; if(m&&m.fav) fav++; }));
+    data.nx_meta={hiddenCount:hidden,favCount:fav,exportedAt:Date.now()};
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="noctis-backup-v4-"+Date.now()+".json";
+    a.click(); URL.revokeObjectURL(a.href);
+    toast("已导出（含隐藏/收藏标记）");
+  };
+
+  // 发消息时挂引用
+  function quoteObj(){ return NX.quote?{from:NX.quote.from,time:NX.quote.time,text:NX.quote.text}:null; }
+
+  // 改 queueMessage
+  window.queueMessage=function(){
+    if($("#lockMask").classList.contains("show")) return;
+    const inp=$("#inp"),text=(inp&&inp.value?inp.value:"").trim(); if(!text) return;
+    const role=currentRole(); if(!role){ toast("先选角色"); return; }
+    inp.value=""; inp.style.height="auto";
+    currentHistory().push({role:"user",type:"text",content:text,time:now(),mode:nowMode(),quote:quoteObj()});
+    NX.quote=null; refreshQuoteBar();
+    save("nx_hmap",HMap); renderChat(); toast("已暂存");
+  };
+
+  // 统一 requestReply：线下当轮切换 + 线上防“继续”
+  window.requestReply=async function(){
+    if($("#lockMask").classList.contains("show")||streaming) return;
+    const role=currentRole(); if(!role){toast("先选角色");return;}
+    if(!C.url||!C.key||!C.model){toast("先配置API");return;}
+
+    const mode=nowMode();
+
+    // 把输入框文本也发送
+    const inp=$("#inp"),text=(inp&&inp.value?inp.value:"").trim();
+    if(text){
+      currentHistory().push({role:"user",type:"text",content:text,time:now(),mode:mode,quote:quoteObj()});
+      NX.quote=null; refreshQuoteBar();
+      save("nx_hmap",HMap); inp.value=""; inp.style.height="auto"; renderChat();
+    }
+
+    const H=currentHistory(); if(!H.length){toast("先发点内容");return;}
+    const convo=toLLM(H),lastU=lastUser(H);
+
+    const sys=[];
+    sys.push({role:"system",content:"你当前角色名："+(role.name||"未命名")+"。必须贴合该角色人设说话。"});
+    if(role.prompt) sys.push({role:"system",content:role.prompt});
+    const wb=buildWBSystemPrompt(lastU); if(wb) sys.push({role:"system",content:wb});
+
+    streaming=true; $("#replyBtn").disabled=true; $("#status").textContent="输入中..."; addTyping();
+
+    try{
+      let arr=[];
+      if(mode==="online"){
+        arr=await genOnline(sys,convo,lastU);
+      }else{
+        arr=[await genOffline(sys,convo)];
+      }
+
+      removeTyping();
+      arr.forEach(t=>H.push({role:"assistant",type:"text",content:t,time:now(),mode:mode}));
+      save("nx_hmap",HMap); renderChat();
+    }catch(e){
+      removeTyping();
+      H.push({role:"assistant",type:"text",content:"[请求失败] "+String(e.message||e).slice(0,220),time:now(),mode:mode});
+      save("nx_hmap",HMap); renderChat();
+    }finally{
+      streaming=false; $("#replyBtn").disabled=false; setStatus();
+    }
+  };
+
+  ensureQuickUI();
+  renderChat();
+})();
+/* ===== v11-A: 收藏管理 + 悬浮工具 + 我的人人设绑定 ===== */
+(function(){
+  if(window.__NX_V11A__) return;
+  window.__NX_V11A__ = true;
+
+  /* ---------- 数据 ---------- */
+  var meProfiles = load("nx_me_profiles", []);
+  var roleMeMap  = load("nx_role_me_map", {}); // roleId -> meProfileId
+
+  function saveMeData(){
+    save("nx_me_profiles", meProfiles);
+    save("nx_role_me_map", roleMeMap);
+  }
+  function uid2(){ return "me_"+Math.random().toString(36).slice(2,9); }
+
+  function getMeById(id){
+    for(var i=0;i<meProfiles.length;i++) if(meProfiles[i].id===id) return meProfiles[i];
+    return null;
+  }
+  function getMeForRole(roleId){
+    return getMeById(roleMeMap[roleId] || "");
+  }
+
+  /* ---------- 把“我的人设”注入到当前请求 ---------- */
+  var _req = window.requestReply;
+  window.requestReply = async function(){
+    var r = currentRole ? currentRole() : null;
+    var bak = null;
+    if(r){
+      bak = r.prompt || "";
+      var me = getMeForRole(r.id);
+      if(me && me.content){
+        r.prompt =
+          (bak ? bak + "\n\n" : "") +
+          "【用户人设档案】\n" +
+          "名称：" + (me.name || "未命名") + "\n" +
+          (me.content || "") + "\n\n" +
+          "要求：你必须把用户视为该人设对象与其互动，贴合关系与称呼；不要复述这段规则。";
+      }
+    }
+    try{
+      return await _req.apply(this, arguments);
+    }finally{
+      if(r) r.prompt = bak || "";
+    }
+  };
+
+  /* ---------- 样式：隐藏旧排排坐，改悬浮按钮 ---------- */
   var st = document.createElement("style");
   st.textContent = `
     #nxQuick{display:none !important;}
@@ -3452,9 +3984,7 @@ window.requestReply = function(){
         toast("已从收藏删除");
       };
     });
-  }
-
-  // 接管“打开收藏夹”按钮，确保每次进来都可删
+  }// 接管“打开收藏夹”按钮，确保每次进来都可删
   function hookOpenFav(){
     var b = document.getElementById("openFav");
     if(!b || b.dataset.v11a==="1") return;
@@ -3625,7 +4155,8 @@ window.requestReply = function(){
       document.querySelectorAll("#nxFavBd .favChk").forEach(function(c){ c.checked=true; });
     };
     document.getElementById("nxFavDelSel").onclick = function(){
-      var H = ch(); var ids=[];document.querySelectorAll("#nxFavBd .favChk:checked").forEach(function(c){ ids.push(parseInt(c.dataset.idx,10)); });
+      var H = ch(); var ids=[];
+      document.querySelectorAll("#nxFavBd .favChk:checked").forEach(function(c){ ids.push(parseInt(c.dataset.idx,10)); });
       if(!ids.length){ toastX("没选收藏"); return; }
       ids.forEach(function(i){ if(H[i]) H[i].fav=false; });
       try{ save("nx_hmap", HMap); }catch(e){}
@@ -3826,131 +4357,7 @@ window.requestReply = function(){
       e.preventDefault();
     }, true);
   }
-  // 导出：带隐藏/收藏统计
-  window.exportAllData=function(){
-    const data={version:4,nx_cfg:C,nx_roles:roles,nx_active_role:activeRoleId,nx_hmap:HMap,nx_sticker_groups:stickerGroups,nx_worldbook:worldbook};
-    let hidden=0,fav=0;
-    Object.keys(HMap||{}).forEach(k=>(HMap[k]||[]).forEach(m=>{ if(m&&m.hiddenFromAI) hidden++; if(m&&m.fav) fav++; }));
-    data.nx_meta={hiddenCount:hidden,favCount:fav,exportedAt:Date.now()};
-    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(blob);
-    a.download="noctis-backup-v4-"+Date.now()+".json";
-    a.click(); URL.revokeObjectURL(a.href);
-    toast("已导出（含隐藏/收藏标记）");
-  };
 
-  // 发消息时挂引用
-  function quoteObj(){ return NX.quote?{from:NX.quote.from,time:NX.quote.time,text:NX.quote.text}:null; }
-
-  // 改 queueMessage
-  window.queueMessage=function(){
-    if($("#lockMask").classList.contains("show")) return;
-    const inp=$("#inp"),text=(inp&&inp.value?inp.value:"").trim(); if(!text) return;
-    const role=currentRole(); if(!role){ toast("先选角色"); return; }
-    inp.value=""; inp.style.height="auto";
-    currentHistory().push({role:"user",type:"text",content:text,time:now(),mode:nowMode(),quote:quoteObj()});
-    NX.quote=null; refreshQuoteBar();
-    save("nx_hmap",HMap); renderChat(); toast("已暂存");
-  };
-
-  // 统一 requestReply：线下当轮切换 + 线上防“继续”
-  window.requestReply=async function(){
-    if($("#lockMask").classList.contains("show")||streaming) return;
-    const role=currentRole(); if(!role){toast("先选角色");return;}
-    if(!C.url||!C.key||!C.model){toast("先配置API");return;}
-
-    const mode=nowMode();
-
-    // 把输入框文本也发送
-    const inp=$("#inp"),text=(inp&&inp.value?inp.value:"").trim();
-    if(text){
-      currentHistory().push({role:"user",type:"text",content:text,time:now(),mode:mode,quote:quoteObj()});
-      NX.quote=null; refreshQuoteBar();
-      save("nx_hmap",HMap); inp.value=""; inp.style.height="auto"; renderChat();
-    }
-
-    const H=currentHistory(); if(!H.length){toast("先发点内容");return;}
-    const convo=toLLM(H),lastU=lastUser(H);
-
-    const sys=[];
-    sys.push({role:"system",content:"你当前角色名："+(role.name||"未命名")+"。必须贴合该角色人设说话。"});
-    if(role.prompt) sys.push({role:"system",content:role.prompt});
-    const wb=buildWBSystemPrompt(lastU); if(wb) sys.push({role:"system",content:wb});
-
-    streaming=true; $("#replyBtn").disabled=true; $("#status").textContent="输入中..."; addTyping();
-
-    try{
-      let arr=[];
-      if(mode==="online"){
-        arr=await genOnline(sys,convo,lastU);
-      }else{
-        arr=[await genOffline(sys,convo)];
-      }
-
-      removeTyping();
-      arr.forEach(t=>H.push({role:"assistant",type:"text",content:t,time:now(),mode:mode}));
-      save("nx_hmap",HMap); renderChat();
-    }catch(e){
-      removeTyping();
-      H.push({role:"assistant",type:"text",content:"[请求失败] "+String(e.message||e).slice(0,220),time:now(),mode:mode});
-      save("nx_hmap",HMap); renderChat();
-    }finally{
-      streaming=false; $("#replyBtn").disabled=false; setStatus();
-    }
-  };
-
-  ensureQuickUI();
-  renderChat();
-})();
-/* ===== v11-A: 收藏管理 + 悬浮工具 + 我的人人设绑定 ===== */
-(function(){
-  if(window.__NX_V11A__) return;
-  window.__NX_V11A__ = true;
-
-  /* ---------- 数据 ---------- */
-  var meProfiles = load("nx_me_profiles", []);
-  var roleMeMap  = load("nx_role_me_map", {}); // roleId -> meProfileId
-
-  function saveMeData(){
-    save("nx_me_profiles", meProfiles);
-    save("nx_role_me_map", roleMeMap);
-  }
-  function uid2(){ return "me_"+Math.random().toString(36).slice(2,9); }
-
-  function getMeById(id){
-    for(var i=0;i<meProfiles.length;i++) if(meProfiles[i].id===id) return meProfiles[i];
-    return null;
-  }
-  function getMeForRole(roleId){
-    return getMeById(roleMeMap[roleId] || "");
-  }
-
-  /* ---------- 把“我的人设”注入到当前请求 ---------- */
-  var _req = window.requestReply;
-  window.requestReply = async function(){
-    var r = currentRole ? currentRole() : null;
-    var bak = null;
-    if(r){
-      bak = r.prompt || "";
-      var me = getMeForRole(r.id);
-      if(me && me.content){
-        r.prompt =
-          (bak ? bak + "\n\n" : "") +
-          "【用户人设档案】\n" +
-          "名称：" + (me.name || "未命名") + "\n" +
-          (me.content || "") + "\n\n" +
-          "要求：你必须把用户视为该人设对象与其互动，贴合关系与称呼；不要复述这段规则。";
-      }
-    }
-    try{
-      return await _req.apply(this, arguments);
-    }finally{
-      if(r) r.prompt = bak || "";
-    }
-  };
-
-  
   /* ---------- 我的人设 ---------- */
   var meProfiles = load("nx_me_profiles_fix", []);
   var roleMeMap = load("nx_role_me_map_fix", {});
@@ -4076,7 +4483,8 @@ window.requestReply = function(){
           "【用户人设】\n名称："+(me.name||"未命名")+"\n"+me.content+
           "\n要求：按该用户设定互动，不要复述规则。";
       }
-	}try{
+    }
+    try{
       return await _request.apply(this, arguments);
     }finally{
       if(r) r.prompt = oldPrompt || "";
@@ -4098,1046 +4506,6 @@ window.requestReply = function(){
   }
   boot();
 })();
-</script><script>
-(function () {
-  // A. 强制禁用聊天区文本选中/系统菜单
-  var st = document.createElement("style");
-  st.textContent = `
-    #chat, #chat * {
-      -webkit-user-select: none !important;
-      user-select: none !important;
-      -webkit-touch-callout: none !important;
-    }
-  `;
-  document.head.appendChild(st);
-
-  // B. 拦截系统 contextmenu
-  document.addEventListener("contextmenu", function(e){
-    if (e.target && e.target.closest && e.target.closest(".msg")) {
-      e.preventDefault();
-    }
-  }, true);
-
-  // C. 一旦在消息上出现系统选区，立即清掉（防“拷贝/查询”条）
-  document.addEventListener("selectionchange", function(){
-    var sel = window.getSelection && window.getSelection();
-    if (!sel || !sel.rangeCount) return;
-    var n = sel.anchorNode;
-    var el = n && (n.nodeType === 3 ? n.parentElement : n);
-    if (el && el.closest && el.closest(".msg")) {
-      try { sel.removeAllRanges(); } catch(e){}
-    }
-  }, true);
-
-  // D. 让你自己的底部菜单触摸时不被外层误关
-  ["#lpSheet", "#nxLPCard", "#nxOneMenu", "#nxSMenu", "#nxQqPanel"].forEach(function(sel){
-    var box = document.querySelector(sel);
-    if (!box) return;
-    box.addEventListener("touchstart", function(e){ e.stopPropagation(); }, {passive:true});
-    box.addEventListener("touchmove", function(e){ e.stopPropagation(); }, {passive:true});
-    box.addEventListener("touchend", function(e){ e.stopPropagation(); }, {passive:true});
-  });
-})();
-</script><script>
-/* ===== NX 收口优化（在现有版本上增强） ===== */
-(function(){
-  if(window.__NX_POLISH__) return;
-  window.__NX_POLISH__ = true;
-
-  const $ = s => document.querySelector(s);
-  const $$ = s => Array.from(document.querySelectorAll(s));
-  const H = () => (typeof currentHistory === "function" ? currentHistory() : []);
-  const toastX = t => { try{ toast(t) }catch(e){} };
-
-  // ---------- 样式优化 ----------
-  const st = document.createElement("style");
-  st.textContent = `
-    /* 菜单更紧凑 */
-    #nxLPCard{
-      max-height:62vh !important;
-      overflow:auto !important;
-      display:grid !important;
-      grid-template-columns:repeat(3,minmax(0,1fr)) !important;
-      gap:8px !important;
-      padding:10px !important;
-    }
-    #nxLPCard .op{
-      margin:0 !important;
-      text-align:center !important;
-      padding:11px 6px !important;
-      font-size:14px !important;
-      border-radius:12px !important;
-    }
-    #nxLPCard .op.full{grid-column:1 / -1 !important;}
-
-    /* 引用条 */
-    #qqQuoteBar{
-      display:none;
-      border:1px solid var(--bd);
-      border-radius:10px;
-      background:var(--bg2);
-      color:var(--tx2);
-      padding:7px 10px;
-      margin-bottom:6px;
-      font-size:12px;
-    }
-    #qqQuoteBar.show{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-    #qqQuoteBar .x{
-      border:none;background:var(--bg3);color:var(--tx2);
-      border-radius:8px;padding:2px 8px;
-    }
-
-    .qqQuoteBlock{
-      border-left:3px solid #2f8cff;
-      background:rgba(47,140,255,.15);
-      border-radius:8px;
-      padding:6px 8px;
-      margin-bottom:7px;
-      font-size:12px;
-      color:#cfe1ff;
-      line-height:1.45;
-    }
-
-    /* 大编辑弹窗 */
-    #qqEditMask{
-      position:fixed;inset:0;display:none;z-index:12050;
-      background:rgba(0,0,0,.52);
-      align-items:flex-end;justify-content:center;
-    }
-    #qqEditMask.show{display:flex;}
-    #qqEditCard{
-      width:100%;max-width:560px;
-      background:#fff;color:#111;
-      border-radius:16px 16px 0 0;
-      padding:14px 12px 12px;
-    }
-    #qqEditCard h3{margin:0 0 8px;font-size:20px;}
-    #qqEditText{
-      width:100%;
-      min-height:45vh;
-      max-height:65vh;
-      resize:vertical;
-      border:1px solid #ddd;
-      border-radius:10px;
-      padding:10px;
-      font-size:16px;
-      line-height:1.5;
-    }
-    #qqEditAct{display:flex;justify-content:flex-end;gap:10px;margin-top:10px;}
-    #qqEditAct button{
-      border:none;border-radius:10px;padding:8px 14px;font-size:15px;
-    }
-    #qqEditCancel{background:#e9ebf2;color:#222;}
-    #qqEditOk{background:#1677ff;color:#fff;}
-
-    /* 聊天气泡区域禁系统选择条 */
-    #chat,#chat *{
-      -webkit-user-select:none !important;
-      user-select:none !important;
-      -webkit-touch-callout:none !important;
-    }
-  `;
-  document.head.appendChild(st);
-
-  // ---------- 菜单不闪退 ----------
-  function guardMenuTouch(){
-    const box = $("#nxLPCard");
-    if(!box || box.dataset.guard==="1") return;
-    box.dataset.guard = "1";
-    ["touchstart","touchmove","touchend","click"].forEach(evt=>{
-      box.addEventListener(evt, e=>e.stopPropagation(), {passive:true});
-    });
-  }
-
-  // ---------- 菜单按钮重排 ----------
-  function compactMenu(){
-    const box = $("#nxLPCard");
-    if(!box) return;
-    const btns = $$("#nxLPCard .op");
-    if(!btns.length) return;
-
-    // 期望顺序
-    const order = ["quote","fav","hide","unhide","edit","del","selectAll","toggleSel","undo","openFav","cancel"];
-    const map = {};
-    btns.forEach(b=>{
-      const k = b.dataset.act || "";
-      map[k] = b;
-    });
-
-    // 没有 data-act 的旧按钮不动
-    const hasData = btns.some(b=>b.dataset.act);
-    if(!hasData) return;
-
-    // 清空再按顺序塞回
-    box.innerHTML = "";
-    order.forEach(k=>{
-      if(map[k]) box.appendChild(map[k]);
-    });
-
-    // 让“打开收藏夹/取消”占整行
-    if(map.openFav) map.openFav.classList.add("full");
-    if(map.cancel) map.cancel.classList.add("full");
-  }
-
-  // ---------- 引用状态 ----------
-  let pendingQuote = null;
-  let lastMsgIdx = -1;
-
-  function ensureQuoteBar(){
-    if($("#qqQuoteBar")) return;
-    const inputBar = $(".inputBar");
-    const sendRow = inputBar && inputBar.querySelector(".sendRow");
-    if(!inputBar || !sendRow) return;
-
-    const q = document.createElement("div");
-    q.id = "qqQuoteBar";
-    q.innerHTML = `<span id="qqQuoteTxt"></span><button class="x" id="qqQuoteX">取消</button>`;
-    inputBar.insertBefore(q, sendRow);
-
-    $("#qqQuoteX").onclick = ()=>{
-      pendingQuote = null;
-      refreshQuoteBar();
-    };
-  }
-
-  function refreshQuoteBar(){
-    ensureQuoteBar();
-    const bar = $("#qqQuoteBar"), txt = $("#qqQuoteTxt");
-    if(!bar || !txt) return;
-    if(!pendingQuote){
-      bar.classList.remove("show");
-      txt.textContent = "";
-      return;
-    }
-    txt.textContent = `引用 ${pendingQuote.from}${pendingQuote.time?(" "+pendingQuote.time):""}：${String(pendingQuote.text||"").slice(0,46)}`;
-    bar.classList.add("show");
-  }
-
-  // ---------- 消息渲染：引用块 ----------
-  const oldRenderMsgContent = window.renderMsgContent;
-  window.renderMsgContent = function(m){
-    if(m && m.type==="text" && m.quote && m.quote.text){
-      const qh = `<div class="qqQuoteBlock"><b>${String(m.quote.from||"引用").replace(/</g,"<")}</b> ${String(m.quote.time||"").replace(/</g,"<")}<br>${String(m.quote.text||"").replace(/</g,"<").slice(0,110)}</div>`;
-      return qh + (typeof markdownToHtml==="function" ? markdownToHtml(m.content||"") : (m.content||""));
-    }
-    return oldRenderMsgContent ? oldRenderMsgContent(m) : (m && m.content) || "";
-  };
-
-  // ---------- 大编辑 ----------
-  function ensureEditModal(){
-    if($("#qqEditMask")) return;
-    const m = document.createElement("div");
-    m.id = "qqEditMask";
-    m.innerHTML = `
-      <div id="qqEditCard">
-        <h3>编辑消息</h3>
-        <textarea id="qqEditText"></textarea>
-        <div id="qqEditAct">
-          <button id="qqEditCancel">取消</button>
-          <button id="qqEditOk">保存</button>
-        </div>
-      </div>`;
-    document.body.appendChild(m);
-    m.addEventListener("click", e=>{ if(e.target===m) m.classList.remove("show"); });
-    $("#qqEditCancel").onclick = ()=> m.classList.remove("show");
-  }
-
-  function openEditModal(idx){
-    const hs = H();
-    const msg = hs[idx];
-    if(!msg || msg.type!=="text"){ toastX("仅文本可编辑"); return; }
-
-    ensureEditModal();
-    $("#qqEditText").value = msg.content || "";
-    $("#qqEditMask").classList.add("show");
-
-    $("#qqEditOk").onclick = function(){
-      msg.content = ($("#qqEditText").value || "").trim();
-      save("nx_hmap", HMap);
-      renderChat();
-      $("#qqEditMask").classList.remove("show");
-      toastX("已保存");
-    };
-  }
-
-  // ---------- 捕捉最后点击消息 ----------
-  document.addEventListener("touchstart", function(e){
-    const m = e.target.closest && e.target.closest(".msg");
-    if(!m) return;
-    const i = parseInt(m.dataset.idx,10);
-    if(!isNaN(i)) lastMsgIdx = i;
-  }, {passive:true, capture:true});
-
-  // ---------- 接管菜单按钮（只接管关键项） ----------
-  document.addEventListener("click", function(e){
-    const b = e.target.closest && e.target.closest("#nxLPCard .op");
-    if(!b) return;
-
-    const act = b.dataset.act || "";
-    if(!act) return;
-
-    // 只拦截引用/编辑，其他沿用你原逻辑
-    if(act==="quote"){
-      e.preventDefault();
-      e.stopImmediatePropagation();const hs = H();
-      let idx = lastMsgIdx;
-      if(idx<0 && hs.length) idx = hs.length-1;
-      const m = hs[idx];
-      if(!m){ toastX("无可引用消息"); return; }
-
-      pendingQuote = {
-        from: m.role==="assistant" ? "AI" : "你",
-        time: m.time || "",
-        text: m.content || ""
-      };
-      refreshQuoteBar();
-      toastX("已进入引用");
-      return;
-    }
-
-    if(act==="edit"){
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      openEditModal(lastMsgIdx);
-      return;
-    }
-  }, true);
-
-  // ---------- 发送时挂 quote（不再 >AI: 文本） ----------
-  const oldQueue = window.queueMessage;
-  window.queueMessage = function(){
-    const inp = $("#inp");
-    const text = (inp && inp.value ? inp.value : "").trim();
-    if(!text) return oldQueue && oldQueue();
-
-    if(!pendingQuote) return oldQueue && oldQueue();
-
-    H().push({
-      role:"user",
-      type:"text",
-      content:text,
-      time: (typeof now==="function" ? now() : ""),
-      mode: (window.C && C.chatMode) || "online",
-      quote: JSON.parse(JSON.stringify(pendingQuote))
-    });
-    save("nx_hmap", HMap);
-    inp.value = "";
-    inp.style.height = "auto";
-    pendingQuote = null;
-    refreshQuoteBar();
-    renderChat();
-    toastX("已暂存");
-  };
-
-  // reply按钮也兼容
-  const oldReq = window.requestReply;
-  window.requestReply = async function(){
-    const inp = $("#inp");
-    const text = (inp && inp.value ? inp.value : "").trim();
-    if(text && pendingQuote){
-      H().push({
-        role:"user",
-        type:"text",
-        content:text,
-        time: (typeof now==="function" ? now() : ""),
-        mode: (window.C && C.chatMode) || "online",
-        quote: JSON.parse(JSON.stringify(pendingQuote))
-      });
-      save("nx_hmap", HMap);
-      inp.value = "";
-      inp.style.height = "auto";
-      pendingQuote = null;
-      refreshQuoteBar();
-      renderChat();
-    }
-    return oldReq.apply(this, arguments);
-  };
-
-  // ---------- 防系统右键 ----------
-  document.addEventListener("contextmenu", function(e){
-    if(e.target && e.target.closest && e.target.closest(".msg")) e.preventDefault();
-  }, true);
-
-  // ---------- 启动 ----------
-  function boot(){
-    ensureQuoteBar();
-    guardMenuTouch();
-    compactMenu();
-    refreshQuoteBar();
-    setTimeout(function(){ guardMenuTouch(); compactMenu(); }, 300);
-    setTimeout(function(){ guardMenuTouch(); compactMenu(); }, 1000);
-  }
-  boot();
-})();
-</script><script>
-/* ===== add edit action ===== */
-(function(){
-  if(window.__NX_ADD_EDIT__) return;
-  window.__NX_ADD_EDIT__ = true;
-
-  function $(s){ return document.querySelector(s); }
-  function $all(s){ return Array.from(document.querySelectorAll(s)); }
-
-  // 1) 确保消息有 idx（防止你当前版本没打 idx）
-  function ensureMsgIdx(){
-    $all("#chat .line .msg").forEach(function(el,i){ el.dataset.idx = String(i); });
-  }
-
-  // 2) 注入“编辑”按钮到你现有菜单
-  function injectEditBtn(){
-    var box = document.getElementById("nxLPCard");
-    if(!box) return;
-    if(box.querySelector('.op[data-act="edit"]')) return; // 已有就不重复加
-
-    var btn = document.createElement("button");
-    btn.className = "op";
-    btn.dataset.act = "edit";
-    btn.textContent = "编辑";
-
-    // 优先插在“删除”前
-    var del = Array.from(box.querySelectorAll(".op")).find(function(x){
-      return x.dataset.act==="del" || (x.textContent||"").indexOf("删除")>=0;
-    });
-    if(del) box.insertBefore(btn, del);
-    else box.appendChild(btn);
-  }
-
-  // 3) 大编辑弹窗
-  function ensureEditModal(){
-    if(document.getElementById("nxEditMask2")) return;
-    var m = document.createElement("div");
-    m.id = "nxEditMask2";
-    m.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.52);display:none;z-index:20000;align-items:flex-end;justify-content:center;";
-    m.innerHTML = `
-      <div style="width:100%;max-width:560px;background:#fff;color:#111;border-radius:16px 16px 0 0;padding:14px 12px;">
-        <h3 style="margin:0 0 8px;font-size:20px;">编辑消息</h3>
-        <textarea id="nxEditText2" style="width:100%;min-height:46vh;max-height:65vh;resize:vertical;padding:10px;font-size:16px;line-height:1.5;border:1px solid #ddd;border-radius:10px;"></textarea>
-        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
-          <button id="nxEditCancel2" style="border:none;padding:8px 14px;border-radius:10px;background:#e9ebf2;color:#222;">取消</button>
-          <button id="nxEditOk2" style="border:none;padding:8px 14px;border-radius:10px;background:#1677ff;color:#fff;">保存</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(m);
-    m.addEventListener("click", function(e){ if(e.target===m) m.style.display="none"; });
-    document.getElementById("nxEditCancel2").onclick = function(){ m.style.display="none"; };
-  }
-
-  function getCurrentTargetIdx(){
-    // 优先用当前选中
-    var sel = document.querySelector("#chat .msg.sel");
-    if(sel && sel.dataset.idx!=null) return parseInt(sel.dataset.idx,10);
-
-    // 其次用最后一条消息
-    ensureMsgIdx();
-    var all = $all("#chat .line .msg");
-    if(!all.length) return -1;
-    var idx = parseInt(all[all.length-1].dataset.idx,10);
-    return isNaN(idx)?-1:idx;
-  }
-
-  function openEdit(){
-    ensureMsgIdx();
-    var idx = getCurrentTargetIdx();
-    if(idx<0){ if(window.toast) toast("没找到可编辑消息"); return; }
-
-    var H = (typeof currentHistory==="function") ? currentHistory() : [];
-    var m = H[idx];
-    if(!m){ if(window.toast) toast("消息不存在"); return; }
-    if(m.type!=="text"){ if(window.toast) toast("仅文本消息可编辑"); return; }
-
-    ensureEditModal();
-    var mask = document.getElementById("nxEditMask2");
-    var ta = document.getElementById("nxEditText2");
-    ta.value = m.content || "";
-    mask.style.display = "flex";
-    ta.focus();
-
-    document.getElementById("nxEditOk2").onclick = function(){
-      m.content = (ta.value||"").trim();
-      if(typeof save==="function") save("nx_hmap", HMap);
-      if(typeof renderChat==="function") renderChat();
-      mask.style.display = "none";
-      if(window.toast) toast("已保存");
-    };
-  }
-
-  // 4) 接管菜单里的“编辑”点击
-  document.addEventListener("click", function(e){
-    var btn = e.target.closest("#nxLPCard .op");
-    if(!btn) return;
-
-    var isEdit = (btn.dataset.act==="edit") || ((btn.textContent||"").trim()==="编辑");
-    if(!isEdit) return;
-
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    openEdit();
-  }, true);
-
-  // 初始化 + 防止菜单重建后丢按钮
-  injectEditBtn();
-  setTimeout(injectEditBtn, 400);
-  setInterval(injectEditBtn, 1200);
-})();
-</script><script>
-/* ===== 编辑保存后自动退出全部面板（一次到位） ===== */
-(function () {
-  if (window.__NX_EDIT_SAVE_CLOSE_FIX__) return;
-  window.__NX_EDIT_SAVE_CLOSE_FIX__ = true;
-
-  function closeAllLayers() {
-    [
-      "nxEditMask2",   // 你当前编辑弹窗
-      "nxLPMask",      // 长按菜单层
-      "qqEditMask",
-      "nxEditMask",
-      "nxEditOnlyMask",
-      "nxForceEditMask",
-      "nxEditKeepMask",
-      "nxEditStableMask",
-      "lpSheetMask",
-      "nxMask",
-      "nxOneMask",
-      "nxQqMask"
-    ].forEach(function(id){
-      var el = document.getElementById(id);
-      if (!el) return;
-      el.classList && el.classList.remove("show");
-      el.style.display = "none";
-      el.style.pointerEvents = "none";
-    });
-
-    // 清掉选中态，防止残留
-    document.querySelectorAll("#chat .msg.sel, #chat .msg.nxActive").forEach(function(el){
-      el.classList.remove("sel", "nxActive");
-    });
-
-    try { document.activeElement && document.activeElement.blur(); } catch(e){}
-  }
-
-  // 捕获阶段接管“保存”按钮，点一次直接保存+退出
-  document.addEventListener("click", function(e){
-    var btn = e.target.closest("button");
-    if (!btn) return;
-
-    var id = btn.id || "";
-    var txt = (btn.textContent || "").trim();
-    var isSave = (id === "nxEditOk2" || id === "qqEditOk" || id === "nxEditOk") || (txt === "保存");
-
-    if (!isSave) return;
-
-    // 等原保存逻辑执行完，再统一收口关闭
-    setTimeout(function(){
-      closeAllLayers();
-      if (typeof renderChat === "function") renderChat();
-      if (typeof toast === "function") toast("已保存");
-    }, 30);
-  }, true);
-})();
-</script><script>
-/* ===== 稳定补丁：保存后自动执行“取消”，不硬关层 ===== */
-(function () {
-  if (window.__NX_SAVE_USE_CANCEL__) return;
-  window.__NX_SAVE_USE_CANCEL__ = true;
-
-  function findCancelBtn() {
-    // 优先你当前主菜单
-    var btn =
-      document.querySelector('#nxLPCard .op[data-act="cancel"]') ||
-      Array.from(document.querySelectorAll('#nxLPCard .op, #lpSheet .op, #nxOneMenu button, #nxSMenu button, #nxQqPanel button'))
-        .find(function (b) { return (b.textContent || "").trim() === "取消"; });
-    return btn || null;
-  }
-
-  function clickCancelTwice() {
-    var c = findCancelBtn();
-    if (!c) return;
-    c.click();
-    setTimeout(function () {
-      var c2 = findCancelBtn();
-      if (c2) c2.click();
-    }, 40);
-  }
-
-  // 只接管“编辑保存”按钮；其余不动
-  document.addEventListener("click", function (e) {
-    var btn = e.target.closest("button");
-    if (!btn) return;
-
-    var id = btn.id || "";
-    var txt = (btn.textContent || "").trim();
-    var isEditSave = (id === "nxEditOk2" || id === "qqEditOk" || id === "nxEditOk") || txt === "保存";
-    if (!isEditSave) return;
-
-    // 等原保存逻辑先执行，再走你自己的取消逻辑
-    setTimeout(function () {
-      // 关编辑框（仅编辑框）
-      ["nxEditMask2","qqEditMask","nxEditMask","nxEditOnlyMask","nxForceEditMask","nxEditKeepMask","nxEditStableMask"].forEach(function(id){
-        var el = document.getElementById(id);
-        if (el) { el.classList.remove("show"); el.style.display = "none"; }
-      });
-
-      // 用“取消按钮逻辑”收菜单，避免锁死
-      clickCancelTwice();
-
-      try { document.activeElement && document.activeElement.blur(); } catch(_) {}
-    }, 30);
-  }, true);
-
-  // 启动时做一次“解锁修复”（清掉历史补丁可能留下的硬锁）
-  setTimeout(function(){
-    ["nxLPMask","lpSheetMask","nxMask","nxOneMask","nxQqMask"].forEach(function(id){
-      var el = document.getElementById(id);
-      if (!el) return;
-      if (!el.classList.contains("show")) {
-        el.style.pointerEvents = "";
-        if (el.style.display === "none") el.style.display = "";
-      }
-    });
-  }, 120);
-
-})();
-</script><script>
-/* ===== 终极接管：修复“第二次长按不出菜单” + 编辑/取消稳定 ===== */
-(function () {
-  if (window.__NX_FORCE_MENU_V2__) return;
-  window.__NX_FORCE_MENU_V2__ = true;
-
-  const MENU_MASK_IDS = ["nxLPMask","lpSheetMask","nxMask","nxOneMask","nxQqMask"];
-  let holdTimer = null;
-  let activeIdx = -1;
-
-  function $all(sel){ return Array.from(document.querySelectorAll(sel)); }
-  function getH(){ return (typeof currentHistory === "function") ? currentHistory() : []; }
-
-  function clearSel(){
-    $all("#chat .msg.sel, #chat .msg.nxActive").forEach(el=>el.classList.remove("sel","nxActive"));
-  }
-
-  function markIdx(idx){
-    clearSel();
-    const el = document.querySelector('#chat .msg[data-idx="'+idx+'"]');
-    if (el) el.classList.add("sel");
-  }
-
-  function forceOpenMenu(idx){
-    activeIdx = idx;
-    markIdx(idx);
-
-    // 强制打开你现有菜单层（谁存在开谁）
-    MENU_MASK_IDS.forEach(id=>{
-      const el = document.getElementById(id);
-      if(!el) return;
-      el.classList.add("show");
-      // 关键：每次都重置，避免被旧补丁锁死
-      el.style.display = (id==="nxLPMask" || id==="lpSheetMask") ? "flex" : "block";
-      el.style.pointerEvents = "auto";
-      el.style.visibility = "visible";
-    });
-
-    // 卡片本体也放开
-    ["nxLPCard","lpSheet","nxOneMenu","nxSMenu","nxQqPanel"].forEach(id=>{
-      const el = document.getElementById(id);
-      if(!el) return;
-      el.style.pointerEvents = "auto";
-      el.style.display = "";
-      el.style.visibility = "visible";
-    });
-  }
-
-  function forceCloseMenu(){
-    MENU_MASK_IDS.forEach(id=>{
-      const el = document.getElementById(id);
-      if(!el) return;
-      el.classList.remove("show");
-      el.style.display = "none";
-    });
-    clearSel();
-  }
-
-  function ensureEditor(){
-    if (document.getElementById("nxFinalEditMask")) return;
-
-    const m = document.createElement("div");
-    m.id = "nxFinalEditMask";
-    m.style.cssText = "position:fixed;inset:0;z-index:31000;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.52)";
-    m.innerHTML = `
-      <div style="width:100%;max-width:560px;background:#fff;color:#111;border-radius:16px 16px 0 0;padding:14px 12px;">
-        <h3 style="margin:0 0 8px;font-size:20px;">编辑消息</h3>
-        <textarea id="nxFinalEditText" style="width:100%;min-height:46vh;max-height:66vh;resize:vertical;padding:10px;font-size:16px;line-height:1.5;border:1px solid #ddd;border-radius:10px;"></textarea>
-        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
-          <button id="nxFinalEditCancel" style="border:none;padding:8px 14px;border-radius:10px;background:#e9ebf2;color:#222;">取消</button>
-          <button id="nxFinalEditOk" style="border:none;padding:8px 14px;border-radius:10px;background:#1677ff;color:#fff;">保存</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(m);
-
-    m.addEventListener("click", function(e){ if(e.target===m) m.style.display="none"; });
-    document.getElementById("nxFinalEditCancel").onclick = function(){ m.style.display="none"; };
-  }
-
-  function openEditorByIdx(idx){
-    const H = getH();
-    const msg = H[idx];
-    if (!msg) { if (window.toast) toast("没找到消息"); return; }
-    if (msg.type !== "text") { if (window.toast) toast("仅文本可编辑"); return; }
-
-    ensureEditor();
-    const mask = document.getElementById("nxFinalEditMask");
-    const ta = document.getElementById("nxFinalEditText");
-    ta.value = msg.content || "";
-    mask.style.display = "flex";
-    ta.focus();
-
-    document.getElementById("nxFinalEditOk").onclick = function(){
-      msg.content = (ta.value || "").trim();
-      if (typeof save === "function") save("nx_hmap", HMap);
-      if (typeof renderChat === "function") renderChat();
-      mask.style.display = "none";
-      forceCloseMenu(); // 保存后一次退出
-      if (window.toast) toast("已保存");
-    };
-  }
-
-  // 1) 强制接管长按：每次都能弹
-  document.addEventListener("touchstart", function(e){
-    const msg = e.target.closest && e.target.closest(".msg");
-    if (!msg) return;
-
-    const idx = parseInt(msg.dataset.idx, 10);
-    if (isNaN(idx)) return;
-
-    clearTimeout(holdTimer);
-    holdTimer = setTimeout(function(){
-      forceOpenMenu(idx);
-    }, 360);
-
-    // 阻止后面一堆旧监听互相打架
-    e.stopImmediatePropagation();
-  }, {capture:true, passive:true});
-
-  document.addEventListener("touchend", function(){ clearTimeout(holdTimer); }, {capture:true, passive:true});
-  document.addEventListener("touchmove", function(){ clearTimeout(holdTimer); }, {capture:true, passive:true});
-
-  // 2) 强制接管菜单里的“取消 / 编辑”
-  document.addEventListener("click", function(e){
-    const btn = e.target.closest && e.target.closest("button");
-    if (!btn) return;
-
-    const inMenu = btn.closest("#nxLPCard, #lpSheet, #nxOneMenu, #nxSMenu, #nxQqPanel, #nxMenu");
-    if (!inMenu) return;
-
-    const txt = (btn.textContent || "").replace(/\s+/g,"");
-    const act = (btn.dataset && (btn.dataset.act || btn.dataset.a)) || "";
-
-    if (act === "cancel" || txt === "取消") {
-      e.preventDefault(); e.stopImmediatePropagation();
-      forceCloseMenu();
-      return;
-    }
-
-    if (act === "edit" || txt === "编辑") {
-      e.preventDefault(); e.stopImmediatePropagation();
-      let idx = activeIdx;
-      if (idx < 0) {
-        const sel = document.querySelector("#chat .msg.sel");
-        if (sel) {
-          const s = parseInt(sel.dataset.idx,10);
-          if (!isNaN(s)) idx = s;
-        }
-      }
-      if (idx < 0) {
-        const nodes = $all("#chat .line .msg");
-        if (nodes.length) {
-          const s = parseInt(nodes[nodes.length-1].dataset.idx,10);
-          if (!isNaN(s)) idx = s;
-        }
-      }
-      if (idx < 0) { if (window.toast) toast("先点一条消息"); return; }
-      openEditorByIdx(idx);
-      return;
-    }
-  }, true);
-
-  // 3) 周期解锁（防旧补丁把菜单层锁死）
-  setInterval(function(){
-    MENU_MASK_IDS.forEach(id=>{
-      const el = document.getElementById(id);
-      if(!el) return;
-      if (el.classList.contains("show")) {
-        el.style.pointerEvents = "auto";
-        if (id==="nxLPMask" || id==="lpSheetMask") el.style.display = "flex";
-      }
-    });
-  }, 250);
-
-  if (window.toast) toast("菜单终极修复已接管");
-})();
-</script><script>
-/* ===== 强制修复：编辑按钮每次都可点 ===== */
-(function () {
-  if (window.__NX_EDIT_BTN_FORCE_BIND__) return;
-  window.__NX_EDIT_BTN_FORCE_BIND__ = true;
-
-  let activeIdx = -1;
-
-  function getH() {
-    return (typeof currentHistory === "function") ? currentHistory() : [];
-  }
-
-  function pickMsgIdxFromEl(el){
-    if(!el) return -1;
-    const i = parseInt(el.dataset.idx, 10);
-    return isNaN(i) ? -1 : i;
-  }
-
-  // 记录当前消息索引（长按/点击都记录）
-  document.addEventListener("touchstart", function(e){
-    const msg = e.target.closest && e.target.closest(".msg");
-    const i = pickMsgIdxFromEl(msg);
-    if(i >= 0) activeIdx = i;
-  }, {capture:true, passive:true});
-
-  document.addEventListener("click", function(e){
-    const msg = e.target.closest && e.target.closest(".msg");
-    const i = pickMsgIdxFromEl(msg);
-    if(i >= 0) activeIdx = i;
-  }, true);
-
-  function ensureEditMask(){
-    if(document.getElementById("nxHardEditMask")) return;
-    const mask = document.createElement("div");
-    mask.id = "nxHardEditMask";
-    mask.style.cssText = "position:fixed;inset:0;z-index:39999;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.52)";
-    mask.innerHTML = `
-      <div style="width:100%;max-width:560px;background:#fff;color:#111;border-radius:16px 16px 0 0;padding:14px 12px;">
-        <h3 style="margin:0 0 8px;font-size:20px;">编辑消息</h3>
-        <textarea id="nxHardEditText" style="width:100%;min-height:46vh;max-height:66vh;resize:vertical;padding:10px;font-size:16px;line-height:1.5;border:1px solid #ddd;border-radius:10px;"></textarea>
-        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
-          <button id="nxHardEditCancel" style="border:none;padding:8px 14px;border-radius:10px;background:#e9ebf2;color:#222;">取消</button>
-          <button id="nxHardEditOk" style="border:none;padding:8px 14px;border-radius:10px;background:#1677ff;color:#fff;">保存</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(mask);
-    mask.addEventListener("click", function(e){ if(e.target===mask) mask.style.display="none"; });
-    document.getElementById("nxHardEditCancel").onclick = function(){ mask.style.display="none"; };
-  }
-
-  function closeMenus(){
-    ["nxLPMask","lpSheetMask","nxMask","nxOneMask","nxQqMask"].forEach(function(id){
-      const el = document.getElementById(id);
-      if(!el) return;
-      el.classList.remove("show");
-      el.style.display = "none";
-    });
-  }
-
-  function openEditorByIdx(idx){
-    const H = getH();
-    const m = H[idx];
-    if(!m){ if(window.toast) toast("没找到消息"); return; }
-    if(m.type !== "text"){ if(window.toast) toast("仅文本可编辑"); return; }
-
-    ensureEditMask();
-    const mask = document.getElementById("nxHardEditMask");
-    const ta = document.getElementById("nxHardEditText");
-    ta.value = m.content || "";
-    mask.style.display = "flex";
-    ta.focus();
-
-    document.getElementById("nxHardEditOk").onclick = function(){
-      m.content = (ta.value || "").trim();
-      if(typeof save==="function") save("nx_hmap", HMap);
-      if(typeof renderChat==="function") renderChat();
-      mask.style.display = "none";
-      closeMenus();
-      if(window.toast) toast("已保存");
-    };
-  }
-
-  // 关键：每次菜单出现，都把“编辑”按钮直接改成我们自己的 onclick（覆盖旧冲突）
-  function hardBindEditButtons(){
-    const btns = Array.from(document.querySelectorAll(
-      "#nxLPCard .op, #lpSheet .op, #nxOneMenu button, #nxSMenu button, #nxQqPanel button, #nxMenu button"
-    ));
-
-    btns.forEach(function(btn){
-      const txt = (btn.textContent || "").replace(/\s+/g, "");
-      const act = (btn.dataset && (btn.dataset.act || btn.dataset.a)) || "";
-      const isEdit = (txt.indexOf("编辑") >= 0) || (act === "edit");
-      if(!isEdit) return;
-
-      btn.onclick = function(ev){
-        ev.preventDefault();
-        ev.stopImmediatePropagation();
-
-        let idx = activeIdx;
-        if(idx < 0){
-          const sel = document.querySelector("#chat .msg.sel, #chat .msg.nxActive");
-          if(sel){
-            const s = parseInt(sel.dataset.idx,10);
-            if(!isNaN(s)) idx = s;
-          }
-        }
-        if(idx < 0){
-          const all = Array.from(document.querySelectorAll("#chat .line .msg"));
-          if(all.length){
-            const s = parseInt(all[all.length-1].dataset.idx,10);
-            if(!isNaN(s)) idx = s;
-          }
-        }
-        if(idx < 0){ if(window.toast) toast("先点一条消息"); return; }
-        openEditorByIdx(idx);
-      };
-    });
-  }
-
-  // 高频绑定，保证第二次第三次都覆盖到最新按钮
-  setInterval(hardBindEditButtons, 180);
-
-  if (window.toast) toast("编辑按钮已硬修复");
-})();
-</script><script>
-/* ===== 终修：菜单里的“编辑”按钮强制可用（替换节点清监听） ===== */
-(function(){
-  if (window.__NX_EDIT_CLONE_FIX__) return;
-  window.__NX_EDIT_CLONE_FIX__ = true;
-
-  var lastMsgIdx = -1;
-
-  function getH(){ return (typeof currentHistory === "function") ? currentHistory() : []; }
-  function toastX(t){ try{ toast(t); }catch(e){} }
-
-  // 记录最近一条被触碰的消息索引
-  document.addEventListener("touchstart", function(e){
-    var msg = e.target.closest && e.target.closest(".msg");
-    if(!msg) return;
-    var i = parseInt(msg.dataset.idx,10);
-    if(!isNaN(i)) lastMsgIdx = i;
-  }, {capture:true, passive:true});
-
-  document.addEventListener("click", function(e){
-    var msg = e.target.closest && e.target.closest(".msg");
-    if(!msg) return;
-    var i = parseInt(msg.dataset.idx,10);
-    if(!isNaN(i)) lastMsgIdx = i;
-  }, true);
-
-  function closeMenus(){
-    ["nxLPMask","lpSheetMask","nxMask","nxOneMask","nxQqMask"].forEach(function(id){
-      var el = document.getElementById(id);
-      if(!el) return;
-      el.classList.remove("show");
-      el.style.display = "none";
-    });
-  }
-
-  function ensureEditor(){
-    if(document.getElementById("nxCloneEditMask")) return;
-    var m = document.createElement("div");
-    m.id = "nxCloneEditMask";
-    m.style.cssText = "position:fixed;inset:0;z-index:45000;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.52)";
-    m.innerHTML = `
-      <div style="width:100%;max-width:560px;background:#fff;color:#111;border-radius:16px 16px 0 0;padding:14px 12px;">
-        <h3 style="margin:0 0 8px;font-size:20px;">编辑消息</h3>
-        <textarea id="nxCloneEditText" style="width:100%;min-height:46vh;max-height:66vh;resize:vertical;padding:10px;font-size:16px;line-height:1.5;border:1px solid #ddd;border-radius:10px;"></textarea>
-        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
-          <button id="nxCloneEditCancel" style="border:none;padding:8px 14px;border-radius:10px;background:#e9ebf2;color:#222;">取消</button>
-          <button id="nxCloneEditOk" style="border:none;padding:8px 14px;border-radius:10px;background:#1677ff;color:#fff;">保存</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(m);
-    m.addEventListener("click", function(e){ if(e.target===m) m.style.display="none"; });
-    document.getElementById("nxCloneEditCancel").onclick = function(){ m.style.display="none"; };
-  }
-
-  function pickIdx(){
-    if (Number.isInteger(lastMsgIdx) && lastMsgIdx >= 0) return lastMsgIdx;
-    var sel = document.querySelector("#chat .msg.sel, #chat .msg.nxActive");
-    if(sel){
-      var s = parseInt(sel.dataset.idx,10);
-      if(!isNaN(s)) return s;
-    }
-    var all = Array.from(document.querySelectorAll("#chat .line .msg"));
-    if(all.length){
-      var l = parseInt(all[all.length-1].dataset.idx,10);
-      if(!isNaN(l)) return l;
-    }
-    return -1;
-  }
-
-  function openEditor(){
-    var idx = pickIdx();
-    if(idx < 0){ toastX("先点一条消息"); return; }
-
-    var H = getH();
-    var m = H[idx];
-    if(!m){ toastX("没找到消息"); return; }
-    if(m.type !== "text"){ toastX("仅文本可编辑"); return; }
-
-    ensureEditor();
-    var mask = document.getElementById("nxCloneEditMask");
-    var ta = document.getElementById("nxCloneEditText");
-    ta.value = m.content || "";
-    mask.style.display = "flex";
-    ta.focus();
-
-    document.getElementById("nxCloneEditOk").onclick = function(){
-      m.content = (ta.value || "").trim();
-      if(typeof save === "function") save("nx_hmap", HMap);
-      if(typeof renderChat === "function") renderChat();
-      mask.style.display = "none";
-      closeMenus();
-      toastX("已保存");
-    };
-  }
-
-  function isMenuOpen(){
-    var a = document.getElementById("nxLPMask");
-    var b = document.getElementById("lpSheetMask");
-    return !!((a && a.classList.contains("show")) || (b && b.classList.contains("show")));
-  }
-
-  function patchEditButtons(){
-    // 只在菜单打开时处理
-    if(!isMenuOpen()) return;
-
-    var btns = Array.from(document.querySelectorAll(
-      "#nxLPCard .op, #lpSheet .op, #nxOneMenu button, #nxSMenu button, #nxQqPanel button, #nxMenu button"
-    ));
-
-    btns.forEach(function(btn){
-      var txt = (btn.textContent || "").replace(/\s+/g,"");
-      var act = (btn.dataset && (btn.dataset.act || btn.dataset.a)) || "";
-      var isEdit = (txt.indexOf("编辑") >= 0) || (act === "edit");
-      if(!isEdit) return;
-
-      // 已修过就跳过
-      if(btn.dataset.nxEditPatched === "1") return;
-
-      // clone 清空旧监听
-      var clone = btn.cloneNode(true);
-      clone.dataset.nxEditPatched = "1";
-
-      clone.onclick = function(ev){
-        ev.preventDefault();
-        ev.stopPropagation();
-        if(ev.stopImmediatePropagation) ev.stopImmediatePropagation();
-        openEditor();
-      };
-
-      btn.parentNode.replaceChild(clone, btn);
-    });
-  }
-
-  // 高频补丁，保证第二次/第三次菜单都能修到
-  setInterval(patchEditButtons, 120);
-
-  toastX("编辑按钮强制修复已启用");
-})();
-</script></body>
+</script>
+</body>
 </html>
