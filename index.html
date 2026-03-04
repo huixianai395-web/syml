@@ -5001,5 +5001,144 @@ window.requestReply = function(){
 
   if (window.toast) toast("编辑按钮已硬修复");
 })();
+</script><script>
+/* ===== 终修：菜单里的“编辑”按钮强制可用（替换节点清监听） ===== */
+(function(){
+  if (window.__NX_EDIT_CLONE_FIX__) return;
+  window.__NX_EDIT_CLONE_FIX__ = true;
+
+  var lastMsgIdx = -1;
+
+  function getH(){ return (typeof currentHistory === "function") ? currentHistory() : []; }
+  function toastX(t){ try{ toast(t); }catch(e){} }
+
+  // 记录最近一条被触碰的消息索引
+  document.addEventListener("touchstart", function(e){
+    var msg = e.target.closest && e.target.closest(".msg");
+    if(!msg) return;
+    var i = parseInt(msg.dataset.idx,10);
+    if(!isNaN(i)) lastMsgIdx = i;
+  }, {capture:true, passive:true});
+
+  document.addEventListener("click", function(e){
+    var msg = e.target.closest && e.target.closest(".msg");
+    if(!msg) return;
+    var i = parseInt(msg.dataset.idx,10);
+    if(!isNaN(i)) lastMsgIdx = i;
+  }, true);
+
+  function closeMenus(){
+    ["nxLPMask","lpSheetMask","nxMask","nxOneMask","nxQqMask"].forEach(function(id){
+      var el = document.getElementById(id);
+      if(!el) return;
+      el.classList.remove("show");
+      el.style.display = "none";
+    });
+  }
+
+  function ensureEditor(){
+    if(document.getElementById("nxCloneEditMask")) return;
+    var m = document.createElement("div");
+    m.id = "nxCloneEditMask";
+    m.style.cssText = "position:fixed;inset:0;z-index:45000;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.52)";
+    m.innerHTML = `
+      <div style="width:100%;max-width:560px;background:#fff;color:#111;border-radius:16px 16px 0 0;padding:14px 12px;">
+        <h3 style="margin:0 0 8px;font-size:20px;">编辑消息</h3>
+        <textarea id="nxCloneEditText" style="width:100%;min-height:46vh;max-height:66vh;resize:vertical;padding:10px;font-size:16px;line-height:1.5;border:1px solid #ddd;border-radius:10px;"></textarea>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
+          <button id="nxCloneEditCancel" style="border:none;padding:8px 14px;border-radius:10px;background:#e9ebf2;color:#222;">取消</button>
+          <button id="nxCloneEditOk" style="border:none;padding:8px 14px;border-radius:10px;background:#1677ff;color:#fff;">保存</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(m);
+    m.addEventListener("click", function(e){ if(e.target===m) m.style.display="none"; });
+    document.getElementById("nxCloneEditCancel").onclick = function(){ m.style.display="none"; };
+  }
+
+  function pickIdx(){
+    if (Number.isInteger(lastMsgIdx) && lastMsgIdx >= 0) return lastMsgIdx;
+    var sel = document.querySelector("#chat .msg.sel, #chat .msg.nxActive");
+    if(sel){
+      var s = parseInt(sel.dataset.idx,10);
+      if(!isNaN(s)) return s;
+    }
+    var all = Array.from(document.querySelectorAll("#chat .line .msg"));
+    if(all.length){
+      var l = parseInt(all[all.length-1].dataset.idx,10);
+      if(!isNaN(l)) return l;
+    }
+    return -1;
+  }
+
+  function openEditor(){
+    var idx = pickIdx();
+    if(idx < 0){ toastX("先点一条消息"); return; }
+
+    var H = getH();
+    var m = H[idx];
+    if(!m){ toastX("没找到消息"); return; }
+    if(m.type !== "text"){ toastX("仅文本可编辑"); return; }
+
+    ensureEditor();
+    var mask = document.getElementById("nxCloneEditMask");
+    var ta = document.getElementById("nxCloneEditText");
+    ta.value = m.content || "";
+    mask.style.display = "flex";
+    ta.focus();
+
+    document.getElementById("nxCloneEditOk").onclick = function(){
+      m.content = (ta.value || "").trim();
+      if(typeof save === "function") save("nx_hmap", HMap);
+      if(typeof renderChat === "function") renderChat();
+      mask.style.display = "none";
+      closeMenus();
+      toastX("已保存");
+    };
+  }
+
+  function isMenuOpen(){
+    var a = document.getElementById("nxLPMask");
+    var b = document.getElementById("lpSheetMask");
+    return !!((a && a.classList.contains("show")) || (b && b.classList.contains("show")));
+  }
+
+  function patchEditButtons(){
+    // 只在菜单打开时处理
+    if(!isMenuOpen()) return;
+
+    var btns = Array.from(document.querySelectorAll(
+      "#nxLPCard .op, #lpSheet .op, #nxOneMenu button, #nxSMenu button, #nxQqPanel button, #nxMenu button"
+    ));
+
+    btns.forEach(function(btn){
+      var txt = (btn.textContent || "").replace(/\s+/g,"");
+      var act = (btn.dataset && (btn.dataset.act || btn.dataset.a)) || "";
+      var isEdit = (txt.indexOf("编辑") >= 0) || (act === "edit");
+      if(!isEdit) return;
+
+      // 已修过就跳过
+      if(btn.dataset.nxEditPatched === "1") return;
+
+      // clone 清空旧监听
+      var clone = btn.cloneNode(true);
+      clone.dataset.nxEditPatched = "1";
+
+      clone.onclick = function(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        if(ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+        openEditor();
+      };
+
+      btn.parentNode.replaceChild(clone, btn);
+    });
+  }
+
+  // 高频补丁，保证第二次/第三次菜单都能修到
+  setInterval(patchEditButtons, 120);
+
+  toastX("编辑按钮强制修复已启用");
+})();
 </script></body>
 </html>
