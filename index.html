@@ -5238,5 +5238,136 @@ window.requestReply = function(){
   renderChat();
   toastX("编辑稳定版已接管");
 })();
+</script><script>
+(function(){
+  if(window.__NX_KEEP_FULL_MENU_EDIT_FIX__) return;
+  window.__NX_KEEP_FULL_MENU_EDIT_FIX__ = true;
+
+  // 1) 如果之前有“简化菜单”样式，强制隐藏它，恢复你的完整菜单层
+  const st = document.createElement("style");
+  st.textContent = `
+    #nxStableMask,#nxStableMenu{display:none !important;}
+    /* 恢复完整菜单（按 show 控制显示） */
+    #nxLPMask,#lpSheetMask{display:none !important;}
+    #nxLPMask.show,#lpSheetMask.show{display:flex !important;}
+  `;
+  document.head.appendChild(st);
+
+  // 2) 记录最后点击/长按的消息索引（给编辑用）
+  let lastIdx = -1;
+  function pickIdxFromMsgEl(el){
+    if(!el) return -1;
+    var i = parseInt(el.dataset.idx,10);
+    return isNaN(i) ? -1 : i;
+  }
+
+  document.addEventListener("touchstart", function(e){
+    var m = e.target.closest && e.target.closest(".msg");
+    var i = pickIdxFromMsgEl(m);
+    if(i>=0) lastIdx = i;
+  }, {capture:true, passive:true});
+
+  document.addEventListener("click", function(e){
+    var m = e.target.closest && e.target.closest(".msg");
+    var i = pickIdxFromMsgEl(m);
+    if(i>=0) lastIdx = i;
+  }, true);
+
+  // 3) 大编辑弹窗（复用一个）
+  function ensureEditModal(){
+    if(document.getElementById("nxEditKeepMask")) return;
+    var mask = document.createElement("div");
+    mask.id = "nxEditKeepMask";
+    mask.style.cssText = "position:fixed;inset:0;z-index:30000;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.52)";
+    mask.innerHTML = `
+      <div style="width:100%;max-width:560px;background:#fff;color:#111;border-radius:16px 16px 0 0;padding:14px 12px;">
+        <h3 style="margin:0 0 8px;font-size:20px;">编辑消息</h3>
+        <textarea id="nxEditKeepText" style="width:100%;min-height:46vh;max-height:66vh;resize:vertical;padding:10px;font-size:16px;line-height:1.5;border:1px solid #ddd;border-radius:10px;"></textarea>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
+          <button id="nxEditKeepCancel" style="border:none;padding:8px 14px;border-radius:10px;background:#e9ebf2;color:#222;">取消</button>
+          <button id="nxEditKeepOk" style="border:none;padding:8px 14px;border-radius:10px;background:#1677ff;color:#fff;">保存</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(mask);
+
+    mask.addEventListener("click", function(ev){
+      if(ev.target===mask) mask.style.display = "none";
+    });
+    document.getElementById("nxEditKeepCancel").onclick = function(){
+      mask.style.display = "none";
+    };
+  }
+
+  function closeMenus(){
+    ["nxLPMask","lpSheetMask","nxMask","nxOneMask","nxQqMask"].forEach(function(id){
+      var el = document.getElementById(id);
+      if(!el) return;
+      el.classList && el.classList.remove("show");
+      el.style.display = "none";
+    });
+  }
+
+  function openEditByIdx(idx){
+    var H = (typeof currentHistory==="function") ? currentHistory() : [];
+    var m = H[idx];
+    if(!m){ if(window.toast) toast("没找到消息"); return; }
+    if(m.type!=="text"){ if(window.toast) toast("仅文本可编辑"); return; }
+
+    ensureEditModal();
+    var mask = document.getElementById("nxEditKeepMask");
+    var ta = document.getElementById("nxEditKeepText");
+    ta.value = m.content || "";
+    mask.style.display = "flex";
+    ta.focus();
+
+    document.getElementById("nxEditKeepOk").onclick = function(){
+      m.content = (ta.value || "").trim();
+      if(typeof save==="function") save("nx_hmap", HMap);
+      if(typeof renderChat==="function") renderChat();
+      mask.style.display = "none";
+      closeMenus();
+      if(window.toast) toast("已保存");
+    };
+  }
+
+  // 4) 仅拦截“编辑”按钮；其他按钮照旧走你现有完整功能
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest && e.target.closest("button");
+    if(!btn) return;
+
+    var inMenu = btn.closest("#nxLPCard, #lpSheet, #nxOneMenu, #nxSMenu, #nxQqPanel, #nxMenu");
+    if(!inMenu) return;
+
+    var txt = (btn.textContent || "").replace(/\s+/g,"");
+    var act = (btn.dataset && (btn.dataset.act || btn.dataset.a)) || "";
+    var isEdit = (txt === "编辑" || act === "edit");
+    if(!isEdit) return;
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    var idx = lastIdx;
+    if(idx < 0){
+      var sel = document.querySelector("#chat .msg.sel");
+      if(sel){
+        var s = parseInt(sel.dataset.idx,10);
+        if(!isNaN(s)) idx = s;
+      }
+    }
+    if(idx < 0){
+      var all = Array.from(document.querySelectorAll("#chat .line .msg"));
+      if(all.length){
+        var l = parseInt(all[all.length-1].dataset.idx,10);
+        if(!isNaN(l)) idx = l;
+      }
+    }
+
+    if(idx < 0){ if(window.toast) toast("先点一下要编辑的消息"); return; }
+    openEditByIdx(idx);
+  }, true);
+
+  if(window.toast) toast("完整菜单编辑修复已启用");
+})();
 </script></body>
 </html>
