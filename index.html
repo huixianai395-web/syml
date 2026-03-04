@@ -6229,5 +6229,43 @@ window.requestReply = function(){
   renderChat();
   toastX("点按菜单已接管");
 })();
-</script><div id="patchMark" style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:999999;background:#ff3b30;color:#fff;padding:4px 10px;border-radius:12px;font-size:12px;">PATCH-1448</div></body>
+</script><div id="patchMark" style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:999999;background:#ff3b30;color:#fff;padding:4px 10px;border-radius:12px;font-size:12px;">PATCH-1448</div><script>
+(function(){
+  // 1) 补上缺失的 ensureUI，防止报错
+  if (typeof window.ensureUI !== "function") {
+    window.ensureUI = function(){
+      try{
+        if (typeof window.ensureQuoteBar === "function") window.ensureQuoteBar();
+        if (typeof window.ensureMenu === "function") window.ensureMenu();
+        if (typeof window.ensureFav === "function") window.ensureFav();
+        if (typeof window.ensureTopFav === "function") window.ensureTopFav();
+        if (typeof window.addDots === "function") window.addDots();
+        if (typeof window.bindLongPress === "function") window.bindLongPress();
+      }catch(e){}
+    };
+  }
+
+  // 2) 给 renderChat 套兜底，避免 ensureUI 再次未定义把流程炸掉
+  if (typeof window.renderChat === "function" && !window.__NX_RENDER_GUARD__) {
+    window.__NX_RENDER_GUARD__ = true;
+    var _oldRenderChat = window.renderChat;
+    window.renderChat = function(){
+      try{
+        return _oldRenderChat.apply(this, arguments);
+      }catch(err){
+        var msg = String((err && err.message) || err || "");
+        if (msg.indexOf("ensureUI") >= 0) {
+          try{ window.ensureUI(); }catch(_){}
+          return;
+        }
+        throw err;
+      }
+    };
+  }
+
+  // 3) 启动一次
+  try{ window.ensureUI(); }catch(e){}
+  try{ if(typeof window.renderChat==="function") window.renderChat(); }catch(e){}
+})();
+</script></body>
 </html>
