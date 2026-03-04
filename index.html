@@ -5503,5 +5503,104 @@ window.requestReply = function(){
   }, true);
 
 })();
+</script><script>
+(function(){
+  if(window.__NX_LAST_FIX__) return;
+  window.__NX_LAST_FIX__ = true;
+
+  // 1) 统一选中样式（蓝色），去掉黄边视觉冲突
+  var st = document.createElement("style");
+  st.textContent = `
+    .msg.sel, .msg.nxActive{
+      outline:2px solid #2f8cff !important;
+      box-shadow:0 0 0 2px rgba(47,140,255,.22) inset !important;
+    }
+  `;
+  document.head.appendChild(st);
+
+  // 2) 每次触摸消息都记录目标idx（给编辑用）
+  document.addEventListener("touchstart", function(e){
+    var m = e.target.closest && e.target.closest(".msg");
+    if(!m) return;
+    var i = parseInt(m.dataset.idx,10);
+    if(!isNaN(i)) window.__NX_TARGET_IDX__ = i;
+  }, {capture:true, passive:true});
+
+  // 3) 判断菜单是否打开（只在菜单打开时拦截“编辑”）
+  function menuOpen(){
+    var ids = ["nxLPMask","lpSheetMask","nxMask","nxOneMask","nxQqMask","nxSMenu","nxOneMenu","nxMenu"];
+    for(var k=0;k<ids.length;k++){
+      var el = document.getElementById(ids[k]);
+      if(!el) continue;
+      var ds = (el.style && el.style.display) || "";
+      if(el.classList && el.classList.contains("show")) return true;
+      if(ds==="block" || ds==="flex") return true;
+    }
+    return false;
+  }
+
+  // 4) 大编辑框（稳定）
+  function ensureEditor(){
+    if(document.getElementById("nxFinalEditMask")) return;
+    var mask = document.createElement("div");
+    mask.id = "nxFinalEditMask";
+    mask.style.cssText = "position:fixed;inset:0;z-index:39000;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55)";
+    mask.innerHTML = `
+      <div style="width:100%;max-width:560px;background:#fff;color:#111;border-radius:16px 16px 0 0;padding:14px 12px;">
+        <h3 style="margin:0 0 8px;font-size:20px;">编辑消息</h3>
+        <textarea id="nxFinalEditText" style="width:100%;min-height:46vh;max-height:66vh;resize:vertical;padding:10px;font-size:16px;line-height:1.5;border:1px solid #ddd;border-radius:10px;"></textarea>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
+          <button id="nxFinalEditCancel" style="border:none;padding:8px 14px;border-radius:10px;background:#e9ebf2;">取消</button>
+          <button id="nxFinalEditOk" style="border:none;padding:8px 14px;border-radius:10px;background:#1677ff;color:#fff;">保存</button>
+        </div>
+      </div>`;
+    document.body.appendChild(mask);
+    mask.addEventListener("click", function(ev){ if(ev.target===mask) mask.style.display="none"; });
+    document.getElementById("nxFinalEditCancel").onclick = function(){ mask.style.display="none"; };
+  }
+
+  function openEdit(){
+    var H = (typeof currentHistory==="function") ? currentHistory() : [];
+    var idx = Number.isInteger(window.__NX_TARGET_IDX__) ? window.__NX_TARGET_IDX__ : -1;
+    if(idx < 0){
+      var sel = document.querySelector("#chat .msg.sel, #chat .msg.nxActive");
+      if(sel){
+        var s = parseInt(sel.dataset.idx,10);
+        if(!isNaN(s)) idx = s;
+      }
+    }
+    if(idx < 0 || !H[idx]){ if(window.toast) toast("先点一下要编辑的消息"); return; }
+    if(H[idx].type !== "text"){ if(window.toast) toast("仅文本可编辑"); return; }
+
+    ensureEditor();
+    var mask = document.getElementById("nxFinalEditMask");
+    var ta = document.getElementById("nxFinalEditText");
+    ta.value = H[idx].content || "";
+    mask.style.display = "flex";
+    ta.focus();
+
+    document.getElementById("nxFinalEditOk").onclick = function(){
+      H[idx].content = (ta.value||"").trim();
+      if(typeof save==="function") save("nx_hmap", HMap);
+      if(typeof renderChat==="function") renderChat();
+      mask.style.display = "none";
+      if(window.toast) toast("已保存");
+    };
+  }
+
+  // 5) 只在菜单打开时，强制接管“编辑”按钮点击
+  document.addEventListener("click", function(e){
+    if(!menuOpen()) return;
+    var t = e.target.closest("button,div,span");
+    if(!t) return;
+    var txt = (t.textContent || "").replace(/\s+/g,"");
+    if(txt !== "编辑") return;
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    openEdit();
+  }, true);
+
+})();
 </script></body>
 </html>
