@@ -4888,5 +4888,35 @@ window.requestReply = function(){
   renderChat();
   toastX("FINAL PATCH OK");
 })();
+</script><script>
+/* ===== keep one action sheet only (safe) ===== */
+(function () {
+  if (window.__NX_KEEP_ONE_SHEET__) return;
+  window.__NX_KEEP_ONE_SHEET__ = true;
+
+  // 1) 纯样式隐藏“旧版长列表”
+  const st = document.createElement("style");
+  st.textContent = `
+    #nxLPMask { display:none !important; pointer-events:none !important; }
+    #msgTools { display:none !important; pointer-events:none !important; }
+    #nxOps, #nxQuick, #nxFab { display:none !important; pointer-events:none !important; }
+  `;
+  document.head.appendChild(st);
+
+  // 2) 直接移除旧DOM（不碰你现在可用的 uOpsMask）
+  ["nxLPMask","msgTools","nxOps","nxQuick","nxFab"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  });
+
+  // 3) 禁用旧入口函数，避免再次弹出旧面板
+  window.showSheet = function(){};
+  window.ensureSheet = function(){};
+  window.ensureFab = function(){};
+
+  // 4) 如果旧面板残留 class=show，顺手清掉
+  const old = document.querySelector("#nxLPMask.show, #msgTools.show, #nxOps.show");
+  if (old) old.classList.remove("show");
+})();
 </script></body>
 </html>
