@@ -5711,5 +5711,48 @@ window.requestReply = function(){
   renderChat();
   tip("已切换为单面板模式");
 })();
+</script><script>
+/* ===== FIX: quote render only once ===== */
+(function () {
+  if (window.__NX_QUOTE_ONCE_FIX__) return;
+  window.__NX_QUOTE_ONCE_FIX__ = true;
+
+  function esc(s){
+    return String(s||"")
+      .replace(/&/g,"&")
+      .replace(/</g,"<")
+      .replace(/>/g,">");
+  }
+
+  // 硬覆盖：不再调用旧的 renderMsgContent（避免套娃叠加）
+  window.renderMsgContent = function(m){
+    if(!m) return "";
+
+    if(m.type === "image") {
+      return '<img class="chatImg" src="'+(m.content||"")+'" alt="img" />';
+    }
+    if(m.type === "sticker") {
+      return '<img class="chatSticker" src="'+(m.content||"")+'" alt="sticker" />';
+    }
+
+    const body = (typeof markdownToHtml === "function")
+      ? markdownToHtml(m.content || "")
+      : esc(m.content || "");
+
+    if(m.type === "text" && m.quote && m.quote.text){
+      const q =
+        '<div class="v12Quote">' +
+          '<div class="m">'+ esc(m.quote.from || "引用") +' '+ esc(m.quote.time || "") +'</div>' +
+          '<div>'+ esc(String(m.quote.text || "").slice(0,140)) +'</div>' +
+        '</div>';
+      return q + body; // 只加一次
+    }
+
+    return body;
+  };
+
+  // 立刻重绘，重复引用会马上消失
+  try { if (typeof renderChat === "function") renderChat(); } catch(e){}
+})();
 </script></body>
 </html>
