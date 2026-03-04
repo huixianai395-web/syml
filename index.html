@@ -5754,5 +5754,82 @@ window.requestReply = function(){
   // 立刻重绘，重复引用会马上消失
   try { if (typeof renderChat === "function") renderChat(); } catch(e){}
 })();
+</script><script>
+/* ===== STABILITY PATCH (不改提示词/不改线上双模式) ===== */
+(function () {
+  if (window.__NX_STABILITY_ONLY__) return;
+  window.__NX_STABILITY_ONLY__ = true;
+
+  function tip(t){ try{ toast(t); }catch(e){} }
+  function getH(){ try{ return currentHistory(); }catch(e){ return []; } }
+  function saveH(){ try{ save("nx_hmap", HMap); }catch(e){} }
+
+  // 1) 缺失函数兜底（你现有补丁里有人在调用 ensureUI/ensureTopFavBtn/ensureFavModal2/ensureLPSheet）
+  if (typeof window.ensureUI !== "function") window.ensureUI = function(){};
+  if (typeof window.ensureTopFavBtn !== "function") window.ensureTopFavBtn = function(){};
+  if (typeof window.ensureFavModal2 !== "function") window.ensureFavModal2 = function(){};
+  if (typeof window.ensureLPSheet !== "function") window.ensureLPSheet = function(){};
+
+  // 2) renderChat 防炸封装（避免 UI 函数报错把请求流程带崩）
+  if (typeof window.renderChat === "function" && !window.__NX_RENDER_SAFE__) {
+    window.__NX_RENDER_SAFE__ = true;
+    var _renderChatSafeRaw = window.renderChat;
+    window.renderChat = function () {
+      try { return _renderChatSafeRaw.apply(this, arguments); }
+      catch (e) {
+        console.error("[renderChat suppressed]", e);
+        // 不再把 UI 错误外抛
+      }
+    };
+  }
+
+  // 3) 包一层 requestReply：自动清理 "[请求失败] ..." 消息（不让AI气泡显示报错）
+  if (typeof window.requestReply === "function" && !window.__NX_REQ_WRAP__) {
+    window.__NX_REQ_WRAP__ = true;
+    var _req = window.requestReply;
+    window.requestReply = async function () {
+      var before = getH().length;
+      try {
+        return await _req.apply(this, arguments);
+      } finally {
+        var H = getH();
+        var removed = 0;
+        for (var i = H.length - 1; i >= before; i--) {
+          var m = H[i];
+          var c = String((m && m.content) || "");
+          if (
+            m && m.role === "assistant" &&
+            (/^\[请求失败\]/.test(c) || c.indexOf("Can't find variable: ensureUI") >= 0)
+          ) {
+            H.splice(i, 1);
+            removed++;
+          }
+        }
+        if (removed) {
+          saveH();
+          try { if (typeof setStatus === "function") setStatus(); } catch(e){}
+          try { if (typeof renderChat === "function") renderChat(); } catch(e){}
+          tip("请求异常，已拦截错误气泡");
+        }
+      }
+    };
+  }
+
+  // 4) 清理历史中已有的 ensureUI 报错气泡
+  (function cleanupOldErrorBubbles(){
+    var H = getH(), changed = false;
+    for (var i = H.length - 1; i >= 0; i--) {
+      var c = String((H[i] && H[i].content) || "");
+      if (c.indexOf("Can't find variable: ensureUI") >= 0) {
+        H.splice(i, 1);
+        changed = true;
+      }
+    }
+    if (changed) {
+      saveH();
+      try { if (typeof renderChat === "function") renderChat(); } catch(e){}
+    }
+  })();
+})();
 </script></body>
 </html>
