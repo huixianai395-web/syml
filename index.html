@@ -5912,5 +5912,31 @@ window.requestReply = function(){
   renderChat();
   toastX("稳定菜单已接管");
 })();
+</script><script>
+(function(){
+  // 1) 可见标记：如果这行都看不到=你改错文件/缓存旧文件
+  var tag=document.createElement('div');
+  tag.id='patchProbe';
+  tag.textContent='PATCH-RUNNING';
+  tag.style.cssText='position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:999999;background:#ff3b30;color:#fff;padding:4px 10px;border-radius:12px;font-size:12px';
+  document.body.appendChild(tag);
+
+  // 2) 强制隐藏旧菜单（每秒清一次）
+  function kill(){
+    ['nxCtx','nxCtxMask','nxLPMask','lpSheetMask','nxOps','nxFab','nxQqMask','nxQqPanel','nxMultiTop','nxMultiBottom','nxOneMask','nxOneMenu']
+      .forEach(function(id){ var el=document.getElementById(id); if(el) el.remove(); });
+  }
+  kill();
+  setInterval(kill,1000);
+
+  // 3) 禁系统复制菜单
+  document.addEventListener('contextmenu',function(e){
+    if(e.target.closest && e.target.closest('.msg')) e.preventDefault();
+  },true);
+
+  // 4) 状态字
+  var st=document.getElementById('status');
+  if(st){ st.textContent='OVERRIDE-ON'; st.className='st'; }
+})();
 </script></body>
 </html>
