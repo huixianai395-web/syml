@@ -4918,5 +4918,359 @@ window.requestReply = function(){
   const old = document.querySelector("#nxLPMask.show, #msgTools.show, #nxOps.show");
   if (old) old.classList.remove("show");
 })();
+</script><script>
+/* ===== IM UX PATCH (WeChat/QQ style) ===== */
+(function () {
+  if (window.__IM_UX_PATCH__) return;
+  window.__IM_UX_PATCH__ = true;
+
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s || "").replace(/&/g,"&").replace(/</g,"<").replace(/>/g,">");
+  const H = () => (typeof currentHistory === "function" ? currentHistory() : []);
+  const saveH = () => { try { save("nx_hmap", HMap); } catch(e){} };
+  const tip = t => { try { toast(t); } catch(e){ alert(t); } };
+
+  const IM = {
+    pressTimer: null,
+    menuIdx: -1,
+    selectMode: false,
+    sel: new Set(),
+    quote: null, // {from,time,text}
+  };
+
+  // ---------- 清掉旧操作面板 ----------
+  ["nxLPMask","msgTools","nxOps","nxQuick","nxFab","uOpsMask"].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  });
+
+  // ---------- 样式 ----------
+  const st = document.createElement("style");
+  st.textContent = `
+    #imMenu{
+      position:fixed; z-index:12000; display:none;
+      min-width:170px; background:var(--bg2); border:1px solid var(--bd); border-radius:12px; padding:6px;
+      box-shadow:0 12px 30px rgba(0,0,0,.35);
+    }
+    #imMenu.show{display:block;}
+    #imMenu .mi{display:block;width:100%;text-align:left;padding:9px 10px;border:1px solid var(--bd);background:var(--bg3);color:var(--tx);border-radius:9px;margin:4px 0;font-size:13px}
+
+    #imSelectBar{
+      position:fixed; left:10px; right:10px; bottom:74px; z-index:11990;
+      display:none; gap:8px; flex-wrap:wrap; background:rgba(17,24,39,.94);
+      border:1px solid var(--bd); border-radius:12px; padding:8px;
+    }
+    #imSelectBar.show{display:flex;}
+    #imSelectBar .sb{border:1px solid var(--bd); background:var(--bg3); color:var(--tx); border-radius:9px; padding:8px 10px; font-size:12px}
+    #chat .msg.im-sel{outline:2px solid rgba(201,168,124,.95)}
+    #chat .msg.hiddenAI{opacity:.42}
+
+    #imQuoteBar{
+      display:none; align-items:center; justify-content:space-between; gap:8px;
+      border:1px solid var(--bd); background:var(--bg2); border-radius:10px;
+      padding:7px 10px; font-size:12px; color:var(--tx2); margin-bottom:6px;
+    }
+    #imQuoteBar.show{display:flex;}
+    #imQuoteText{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80%}
+    #imQuoteClose{border:1px solid var(--bd);background:var(--bg3);color:var(--tx2);border-radius:8px;padding:2px 8px}
+
+    .imQuoteBlock{
+      border-left:3px solid #66aaff; background:rgba(102,170,255,.14);
+      border-radius:9px; padding:6px 8px; margin-bottom:6px; font-size:12px; color:#dbe9ff;
+    }
+    .imQuoteMeta{opacity:.78;font-size:11px;margin-bottom:2px}
+
+    #imEditMask{
+      position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:12100; display:none; align-items:center; justify-content:center; padding:12px;
+    }
+    #imEditMask.show{display:flex;}
+    #imEditCard{
+      width:min(95vw,760px); max-height:88vh; background:var(--bg2); border:1px solid var(--bd); border-radius:14px; overflow:hidden;
+      display:flex; flex-direction:column;
+    }
+    #imEditHd{padding:12px 14px; border-bottom:1px solid var(--bd); font-weight:700}
+    #imEditTa{width:100%; min-height:42vh; max-height:60vh; resize:none; background:var(--bg3); color:var(--tx); border:1px solid var(--bd); border-radius:10px; padding:12px; font-size:15px; line-height:1.6; outline:none}
+    #imEditBd{padding:12px; display:flex; flex-direction:column; gap:10px}
+    #imEditFt{display:flex; justify-content:flex-end; gap:8px}
+    #imEditFt button{border:1px solid var(--bd);background:var(--bg3);color:var(--tx);border-radius:9px;padding:8px 12px}
+    #imEditOk{background:linear-gradient(135deg,var(--ac1),var(--ac2));color:#111;border:none}
+  `;
+  document.head.appendChild(st);
+
+  // ---------- UI ----------
+  function ensureUI(){
+    if(!$("#imMenu")){
+      const m = document.createElement("div");
+      m.id = "imMenu";
+      m.innerHTML = `
+        <button class="mi" data-a="reply">引用</button>
+        <button class="mi" data-a="copy">复制</button>
+        <button class="mi" data-a="edit">编辑</button>
+        <button class="mi" data-a="fav">收藏/取消收藏</button>
+        <button class="mi" data-a="del">删除</button>
+        <button class="mi" data-a="multi">多选</button>
+      `;
+      document.body.appendChild(m);
+      m.addEventListener("click", e=>{
+        const b = e.target.closest(".mi"); if(!b) return;
+        runSingleAction(b.dataset.a, IM.menuIdx);
+        hideMenu();
+      });
+    }
+
+    if(!$("#imSelectBar")){
+      const b = document.createElement("div");
+      b.id = "imSelectBar";
+      b.innerHTML = `
+        <button class="sb" data-a="all">全选</button>
+        <button class="sb" data-a="reply">引用</button>
+        <button class="sb" data-a="fav">收藏</button>
+        <button class="sb" data-a="hide">隐藏给AI</button>
+        <button class="sb" data-a="del">删除</button>
+        <button class="sb" data-a="cancel">取消</button>
+      `;
+      document.body.appendChild(b);
+      b.addEventListener("click", e=>{
+        const x = e.target.closest(".sb"); if(!x) return;
+        runMultiAction(x.dataset.a);
+      });
+    }
+
+    if(!$("#imQuoteBar")){
+      const ib = document.querySelector(".inputBar");
+      if (ib){
+        const q = document.createElement("div");
+        q.id = "imQuoteBar";
+        q.innerHTML = `<span id="imQuoteText"></span><button id="imQuoteClose">取消</button>`;
+        ib.insertBefore(q, ib.querySelector(".sendRow"));
+        $("#imQuoteClose").onclick = ()=>{ IM.quote = null; refreshQuoteBar(); };
+      }
+    }
+
+    if(!$("#imEditMask")){
+      const e = document.createElement("div");
+      e.id = "imEditMask";
+      e.innerHTML = `
+        <div id="imEditCard">
+          <div id="imEditHd">编辑消息</div>
+          <div id="imEditBd">
+            <textarea id="imEditTa"></textarea>
+            <div id="imEditFt">
+              <button id="imEditCancel">取消</button>
+              <button id="imEditOk">保存</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(e);
+      $("#imEditCancel").onclick = ()=> e.classList.remove("show");
+    }
+  }
+
+  function refreshQuoteBar(){
+    ensureUI();
+    const bar = $("#imQuoteBar"), txt = $("#imQuoteText");
+    if(!bar || !txt) return;
+    if(!IM.quote){ bar.classList.remove("show"); txt.textContent=""; return; }
+    txt.textContent = `引用 ${IM.quote.from} ${IM.quote.time||""}：${String(IM.quote.text||"").slice(0,60)}`;
+    bar.classList.add("show");
+  }
+
+  function showMenu(x,y,idx){
+    ensureUI();
+    IM.menuIdx = idx;
+    const m = $("#imMenu");
+    m.style.left = Math.max(8, Math.min(window.innerWidth - 190, x)) + "px";
+    m.style.top  = Math.max(70, Math.min(window.innerHeight - 280, y)) + "px";
+    m.classList.add("show");
+  }
+  function hideMenu(){ const m=$("#imMenu"); if(m) m.classList.remove("show"); }
+
+  function openEdit(text, onOK){
+    ensureUI();
+    const mask=$("#imEditMask"), ta=$("#imEditTa");
+    ta.value = text || "";
+    mask.classList.add("show");
+    setTimeout(()=>ta.focus(),10);
+    $("#imEditOk").onclick = ()=>{ onOK(ta.value); mask.classList.remove("show"); };
+  }
+
+  function repaintSelection(){
+    const hh = H();
+    document.querySelectorAll("#chat .line .msg").forEach((el,idx)=>{
+      el.classList.toggle("im-sel", IM.sel.has(idx));
+      el.classList.toggle("hiddenAI", !!(hh[idx] && hh[idx].hiddenFromAI));
+    });
+    $("#imSelectBar")?.classList.toggle("show", IM.selectMode);
+  }
+
+  function exitMulti(){
+    IM.selectMode = false;
+    IM.sel.clear();
+    repaintSelection();
+  }
+
+  // ---------- 单条操作 ----------
+  function runSingleAction(a, idx){
+    const hh = H(); const m = hh[idx];
+    if(!m){ tip("无效消息"); return; }
+
+    if(a==="reply"){
+      IM.quote = {from:m.role==="assistant"?"AI":"你", time:m.time||"", text:m.content||""};
+      refreshQuoteBar();
+      return;
+    }
+    if(a==="copy"){
+      const t = String(m.content||"");
+      navigator.clipboard?.writeText(t).then(()=>tip("已复制")).catch(()=>tip("复制失败"));
+      return;
+    }
+    if(a==="edit"){
+      if(m.type!=="text"){ tip("仅文本可编辑"); return; }
+      openEdit(m.content||"", (v)=>{
+        m.content = (v||"").trim();
+        saveH(); renderChat(); tip("已保存");
+      });
+      return;
+    }
+    if(a==="fav"){
+      m.fav = !m.fav;
+      saveH(); renderChat(); tip(m.fav?"已收藏":"已取消收藏");
+      return;
+    }
+    if(a==="del"){
+      hh.splice(idx,1);
+      saveH(); renderChat(); tip("已删除");
+      return;
+    }
+    if(a==="multi"){
+      IM.selectMode = true;
+      IM.sel.clear();
+      IM.sel.add(idx);
+      repaintSelection();
+      return;
+    }
+  }
+
+  // ---------- 多选操作 ----------
+  function runMultiAction(a){
+    const hh = H();
+    const idxs = Array.from(IM.sel).sort((x,y)=>x-y);
+
+    if(a==="cancel"){ exitMulti(); return; }
+    if(a==="all"){
+      IM.sel.clear(); for(let i=0;i<hh.length;i++) IM.sel.add(i);
+      repaintSelection(); return;
+    }
+    if(!idxs.length){ tip("先选消息"); return; }
+
+    if(a==="reply"){
+      if(idxs.length!==1){ tip("引用需选1条"); return; }
+      const m = hh[idxs[0]];
+      IM.quote = {from:m.role==="assistant"?"AI":"你", time:m.time||"", text:m.content||""};
+      refreshQuoteBar(); exitMulti(); return;
+    }
+    if(a==="fav"){
+      idxs.forEach(i=>{ if(hh[i]) hh[i].fav = true; });
+      saveH(); renderChat(); tip("已收藏"); exitMulti(); return;
+    }
+    if(a==="hide"){
+      idxs.forEach(i=>{ if(hh[i]) hh[i].hiddenFromAI = true; });
+      saveH(); renderChat(); tip("已隐藏给AI"); exitMulti(); return;
+    }
+    if(a==="del"){
+      for(let k=idxs.length-1;k>=0;k--) hh.splice(idxs[k],1);
+      saveH(); renderChat(); tip("已删除"); exitMulti(); return;
+    }
+  }
+
+  // ---------- 引用渲染 ----------
+  const oldRenderMsgContent = window.renderMsgContent;
+  window.renderMsgContent = function(m){
+    const base = oldRenderMsgContent ? oldRenderMsgContent(m) : (typeof markdownToHtml==="function" ? markdownToHtml(m?.content||"") : esc(m?.content||""));
+    if(!m || m.type!=="text" || !m.quote || !m.quote.text) return base;
+    const q = m.quote;
+    return `<div class="imQuoteBlock">
+      <div class="imQuoteMeta">${esc(q.from||"引用")} ${esc(q.time||"")}</div>
+      <div>${esc(String(q.text||"").slice(0,140))}</div>
+    </div>` + base;
+  };
+
+  // ---------- 发送时带引用 ----------
+  const oldQueue = window.queueMessage;
+  window.queueMessage = function(){
+    const inp = $("#inp");
+    const text = (inp?.value||"").trim();
+    if(!text) return oldQueue && oldQueue();
+
+    const hh = H();
+    hh.push({
+      role:"user", type:"text", content:text, time:(typeof now==="function"?now():""),
+      mode:(window.C?.chatMode)||"online",
+      quote: IM.quote ? {from:IM.quote.from,time:IM.quote.time,text:IM.quote.text} : null
+    });
+    IM.quote = null; refreshQuoteBar();
+    saveH();
+    inp.value=""; inp.style.height="auto";
+    renderChat(); tip("已暂存");
+  };
+
+  // ---------- render hook ----------
+  const oldRenderChat = window.renderChat;
+  window.renderChat = function(){
+    oldRenderChat && oldRenderChat();
+    ensureUI();
+    const hh = H();
+    document.querySelectorAll("#chat .line .msg").forEach((el,idx)=>{
+      el.dataset.idx = String(idx);
+      el.classList.toggle("hiddenAI", !!(hh[idx] && hh[idx].hiddenFromAI));
+      el.classList.toggle("im-sel", IM.sel.has(idx));
+    });
+    refreshQuoteBar();
+  };
+
+  // ---------- 交互绑定 ----------
+  function bindPress(){
+    const chat = $("#chat");
+    if(!chat || chat.dataset.imBound==="1") return;
+    chat.dataset.imBound = "1";
+
+    chat.addEventListener("touchstart", (e)=>{
+      const msg = e.target.closest(".msg");
+      if(!msg) return;
+      const idx = parseInt(msg.dataset.idx,10);
+      if(Number.isNaN(idx)) return;
+
+      const t = e.touches[0];
+      IM.pressTimer = setTimeout(()=>{
+        showMenu(t.clientX, t.clientY, idx);
+      }, 360);
+    }, {passive:true});
+
+    ["touchend","touchmove","touchcancel"].forEach(ev=>{
+      chat.addEventListener(ev, ()=>{ if(IM.pressTimer) clearTimeout(IM.pressTimer); }, {passive:true});
+    });
+
+    chat.addEventListener("click", (e)=>{
+      const msg = e.target.closest(".msg");
+      if(!msg) { hideMenu(); return; }
+      if(!IM.selectMode) return;
+      const idx = parseInt(msg.dataset.idx,10);
+      if(Number.isNaN(idx)) return;
+      if(IM.sel.has(idx)) IM.sel.delete(idx); else IM.sel.add(idx);
+      repaintSelection();
+      e.preventDefault();
+    }, true);
+
+    document.addEventListener("click", (e)=>{
+      if(!e.target.closest("#imMenu")) hideMenu();
+    });
+  }
+
+  ensureUI();
+  bindPress();
+  renderChat();
+  tip("聊天交互已切到QQ/微信风格");
+})();
 </script></body>
 </html>
