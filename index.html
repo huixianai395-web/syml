@@ -6292,5 +6292,214 @@ window.requestReply = function(){
   var homeTab = $('.tab[data-page="home"]');
   if(homeTab) switchTab("home", homeTab);
 })();
+</script><script>
+/* ===== Home Drag Sort Patch for nx_home_apps_v2 ===== */
+(function () {
+  if (window.__NX_HOME_DRAG_SORT__) return;
+  window.__NX_HOME_DRAG_SORT__ = true;
+
+  const KEY = "nx_home_apps_v2";
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+
+  function loadApps(){
+    try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } catch(e){ return []; }
+  }
+  function saveApps(arr){
+    try { localStorage.setItem(KEY, JSON.stringify(arr)); } catch(e){}
+  }
+  function tip(t){
+    try { toast(t); } catch(e){}
+  }
+
+  // 样式
+  const st = document.createElement("style");
+  st.textContent = `
+    .homeApp.dragging { opacity:.35; transform:scale(.98); }
+    .homeApp.drop-target { outline:2px dashed rgba(201,168,124,.9); border-radius:10px; }
+    #homeDragGhost{
+      position:fixed; z-index:99999; pointer-events:none;
+      width:74px; opacity:.92; transform:translate(-50%,-50%) scale(1.02);
+      filter:drop-shadow(0 8px 18px rgba(0,0,0,.35));
+    }
+  `;
+  document.head.appendChild(st);
+
+  let dragId = null;
+  let suppressClick = false;
+
+  function persistOrderFromDOM(){
+    const apps = loadApps();
+    if (!apps.length) return;
+
+    const byId = {};
+    apps.forEach(a => byId[a.id] = a);
+
+    const orderedIds = $$("#homeGroups .homeGroup .homeGrid .homeApp")
+      .map(el => el.dataset.id)
+      .filter(Boolean);
+
+    const next = [];
+    orderedIds.forEach(id => { if(byId[id]) next.push(byId[id]); });
+
+    // 防丢（理论上不会）
+    apps.forEach(a => {
+      if (!orderedIds.includes(a.id)) next.push(a);
+    });
+
+    saveApps(next);
+  }
+
+  function reorderByTarget(sourceEl, targetEl){
+    if (!sourceEl || !targetEl || sourceEl === targetEl) return;
+    const srcRect = sourceEl.getBoundingClientRect();
+    const tarRect = targetEl.getBoundingClientRect();
+    const after = srcRect.top > tarRect.top || (Math.abs(srcRect.top - tarRect.top) < 3 && srcRect.left > tarRect.left);
+    targetEl.parentNode.insertBefore(sourceEl, after ? targetEl.nextSibling : targetEl);
+  }
+
+  function clearMarks(){
+    $$("#homeGroups .homeApp").forEach(el => el.classList.remove("drop-target","dragging"));
+  }
+
+  function bindDesktopDnD(){
+    const cards = $$("#homeGroups .homeApp");
+    cards.forEach(el => {
+      el.setAttribute("draggable","true");
+
+      el.addEventListener("dragstart", e => {
+        dragId = el.dataset.id;
+        el.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+      });
+
+      el.addEventListener("dragover", e => {
+        e.preventDefault();
+        const src = $(`#homeGroups .homeApp[data-id="${dragId}"]`);
+        if (!src || src === el) return;
+        clearMarks();
+        el.classList.add("drop-target");
+        reorderByTarget(src, el);
+      });
+
+      el.addEventListener("drop", e => {
+        e.preventDefault();
+      });
+
+      el.addEventListener("dragend", () => {
+        clearMarks();
+        persistOrderFromDOM();
+        tip("桌面排序已保存");
+      });
+    });
+  }
+
+  function bindTouchDrag(){
+    const container = $("#homeGroups");
+    if (!container || container.dataset.touchDragBound === "1") return;
+    container.dataset.touchDragBound = "1";
+
+    let timer = null;
+    let dragging = false;
+    let source = null;
+    let ghost = null;
+    let startX = 0, startY = 0;
+
+    function makeGhost(node){
+      ghost = node.cloneNode(true);
+      ghost.id = "homeDragGhost";
+      document.body.appendChild(ghost);
+    }
+    function moveGhost(x,y){
+      if (!ghost) return;
+      ghost.style.left = x + "px";
+      ghost.style.top = y + "px";
+    }
+    function removeGhost(){
+      if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
+      ghost = null;
+    }
+
+    container.addEventListener("touchstart", function(e){
+      const app = e.target.closest(".homeApp");
+      if (!app) return;
+      const t = e.touches[0];
+      source = app;
+      startX = t.clientX;
+      startY = t.clientY;
+
+      timer = setTimeout(function(){
+        dragging = true;
+        suppressClick = true;
+        dragId = source.dataset.id;
+        source.classList.add("dragging");
+        makeGhost(source);
+        moveGhost(startX, startY);
+      }, 280);
+    }, {passive:true});
+
+    container.addEventListener("touchmove", function(e){
+      if (timer && !dragging){
+        const t = e.touches[0];
+        if (Math.abs(t.clientX - startX) > 8 || Math.abs(t.clientY - startY) > 8){
+          clearTimeout(timer); timer = null;
+        }
+      }
+
+      if (!dragging) return;
+      e.preventDefault();
+
+      const t = e.touches[0];
+      moveGhost(t.clientX, t.clientY);
+
+      const el = document.elementFromPoint(t.clientX, t.clientY);
+      const target = el && el.closest ? el.closest(".homeApp") : null;
+      if (!target || target === source) return;
+
+      clearMarks();
+      target.classList.add("drop-target");
+      reorderByTarget(source, target);
+    }, {passive:false});
+
+    function endDrag(){
+      if (timer){ clearTimeout(timer); timer = null; }
+      if (!dragging){
+        source = null;
+        return;
+      }
+      dragging = false;
+      clearMarks();
+      if (source) source.classList.remove("dragging");
+      removeGhost();
+      persistOrderFromDOM();
+      tip("排序已保存");
+      source = null;
+
+      setTimeout(function(){ suppressClick = false; }, 120);
+    }
+
+    container.addEventListener("touchend", endDrag, {passive:true});
+    container.addEventListener("touchcancel", endDrag, {passive:true});
+
+    // 防止拖动结束后误触发打开功能
+    container.addEventListener("click", function(e){
+      if (!suppressClick) return;
+      e.preventDefault();
+      e.stopPropagation();
+    }, true);
+  }
+
+  function bindAll(){
+    if (!$("#homeGroups")) return;
+    bindDesktopDnD();
+    bindTouchDrag();
+  }
+
+  // 首次 + 监听首页重渲染
+  bindAll();
+  const mo = new MutationObserver(() => bindAll());
+  const root = $("#homeGroups");
+  if (root) mo.observe(root, {childList:true, subtree:true});
+})();
 </script></body>
 </html>
