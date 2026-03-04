@@ -5982,5 +5982,315 @@ window.requestReply = function(){
   // 首次就同步一次模式
   syncLiveModeNow();
 })();
+</script><script>
+/* ===== Noctis Desk Lite (only available features) ===== */
+(function () {
+  if (window.__NX_DESK_LITE__) return;
+  window.__NX_DESK_LITE__ = true;
+
+  function $(s){ return document.querySelector(s); }
+  function $$(s){ return Array.from(document.querySelectorAll(s)); }
+  function esc(s){ return String(s||"").replace(/&/g,"&").replace(/</g,"<").replace(/>/g,">"); }
+  function tip(t){ try{ toast(t); }catch(e){} }
+  function loadK(k,d){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } }
+  function saveK(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+
+  var KEY = "nx_home_apps_v2";
+  var DEFAULT_APPS = [
+    {id:"msg",      group:"社交", name:"消息",     icon:"💬", type:"contacts"},
+    {id:"chat",     group:"社交", name:"聊天",     icon:"🗨️", type:"tab", tab:"chat"},
+    {id:"roles",    group:"社交", name:"人物列表", icon:"👥", type:"tab", tab:"roles"},
+
+    {id:"world",    group:"设定", name:"世界书",   icon:"📘", type:"tab", tab:"worldbook"},
+    {id:"api",      group:"设定", name:"API设置",  icon:"🔑", type:"tab", tab:"settings"},
+    {id:"settings", group:"设定", name:"系统设置", icon:"⚙️", type:"tab", tab:"settings"},
+
+    {id:"fav",      group:"工具", name:"收藏夹",   icon:"⭐", type:"fn", fn:"openFav"},
+    {id:"sticker",  group:"工具", name:"表情包",   icon:"🧩", type:"fn", fn:"openStickerManager"},
+    {id:"export",   group:"工具", name:"导出数据", icon:"📤", type:"fn", fn:"exportAllData"}
+  ];
+
+  var apps = loadK(KEY, DEFAULT_APPS);
+  if(!Array.isArray(apps) || !apps.length) apps = JSON.parse(JSON.stringify(DEFAULT_APPS));
+
+  // ---- style ----
+  if(!$("#nxDeskLiteStyle")){
+    var st=document.createElement("style");
+    st.id="nxDeskLiteStyle";
+    st.textContent = `
+      .homeDesk{padding:14px;display:flex;flex-direction:column;gap:12px}
+      .homeTop{display:flex;justify-content:space-between;align-items:center}
+      .homeClock{font-size:34px;font-weight:800;letter-spacing:1px}
+      .homeEditBtn{border:1px solid var(--bd);background:var(--bg3);color:var(--tx2);border-radius:10px;padding:8px 12px;font-size:12px}
+      .homeGroup{background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:12px;box-shadow:var(--shadow)}
+      .homeGroupTitle{font-size:13px;color:var(--tx2);font-weight:700;margin-bottom:10px}
+      .homeGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+      .homeApp{display:flex;flex-direction:column;align-items:center;gap:6px}
+      .homeIcon{width:56px;height:56px;border-radius:14px;border:1px solid var(--bd);background:var(--bg3);display:grid;place-items:center;overflow:hidden;font-size:24px}
+      .homeIcon img{width:100%;height:100%;object-fit:cover}
+      .homeName{font-size:12px;line-height:1.2;text-align:center}
+      .homeHint{font-size:11px;color:var(--tx3)}
+      #deskEditor{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:12020;padding:12px}
+      #deskEditor.show{display:flex}
+      .deskCard{width:min(95vw,520px);max-height:86vh;background:var(--bg2);border:1px solid var(--bd);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+      .deskHd{padding:12px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between}
+      .deskBd{padding:10px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+      .deskItem{border:1px solid var(--bd);background:var(--bg3);border-radius:10px;padding:8px;display:grid;grid-template-columns:56px 1fr;gap:8px;align-items:center}
+      .deskPreview{width:48px;height:48px;border-radius:10px;border:1px solid var(--bd);display:grid;place-items:center;overflow:hidden;background:var(--bg2)}
+      .deskPreview img{width:100%;height:100%;object-fit:cover}
+      .deskRow{display:flex;gap:6px;align-items:center}
+      .deskInp{flex:1;border:1px solid var(--bd);background:var(--bg2);color:var(--tx);border-radius:8px;padding:7px 8px;font-size:12px}
+      .deskBtn{border:1px solid var(--bd);background:var(--bg2);color:var(--tx2);border-radius:8px;padding:6px 8px;font-size:11px}
+      #contactsModal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:12010;padding:12px}
+      #contactsModal.show{display:flex}
+      .ctCard{width:min(95vw,520px);max-height:84vh;background:var(--bg2);border:1px solid var(--bd);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+      .ctHd{padding:12px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between}
+      .ctBd{overflow:auto}
+      .ctItem{display:flex;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.05)}
+      .ctAv{width:38px;height:38px;border-radius:50%;overflow:hidden;background:var(--bg3);display:grid;place-items:center}
+      .ctAv img{width:100%;height:100%;object-fit:cover}
+      .ctN{font-size:14px;font-weight:700}
+      .ctS{font-size:12px;color:var(--tx2)}
+    `;
+    document.head.appendChild(st);
+  }
+
+  // ---- section ----
+  if(!$("#page-home")){
+    var sec=document.createElement("section");
+    sec.id="page-home";
+    sec.className="page";
+    sec.innerHTML = `
+      <div class="homeDesk">
+        <div class="homeTop">
+          <div id="homeClock" class="homeClock">00:00</div>
+          <button id="homeEditBtn" class="homeEditBtn">编辑桌面</button>
+        </div>
+        <div id="homeGroups"></div>
+      </div>
+    `;
+    $(".main").insertBefore(sec, $("#page-chat"));
+  }
+
+  // ---- tab ----
+  if(!$('.tab[data-page="home"]')){
+    var tabs = $(".tabs");
+    var btn = document.createElement("button");
+    btn.className = "tab";
+    btn.setAttribute("data-page","home");
+    btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 10.5L12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>首页';
+    btn.onclick = function(){ switchTab("home", btn); };
+    tabs.insertBefore(btn, tabs.firstChild);
+    tabs.style.gridTemplateColumns = "repeat(5,1fr)";
+  }
+
+  function nowStr(){
+    var d=new Date();
+    return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+  }
+  function renderClock(){ var el=$("#homeClock"); if(el) el.textContent = nowStr(); }
+
+  function iconHtml(a){
+    if(a.iconData) return '<img src="'+a.iconData+'" alt="">';
+    return '<span>'+ (a.icon||"◻️") +'</span>';
+  }
+
+  function runApp(a){
+    if(a.type==="tab"){
+      var b = $('.tab[data-page="'+a.tab+'"]');
+      switchTab(a.tab, b||null);
+      return;
+    }
+    if(a.type==="contacts"){ openContacts(); return; }
+    if(a.type==="fn"){
+      var f = window[a.fn];
+      if(typeof f==="function") f();
+      else tip("功能未就绪");
+      return;
+    }
+  }
+
+  function grouped(){
+    var map={};
+    apps.forEach(function(a){
+      if(!map[a.group]) map[a.group]=[];
+      map[a.group].push(a);
+    });
+    return map;
+  }
+
+  function renderHome(){
+    var box=$("#homeGroups"); if(!box) return;
+    var g=grouped(), order=["社交","设定","工具"], html="";
+    order.forEach(function(k){
+      if(!g[k] || !g[k].length) return;
+      html += '<div class="homeGroup"><div class="homeGroupTitle">'+k+'</div><div class="homeGrid">';
+      g[k].forEach(function(a){
+        html +=
+          '<div class="homeApp" data-id="'+a.id+'">'+
+            '<button class="homeIcon" type="button">'+iconHtml(a)+'</button>'+
+            '<div class="homeName">'+esc(a.name)+'</div>'+
+          '</div>';
+      });
+      html += '</div></div>';
+    });
+    html += '<div class="homeHint">长按图标可直接上传替换图片</div>';
+    box.innerHTML = html;
+
+    $$(".homeApp").forEach(function(n){
+      var id=n.dataset.id;
+      var app=apps.find(function(x){ return x.id===id; });
+      if(!app) return;
+
+      n.addEventListener("click", function(){ runApp(app); });
+
+      var t=null;
+      n.addEventListener("touchstart", function(){
+        t=setTimeout(function(){ pickIcon(app); }, 420);
+      }, {passive:true});
+      ["touchend","touchmove","touchcancel"].forEach(function(ev){
+        n.addEventListener(ev, function(){ if(t) clearTimeout(t); }, {passive:true});
+      });
+    });
+  }
+
+  function pickIcon(app){
+    var inp=document.createElement("input");
+    inp.type="file";
+    inp.accept="image/*";
+    inp.onchange=function(e){
+      var f=e.target.files && e.target.files[0];
+      if(!f) return;
+      var fr=new FileReader();
+      fr.onload=function(){
+        app.iconData = fr.result;
+        saveK(KEY, apps);
+        renderHome();
+        tip("图标已更新");
+      };
+      fr.readAsDataURL(f);
+    };
+    inp.click();
+  }
+
+  // ---- editor ----
+  if(!$("#deskEditor")){
+    var m=document.createElement("div");
+    m.id="deskEditor";
+    m.innerHTML =
+      '<div class="deskCard">'+
+        '<div class="deskHd"><b>桌面管理</b><button class="deskBtn" id="deskClose">关闭</button></div>'+
+        '<div class="deskBd" id="deskBody"></div>'+
+      '</div>';
+    document.body.appendChild(m);
+    $("#deskClose").onclick=function(){ m.classList.remove("show"); };
+    m.addEventListener("click", function(e){ if(e.target===m) m.classList.remove("show"); });
+  }
+
+  function renderEditor(){
+    var body=$("#deskBody");
+    body.innerHTML = apps.map(function(a){
+      return '<div class="deskItem" data-id="'+a.id+'">'+
+        '<div class="deskPreview">'+iconHtml(a)+'</div>'+
+        '<div>'+
+          '<div class="deskRow"><input class="deskInp" data-k="name" value="'+esc(a.name)+'"></div>'+
+          '<div class="deskRow" style="margin-top:6px">'+
+            '<button class="deskBtn" data-k="icon">上传图标</button>'+
+            '<button class="deskBtn" data-k="reset">重置图标</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    }).join("");
+
+    $$("#deskBody .deskItem").forEach(function(row){
+      var id=row.dataset.id;
+      var app=apps.find(function(x){ return x.id===id; });
+      if(!app) return;
+
+      var nameInp=row.querySelector('input[data-k="name"]');
+      nameInp.addEventListener("input", function(){
+        app.name = this.value.trim() || app.name;
+        saveK(KEY, apps);
+        renderHome();
+      });
+
+      row.querySelector('button[data-k="icon"]').onclick=function(){ pickIcon(app); };
+      row.querySelector('button[data-k="reset"]').onclick=function(){
+        delete app.iconData;
+        saveK(KEY, apps);
+        renderEditor();
+        renderHome();
+      };
+    });
+  }
+
+  $("#homeEditBtn").onclick = function(){
+    renderEditor();
+    $("#deskEditor").classList.add("show");
+  };
+
+  // ---- contacts ----
+  if(!$("#contactsModal")){
+    var c=document.createElement("div");
+    c.id="contactsModal";
+    c.innerHTML =
+      '<div class="ctCard">'+
+        '<div class="ctHd"><b>消息</b><button class="deskBtn" id="ctClose">关闭</button></div>'+
+        '<div class="ctBd" id="ctBody"></div>'+
+      '</div>';
+    document.body.appendChild(c);
+    $("#ctClose").onclick=function(){ c.classList.remove("show"); };
+    c.addEventListener("click", function(e){ if(e.target===c) c.classList.remove("show"); });
+  }
+
+  function lastMsg(roleId){
+    var list=(window.HMap && HMap[roleId]) || [];
+    if(!list.length) return "暂无消息";
+    var m=list[list.length-1];
+    if(m.type==="image") return "[图片]";
+    if(m.type==="sticker") return "[表情包]";
+    return String(m.content||"").slice(0,26);
+  }
+
+  function openContacts(){
+    var box=$("#ctBody");
+    if(!window.roles || !roles.length){
+      box.innerHTML='<div class="ctItem"><div class="ctS">暂无角色</div></div>';
+    }else{
+      box.innerHTML = roles.map(function(r){
+        return '<div class="ctItem" data-id="'+r.id+'">'+
+          '<div class="ctAv">'+(r.avatarImg?('<img src="'+r.avatarImg+'" alt="">'):esc((r.avatar||"AI").slice(0,2)))+'</div>'+
+          '<div style="min-width:0">'+
+            '<div class="ctN">'+esc(r.name||"未命名")+'</div>'+
+            '<div class="ctS">'+esc(lastMsg(r.id))+'</div>'+
+          '</div>'+
+        '</div>';
+      }).join("");
+
+      $$("#ctBody .ctItem").forEach(function(it){
+        it.onclick=function(){
+          var id=this.dataset.id;
+          if(typeof pickRole==="function") pickRole(id);
+          var b=$('.tab[data-page="chat"]');
+          switchTab("chat", b||null);
+          $("#contactsModal").classList.remove("show");
+        };
+      });
+    }
+    $("#contactsModal").classList.add("show");
+  }
+
+  // 给“消息”功能调用
+  window.openContacts = openContacts;
+
+  // ---- boot ----
+  renderHome();
+  renderClock();
+  setInterval(renderClock, 15000);
+
+  // 默认进入首页
+  var homeTab = $('.tab[data-page="home"]');
+  if(homeTab) switchTab("home", homeTab);
+})();
 </script></body>
 </html>
