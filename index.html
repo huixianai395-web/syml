@@ -5000,5 +5000,243 @@ window.requestReply = function(){
 
   if(window.toast) toast("编辑按钮已强制接管");
 })();
+</script><script>
+(function(){
+  if(window.__NX_EDIT_STABLE_MENU__) return;
+  window.__NX_EDIT_STABLE_MENU__ = true;
+
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+  const H = () => (typeof currentHistory === "function" ? currentHistory() : []);
+  const toastX = t => { try{toast(t)}catch(e){} };
+
+  // 关掉旧菜单层（只隐藏，不删你旧代码）
+  const hideOldStyle = document.createElement("style");
+  hideOldStyle.textContent = `
+    #nxLPMask,#lpSheetMask,#nxMask,#nxOneMask,#nxQqMask,#nxOps,#nxFab,#nxCtx,#nxCtxMask{display:none!important}
+    #chat,#chat *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}
+    .msg.nxActive{outline:2px solid #2f8cff;box-shadow:0 0 0 2px rgba(47,140,255,.2) inset}
+    #nxStableMask{position:fixed;inset:0;background:rgba(0,0,0,.38);display:none;z-index:25000}
+    #nxStableMask.show{display:block}
+    #nxStableMenu{
+      position:fixed;left:10px;right:10px;bottom:10px;display:none;z-index:25001;
+      background:#27303d;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden
+    }
+    #nxStableMenu.show{display:block}
+    #nxStableMenu .hd{padding:10px 12px;color:#d4daea;font-size:13px;border-bottom:1px solid rgba(255,255,255,.08)}
+    #nxStableMenu .g{display:grid;grid-template-columns:repeat(3,1fr)}
+    #nxStableMenu button{
+      border:none;background:transparent;color:#fff;padding:12px 6px;font-size:14px;
+      border-right:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)
+    }
+    #nxStableMenu button:nth-child(3n){border-right:none}
+    #nxStableMenu .full{grid-column:span 3}
+
+    #nxEditStableMask{
+      position:fixed;inset:0;background:rgba(0,0,0,.52);display:none;z-index:25010;align-items:flex-end;justify-content:center
+    }
+    #nxEditStableMask.show{display:flex}
+    #nxEditStableCard{width:100%;max-width:560px;background:#fff;color:#111;border-radius:16px 16px 0 0;padding:14px 12px}
+    #nxEditStableText{width:100%;min-height:46vh;max-height:66vh;resize:vertical;border:1px solid #ddd;border-radius:10px;padding:10px;font-size:16px;line-height:1.5}
+  `;
+  document.head.appendChild(hideOldStyle);
+
+  let activeIdx = -1;
+  let holdTimer = null;
+  let undo = null;
+
+  function saveAndRender(){
+    save("nx_hmap", HMap);
+    renderChat();
+  }
+
+  function clearActive(){
+    $$("#chat .msg.nxActive").forEach(el=>el.classList.remove("nxActive"));
+  }
+
+  function markActive(idx){
+    clearActive();
+    const el = document.querySelector(`#chat .msg[data-idx="${idx}"]`);
+    if(el) el.classList.add("nxActive");
+  }
+
+  // render后打idx
+  const oldRender = window.renderChat;
+  window.renderChat = function(){
+    oldRender && oldRender();
+    $$("#chat .line .msg").forEach((el,i)=>{ el.dataset.idx = i; });
+    if(activeIdx>=0) markActive(activeIdx);
+  };
+
+  function ensureMenu(){
+    if($("#nxStableMenu")) return;
+    const mask = document.createElement("div");
+    mask.id = "nxStableMask";
+    mask.onclick = closeMenu;
+
+    const menu = document.createElement("div");
+    menu.id = "nxStableMenu";
+    menu.innerHTML = `
+      <div class="hd" id="nxStableHd">消息操作</div>
+      <div class="g">
+        <button data-a="edit">编辑</button>
+        <button data-a="quote">引用</button>
+        <button data-a="copy">复制</button>
+
+        <button data-a="fav">收藏</button>
+        <button data-a="hide">隐藏</button>
+        <button data-a="unhide">取消隐藏</button>
+
+        <button data-a="del">删除</button>
+        <button data-a="undo">撤销</button>
+        <button data-a="cancel">取消</button>
+      </div>
+    `;
+    menu.addEventListener("click", onMenuAction);
+
+    document.body.appendChild(mask);
+    document.body.appendChild(menu);
+  }
+
+  function openMenu(idx){
+    ensureMenu();
+    activeIdx = idx;
+    markActive(idx);
+    const m = H()[idx];
+    $("#nxStableHd").textContent = m ? (m.role==="assistant"?"AI消息":"你消息") : "消息操作";
+    $("#nxStableMask").classList.add("show");
+    $("#nxStableMenu").classList.add("show");
+  }
+
+  function closeMenu(){
+    $("#nxStableMask")?.classList.remove("show");
+    $("#nxStableMenu")?.classList.remove("show");
+  }
+
+  function ensureEdit(){
+    if($("#nxEditStableMask")) return;
+    const m = document.createElement("div");
+    m.id = "nxEditStableMask";
+    m.innerHTML = `
+      <div id="nxEditStableCard">
+        <h3 style="margin:0 0 8px;font-size:20px;">编辑消息</h3>
+        <textarea id="nxEditStableText"></textarea>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
+          <button id="nxEditStableCancel" style="border:none;padding:8px 14px;border-radius:10px;background:#e9ebf2;color:#222;">取消</button>
+          <button id="nxEditStableOk" style="border:none;padding:8px 14px;border-radius:10px;background:#1677ff;color:#fff;">保存</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(m);
+    m.addEventListener("click", e=>{ if(e.target===m) m.classList.remove("show"); });
+    $("#nxEditStableCancel").onclick = ()=> m.classList.remove("show");
+  }
+
+  function openEdit(idx){
+    const hs = H(), msg = hs[idx];
+    if(!msg){ toastX("没找到消息"); return; }
+    if(msg.type!=="text"){ toastX("仅文本可编辑"); return; }
+
+    ensureEdit();
+    const mask = $("#nxEditStableMask");
+    const ta = $("#nxEditStableText");
+    ta.value = msg.content || "";
+    mask.classList.add("show");
+    ta.focus();
+
+    $("#nxEditStableOk").onclick = function(){
+      undo = {t:"edit", i:idx, prev:msg.content||""};
+      msg.content = (ta.value||"").trim();
+      saveAndRender();
+      mask.classList.remove("show");
+      closeMenu();
+      toastX("已保存");
+    };
+  }
+
+  function onMenuAction(e){
+    const b = e.target.closest("button[data-a]");
+    if(!b) return;
+    const act = b.dataset.a;
+    const hs = H();
+    const m = hs[activeIdx];
+    if(!m && act!=="cancel"){ closeMenu(); return; }
+
+    if(act==="cancel"){ closeMenu(); return; }
+    if(act==="edit"){ openEdit(activeIdx); return; }
+
+    if(act==="quote"){
+      const inp = $("#inp");
+      if(inp){
+        inp.value = `> ${m.role==="assistant"?"AI":"你"}：${String(m.content||"").replace(/\n/g," ").slice(0,80)}\n` + (inp.value||"");
+        inp.focus();
+        if(typeof autoGrow==="function") autoGrow(inp);
+      }
+      closeMenu(); return;
+    }
+
+    if(act==="copy"){
+      const txt = String(m.content||"");
+      if(navigator.clipboard?.writeText) navigator.clipboard.writeText(txt);
+      else prompt("复制", txt);
+      closeMenu(); return;
+    }
+
+    if(act==="fav"){
+      undo = {t:"fav", i:activeIdx, prev:!!m.fav};
+      m.fav = !m.fav;
+      saveAndRender(); closeMenu(); return;
+    }
+
+    if(act==="hide"){
+      undo = {t:"hide", i:activeIdx, prev:!!m.hiddenFromAI};
+      m.hiddenFromAI = true;
+      saveAndRender(); closeMenu(); return;
+    }
+
+    if(act==="unhide"){
+      undo = {t:"hide", i:activeIdx, prev:!!m.hiddenFromAI};
+      m.hiddenFromAI = false;
+      saveAndRender(); closeMenu(); return;
+    }
+
+    if(act==="del"){
+      undo = {t:"del", i:activeIdx, item:JSON.parse(JSON.stringify(m))};
+      hs.splice(activeIdx,1);
+      activeIdx = -1;
+      saveAndRender(); closeMenu(); return;
+    }
+
+    if(act==="undo"){
+      if(!undo){ toastX("没有可撤销操作"); closeMenu(); return; }
+      if(undo.t==="edit" && hs[undo.i]) hs[undo.i].content = undo.prev;
+      if(undo.t==="fav"  && hs[undo.i]) hs[undo.i].fav = undo.prev;
+      if(undo.t==="hide" && hs[undo.i]) hs[undo.i].hiddenFromAI = undo.prev;
+      if(undo.t==="del") hs.splice(undo.i,0,undo.item);
+      undo = null;
+      saveAndRender(); closeMenu(); return;
+    }
+  }
+
+  // 核心：捕获阶段长按，完全绕过旧监听
+  document.addEventListener("touchstart", function(e){
+    const msg = e.target.closest && e.target.closest(".msg");
+    if(!msg) return;
+    const idx = parseInt(msg.dataset.idx,10);
+    if(isNaN(idx)) return;
+
+    clearTimeout(holdTimer);
+    holdTimer = setTimeout(function(){
+      openMenu(idx);
+    }, 360);
+  }, {capture:true, passive:true});
+
+  document.addEventListener("touchend", ()=>clearTimeout(holdTimer), {capture:true, passive:true});
+  document.addEventListener("touchmove", ()=>clearTimeout(holdTimer), {capture:true, passive:true});
+
+  ensureMenu();
+  renderChat();
+  toastX("编辑稳定版已接管");
+})();
 </script></body>
 </html>
