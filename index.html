@@ -4728,5 +4728,58 @@ window.requestReply = function(){
   // 给你一个反馈
   if(typeof toast === "function") toast("编辑自动关闭已接管");
 })();
+</script><script>
+(function(){
+  if(window.__NX_UNBLOCK_TOUCH__) return;
+  window.__NX_UNBLOCK_TOUCH__ = true;
+
+  const MASK_IDS = ["nxLPMask","lpSheetMask","nxMask","nxOneMask","nxQqMask","nxEditMask","nxEditMask2","qqEditMask"];
+
+  function forceHideDeadMasks(){
+    MASK_IDS.forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      // 只要不是显示状态，就彻底不拦触摸
+      const shown = el.classList.contains("show") || el.style.display==="flex" || el.style.display==="block";
+      if(!shown){
+        el.style.display = "none";
+        el.style.pointerEvents = "none";
+      }else{
+        el.style.pointerEvents = "auto";
+      }
+    });
+  }
+
+  // 周期清理一次残留
+  forceHideDeadMasks();
+  setInterval(forceHideDeadMasks, 500);
+
+  // 长按后备：如果原逻辑没弹，就强制弹已有菜单容器
+  let t = null;
+  document.addEventListener("touchstart", function(e){
+    const msg = e.target.closest && e.target.closest(".msg");
+    if(!msg) return;
+
+    t = setTimeout(function(){
+      // 给当前消息一个选中态（兼容你现有菜单）
+      document.querySelectorAll("#chat .msg.sel").forEach(x=>x.classList.remove("sel"));
+      msg.classList.add("sel");
+
+      // 尝试唤起你现有的菜单（谁存在就开谁）
+      const m1 = document.getElementById("nxLPMask");
+      const m2 = document.getElementById("lpSheetMask");
+      const m3 = document.getElementById("nxMask");
+
+      if(m1){ m1.style.display="flex"; m1.classList.add("show"); m1.style.pointerEvents="auto"; }
+      else if(m2){ m2.style.display="flex"; m2.classList.add("show"); m2.style.pointerEvents="auto"; }
+      else if(m3){ m3.style.display="block"; m3.classList.add("show"); m3.style.pointerEvents="auto"; }
+    }, 380);
+  }, {passive:true, capture:true});
+
+  document.addEventListener("touchend", ()=>{ if(t) clearTimeout(t); }, {passive:true, capture:true});
+  document.addEventListener("touchmove", ()=>{ if(t) clearTimeout(t); }, {passive:true, capture:true});
+
+  if(typeof toast==="function") toast("触摸解卡已接管");
+})();
 </script></body>
 </html>
