@@ -4145,5 +4145,529 @@ window.requestReply = function(){
   });
 })();
 </script>
-</body>
+<script>
+/* ===== NX Stable Full Menu v1 ===== */
+(function(){
+  if(window.__NX_STABLE_FULL_MENU__) return;
+  window.__NX_STABLE_FULL_MENU__ = true;
+
+  function $(s){ return document.querySelector(s); }
+  function $all(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); }
+  function toastX(t){ try{ toast(t); }catch(e){} }
+  function H(){ return (typeof currentHistory==="function") ? currentHistory() : []; }
+
+  var S = {
+    idx:-1,
+    hold:null,
+    multi:false,
+    sel:new Set(),
+    quote:null, // {from,time,text}
+    undo:null
+  };
+
+  function saveChat(){
+    try{ save("nx_hmap", HMap); }catch(e){}
+    if(typeof renderChat==="function") renderChat();
+  }
+
+  // ---- 样式 ----
+  var st = document.createElement("style");
+  st.textContent = `
+    #chat,#chat *{
+      -webkit-user-select:none !important;
+      user-select:none !important;
+      -webkit-touch-callout:none !important;
+    }
+    .msg.sel{
+      outline:2px solid #2f8cff !important;
+      box-shadow:0 0 0 2px rgba(47,140,255,.22) inset !important;
+    }
+    .msg.hiddenAI{opacity:.45;}
+
+    #nxMenuMask{position:fixed;inset:0;background:rgba(0,0,0,.42);display:none;z-index:23000;}
+    #nxMenuMask.show{display:block;}
+    #nxMenu{
+      position:fixed;left:10px;right:10px;bottom:10px;z-index:23001;
+      display:none;background:#1f2737;border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;overflow:hidden;
+    }
+    #nxMenu.show{display:block;}
+    #nxMenu .hd{
+      padding:10px 12px;font-size:13px;color:#d6ddf0;border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    #nxMenu .grid{display:grid;grid-template-columns:repeat(3,1fr);}
+    #nxMenu .op{
+      border:none;background:transparent;color:#fff;padding:13px 6px;font-size:14px;
+      border-right:1px solid rgba(255,255,255,.06);
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    #nxMenu .op:nth-child(3n){border-right:none;}
+    #nxMenu .full{grid-column:span 3;}
+
+    #nxQuoteBar{
+      display:none;margin-bottom:6px;padding:7px 10px;font-size:12px;
+      border:1px solid var(--bd);border-radius:10px;background:var(--bg2);color:var(--tx2);
+    }
+    #nxQuoteBar.show{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+    #nxQuoteBar .x{
+      border:none;border-radius:8px;background:var(--bg3);color:var(--tx2);padding:2px 8px;
+    }
+
+    .nxQuoteBlock{
+      border-left:3px solid #2f8cff;background:rgba(47,140,255,.15);
+      border-radius:8px;padding:6px 8px;margin-bottom:7px;font-size:12px;line-height:1.45;color:#cfe1ff;
+    }
+
+    #nxEditMask{
+      position:fixed;inset:0;display:none;z-index:23010;background:rgba(0,0,0,.55);
+      align-items:flex-end;justify-content:center;
+    }
+    #nxEditMask.show{display:flex;}
+    #nxEditCard{
+      width:100%;max-width:560px;background:#fff;color:#111;border-radius:16px 16px 0 0;padding:14px 12px;
+    }
+    #nxEditText{
+      width:100%;min-height:46vh;max-height:66vh;resize:vertical;
+      padding:10px;font-size:16px;line-height:1.5;border:1px solid #ddd;border-radius:10px;
+    }
+
+    #nxFavModal{
+      position:fixed;inset:0;display:none;z-index:23020;background:rgba(0,0,0,.6);
+      align-items:center;justify-content:center;padding:12px;
+    }
+    #nxFavModal.show{display:flex;}
+    #nxFavCard{
+      width:min(95vw,440px);max-height:82vh;background:var(--bg2);
+      border:1px solid var(--bd);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;
+    }
+    #nxFavHd{
+      padding:10px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;gap:6px;
+    }
+    #nxFavBd{
+      padding:10px;overflow:auto;display:flex;flex-direction:column;gap:8px;
+    }
+    .favItem{
+      border:1px solid var(--bd);border-radius:10px;background:var(--bg3);padding:8px;font-size:12px;line-height:1.5;
+    }
+  `;
+  document.head.appendChild(st);
+
+  // ---- 清旧菜单层（防冲突）----
+  function killOldLayers(){
+    ["nxLPMask","lpSheetMask","nxMask","nxOneMask","nxQqMask","nxStableMask","nxStableMenu"].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.style.display = "none";
+    });
+  }
+  setInterval(killOldLayers, 1000);
+
+  // ---- render 后标 idx ----
+  var _renderChat = window.renderChat;
+  window.renderChat = function(){
+    _renderChat && _renderChat();
+    var hs = H();
+    $all("#chat .line .msg").forEach(function(el,i){
+      el.dataset.idx = String(i);
+      el.classList.toggle("sel", S.sel.has(i));
+      el.classList.toggle("hiddenAI", !!(hs[i] && hs[i].hiddenFromAI));
+    });
+  };
+
+  // ---- 引用条 ----
+  function ensureQuoteBar(){
+    if($("#nxQuoteBar")) return;
+    var ib = $(".inputBar");
+    if(!ib) return;
+    var row = ib.querySelector(".sendRow");
+    if(!row) return;
+    var q = document.createElement("div");
+    q.id = "nxQuoteBar";
+    q.innerHTML = '<span id="nxQuoteTxt"></span><button class="x" id="nxQuoteCancel">取消</button>';
+    ib.insertBefore(q, row);
+    $("#nxQuoteCancel").onclick = function(){ S.quote=null; refreshQuoteBar(); };
+  }
+  function refreshQuoteBar(){
+    ensureQuoteBar();
+    var bar=$("#nxQuoteBar"), txt=$("#nxQuoteTxt");
+    if(!bar||!txt) return;
+    if(!S.quote){ bar.classList.remove("show"); txt.textContent=""; return; }
+    txt.textContent = "引用 " + S.quote.from + (S.quote.time?(" "+S.quote.time):"") + "：" + String(S.quote.text||"").slice(0,46);
+    bar.classList.add("show");
+  }
+
+  // ---- 引用块渲染 ----
+  var _renderMsgContent = window.renderMsgContent;
+  window.renderMsgContent = function(m){
+    if(m && m.type==="text" && m.quote && m.quote.text){
+      var qh = '<div class="nxQuoteBlock"><b>' + String(m.quote.from||"引用").replace(/</g,"<") + '</b> ' +
+               String(m.quote.time||"").replace(/</g,"<") + '<br>' +
+               String(m.quote.text||"").replace(/</g,"<").slice(0,110) + '</div>';
+      return qh + (typeof markdownToHtml==="function" ? markdownToHtml(m.content||"") : (m.content||""));
+    }
+    return _renderMsgContent ? _renderMsgContent(m) : ((m&&m.content)||"");
+  };
+
+  // ---- 主菜单 ----
+  function ensureMenu(){
+    if($("#nxMenu")) return;
+
+    var mask = document.createElement("div");
+    mask.id = "nxMenuMask";
+    mask.onclick = closeMenu;
+
+    var menu = document.createElement("div");
+    menu.id = "nxMenu";
+    menu.innerHTML =
+      '<div class="hd" id="nxMenuHd">消息操作</div>'+
+      '<div class="grid">'+
+        '<button class="op" data-a="quote">引用</button>'+
+        '<button class="op" data-a="copy">复制</button>'+
+        '<button class="op" data-a="fav">收藏</button>'+
+
+        '<button class="op" data-a="hide">隐藏给AI</button>'+
+        '<button class="op" data-a="unhide">取消隐藏</button>'+
+        '<button class="op" data-a="edit">编辑</button>'+
+
+        '<button class="op" data-a="del">删除</button>'+
+        '<button class="op" data-a="all">全选</button>'+
+        '<button class="op" data-a="toggleSel">选择/取消选择</button>'+
+
+        '<button class="op full" data-a="undo">撤销</button>'+
+        '<button class="op full" data-a="openFav">打开收藏夹</button>'+
+        '<button class="op full" data-a="cancel">取消</button>'+
+      '</div>';
+    menu.addEventListener("click", onMenuClick);
+
+    document.body.appendChild(mask);
+    document.body.appendChild(menu);
+  }
+
+  function openMenu(idx){
+    ensureMenu();
+    S.idx = idx;
+    var m = H()[idx];
+    $("#nxMenuHd").textContent = m ? (m.role==="assistant" ? "AI消息" : "你消息") : "消息操作";
+    $("#nxMenuMask").classList.add("show");
+    $("#nxMenu").classList.add("show");
+  }
+  function closeMenu(){
+    $("#nxMenuMask") && $("#nxMenuMask").classList.remove("show");
+    $("#nxMenu") && $("#nxMenu").classList.remove("show");
+  }
+
+  // ---- 编辑大窗 ----
+  function ensureEditModal(){
+    if($("#nxEditMask")) return;
+    var m = document.createElement("div");
+    m.id = "nxEditMask";
+    m.innerHTML =
+      '<div id="nxEditCard">'+
+        '<h3 style="margin:0 0 8px;font-size:20px;">编辑消息</h3>'+
+        '<textarea id="nxEditText"></textarea>'+
+        '<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">'+
+          '<button id="nxEditCancel" style="border:none;padding:8px 14px;border-radius:10px;background:#e9ebf2;color:#222;">取消</button>'+
+          '<button id="nxEditOk" style="border:none;padding:8px 14px;border-radius:10px;background:#1677ff;color:#fff;">保存</button>'+
+        '</div>'+
+      '</div>';
+    document.body.appendChild(m);
+
+    m.addEventListener("click", function(e){ if(e.target===m) m.classList.remove("show"); });
+    $("#nxEditCancel").onclick = function(){ m.classList.remove("show"); };
+  }
+
+  function openEdit(idx){
+    var hs = H(), msg = hs[idx];
+    if(!msg){ toastX("没找到消息"); return; }
+    if(msg.type!=="text"){ toastX("仅文本可编辑"); return; }
+
+    ensureEditModal();
+    var mask = $("#nxEditMask");
+    var ta = $("#nxEditText");
+    ta.value = msg.content || "";
+    mask.classList.add("show");
+    ta.focus();
+
+    $("#nxEditOk").onclick = function(){
+      S.undo = {t:"edit", i:idx, p:msg.content||""};
+      msg.content = (ta.value||"").trim();
+      saveChat();
+      mask.classList.remove("show");
+      closeMenu();
+      toastX("已保存");
+    };
+  }
+
+  // ---- 收藏夹 ----
+  function ensureFavModal(){
+    if($("#nxFavModal")) return;
+    var m = document.createElement("div");
+    m.id = "nxFavModal";
+    m.innerHTML =
+      '<div id="nxFavCard">'+
+        '<div id="nxFavHd"><b>收藏夹</b><div style="display:flex;gap:6px">'+
+          '<button id="nxFavAll" class="btn2" style="padding:4px 8px;font-size:11px">全选</button>'+
+          '<button id="nxFavDelSel" class="btn2 btnDanger" style="padding:4px 8px;font-size:11px">删选中</button>'+
+          '<button id="nxFavDelAll" class="btn2 btnDanger" style="padding:4px 8px;font-size:11px">清空</button>'+
+          '<button id="nxFavClose" class="btn2" style="padding:4px 8px;font-size:11px">关闭</button>'+
+        '</div></div>'+
+        '<div id="nxFavBd"></div>'+
+      '</div>';
+    document.body.appendChild(m);
+
+    m.addEventListener("click", function(e){ if(e.target===m) m.classList.remove("show"); });
+    $("#nxFavClose").onclick = function(){ m.classList.remove("show"); };
+    $("#nxFavAll").onclick = function(){
+      $all("#nxFavBd .fchk").forEach(function(c){ c.checked=true; });
+    };
+    $("#nxFavDelSel").onclick = function(){
+      var hs=H(), ids=[];
+      $all("#nxFavBd .fchk:checked").forEach(function(c){
+        var i=parseInt(c.dataset.idx,10); if(!isNaN(i)) ids.push(i);
+      });
+      ids.forEach(function(i){ if(hs[i]) hs[i].fav=false; });
+      saveChat();
+      renderFav();
+    };
+    $("#nxFavDelAll").onclick = function(){
+      H().forEach(function(m){ if(m) m.fav=false; });
+      saveChat();
+      renderFav();
+    };
+  }
+
+  function renderFav(){
+    ensureFavModal();
+    var bd = $("#nxFavBd");
+    var html="", n=0;
+    H().forEach(function(m,i){
+      if(m && m.fav){
+        n++;
+        html += '<div class="favItem"><div><input class="fchk" type="checkbox" data-idx="'+i+'"> #'+i+' · '+(m.role==="assistant"?"AI":"你")+' · '+(m.time||"")+'</div><div>'+String(m.content||"").replace(/</g,"<").slice(0,260)+'</div></div>';
+      }
+    });
+    bd.innerHTML = n ? html : '<div class="favItem">还没有收藏。</div>';
+  }
+
+  function openFav(){
+    renderFav();
+    $("#nxFavModal").classList.add("show");
+  }
+
+  // ---- 动作 ----
+  function currentTargets(){
+    var hs=H(), ids=[];
+    if(S.multi && S.sel.size){
+      ids = Array.from(S.sel).sort(function(a,b){return a-b;});
+    }else if(S.idx>=0){
+      ids = [S.idx];
+    }
+    return ids.filter(function(i){ return hs[i]!=null; });
+  }
+
+  function onMenuClick(e){
+    var b = e.target.closest("button[data-a]");
+    if(!b) return;
+    var a = b.dataset.a;
+    var hs = H();
+    var ids = currentTargets();
+    var m = hs[S.idx];
+
+    if(a==="cancel"){ closeMenu(); return; }
+
+    if(a==="copy"){
+      if(!m){ closeMenu(); return; }
+      var txt = String(m.content||"");
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(txt);
+      }else{
+        prompt("复制文本：", txt);
+      }
+      toastX("已复制");
+      closeMenu(); return;
+    }
+
+    if(a==="quote"){
+      if(ids.length!==1){ toastX("引用需选1条"); closeMenu(); return; }
+      var q = hs[ids[0]];
+      S.quote = {from:q.role==="assistant"?"AI":"你", time:q.time||"", text:q.content||""};
+      refreshQuoteBar();
+      closeMenu(); return;
+    }
+
+    if(a==="fav"){
+      if(!ids.length){ toastX("先选消息"); closeMenu(); return; }
+      var memo=[];
+      ids.forEach(function(i){ memo.push({i:i,p:!!hs[i].fav}); hs[i].fav=true; });
+      S.undo = {t:"fav", memo:memo};
+      saveChat(); closeMenu(); return;
+    }
+
+    if(a==="hide"){
+      if(!ids.length){ toastX("先选消息"); closeMenu(); return; }
+      var memo2=[];
+      ids.forEach(function(i){ memo2.push({i:i,p:!!hs[i].hiddenFromAI}); hs[i].hiddenFromAI=true; });
+      S.undo = {t:"hide", memo:memo2};
+      saveChat(); closeMenu(); return;
+    }
+
+    if(a==="unhide"){
+      if(!ids.length){ toastX("先选消息"); closeMenu(); return; }
+      var memo3=[];
+      ids.forEach(function(i){ memo3.push({i:i,p:!!hs[i].hiddenFromAI}); hs[i].hiddenFromAI=false; });
+      S.undo = {t:"hide", memo:memo3};
+      saveChat(); closeMenu(); return;
+    }
+
+    if(a==="edit"){
+      if(ids.length!==1){ toastX("编辑需选1条"); closeMenu(); return; }
+      openEdit(ids[0]); return;
+    }
+
+    if(a==="del"){
+      if(!ids.length){ toastX("先选消息"); closeMenu(); return; }
+      var removed=[];
+      for(var k=ids.length-1;k>=0;k--){
+        var i=ids[k];
+        removed.push({i:i,it:JSON.parse(JSON.stringify(hs[i]))});
+        hs.splice(i,1);
+      }
+      removed.sort(function(x,y){return x.i-y.i;});
+      S.undo = {t:"del", removed:removed};
+      S.sel.clear();
+      saveChat(); closeMenu(); return;
+    }
+
+    if(a==="all"){
+      S.multi = true;
+      S.sel.clear();
+      hs.forEach(function(_,i){ S.sel.add(i); });
+      renderChat();
+      return;
+    }
+
+    if(a==="toggleSel"){
+      S.multi = !S.multi;
+      if(!S.multi) S.sel.clear();
+      renderChat();
+      return;
+    }
+
+    if(a==="undo"){
+      if(!S.undo){ toastX("没有可撤销操作"); closeMenu(); return; }
+      var u=S.undo, h2=H();
+      if(u.t==="edit" && h2[u.i]) h2[u.i].content=u.p;
+      if(u.t==="fav")  u.memo.forEach(function(x){ if(h2[x.i]) h2[x.i].fav=x.p; });
+      if(u.t==="hide") u.memo.forEach(function(x){ if(h2[x.i]) h2[x.i].hiddenFromAI=x.p; });
+      if(u.t==="del")  u.removed.forEach(function(x){ h2.splice(x.i,0,x.it); });
+      S.undo=null;
+      saveChat(); closeMenu(); return;
+    }
+
+    if(a==="openFav"){
+      openFav();
+      closeMenu(); return;
+    }
+  }
+
+  // ---- 长按触发 ----
+  document.addEventListener("touchstart", function(e){
+    var msg = e.target.closest && e.target.closest(".msg");
+    if(!msg) return;
+    var idx = parseInt(msg.dataset.idx,10);
+    if(isNaN(idx)) return;
+
+    // 多选模式：轻触切换选中
+    if(S.multi){
+      if(S.sel.has(idx)) S.sel.delete(idx); else S.sel.add(idx);
+      renderChat();
+      e.preventDefault();
+      return;
+    }
+
+    S.idx = idx;
+    clearTimeout(S.hold);
+    S.hold = setTimeout(function(){ openMenu(idx); }, 380);
+  }, {capture:true, passive:true});
+
+  document.addEventListener("touchend", function(){ clearTimeout(S.hold); }, {capture:true, passive:true});
+  document.addEventListener("touchmove", function(){ clearTimeout(S.hold); }, {capture:true, passive:true});
+
+  // 多选点按
+  document.addEventListener("click", function(e){
+    if(!S.multi) return;
+    var msg = e.target.closest && e.target.closest(".msg");
+    if(!msg) return;
+    var idx = parseInt(msg.dataset.idx,10);
+    if(isNaN(idx)) return;
+    if(S.sel.has(idx)) S.sel.delete(idx); else S.sel.add(idx);
+    renderChat();
+    e.preventDefault();
+  }, true);
+
+  // ---- 发送时带结构化引用 ----
+  var _queue = window.queueMessage;
+  window.queueMessage = function(){
+    var inp = $("#inp");
+    var text = (inp && inp.value ? inp.value : "").trim();
+    if(!text) return _queue && _queue();
+    if(!S.quote) return _queue && _queue();
+
+    H().push({
+      role:"user",
+      type:"text",
+      content:text,
+      time:(typeof now==="function" ? now() : ""),
+      mode:(window.C && C.chatMode) || "online",
+      quote: JSON.parse(JSON.stringify(S.quote))
+    });
+    save("nx_hmap", HMap);
+    inp.value=""; inp.style.height="auto";
+    S.quote=null; refreshQuoteBar();
+    renderChat();
+    toastX("已暂存");
+  };
+
+  var _req = window.requestReply;
+  window.requestReply = async function(){
+    var inp = $("#inp");
+    var text = (inp && inp.value ? inp.value : "").trim();
+    if(text && S.quote){
+      H().push({
+        role:"user",
+        type:"text",
+        content:text,
+        time:(typeof now==="function" ? now() : ""),
+        mode:(window.C && C.chatMode) || "online",
+        quote: JSON.parse(JSON.stringify(S.quote))
+      });
+      save("nx_hmap", HMap);
+      inp.value=""; inp.style.height="auto";
+      S.quote=null; refreshQuoteBar();
+      renderChat();
+    }
+    return _req.apply(this, arguments);
+  };
+
+  // ---- 禁系统右键/选区 ----
+  document.addEventListener("contextmenu", function(e){
+    if(e.target && e.target.closest && e.target.closest(".msg")) e.preventDefault();
+  }, true);
+
+  document.addEventListener("selectionchange", function(){
+    var sel = window.getSelection && window.getSelection();
+    if(!sel || !sel.rangeCount) return;
+    var n = sel.anchorNode;
+    var el = n && (n.nodeType===3 ? n.parentElement : n);
+    if(el && el.closest && el.closest(".msg")){
+      try{ sel.removeAllRanges(); }catch(e){}
+    }
+  }, true);
+
+  ensureMenu();
+  ensureQuoteBar();
+  ensureFavModal();
+  renderChat();
+  toastX("完整菜单已接管");
+})();
+</script></body>
 </html>
