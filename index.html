@@ -4638,5 +4638,55 @@ window.requestReply = function(){
     if(typeof toast==="function") toast("已保存");
   }, true);
 })();
+</script><script>
+(function(){
+  if(window.__NX_EDIT_AUTOCLOSE__) return;
+  window.__NX_EDIT_AUTOCLOSE__ = true;
+
+  function closeAllActionPanels(){
+    ["nxEditMask2","nxLPMask","lpSheetMask","nxMask","nxQqMask","nxOneMask"].forEach(function(id){
+      var el = document.getElementById(id);
+      if(!el) return;
+      el.style.display = "none";
+      el.classList && el.classList.remove("show");
+    });
+  }
+
+  document.addEventListener("click", function(e){
+    var ok = e.target && e.target.id === "nxEditOk2";
+    if(!ok) return;
+
+    // 抢先执行，避免被旧监听干扰
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    var ta = document.getElementById("nxEditText2");
+    var mask = document.getElementById("nxEditMask2");
+    if(!ta || !mask) return;
+
+    // 找当前选中的消息；没有就取最后一条
+    var idx = -1;
+    var sel = document.querySelector("#chat .msg.sel");
+    if(sel && sel.dataset.idx != null) idx = parseInt(sel.dataset.idx,10);
+    if(isNaN(idx) || idx < 0){
+      var all = Array.from(document.querySelectorAll("#chat .line .msg"));
+      if(all.length) idx = parseInt(all[all.length-1].dataset.idx,10);
+    }
+
+    var H = (typeof currentHistory==="function") ? currentHistory() : [];
+    if(idx>=0 && H[idx] && H[idx].type==="text"){
+      H[idx].content = (ta.value || "").trim();
+      if(typeof save==="function") save("nx_hmap", HMap);
+      if(typeof renderChat==="function") renderChat();
+    }
+
+    ta.blur();
+    mask.style.display = "none";
+    mask.classList.remove("show");
+    closeAllActionPanels();
+
+    if(typeof toast==="function") toast("已保存");
+  }, true);
+})();
 </script></body>
 </html>
