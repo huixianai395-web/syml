@@ -4144,5 +4144,338 @@ window.requestReply = function(){
     box.addEventListener("touchend", function(e){ e.stopPropagation(); }, {passive:true});
   });
 })();
+</script><script>
+/* ===== NX 收口优化（在现有版本上增强） ===== */
+(function(){
+  if(window.__NX_POLISH__) return;
+  window.__NX_POLISH__ = true;
+
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+  const H = () => (typeof currentHistory === "function" ? currentHistory() : []);
+  const toastX = t => { try{ toast(t) }catch(e){} };
+
+  // ---------- 样式优化 ----------
+  const st = document.createElement("style");
+  st.textContent = `
+    /* 菜单更紧凑 */
+    #nxLPCard{
+      max-height:62vh !important;
+      overflow:auto !important;
+      display:grid !important;
+      grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+      gap:8px !important;
+      padding:10px !important;
+    }
+    #nxLPCard .op{
+      margin:0 !important;
+      text-align:center !important;
+      padding:11px 6px !important;
+      font-size:14px !important;
+      border-radius:12px !important;
+    }
+    #nxLPCard .op.full{grid-column:1 / -1 !important;}
+
+    /* 引用条 */
+    #qqQuoteBar{
+      display:none;
+      border:1px solid var(--bd);
+      border-radius:10px;
+      background:var(--bg2);
+      color:var(--tx2);
+      padding:7px 10px;
+      margin-bottom:6px;
+      font-size:12px;
+    }
+    #qqQuoteBar.show{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+    #qqQuoteBar .x{
+      border:none;background:var(--bg3);color:var(--tx2);
+      border-radius:8px;padding:2px 8px;
+    }
+
+    .qqQuoteBlock{
+      border-left:3px solid #2f8cff;
+      background:rgba(47,140,255,.15);
+      border-radius:8px;
+      padding:6px 8px;
+      margin-bottom:7px;
+      font-size:12px;
+      color:#cfe1ff;
+      line-height:1.45;
+    }
+
+    /* 大编辑弹窗 */
+    #qqEditMask{
+      position:fixed;inset:0;display:none;z-index:12050;
+      background:rgba(0,0,0,.52);
+      align-items:flex-end;justify-content:center;
+    }
+    #qqEditMask.show{display:flex;}
+    #qqEditCard{
+      width:100%;max-width:560px;
+      background:#fff;color:#111;
+      border-radius:16px 16px 0 0;
+      padding:14px 12px 12px;
+    }
+    #qqEditCard h3{margin:0 0 8px;font-size:20px;}
+    #qqEditText{
+      width:100%;
+      min-height:45vh;
+      max-height:65vh;
+      resize:vertical;
+      border:1px solid #ddd;
+      border-radius:10px;
+      padding:10px;
+      font-size:16px;
+      line-height:1.5;
+    }
+    #qqEditAct{display:flex;justify-content:flex-end;gap:10px;margin-top:10px;}
+    #qqEditAct button{
+      border:none;border-radius:10px;padding:8px 14px;font-size:15px;
+    }
+    #qqEditCancel{background:#e9ebf2;color:#222;}
+    #qqEditOk{background:#1677ff;color:#fff;}
+
+    /* 聊天气泡区域禁系统选择条 */
+    #chat,#chat *{
+      -webkit-user-select:none !important;
+      user-select:none !important;
+      -webkit-touch-callout:none !important;
+    }
+  `;
+  document.head.appendChild(st);
+
+  // ---------- 菜单不闪退 ----------
+  function guardMenuTouch(){
+    const box = $("#nxLPCard");
+    if(!box || box.dataset.guard==="1") return;
+    box.dataset.guard = "1";
+    ["touchstart","touchmove","touchend","click"].forEach(evt=>{
+      box.addEventListener(evt, e=>e.stopPropagation(), {passive:true});
+    });
+  }
+
+  // ---------- 菜单按钮重排 ----------
+  function compactMenu(){
+    const box = $("#nxLPCard");
+    if(!box) return;
+    const btns = $$("#nxLPCard .op");
+    if(!btns.length) return;
+
+    // 期望顺序
+    const order = ["quote","fav","hide","unhide","edit","del","selectAll","toggleSel","undo","openFav","cancel"];
+    const map = {};
+    btns.forEach(b=>{
+      const k = b.dataset.act || "";
+      map[k] = b;
+    });
+
+    // 没有 data-act 的旧按钮不动
+    const hasData = btns.some(b=>b.dataset.act);
+    if(!hasData) return;
+
+    // 清空再按顺序塞回
+    box.innerHTML = "";
+    order.forEach(k=>{
+      if(map[k]) box.appendChild(map[k]);
+    });
+
+    // 让“打开收藏夹/取消”占整行
+    if(map.openFav) map.openFav.classList.add("full");
+    if(map.cancel) map.cancel.classList.add("full");
+  }
+
+  // ---------- 引用状态 ----------
+  let pendingQuote = null;
+  let lastMsgIdx = -1;
+
+  function ensureQuoteBar(){
+    if($("#qqQuoteBar")) return;
+    const inputBar = $(".inputBar");
+    const sendRow = inputBar && inputBar.querySelector(".sendRow");
+    if(!inputBar || !sendRow) return;
+
+    const q = document.createElement("div");
+    q.id = "qqQuoteBar";
+    q.innerHTML = `<span id="qqQuoteTxt"></span><button class="x" id="qqQuoteX">取消</button>`;
+    inputBar.insertBefore(q, sendRow);
+
+    $("#qqQuoteX").onclick = ()=>{
+      pendingQuote = null;
+      refreshQuoteBar();
+    };
+  }
+
+  function refreshQuoteBar(){
+    ensureQuoteBar();
+    const bar = $("#qqQuoteBar"), txt = $("#qqQuoteTxt");
+    if(!bar || !txt) return;
+    if(!pendingQuote){
+      bar.classList.remove("show");
+      txt.textContent = "";
+      return;
+    }
+    txt.textContent = `引用 ${pendingQuote.from}${pendingQuote.time?(" "+pendingQuote.time):""}：${String(pendingQuote.text||"").slice(0,46)}`;
+    bar.classList.add("show");
+  }
+
+  // ---------- 消息渲染：引用块 ----------
+  const oldRenderMsgContent = window.renderMsgContent;
+  window.renderMsgContent = function(m){
+    if(m && m.type==="text" && m.quote && m.quote.text){
+      const qh = `<div class="qqQuoteBlock"><b>${String(m.quote.from||"引用").replace(/</g,"<")}</b> ${String(m.quote.time||"").replace(/</g,"<")}<br>${String(m.quote.text||"").replace(/</g,"<").slice(0,110)}</div>`;
+      return qh + (typeof markdownToHtml==="function" ? markdownToHtml(m.content||"") : (m.content||""));
+    }
+    return oldRenderMsgContent ? oldRenderMsgContent(m) : (m && m.content) || "";
+  };
+
+  // ---------- 大编辑 ----------
+  function ensureEditModal(){
+    if($("#qqEditMask")) return;
+    const m = document.createElement("div");
+    m.id = "qqEditMask";
+    m.innerHTML = `
+      <div id="qqEditCard">
+        <h3>编辑消息</h3>
+        <textarea id="qqEditText"></textarea>
+        <div id="qqEditAct">
+          <button id="qqEditCancel">取消</button>
+          <button id="qqEditOk">保存</button>
+        </div>
+      </div>`;
+    document.body.appendChild(m);
+    m.addEventListener("click", e=>{ if(e.target===m) m.classList.remove("show"); });
+    $("#qqEditCancel").onclick = ()=> m.classList.remove("show");
+  }
+
+  function openEditModal(idx){
+    const hs = H();
+    const msg = hs[idx];
+    if(!msg || msg.type!=="text"){ toastX("仅文本可编辑"); return; }
+
+    ensureEditModal();
+    $("#qqEditText").value = msg.content || "";
+    $("#qqEditMask").classList.add("show");
+
+    $("#qqEditOk").onclick = function(){
+      msg.content = ($("#qqEditText").value || "").trim();
+      save("nx_hmap", HMap);
+      renderChat();
+      $("#qqEditMask").classList.remove("show");
+      toastX("已保存");
+    };
+  }
+
+  // ---------- 捕捉最后点击消息 ----------
+  document.addEventListener("touchstart", function(e){
+    const m = e.target.closest && e.target.closest(".msg");
+    if(!m) return;
+    const i = parseInt(m.dataset.idx,10);
+    if(!isNaN(i)) lastMsgIdx = i;
+  }, {passive:true, capture:true});
+
+  // ---------- 接管菜单按钮（只接管关键项） ----------
+  document.addEventListener("click", function(e){
+    const b = e.target.closest && e.target.closest("#nxLPCard .op");
+    if(!b) return;
+
+    const act = b.dataset.act || "";
+    if(!act) return;
+
+    // 只拦截引用/编辑，其他沿用你原逻辑
+    if(act==="quote"){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
+      const hs = H();
+      let idx = lastMsgIdx;
+      if(idx<0 && hs.length) idx = hs.length-1;
+      const m = hs[idx];
+      if(!m){ toastX("无可引用消息"); return; }
+
+      pendingQuote = {
+        from: m.role==="assistant" ? "AI" : "你",
+        time: m.time || "",
+        text: m.content || ""
+      };
+      refreshQuoteBar();
+      toastX("已进入引用");
+      return;
+    }
+
+    if(act==="edit"){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      openEditModal(lastMsgIdx);
+      return;
+    }
+  }, true);
+
+  // ---------- 发送时挂 quote（不再 >AI: 文本） ----------
+  const oldQueue = window.queueMessage;
+  window.queueMessage = function(){
+    const inp = $("#inp");
+    const text = (inp && inp.value ? inp.value : "").trim();
+    if(!text) return oldQueue && oldQueue();
+
+    if(!pendingQuote) return oldQueue && oldQueue();
+
+    H().push({
+      role:"user",
+      type:"text",
+      content:text,
+      time: (typeof now==="function" ? now() : ""),
+      mode: (window.C && C.chatMode) || "online",
+      quote: JSON.parse(JSON.stringify(pendingQuote))
+    });
+    save("nx_hmap", HMap);
+    inp.value = "";
+    inp.style.height = "auto";
+    pendingQuote = null;
+    refreshQuoteBar();
+    renderChat();
+    toastX("已暂存");
+  };
+
+  // reply按钮也兼容
+  const oldReq = window.requestReply;
+  window.requestReply = async function(){
+    const inp = $("#inp");
+    const text = (inp && inp.value ? inp.value : "").trim();
+    if(text && pendingQuote){
+      H().push({
+        role:"user",
+        type:"text",
+        content:text,
+        time: (typeof now==="function" ? now() : ""),
+        mode: (window.C && C.chatMode) || "online",
+        quote: JSON.parse(JSON.stringify(pendingQuote))
+      });
+      save("nx_hmap", HMap);
+      inp.value = "";
+      inp.style.height = "auto";
+      pendingQuote = null;
+      refreshQuoteBar();
+      renderChat();
+    }
+    return oldReq.apply(this, arguments);
+  };
+
+  // ---------- 防系统右键 ----------
+  document.addEventListener("contextmenu", function(e){
+    if(e.target && e.target.closest && e.target.closest(".msg")) e.preventDefault();
+  }, true);
+
+  // ---------- 启动 ----------
+  function boot(){
+    ensureQuoteBar();
+    guardMenuTouch();
+    compactMenu();
+    refreshQuoteBar();
+    setTimeout(function(){ guardMenuTouch(); compactMenu(); }, 300);
+    setTimeout(function(){ guardMenuTouch(); compactMenu(); }, 1000);
+  }
+  boot();
+})();
 </script></body>
 </html>
