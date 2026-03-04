@@ -4513,5 +4513,247 @@ window.requestReply = function(){
   boot();
 })();
 </script>
-</body>
+<style>
+/* ===== 交互防系统菜单 ===== */
+.msg, .msg *{
+  -webkit-user-select:none !important;
+  user-select:none !important;
+  -webkit-touch-callout:none !important;
+}
+#chat{
+  -webkit-touch-callout:none;
+}
+
+/* ===== 立体质感 ===== */
+.card{
+  background:linear-gradient(180deg, rgba(30,39,64,.92), rgba(12,18,34,.92)) !important;
+  box-shadow:
+    0 12px 28px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+.msg.ai,.msg.meBubble{
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.05) !important;
+}
+
+/* ===== iOS风长按菜单 ===== */
+#nxCtxMask{
+  position:fixed; inset:0; display:none; z-index:12000;
+  background:rgba(0,0,0,.15);
+}
+#nxCtx{
+  position:fixed; display:none; z-index:12001;
+  min-width:260px; max-width:88vw;
+  background:rgba(245,245,248,.95);
+  color:#0b1220;
+  border-radius:16px;
+  box-shadow:0 18px 40px rgba(0,0,0,.28);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  overflow:hidden;
+}
+#nxCtx .row{display:grid;grid-template-columns:repeat(3,1fr)}
+#nxCtx button{
+  border:none; background:transparent; padding:12px 8px;
+  font-size:16px; color:#1371ff; border-right:1px solid rgba(0,0,0,.08);
+}
+#nxCtx button:nth-child(3n){border-right:none}
+#nxCtx .line{height:1px;background:rgba(0,0,0,.08)}
+#nxQuoteLite{
+  display:none; margin-bottom:6px; padding:6px 10px;
+  border:1px solid var(--bd); border-radius:10px;
+  background:var(--bg2); color:var(--tx2); font-size:12px;
+}
+#nxQuoteLite.show{display:flex;justify-content:space-between;align-items:center;gap:8px}
+#nxQuoteLite .x{
+  border:none; border-radius:8px; padding:2px 8px;
+  background:var(--bg3); color:var(--tx2);
+}
+</style>
+
+<script>
+(function(){
+  if(window.__NX_CTX_V1__) return;
+  window.__NX_CTX_V1__ = true;
+
+  // 屏蔽系统长按菜单
+  document.addEventListener('contextmenu', function(e){
+    if(e.target.closest('.msg')) e.preventDefault();
+  }, true);
+
+  // 轻量引用条
+  function ensureQuoteLite(){
+    if(document.getElementById('nxQuoteLite')) return;
+    var inputBar = document.querySelector('.inputBar');
+    var sendRow = inputBar && inputBar.querySelector('.sendRow');
+    if(!inputBar || !sendRow) return;
+    var q = document.createElement('div');
+    q.id = 'nxQuoteLite';
+    q.innerHTML = '<span id="nxQuoteText"></span><button class="x" id="nxQuoteClose">取消</button>';
+    inputBar.insertBefore(q, sendRow);
+    document.getElementById('nxQuoteClose').onclick = function(){
+      window.__NX_QUOTE__ = null;
+      refreshQuoteLite();
+    };
+  }
+  function refreshQuoteLite(){
+    ensureQuoteLite();
+    var box = document.getElementById('nxQuoteLite');
+    var txt = document.getElementById('nxQuoteText');
+    var q = window.__NX_QUOTE__;
+    if(!box || !txt) return;
+    if(!q){ box.classList.remove('show'); txt.textContent=''; return; }
+    txt.textContent = '引用 '+(q.from||'消息')+'：'+String(q.text||'').slice(0,42);
+    box.classList.add('show');
+  }
+
+  // 自定义菜单
+  function ensureCtx(){
+    if(document.getElementById('nxCtx')) return;
+    var mask = document.createElement('div');
+    mask.id = 'nxCtxMask';
+    mask.onclick = closeCtx;
+    var menu = document.createElement('div');
+    menu.id = 'nxCtx';
+    menu.innerHTML = `
+      <div class="row">
+        <button data-act="quote">引用</button>
+        <button data-act="copy">复制文本</button>
+        <button data-act="fav">收藏</button>
+      </div>
+      <div class="line"></div>
+      <div class="row">
+        <button data-act="hide">隐藏给AI</button>
+        <button data-act="edit">编辑</button>
+        <button data-act="del">删除</button>
+      </div>
+      <div class="line"></div>
+      <div class="row">
+        <button data-act="multi">进入多选</button>
+        <button data-act="cancel" style="grid-column:span 2">取消</button>
+      </div>
+    `;
+    menu.addEventListener('click', onCtxAction);
+    document.body.appendChild(mask);
+    document.body.appendChild(menu);
+  }
+  function openCtx(x,y,idx){
+    ensureCtx();
+    var menu = document.getElementById('nxCtx');
+    var mask = document.getElementById('nxCtxMask');
+    menu.dataset.idx = idx;
+    menu.style.display='block';
+    mask.style.display='block';
+
+    var mw = menu.offsetWidth, mh = menu.offsetHeight;
+    var left = Math.max(8, Math.min(window.innerWidth - mw - 8, x - mw/2));
+    var top  = Math.max(60, Math.min(window.innerHeight - mh - 8, y - mh - 10));
+    menu.style.left = left + 'px';
+    menu.style.top = top + 'px';
+  }
+  function closeCtx(){
+    var menu = document.getElementById('nxCtx');
+    var mask = document.getElementById('nxCtxMask');
+    if(menu) menu.style.display='none';
+    if(mask) mask.style.display='none';
+  }
+
+  function onCtxAction(e){
+    var b = e.target.closest('button[data-act]');
+    if(!b) return;
+    var act = b.dataset.act;
+    var menu = document.getElementById('nxCtx');
+    var idx = parseInt(menu.dataset.idx,10);
+    var H = (typeof currentHistory==='function') ? currentHistory() : [];
+    var m = H[idx];
+    if(!m){ closeCtx(); return; }
+
+    if(act==='quote'){
+      window.__NX_QUOTE__ = {
+        from: m.role==='assistant' ? 'AI' : '你',
+        text: m.content || '',
+        time: m.time || ''
+      };
+      refreshQuoteLite();
+      var inp = document.getElementById('inp'); if(inp) inp.focus();
+    }else if(act==='copy'){
+      var txt = String(m.content||'');
+      navigator.clipboard && navigator.clipboard.writeText
+        ? navigator.clipboard.writeText(txt)
+        : prompt('复制文本：', txt);
+      if(typeof toast==='function') toast('已复制');
+    }else if(act==='fav'){
+      m.fav = !m.fav;
+      if(typeof save==='function') save('nx_hmap', HMap);
+      if(typeof renderChat==='function') renderChat();
+      if(typeof toast==='function') toast(m.fav?'已收藏':'已取消收藏');
+    }else if(act==='hide'){
+      m.hiddenFromAI = !m.hiddenFromAI;
+      if(typeof save==='function') save('nx_hmap', HMap);
+      if(typeof renderChat==='function') renderChat();
+      if(typeof toast==='function') toast(m.hiddenFromAI?'已隐藏给AI':'已取消隐藏');
+    }else if(act==='edit'){
+      if(m.type!=='text'){ if(typeof toast==='function') toast('仅文本可编辑'); closeCtx(); return; }
+      var nv = prompt('编辑消息', m.content||'');
+      if(nv!=null){ m.content = nv.trim(); if(typeof save==='function') save('nx_hmap', HMap); if(typeof renderChat==='function') renderChat(); }
+    }else if(act==='del'){
+      H.splice(idx,1);
+      if(typeof save==='function') save('nx_hmap', HMap);
+      if(typeof renderChat==='function') renderChat();
+    }else if(act==='multi'){
+      window.__NX_MULTI_MODE__ = true;
+      if(typeof toast==='function') toast('多选模式：点消息可选中');
+    }
+    closeCtx();
+  }
+
+  // 长按触发（不触发系统菜单）
+  var hold = null;
+  document.addEventListener('touchstart', function(e){
+    var msg = e.target.closest('.msg');
+    if(!msg) return;
+    var idx = parseInt(msg.dataset.idx,10);
+    if(isNaN(idx)) return;
+    var t = e.touches && e.touches[0];
+    var x = t ? t.clientX : window.innerWidth/2;
+    var y = t ? t.clientY : window.innerHeight/2;
+    hold = setTimeout(function(){ openCtx(x,y,idx); }, 360);
+  }, {passive:true});
+  document.addEventListener('touchend', function(){ if(hold) clearTimeout(hold); }, {passive:true});
+  document.addEventListener('touchmove', function(){ if(hold) clearTimeout(hold); }, {passive:true});
+
+  // 多选点按
+  document.addEventListener('click', function(e){
+    if(!window.__NX_MULTI_MODE__) return;
+    var msg = e.target.closest('.msg');
+    if(!msg) return;
+    msg.classList.toggle('sel');
+    e.preventDefault();
+  }, true);
+
+  // 发送时把引用挂到用户消息（避免你原逻辑丢引用）
+  var oldQueue = window.queueMessage;
+  window.queueMessage = function(){
+    var inp = document.getElementById('inp');
+    var text = (inp && inp.value ? inp.value : '').trim();
+    if(!text) return oldQueue && oldQueue();
+
+    var H = currentHistory();
+    H.push({
+      role:'user', type:'text', content:text, time: (typeof now==='function'?now():''),
+      mode:(window.C&&C.chatMode)||'online',
+      quote: window.__NX_QUOTE__ || null
+    });
+    save('nx_hmap', HMap);
+    if(inp){ inp.value=''; inp.style.height='auto'; }
+    window.__NX_QUOTE__ = null;
+    refreshQuoteLite();
+    renderChat();
+    if(typeof toast==='function') toast('已暂存');
+  };
+
+  ensureQuoteLite();
+  refreshQuoteLite();
+})();
+</script></body>
 </html>
