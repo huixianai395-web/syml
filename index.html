@@ -4876,5 +4876,130 @@ window.requestReply = function(){
 
   if (window.toast) toast("菜单终极修复已接管");
 })();
+</script><script>
+/* ===== 强制修复：编辑按钮每次都可点 ===== */
+(function () {
+  if (window.__NX_EDIT_BTN_FORCE_BIND__) return;
+  window.__NX_EDIT_BTN_FORCE_BIND__ = true;
+
+  let activeIdx = -1;
+
+  function getH() {
+    return (typeof currentHistory === "function") ? currentHistory() : [];
+  }
+
+  function pickMsgIdxFromEl(el){
+    if(!el) return -1;
+    const i = parseInt(el.dataset.idx, 10);
+    return isNaN(i) ? -1 : i;
+  }
+
+  // 记录当前消息索引（长按/点击都记录）
+  document.addEventListener("touchstart", function(e){
+    const msg = e.target.closest && e.target.closest(".msg");
+    const i = pickMsgIdxFromEl(msg);
+    if(i >= 0) activeIdx = i;
+  }, {capture:true, passive:true});
+
+  document.addEventListener("click", function(e){
+    const msg = e.target.closest && e.target.closest(".msg");
+    const i = pickMsgIdxFromEl(msg);
+    if(i >= 0) activeIdx = i;
+  }, true);
+
+  function ensureEditMask(){
+    if(document.getElementById("nxHardEditMask")) return;
+    const mask = document.createElement("div");
+    mask.id = "nxHardEditMask";
+    mask.style.cssText = "position:fixed;inset:0;z-index:39999;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.52)";
+    mask.innerHTML = `
+      <div style="width:100%;max-width:560px;background:#fff;color:#111;border-radius:16px 16px 0 0;padding:14px 12px;">
+        <h3 style="margin:0 0 8px;font-size:20px;">编辑消息</h3>
+        <textarea id="nxHardEditText" style="width:100%;min-height:46vh;max-height:66vh;resize:vertical;padding:10px;font-size:16px;line-height:1.5;border:1px solid #ddd;border-radius:10px;"></textarea>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
+          <button id="nxHardEditCancel" style="border:none;padding:8px 14px;border-radius:10px;background:#e9ebf2;color:#222;">取消</button>
+          <button id="nxHardEditOk" style="border:none;padding:8px 14px;border-radius:10px;background:#1677ff;color:#fff;">保存</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(mask);
+    mask.addEventListener("click", function(e){ if(e.target===mask) mask.style.display="none"; });
+    document.getElementById("nxHardEditCancel").onclick = function(){ mask.style.display="none"; };
+  }
+
+  function closeMenus(){
+    ["nxLPMask","lpSheetMask","nxMask","nxOneMask","nxQqMask"].forEach(function(id){
+      const el = document.getElementById(id);
+      if(!el) return;
+      el.classList.remove("show");
+      el.style.display = "none";
+    });
+  }
+
+  function openEditorByIdx(idx){
+    const H = getH();
+    const m = H[idx];
+    if(!m){ if(window.toast) toast("没找到消息"); return; }
+    if(m.type !== "text"){ if(window.toast) toast("仅文本可编辑"); return; }
+
+    ensureEditMask();
+    const mask = document.getElementById("nxHardEditMask");
+    const ta = document.getElementById("nxHardEditText");
+    ta.value = m.content || "";
+    mask.style.display = "flex";
+    ta.focus();
+
+    document.getElementById("nxHardEditOk").onclick = function(){
+      m.content = (ta.value || "").trim();
+      if(typeof save==="function") save("nx_hmap", HMap);
+      if(typeof renderChat==="function") renderChat();
+      mask.style.display = "none";
+      closeMenus();
+      if(window.toast) toast("已保存");
+    };
+  }
+
+  // 关键：每次菜单出现，都把“编辑”按钮直接改成我们自己的 onclick（覆盖旧冲突）
+  function hardBindEditButtons(){
+    const btns = Array.from(document.querySelectorAll(
+      "#nxLPCard .op, #lpSheet .op, #nxOneMenu button, #nxSMenu button, #nxQqPanel button, #nxMenu button"
+    ));
+
+    btns.forEach(function(btn){
+      const txt = (btn.textContent || "").replace(/\s+/g, "");
+      const act = (btn.dataset && (btn.dataset.act || btn.dataset.a)) || "";
+      const isEdit = (txt.indexOf("编辑") >= 0) || (act === "edit");
+      if(!isEdit) return;
+
+      btn.onclick = function(ev){
+        ev.preventDefault();
+        ev.stopImmediatePropagation();
+
+        let idx = activeIdx;
+        if(idx < 0){
+          const sel = document.querySelector("#chat .msg.sel, #chat .msg.nxActive");
+          if(sel){
+            const s = parseInt(sel.dataset.idx,10);
+            if(!isNaN(s)) idx = s;
+          }
+        }
+        if(idx < 0){
+          const all = Array.from(document.querySelectorAll("#chat .line .msg"));
+          if(all.length){
+            const s = parseInt(all[all.length-1].dataset.idx,10);
+            if(!isNaN(s)) idx = s;
+          }
+        }
+        if(idx < 0){ if(window.toast) toast("先点一条消息"); return; }
+        openEditorByIdx(idx);
+      };
+    });
+  }
+
+  // 高频绑定，保证第二次第三次都覆盖到最新按钮
+  setInterval(hardBindEditButtons, 180);
+
+  if (window.toast) toast("编辑按钮已硬修复");
+})();
 </script></body>
 </html>
