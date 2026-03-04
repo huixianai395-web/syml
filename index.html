@@ -4581,5 +4581,60 @@ window.requestReply = function(){
   setTimeout(injectEditBtn, 400);
   setInterval(injectEditBtn, 1200);
 })();
+</script><script>
+/* ===== 编辑保存后自动退出全部面板（一次到位） ===== */
+(function () {
+  if (window.__NX_EDIT_SAVE_CLOSE_FIX__) return;
+  window.__NX_EDIT_SAVE_CLOSE_FIX__ = true;
+
+  function closeAllLayers() {
+    [
+      "nxEditMask2",   // 你当前编辑弹窗
+      "nxLPMask",      // 长按菜单层
+      "qqEditMask",
+      "nxEditMask",
+      "nxEditOnlyMask",
+      "nxForceEditMask",
+      "nxEditKeepMask",
+      "nxEditStableMask",
+      "lpSheetMask",
+      "nxMask",
+      "nxOneMask",
+      "nxQqMask"
+    ].forEach(function(id){
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.classList && el.classList.remove("show");
+      el.style.display = "none";
+      el.style.pointerEvents = "none";
+    });
+
+    // 清掉选中态，防止残留
+    document.querySelectorAll("#chat .msg.sel, #chat .msg.nxActive").forEach(function(el){
+      el.classList.remove("sel", "nxActive");
+    });
+
+    try { document.activeElement && document.activeElement.blur(); } catch(e){}
+  }
+
+  // 捕获阶段接管“保存”按钮，点一次直接保存+退出
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest("button");
+    if (!btn) return;
+
+    var id = btn.id || "";
+    var txt = (btn.textContent || "").trim();
+    var isSave = (id === "nxEditOk2" || id === "qqEditOk" || id === "nxEditOk") || (txt === "保存");
+
+    if (!isSave) return;
+
+    // 等原保存逻辑执行完，再统一收口关闭
+    setTimeout(function(){
+      closeAllLayers();
+      if (typeof renderChat === "function") renderChat();
+      if (typeof toast === "function") toast("已保存");
+    }, 30);
+  }, true);
+})();
 </script></body>
 </html>
