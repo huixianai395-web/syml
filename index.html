@@ -6674,5 +6674,280 @@ window.requestReply = function(){
   // 首次渲染一次（避免空）
   setTimeout(renderQQList, 120);
 })();
+</script><script>
+/* ===== QQ BASE PATCH: white theme + only message entry + icon full-cover ===== */
+(function () {
+  if (window.__NX_QQ_BASE_PATCH__) return;
+  window.__NX_QQ_BASE_PATCH__ = true;
+
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+
+  /* ---------------- 1) 全局QQ白色基底 ---------------- */
+  const st = document.createElement("style");
+  st.id = "nxQQBaseStyle";
+  st.textContent = `
+    :root{
+      --bg:#f2f2f5 !important;
+      --bg2:#ffffff !important;
+      --bg3:#f7f7fa !important;
+      --bd:#ececf2 !important;
+      --tx:#111111 !important;
+      --tx2:#7a7a85 !important;
+      --tx3:#b0b0b8 !important;
+      --glass:rgba(255,255,255,.92) !important;
+      --shadow:0 4px 16px rgba(0,0,0,.06) !important;
+    }
+
+    body{
+      background:#f2f2f5 !important;
+      color:#111 !important;
+    }
+
+    /* 顶栏改白 */
+    .hd{
+      background:#fff !important;
+      border-bottom:1px solid #ececf2 !important;
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
+    }
+    .nm,.sub,.st{color:#111 !important;}
+    .sub{color:#7a7a85 !important;}
+    .st.off{color:#9a9aa3 !important;}
+    .icon{
+      background:#f6f7fb !important;
+      border:1px solid #e9eaf0 !important;
+      color:#5e6370 !important;
+    }
+
+    /* 底部tab改白 */
+    .tabs{
+      background:#fff !important;
+      border-top:1px solid #ececf2 !important;
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
+    }
+    .tab{color:#8f93a0 !important;}
+    .tab.active{color:#1677ff !important;}
+
+    /* 聊天页QQ白底 */
+    #page-chat{background:#f2f2f5 !important;}
+    .chat{background:#f2f2f5 !important;}
+    .line .msg{
+      box-shadow:none !important;
+    }
+    .ai{
+      background:#fff !important;
+      border:1px solid #e9eaf0 !important;
+      color:#111 !important;
+    }
+    .meBubble{
+      background:#95ec69 !important;
+      color:#111 !important;
+      border:none !important;
+    }
+
+    /* 输入区改白 */
+    .inputBar{
+      background:#fff !important;
+      border-top:1px solid #ececf2 !important;
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
+    }
+    #inp{
+      background:#f6f7fb !important;
+      border:1px solid #e9eaf0 !important;
+      color:#111 !important;
+    }
+
+    /* 首页白卡片 */
+    #page-home{background:#f2f2f5 !important;}
+    #page-home .homeGroup{
+      background:#fff !important;
+      border:1px solid #ececf2 !important;
+      box-shadow:none !important;
+    }
+    #page-home .homeGroupTitle{color:#666 !important;}
+    #page-home .homeName{color:#111 !important;}
+
+    /* 图标：强制满铺（核心） */
+    .homeIcon{
+      width:56px !important;height:56px !important;
+      border-radius:16px !important;
+      overflow:hidden !important;
+      border:none !important;
+      background:#fff !important;
+      padding:0 !important;
+      box-shadow:0 1px 4px rgba(0,0,0,.08) !important;
+      display:grid !important;place-items:center !important;
+    }
+    .homeIcon img,
+    .deskPreview img{
+      width:100% !important;
+      height:100% !important;
+      object-fit:cover !important;
+      object-position:center center !important;
+      display:block !important;
+      transform:scale(1.08); /* 防止出现白边 */
+    }
+
+    /* 隐藏“聊天/角色”底部tab（只从消息入口进） */
+    .tab[data-page="chat"],
+    .tab[data-page="roles"]{
+      display:none !important;
+    }
+  `;
+  document.head.appendChild(st);
+
+  /* ---------------- 2) 建立“消息列表页”入口（QQ风） ---------------- */
+  function ensureQQListPage(){
+    if ($("#page-qq")) return;
+    const sec = document.createElement("section");
+    sec.id = "page-qq";
+    sec.className = "page";
+    sec.innerHTML = `
+      <div style="height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#fff;border-bottom:1px solid #ececf2;position:sticky;top:0;z-index:2;">
+        <button id="qqListBack" style="border:none;background:none;font-size:22px;color:#333;">‹</button>
+        <div style="font-size:20px;font-weight:700;">消息</div>
+        <div style="width:24px;"></div>
+      </div>
+      <div id="qqListWrap" style="background:#fff;"></div>
+    `;
+    $(".main").appendChild(sec);
+
+    $("#qqListBack").onclick = function(){
+      const homeTab = document.querySelector('.tab[data-page="home"]');
+      if (homeTab) switchTab("home", homeTab);
+      else switchTab("home", null);
+    };
+  }
+
+  function roleLastPreview(roleId){
+    const list = (window.HMap && HMap[roleId]) || [];
+    if (!list.length) return "[暂无消息]";
+    const m = list[list.length - 1];
+    if (m.type === "image") return "[图片]";
+    if (m.type === "sticker") return "[表情包]";
+    return String(m.content || "").replace(/\n/g, " ").slice(0, 28);
+  }
+
+  function renderQQList(){
+    ensureQQListPage();
+    const box = $("#qqListWrap");
+    if (!window.roles || !roles.length){
+      box.innerHTML = `<div style="padding:14px;color:#999;">暂无角色</div>`;
+      return;
+    }
+
+    box.innerHTML = roles.map(r => `
+      <div class="qq-item" data-id="${r.id}" style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid #f0f0f2;">
+        <div style="width:46px;height:46px;border-radius:50%;overflow:hidden;background:#eef0f4;display:grid;place-items:center;font-weight:700;color:#555;flex-shrink:0;">
+          ${r.avatarImg ? `<img src="${r.avatarImg}" style="width:100%;height:100%;object-fit:cover;display:block;">` : (r.avatar || "AI").slice(0,2)}
+        </div>
+        <div style="min-width:0;">
+          <div style="font-size:17px;font-weight:700;color:#111;line-height:1.2;">${r.name || "未命名"}</div>
+          <div style="margin-top:4px;font-size:14px;color:#9a9aa0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65vw;">${roleLastPreview(r.id)}</div>
+        </div>
+      </div>
+    `).join("");
+
+    $$("#qqListWrap .qq-item").forEach(el => {
+      el.onclick = function(){
+        const id = this.dataset.id;
+        if (typeof pickRole === "function") pickRole(id);
+        // 没有底部“聊天”tab也能直接切页
+        switchTab("chat", null);
+      };
+    });
+  }
+
+  window.openQQListPage = function(){
+    renderQQList();
+    switchTab("qq", null);
+  };
+
+  /* ---------------- 3) 首页“消息/QQ”图标强制进列表 ---------------- */
+  document.addEventListener("click", function(e){
+    const app = e.target.closest(".homeApp");
+    if (!app) return;
+
+    const id = app.dataset.id || "";
+    const text = (app.querySelector(".homeName")?.textContent || "").trim();
+    if (id === "msg" || text === "消息" || text === "QQ") {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      window.openQQListPage();
+    }
+  }, true);
+
+  /* ---------------- 4) 图标数据二次裁切（修复你圈出来的白边/不满铺） ---------------- */
+  async function cropToSquare(dataUrl, size){
+    size = size || 256;
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = function(){
+        const c = document.createElement("canvas");
+        c.width = size; c.height = size;
+        const ctx = c.getContext("2d");
+
+        const iw = img.width, ih = img.height;
+        const s = Math.max(size / iw, size / ih); // cover
+        const nw = iw * s, nh = ih * s;
+        const dx = (size - nw) / 2, dy = (size - nh) / 2;
+
+        ctx.drawImage(img, dx, dy, nw, nh);
+        resolve(c.toDataURL("image/jpeg", 0.92));
+      };
+      img.onerror = reject;
+      img.src = dataUrl;
+    });
+  }
+
+  async function normalizeHomeIconsOnce(){
+    const FLAG = "nx_icon_normalized_v1";
+    if (localStorage.getItem(FLAG) === "1") return;
+
+    let apps;
+    try { apps = JSON.parse(localStorage.getItem("nx_home_apps_v2") || "[]"); } catch(e){ apps = []; }
+    if (!Array.isArray(apps) || !apps.length) return;
+
+    let changed = false;
+    for (let i=0;i<apps.length;i++){
+      const a = apps[i];
+      if (a && a.iconData && /^data:image\//.test(a.iconData)) {
+        try{
+          a.iconData = await cropToSquare(a.iconData, 256);
+          changed = true;
+        }catch(e){}
+      }
+    }
+
+    if (changed){
+      localStorage.setItem("nx_home_apps_v2", JSON.stringify(apps));
+    }
+    localStorage.setItem(FLAG, "1");
+  }
+
+  /* ---------------- 5) 启动修正 ---------------- */
+  function refreshTabsCols(){
+    const tabs = $(".tabs");
+    if (!tabs) return;
+    // 去掉 chat/roles 后，通常剩 3~4 项；直接自适应
+    const visible = $$(".tabs .tab").filter(x => getComputedStyle(x).display !== "none").length || 4;
+    tabs.style.gridTemplateColumns = `repeat(${visible},1fr)`;
+  }
+
+  normalizeHomeIconsOnce().then(() => {
+    refreshTabsCols();
+    renderQQList();
+    // 默认回首页（如果有首页）
+    const homeTab = document.querySelector('.tab[data-page="home"]');
+    if (homeTab) switchTab("home", homeTab);
+    // 重绘一次
+    try { if (typeof renderChat === "function") renderChat(); } catch(e){}
+  });
+
+})();
 </script></body>
 </html>
