@@ -7871,5 +7871,267 @@ window.requestReply = function(){
     applyChrome();
   }, 200);
 })();
+</script><script>
+/* ===== PHONE OS MODE (desktop -> app flow) ===== */
+(function () {
+  if (window.__NX_PHONE_OS_MODE__) return;
+  window.__NX_PHONE_OS_MODE__ = true;
+
+  const $ = s => document.querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+
+  /* 0) 屏蔽调试提示 */
+  (function muteDebugToast(){
+    const ban = ["首页点击已修复","修复补丁已加载","FIX-OK"];
+    const _toast = window.toast;
+    if (typeof _toast === "function") {
+      window.toast = function(msg){
+        const s = String(msg || "");
+        if (ban.some(k => s.includes(k))) return;
+        return _toast.apply(this, arguments);
+      };
+    }
+    const _alert = window.alert;
+    if (typeof _alert === "function") {
+      window.alert = function(msg){
+        const s = String(msg || "");
+        if (ban.some(k => s.includes(k))) return;
+        return _alert.apply(this, arguments);
+      };
+    }
+  })();
+
+  /* 1) 样式：隐藏底部tab、隐藏原顶部、应用头 */
+  const st = document.createElement("style");
+  st.textContent = `
+    .tabs{display:none !important;}
+    .hd{display:none !important;}
+    #phoneAppBar{
+      position:fixed;left:0;right:0;top:0;z-index:12050;
+      height:54px;background:#fff;border-bottom:1px solid #ececf2;
+      display:none;align-items:center;justify-content:space-between;padding:0 12px;
+      font-weight:700;color:#111;
+    }
+    #phoneAppBar .back{
+      border:none;background:none;color:#1677ff;font-size:24px;padding:0 6px;
+    }
+    #phoneAppBar .title{font-size:20px;}
+    #phoneAppBar .right{width:24px;}
+    .main.phone-app-open .page.active{padding-top:54px;}
+    #page-home .homeGroup{background:#fff !important;border:1px solid #ececf2 !important;box-shadow:none !important;}
+  `;
+  document.head.appendChild(st);
+
+  /* 2) 应用头 */
+  function ensureAppBar(){
+    if ($("#phoneAppBar")) return;
+    const bar = document.createElement("div");
+    bar.id = "phoneAppBar";
+    bar.innerHTML = `
+      <button class="back" id="phoneBackBtn">‹</button>
+      <div class="title" id="phoneBarTitle">应用</div>
+      <div class="right"></div>
+    `;
+    document.body.appendChild(bar);
+  }
+  ensureAppBar();
+
+  function showBar(title){
+    ensureAppBar();
+    $("#phoneBarTitle").textContent = title || "应用";
+    $("#phoneAppBar").style.display = "flex";
+    $(".main")?.classList.add("phone-app-open");
+  }
+  function hideBar(){
+    const bar = $("#phoneAppBar");
+    if (bar) bar.style.display = "none";
+    $(".main")?.classList.remove("phone-app-open");
+  }
+
+  /* 3) 消息列表页（QQ入口） */
+  function ensureMsgListPage(){
+    if ($("#page-msglist")) return;
+    const sec = document.createElement("section");
+    sec.id = "page-msglist";
+    sec.className = "page";
+    sec.innerHTML = `<div id="msgListWrap" style="background:#fff;"></div>`;
+    $(".main").appendChild(sec);
+  }
+
+  function lastPreview(roleId){
+    const list = (window.HMap && HMap[roleId]) || [];
+    if (!list.length) return "[暂无消息]";
+    const m = list[list.length - 1];
+    if (m.type === "image") return "[图片]";
+    if (m.type === "sticker") return "[表情包]";
+    return String(m.content || "").replace(/\n/g, " ").slice(0, 28);
+  }
+
+  function renderMsgList(){
+    ensureMsgListPage();
+    const box = $("#msgListWrap");
+    if (!window.roles || !roles.length){
+      box.innerHTML = `<div style="padding:14px;color:#999;">暂无角色</div>`;
+      return;
+    }
+
+    box.innerHTML = roles.map(r => `
+      <div class="msgRoleItem" data-id="${r.id}" style="display:flex;gap:10px;align-items:center;padding:11px 12px;border-bottom:1px solid #f0f0f2;">
+        <div style="width:46px;height:46px;border-radius:50%;overflow:hidden;background:#eef0f4;display:grid;place-items:center;flex-shrink:0;font-weight:700;color:#555;">
+          ${r.avatarImg ? `<img src="${r.avatarImg}" style="width:100%;height:100%;object-fit:cover;display:block;">` : (r.avatar || "AI").slice(0,2)}
+        </div>
+        <div style="min-width:0;">
+          <div style="font-size:17px;font-weight:700;color:#111;">${r.name || "未命名"}</div>
+          <div style="margin-top:4px;font-size:14px;color:#9a9aa0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65vw;">${lastPreview(r.id)}</div>
+        </div>
+      </div>
+    `).join("");
+
+    $$("#msgListWrap .msgRoleItem").forEach(it => {
+      it.onclick = function(){
+        const rid = this.dataset.id;
+        if (typeof pickRole === "function") pickRole(rid);
+        navigate("chat", (roles.find(x=>x.id===rid)?.name) || "聊天", true);
+      };
+    });
+  }
+
+  /* 4) 页面导航栈（返回链） */
+  const rawSwitchTab = window.switchTab;
+  const navStack = [{page:"home", title:"首页"}];
+
+  function navigate(page, title, push){
+    if (typeof rawSwitchTab === "function") rawSwitchTab(page, null);
+    if (page === "home"){
+      hideBar();
+    } else {
+      showBar(title);
+    }
+    if (push){
+      const last = navStack[navStack.length - 1];
+      if (!last || last.page !== page) navStack.push({page, title});
+    }
+    if (page === "page-msglist" || page === "msglist") renderMsgList();
+    if (page === "msglist") renderMsgList();
+  }
+
+  window.navigateApp = navigate;
+
+  $("#phoneBackBtn").onclick = function(){
+    if (navStack.length <= 1){
+      navigate("home", "首页", false);
+      navStack.length = 1;
+      return;
+    }
+    navStack.pop();
+    const prev = navStack[navStack.length - 1] || {page:"home",title:"首页"};
+    navigate(prev.page, prev.title, false);
+  };
+
+  // 接管 goBack（你原左上角）
+  const oldGoBack = window.goBack;
+  window.goBack = function(){
+    if ($("#phoneAppBar") && $("#phoneAppBar").style.display === "flex"){
+      $("#phoneBackBtn").click();
+      return;
+    }
+    return oldGoBack ? oldGoBack.apply(this, arguments) : undefined;
+  };
+
+  /* 5) 首页精简：只保留应用图标 */
+  const KEEP_HOME = new Set(["消息","收藏夹","表情包","导出数据"]);
+  function cleanHomeApps(){
+    const home = $("#page-home");
+    if (!home) return;
+
+    $$("#page-home .homeApp").forEach(card => {
+      const name = (card.querySelector(".homeName")?.textContent || "").trim();
+      card.style.display = KEEP_HOME.has(name) ? "" : "none";
+    });
+
+    $$("#page-home .homeGroup").forEach(g => {
+      const v = $$(".homeApp", g).filter(x=>getComputedStyle(x).display!=="none").length;
+      g.style.display = v ? "" : "none";
+    });
+  }
+
+  /* 6) 关键：重绑首页图标点击（克隆去旧监听，彻底可点） */
+  function rebindHomeClicks(){
+    const oldHome = $("#page-home");
+    if (!oldHome || oldHome.dataset.phoneBound === "1") return;
+
+    const clone = oldHome.cloneNode(true);
+    oldHome.parentNode.replaceChild(clone, oldHome);
+    clone.dataset.phoneBound = "1";
+
+    cleanHomeApps();
+
+    $$("#page-home .homeApp").forEach(card => {
+      const name = (card.querySelector(".homeName")?.textContent || "").trim();
+
+      card.onclick = function(e){
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (name === "消息"){
+          renderMsgList();
+          navigate("msglist", "消息", true);
+          return;
+        }
+        if (name === "收藏夹"){
+          const b = document.getElementById("favOpenBtn") || document.getElementById("nxTopFavBtn");
+          if (b) { b.click(); return; }
+          if (typeof openFav === "function") { openFav(); return; }
+          return;
+        }
+        if (name === "表情包"){
+          if (typeof openStickerManager === "function") openStickerManager();
+          return;
+        }
+        if (name === "导出数据"){
+          if (typeof exportAllData === "function") exportAllData();
+          return;
+        }
+      };
+    });
+  }
+
+  /* 7) 修补 switchTab 后续渲染干扰 */
+  window.switchTab = function(name, btn){
+    if (typeof rawSwitchTab === "function") rawSwitchTab(name, btn);
+
+    // 如果是底层页面，套上应用头
+    if (name === "worldbook"){
+      showBar("世界书");
+      const last = navStack[navStack.length-1];
+      if(!last || last.page !== "worldbook") navStack.push({page:"worldbook", title:"世界书"});
+    } else if (name === "settings"){
+      showBar("设置");
+      const last = navStack[navStack.length-1];
+      if(!last || last.page !== "settings") navStack.push({page:"settings", title:"设置"});
+    } else if (name === "home"){
+      hideBar();
+      navStack.length = 1;
+      navStack[0] = {page:"home", title:"首页"};
+    }
+  };
+
+  /* 8) 初始化 */
+  ensureMsgListPage();
+  rebindHomeClicks();
+  cleanHomeApps();
+
+  // 默认回首页
+  const homeTab = document.querySelector('.tab[data-page="home"]');
+  if (typeof rawSwitchTab === "function") rawSwitchTab("home", homeTab || null);
+  hideBar();
+
+  // 防止后续补丁再改DOM
+  const mo = new MutationObserver(function(){
+    cleanHomeApps();
+    rebindHomeClicks();
+  });
+  mo.observe(document.body, {childList:true, subtree:true});
+})();
 </script></body>
 </html>
