@@ -7245,5 +7245,186 @@ window.requestReply = function(){
   if (homeTab) switchTab("home", homeTab);
 
 })();
+</script><script>
+/* ===== FORCE QQ FLOW PATCH ===== */
+(function () {
+  if (window.__NX_FORCE_QQ_FLOW__) return;
+  window.__NX_FORCE_QQ_FLOW__ = true;
+
+  const $ = s => document.querySelector(s);
+  const $$ = (s, root) => Array.from((root || document).querySelectorAll(s));
+
+  // 你想留在首页中间的功能名
+  const KEEP_HOME_NAMES = new Set(["消息", "收藏夹", "表情包", "导出数据"]);
+
+  function getCurrentPage(){
+    const p = document.querySelector(".page.active");
+    return p ? p.id.replace("page-","") : "";
+  }
+
+  /* 1) 首页中间卡片强制清理 */
+  function cleanHomeCards(){
+    const home = $("#page-home");
+    if (!home) return;
+
+    $$("#page-home .homeApp").forEach(card => {
+      const name = (card.querySelector(".homeName")?.textContent || "").trim();
+      if (!KEEP_HOME_NAMES.has(name)) card.style.display = "none";
+      else card.style.display = "";
+    });
+
+    // 空分组直接隐藏
+    $$("#page-home .homeGroup").forEach(g => {
+      const visible = $$(".homeApp", g).filter(x => getComputedStyle(x).display !== "none").length;
+      g.style.display = visible ? "" : "none";
+    });
+  }
+
+  /* 2) 创建“消息列表页” */
+  function ensureQQPage(){
+    if ($("#page-qq")) return;
+    const sec = document.createElement("section");
+    sec.id = "page-qq";
+    sec.className = "page";
+    sec.innerHTML = `
+      <div style="height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#fff;border-bottom:1px solid #ececf2;position:sticky;top:0;z-index:2;">
+        <button id="qqBackBtn" style="border:none;background:none;color:#1677ff;font-size:24px;padding:0 6px;">‹</button>
+        <div style="font-size:20px;font-weight:700;">消息</div>
+        <div style="width:24px;"></div>
+      </div>
+      <div id="qqListWrap" style="background:#fff;"></div>
+    `;
+    $(".main").appendChild(sec);
+
+    $("#qqBackBtn").onclick = function(){
+      const homeTab = document.querySelector('.tab[data-page="home"]');
+      switchTab("home", homeTab || null);
+    };
+  }
+
+  function lastPreview(roleId){
+    const list = (window.HMap && HMap[roleId]) || [];
+    if (!list.length) return "[暂无消息]";
+    const m = list[list.length - 1];
+    if (m.type === "image") return "[图片]";
+    if (m.type === "sticker") return "[表情包]";
+    return String(m.content || "").replace(/\n/g, " ").slice(0, 28);
+  }
+
+  function renderQQList(){
+    ensureQQPage();
+    const box = $("#qqListWrap");
+    if (!window.roles || !roles.length){
+      box.innerHTML = `<div style="padding:14px;color:#999;">暂无角色</div>`;
+      return;
+    }
+
+    box.innerHTML = roles.map(r => `
+      <div class="qq-item" data-id="${r.id}" style="display:flex;gap:10px;align-items:center;padding:11px 12px;border-bottom:1px solid #f0f0f2;">
+        <div style="width:46px;height:46px;border-radius:50%;overflow:hidden;background:#eef0f4;display:grid;place-items:center;flex-shrink:0;font-weight:700;color:#555;">
+          ${r.avatarImg ? `<img src="${r.avatarImg}" style="width:100%;height:100%;object-fit:cover;display:block;">` : (r.avatar || "AI").slice(0,2)}
+        </div>
+        <div style="min-width:0;">
+          <div style="font-size:17px;font-weight:700;color:#111;line-height:1.2;">${r.name || "未命名"}</div>
+          <div style="margin-top:4px;font-size:14px;color:#9a9aa0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65vw;">${lastPreview(r.id)}</div>
+        </div>
+      </div>
+    `).join("");
+
+    $$("#qqListWrap .qq-item").forEach(it => {
+      it.onclick = function(){
+        const rid = this.dataset.id;
+        if (typeof pickRole === "function") pickRole(rid);
+        window.__NX_FROM_QQ_LIST__ = true;
+        switchTab("chat", null);
+      };
+    });
+  }
+
+  window.openQQListPage = function(){
+    renderQQList();
+    switchTab("qq", null);
+  };
+
+  /* 3) 首页点击“消息”强制走列表 */
+  document.addEventListener("click", function(e){
+    const app = e.target.closest("#page-home .homeApp");
+    if(!app) return;
+    const name = (app.querySelector(".homeName")?.textContent || "").trim();
+
+    // 消息/QQ/聊天/人物列表都统一进“消息列表页”
+    if (["消息","QQ","聊天","人物列表"].includes(name)){
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      window.openQQListPage();
+    }
+  }, true);
+
+  /* 4) 返回链：聊天->列表->首页 */
+  const _goBack = window.goBack;
+  window.goBack = function(){
+    const p = getCurrentPage();
+    if (p === "chat" && window.__NX_FROM_QQ_LIST__){
+      switchTab("qq", null);
+      return;
+    }
+    if (p === "qq"){
+      const homeTab = document.querySelector('.tab[data-page="home"]');
+      switchTab("home", homeTab || null);
+      return;
+    }
+    return _goBack ? _goBack.apply(this, arguments) : undefined;
+  };
+
+  /* 5) 首页/列表隐藏顶部条；聊天显示 */
+  function applyChrome(){
+    const p = getCurrentPage();
+    const hd = $(".hd");
+    const tabs = $(".tabs");
+    if(!hd || !tabs) return;
+
+    hd.style.display = (p === "home" || p === "qq") ? "none" : "flex";
+    tabs.style.display = (p === "qq") ? "none" : "grid";
+  }
+
+  const _switchTab = window.switchTab;
+  window.switchTab = function(name, btn){
+    _switchTab && _switchTab.call(this, name, btn);
+    setTimeout(() => {
+      cleanHomeCards();
+      if (name === "qq") renderQQList();
+      applyChrome();
+    }, 0);
+  };
+
+  /* 6) 若本地首页配置里还有多余项目，直接裁掉 */
+  function trimHomeStorage(){
+    ["nx_home_apps_v2","nx_home_apps_v1"].forEach(k => {
+      try{
+        let arr = JSON.parse(localStorage.getItem(k) || "[]");
+        if(!Array.isArray(arr) || !arr.length) return;
+        arr = arr.filter(a => KEEP_HOME_NAMES.has((a.name || "").trim()));
+        if(arr.length) localStorage.setItem(k, JSON.stringify(arr));
+      }catch(e){}
+    });
+  }
+
+  /* boot */
+  ensureQQPage();
+  trimHomeStorage();
+  setTimeout(cleanHomeCards, 60);
+  setTimeout(applyChrome, 80);
+
+  const mo = new MutationObserver(() => {
+    cleanHomeCards();
+    applyChrome();
+  });
+  mo.observe(document.body, {childList:true, subtree:true});
+
+  // 默认保持首页
+  const homeTab = document.querySelector('.tab[data-page="home"]');
+  if (homeTab) switchTab("home", homeTab);
+})();
 </script></body>
 </html>
