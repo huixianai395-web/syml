@@ -7554,5 +7554,121 @@ window.requestReply = function(){
 
   tip("首页点击已修复");
 })();
+</script><script>
+/* ===== HARD BIND: 首页“消息”强制可点 ===== */
+(function () {
+  if (window.__NX_MSG_HARD_BIND__) return;
+  window.__NX_MSG_HARD_BIND__ = true;
+
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+
+  function ensureQQPage(){
+    if (document.getElementById("page-qq")) return;
+    const sec = document.createElement("section");
+    sec.id = "page-qq";
+    sec.className = "page";
+    sec.innerHTML = `
+      <div style="height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#fff;border-bottom:1px solid #ececf2;">
+        <button id="qqBackHard" style="border:none;background:none;color:#1677ff;font-size:24px;">‹</button>
+        <div style="font-size:20px;font-weight:700;">消息</div>
+        <div style="width:20px"></div>
+      </div>
+      <div id="qqListHard" style="background:#fff;"></div>
+    `;
+    document.querySelector(".main").appendChild(sec);
+
+    document.getElementById("qqBackHard").onclick = function(){
+      const homeTab = document.querySelector('.tab[data-page="home"]');
+      switchTab("home", homeTab || null);
+    };
+  }
+
+  function preview(roleId){
+    const list = (window.HMap && HMap[roleId]) || [];
+    if (!list.length) return "[暂无消息]";
+    const m = list[list.length - 1];
+    if (m.type === "image") return "[图片]";
+    if (m.type === "sticker") return "[表情包]";
+    return String(m.content || "").replace(/\n/g," ").slice(0, 28);
+  }
+
+  function renderQQList(){
+    ensureQQPage();
+    const box = document.getElementById("qqListHard");
+    if (!window.roles || !roles.length){
+      box.innerHTML = '<div style="padding:12px;color:#999;">暂无角色</div>';
+      return;
+    }
+
+    box.innerHTML = roles.map(r => `
+      <div class="qq-hard-item" data-id="${r.id}" style="display:flex;gap:10px;align-items:center;padding:11px 12px;border-bottom:1px solid #f0f0f2;">
+        <div style="width:46px;height:46px;border-radius:50%;overflow:hidden;background:#eef0f4;display:grid;place-items:center;flex-shrink:0;font-weight:700;color:#555;">
+          ${r.avatarImg ? `<img src="${r.avatarImg}" style="width:100%;height:100%;object-fit:cover;display:block;">` : (r.avatar || "AI").slice(0,2)}
+        </div>
+        <div style="min-width:0;">
+          <div style="font-size:17px;font-weight:700;color:#111;">${r.name || "未命名"}</div>
+          <div style="margin-top:4px;font-size:14px;color:#9a9aa0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65vw;">${preview(r.id)}</div>
+        </div>
+      </div>
+    `).join("");
+
+    document.querySelectorAll(".qq-hard-item").forEach(it => {
+      it.onclick = function(){
+        const rid = this.dataset.id;
+        if (typeof pickRole === "function") pickRole(rid);
+        window.__NX_FROM_QQ_LIST__ = true;
+        switchTab("chat", null);
+      };
+    });
+  }
+
+  function openQQListPageHard(){
+    renderQQList();
+    switchTab("qq", null);
+  }
+
+  function bindMessageCardHard(){
+    const cards = $$("#page-home .homeApp");
+    cards.forEach(card => {
+      const name = (card.querySelector(".homeName")?.textContent || "").trim();
+      if (name !== "消息" && name !== "QQ") return;
+      if (card.dataset.hardBound === "1") return;
+      card.dataset.hardBound = "1";
+
+      const handler = function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        openQQListPageHard();
+      };
+
+      card.addEventListener("click", handler, true);
+      card.addEventListener("touchend", handler, {passive:false, capture:true});
+    });
+  }
+
+  // 聊天页返回链：聊天 -> 列表 -> 首页
+  const _goBack = window.goBack;
+  window.goBack = function(){
+    const p = document.querySelector(".page.active")?.id?.replace("page-","") || "";
+    if (p === "chat" && window.__NX_FROM_QQ_LIST__){
+      openQQListPageHard();
+      return;
+    }
+    if (p === "qq"){
+      const homeTab = document.querySelector('.tab[data-page="home"]');
+      switchTab("home", homeTab || null);
+      return;
+    }
+    return _goBack ? _goBack.apply(this, arguments) : undefined;
+  };
+
+  // 初次+监听重渲染
+  ensureQQPage();
+  bindMessageCardHard();
+  const mo = new MutationObserver(bindMessageCardHard);
+  mo.observe(document.body, {childList:true, subtree:true});
+})();
 </script></body>
 </html>
