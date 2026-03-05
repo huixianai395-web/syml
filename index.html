@@ -6949,5 +6949,301 @@ window.requestReply = function(){
   });
 
 })();
+</script><script>
+/* ===== NX QQ FLOW + WHITE BASE FINAL ===== */
+(function () {
+  if (window.__NX_QQ_FLOW_WHITE__) return;
+  window.__NX_QQ_FLOW_WHITE__ = true;
+
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+
+  /* ---------- 1) 白色基底 + 图标满铺 ---------- */
+  const st = document.createElement("style");
+  st.textContent = `
+    :root{
+      --bg:#f2f2f5 !important;
+      --bg2:#ffffff !important;
+      --bg3:#f7f7fa !important;
+      --bd:#ececf2 !important;
+      --tx:#111 !important;
+      --tx2:#7a7a85 !important;
+      --tx3:#b0b0b8 !important;
+      --glass:rgba(255,255,255,.92) !important;
+      --shadow:0 4px 16px rgba(0,0,0,.06) !important;
+    }
+    body{background:#f2f2f5 !important;color:#111 !important;}
+
+    .hd{
+      background:#fff !important;
+      border-bottom:1px solid #ececf2 !important;
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
+    }
+    .icon{background:#f6f7fb !important;border:1px solid #e9eaf0 !important;color:#606574 !important;}
+    .sub{color:#888 !important;}
+    .tabs{
+      background:#fff !important;
+      border-top:1px solid #ececf2 !important;
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
+    }
+    .tab{color:#9196a3 !important;}
+    .tab.active{color:#1677ff !important;}
+
+    #page-chat,.chat{background:#f2f2f5 !important;}
+    .ai{background:#fff !important;border:1px solid #e8eaf0 !important;color:#111 !important;}
+    .meBubble{background:#95ec69 !important;color:#111 !important;border:none !important;}
+    .inputBar{
+      background:#fff !important;
+      border-top:1px solid #ececf2 !important;
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
+    }
+    #inp{background:#f6f7fb !important;border:1px solid #e9eaf0 !important;color:#111 !important;}
+
+    #page-home{background:#f2f2f5 !important;}
+    #page-home .homeGroup{
+      background:#fff !important;
+      border:1px solid #ececf2 !important;
+      box-shadow:none !important;
+    }
+
+    /* 图标满铺核心 */
+    .homeIcon{
+      width:56px !important;height:56px !important;
+      border-radius:16px !important;overflow:hidden !important;
+      border:none !important;background:#fff !important;padding:0 !important;
+      display:grid !important;place-items:center !important;
+      box-shadow:0 1px 4px rgba(0,0,0,.08) !important;
+    }
+    .homeIcon img,.deskPreview img{
+      width:100% !important;height:100% !important;display:block !important;
+      object-fit:cover !important;object-position:center !important;
+      transform:scale(1.08);
+    }
+
+    /* 底部不要聊天/角色 tab */
+    .tab[data-page="chat"], .tab[data-page="roles"]{display:none !important;}
+
+    /* QQ列表页 */
+    #page-qq{background:#f2f2f5;height:100%;overflow:auto;}
+    .qqHd{
+      position:sticky;top:0;z-index:2;
+      height:54px;display:flex;align-items:center;justify-content:space-between;
+      padding:0 12px;background:#fff;border-bottom:1px solid #ececf2;
+      font-size:20px;font-weight:700;color:#111;
+    }
+    .qqBack{border:none;background:none;color:#1677ff;font-size:24px;padding:0 6px;}
+    .qqList{background:#fff;}
+    .qqItem{display:flex;gap:10px;align-items:center;padding:11px 12px;border-bottom:1px solid #f0f0f2;}
+    .qqAv{width:46px;height:46px;border-radius:50%;overflow:hidden;background:#eef0f4;display:grid;place-items:center;flex-shrink:0;}
+    .qqAv img{width:100%;height:100%;object-fit:cover;display:block;}
+    .qqName{font-size:17px;font-weight:700;color:#111;line-height:1.2;}
+    .qqSub{margin-top:4px;font-size:14px;color:#9a9aa0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65vw;}
+  `;
+  document.head.appendChild(st);
+
+  /* ---------- 2) 首页精简图标（仅保留消息+工具） ---------- */
+  const BAN_HOME_NAMES = new Set([
+    "聊天","人物列表","世界书","API设置","系统设置","外观设置","渲染器","Cphone","论坛","角色"
+  ]);
+
+  function trimHomeAppsDom(){
+    $$("#page-home .homeApp").forEach(card=>{
+      const name = (card.querySelector(".homeName")?.textContent || "").trim();
+      if (BAN_HOME_NAMES.has(name)) card.style.display = "none";
+    });
+    // 空分组隐藏
+    $$("#page-home .homeGroup").forEach(g=>{
+      const visible = $$(".homeApp", g).filter(x=>getComputedStyle(x).display!=="none").length;
+      if (!visible) g.style.display = "none";
+    });
+  }
+
+  // 小工具：局部 query
+  function $$(sel, root){
+    return Array.from((root || document).querySelectorAll(sel));
+  }
+
+  /* ---------- 3) 建QQ消息列表页 ---------- */
+  function ensureQQPage(){
+    if ($("#page-qq")) return;
+    const sec = document.createElement("section");
+    sec.id = "page-qq";
+    sec.className = "page";
+    sec.innerHTML = `
+      <div class="qqHd">
+        <button class="qqBack" id="qqBackBtn">‹</button>
+        <div>消息</div>
+        <div style="width:24px;"></div>
+      </div>
+      <div class="qqList" id="qqList"></div>
+    `;
+    $(".main").appendChild(sec);
+    $("#qqBackBtn").onclick = function(){
+      const homeTab = document.querySelector('.tab[data-page="home"]');
+      switchTab("home", homeTab || null);
+    };
+  }
+
+  function lastPreview(roleId){
+    const list = (window.HMap && HMap[roleId]) || [];
+    if(!list.length) return "[暂无消息]";
+    const m = list[list.length-1];
+    if(m.type==="image") return "[图片]";
+    if(m.type==="sticker") return "[表情包]";
+    return String(m.content||"").replace(/\n/g," ").slice(0,28);
+  }
+
+  function renderQQList(){
+    ensureQQPage();
+    const box = $("#qqList");
+    if(!window.roles || !roles.length){
+      box.innerHTML = `<div class="qqItem"><div class="qqSub">暂无角色</div></div>`;
+      return;
+    }
+    box.innerHTML = roles.map(r=>`
+      <div class="qqItem" data-id="${r.id}">
+        <div class="qqAv">${r.avatarImg ? `<img src="${r.avatarImg}" alt="">` : (r.avatar||"AI").slice(0,2)}</div>
+        <div style="min-width:0;">
+          <div class="qqName">${r.name||"未命名"}</div>
+          <div class="qqSub">${lastPreview(r.id)}</div>
+        </div>
+      </div>
+    `).join("");
+
+    $$("#qqList .qqItem").forEach(it=>{
+      it.onclick = function(){
+        const rid = this.dataset.id;
+        if (typeof pickRole === "function") pickRole(rid);
+        window.__NX_FROM_QQ_LIST__ = true;
+        switchTab("chat", null);
+      };
+    });
+  }
+
+  window.openQQListPage = function(){
+    renderQQList();
+    switchTab("qq", null);
+  };
+
+  /* ---------- 4) 首页点“消息/QQ”必须先进列表 ---------- */
+  document.addEventListener("click", function(e){
+    const card = e.target.closest("#page-home .homeApp");
+    if(!card) return;
+    const name = (card.querySelector(".homeName")?.textContent || "").trim();
+    if(name === "消息" || name === "QQ"){
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      window.openQQListPage();
+    }
+  }, true);
+
+  /* ---------- 5) 返回链：聊天 -> 消息列表 -> 首页 ---------- */
+  const _goBack = window.goBack;
+  window.goBack = function(){
+    if ($("#lockMask")?.classList.contains("show")) return;
+    if (window.currentPage === "chat" && window.__NX_FROM_QQ_LIST__) {
+      switchTab("qq", null);
+      return;
+    }
+    if (window.currentPage === "qq") {
+      const homeTab = document.querySelector('.tab[data-page="home"]');
+      switchTab("home", homeTab || null);
+      return;
+    }
+    return _goBack ? _goBack.apply(this, arguments) : undefined;
+  };
+
+  /* ---------- 6) 首页/QQ列表隐藏顶部角色状态栏 ---------- */
+  function applyChrome(){
+    const hd = $(".hd");
+    const tabs = $(".tabs");
+    if(!hd || !tabs) return;
+    const p = window.currentPage || "chat";
+
+    // 首页和消息列表隐藏顶栏；聊天显示
+    hd.style.display = (p==="home" || p==="qq") ? "none" : "flex";
+
+    // 消息列表隐藏底部总tab，保持QQ那种层级感
+    tabs.style.display = (p==="qq") ? "none" : "grid";
+
+    // 聊天页保证白底
+    if (p==="chat") {
+      const chat = $("#chat");
+      if (chat) chat.style.background = "#f2f2f5";
+    }
+  }
+
+  const _switchTab = window.switchTab;
+  window.switchTab = function(name, btn){
+    _switchTab && _switchTab.call(this, name, btn);
+    setTimeout(applyChrome, 0);
+    // 每次回首页都清理一次图标显示
+    if(name==="home") setTimeout(trimHomeAppsDom, 30);
+    if(name==="qq") setTimeout(renderQQList, 10);
+  };
+
+  /* ---------- 7) 对已上传图标做一次“中心裁切”修复 ---------- */
+  async function coverCrop(dataUrl, size){
+    size = size || 256;
+    return new Promise((resolve, reject)=>{
+      const img = new Image();
+      img.onload = function(){
+        const c = document.createElement("canvas");
+        c.width = size; c.height = size;
+        const ctx = c.getContext("2d");
+        const iw = img.width, ih = img.height;
+        const s = Math.max(size/iw, size/ih); // cover
+        const nw = iw*s, nh = ih*s;
+        const dx = (size-nw)/2, dy = (size-nh)/2;
+        ctx.drawImage(img, dx, dy, nw, nh);
+        resolve(c.toDataURL("image/jpeg", 0.92));
+      };
+      img.onerror = reject;
+      img.src = dataUrl;
+    });
+  }
+
+  async function normalizeIconsOnce(){
+    const FLAG = "nx_icon_cover_fixed_v2";
+    if(localStorage.getItem(FLAG)==="1") return;
+    let changed = false;
+
+    ["nx_home_apps_v2","nx_home_apps_v1"].forEach(k=>{
+      try{
+        let arr = JSON.parse(localStorage.getItem(k)||"[]");
+        if(!Array.isArray(arr)) return;
+        (async ()=>{
+          for(let i=0;i<arr.length;i++){
+            const a = arr[i];
+            if(a && a.iconData && /^data:image\//.test(a.iconData)){
+              try{
+                a.iconData = await coverCrop(a.iconData, 256);
+                changed = true;
+              }catch(e){}
+            }
+          }
+          if(changed) localStorage.setItem(k, JSON.stringify(arr));
+        })();
+      }catch(e){}
+    });
+
+    localStorage.setItem(FLAG,"1");
+  }
+
+  /* ---------- boot ---------- */
+  ensureQQPage();
+  normalizeIconsOnce();
+  setTimeout(trimHomeAppsDom, 60);
+  setTimeout(applyChrome, 80);
+
+  // 首页默认入口
+  const homeTab = document.querySelector('.tab[data-page="home"]');
+  if (homeTab) switchTab("home", homeTab);
+
+})();
 </script></body>
 </html>
