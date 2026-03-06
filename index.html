@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -68,7 +67,7 @@
       backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
     }
 
-    /* common */
+    /* common page */
     .header{
       height:52px;display:flex;align-items:center;justify-content:space-between;
       padding:0 12px;background:#fff;border-bottom:1px solid var(--line)
@@ -240,7 +239,7 @@
       <img id="roleAvatarPreview" style="width:56px;height:56px;border-radius:12px;object-fit:cover;margin-top:8px;display:none;border:1px solid #eee;" />
 
       <div class="small" style="margin-top:8px;">人设</div>
-      <textarea id="rolePersona" class="ta" placeholder="写角色性格、背景、说话方式..."></textarea>
+      <textarea id="rolePersona" class="ta" style="min-height:180px" placeholder="写角色性格、背景、说话方式..."></textarea>
 
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;">
         <button class="btn" id="cancelRoleBtn" type="button">取消</button>
@@ -249,19 +248,12 @@
     </div>
   </div>
 
-  <!-- 导入 -->
   <input type="file" id="roleImportInput" accept=".json,.png,application/json,image/png" style="display:none;" />
-
 </div>
 
 <script>
-  const $ = (id) => document.getElementById(id);
-
-  function escapeHtml(s=''){
-    return String(s).replace(/[&<>"']/g, m => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-    }[m]));
-  }
+(() => {
+  const $ = id => document.getElementById(id);
 
   function show(id){
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -270,23 +262,29 @@
   }
   window.show = show;
 
-  // 时钟
+  function escapeHtml(s=''){
+    return String(s).replace(/[&<>"']/g, m => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[m]));
+  }
+
+  /* ===== 时钟 ===== */
   function tick(){
     const n = new Date();
     const h = String(n.getHours()).padStart(2,'0');
     const m = String(n.getMinutes()).padStart(2,'0');
     const w = ['周日','周一','周二','周三','周四','周五','周六'][n.getDay()];
-    $('timeText').textContent = `${h}:${m}`;
-    $('dateText').textContent = `${n.getMonth()+1}月${n.getDate()}日 ${w}`;
+    if($('timeText')) $('timeText').textContent = `${h}:${m}`;
+    if($('dateText')) $('dateText').textContent = `${n.getMonth()+1}月${n.getDate()}日 ${w}`;
   }
-  tick();
-  setInterval(tick, 1000);
 
-  // 飘花
-  (function initPetals(){
+  /* ===== 飘花 ===== */
+  function initPetals(){
     const canvas = $('petals');
+    if(!canvas) return;
     const ctx = canvas.getContext('2d');
     let petals = [];
+
     function resize(){
       const phone = $('phone');
       canvas.width = phone.clientWidth;
@@ -301,13 +299,16 @@
         a:Math.random()*0.45+0.15
       }));
     }
+
     function draw(){
       ctx.clearRect(0,0,canvas.width,canvas.height);
       petals.forEach(p=>{
-        p.x += p.vx; p.y += p.vy;
+        p.x += p.vx;
+        p.y += p.vy;
         if(p.y > canvas.height + 10){ p.y = -10; p.x = Math.random()*canvas.width; }
         if(p.x < -10) p.x = canvas.width + 10;
         if(p.x > canvas.width + 10) p.x = -10;
+
         ctx.beginPath();
         ctx.ellipse(p.x,p.y,p.rx,p.ry,0,0,Math.PI*2);
         ctx.fillStyle = `rgba(255,214,214,${p.a})`;
@@ -315,50 +316,57 @@
       });
       requestAnimationFrame(draw);
     }
-    resize(); draw();
-    window.addEventListener('resize', resize);
-  })();
 
-  // 壁纸
+    resize();
+    draw();
+    window.addEventListener('resize', resize);
+  }
+
+  /* ===== 壁纸 ===== */
   function applyWallpaper(){
-    const url = $('wpUrl').value.trim();
+    const url = ($('wpUrl')?.value || '').trim();
     if(!url) return alert('先填壁纸URL');
     $('wallpaper').style.background =
       `linear-gradient(160deg, rgba(40,96,255,.28), rgba(125,221,255,.14)), url('${url}') center/cover no-repeat`;
     localStorage.setItem('wp', url);
     alert('壁纸已应用');
   }
-  $('applyWpBtn').addEventListener('click', applyWallpaper);
 
-  $('wpFile').addEventListener('change', e=>{
-    const f = e.target.files?.[0];
-    if(!f) return;
-    const fr = new FileReader();
-    fr.onload = ()=>{
-      const data = fr.result;
-      $('wallpaper').style.background =
-        `linear-gradient(160deg, rgba(40,96,255,.28), rgba(125,221,255,.14)), url('${data}') center/cover no-repeat`;
-      localStorage.setItem('wp', data);
-      alert('本地壁纸已应用');
-    };
-    fr.readAsDataURL(f);
-    e.target.value = '';
-  });
+  function initWallpaper(){
+    const wallpaper = $('wallpaper');
+    const saved = localStorage.getItem('wp');
+    if(saved && wallpaper){
+      wallpaper.style.background =
+        `linear-gradient(160deg, rgba(40,96,255,.28), rgba(125,221,255,.14)), url('${saved}') center/cover no-repeat`;
+    }
 
-  const savedWp = localStorage.getItem('wp');
-  if(savedWp){
-    $('wallpaper').style.background =
-      `linear-gradient(160deg, rgba(40,96,255,.28), rgba(125,221,255,.14)), url('${savedWp}') center/cover no-repeat`;
+    $('applyWpBtn')?.addEventListener('click', applyWallpaper);
+    $('wpFile')?.addEventListener('change', e=>{
+      const f = e.target.files?.[0];
+      if(!f) return;
+      const fr = new FileReader();
+      fr.onload = ()=>{
+        const data = fr.result;
+        $('wallpaper').style.background =
+          `linear-gradient(160deg, rgba(40,96,255,.28), rgba(125,221,255,.14)), url('${data}') center/cover no-repeat`;
+        localStorage.setItem('wp', data);
+        alert('本地壁纸已应用');
+      };
+      fr.readAsDataURL(f);
+      e.target.value = '';
+    });
   }
 
-  // 联系人 + 分组
-  const WECHAT_KEY = 'wechat_contacts_v3';
-  const GROUP_KEY = 'wechat_groups_v3';
+  /* ===== 微信联系人 ===== */
+  const WECHAT_KEY = 'wechat_contacts_v4';
+  const GROUP_KEY = 'wechat_groups_v4';
   let roleAvatarData = '';
 
   function getWechatContacts(){
     const raw = localStorage.getItem(WECHAT_KEY);
-    if(raw){ try{return JSON.parse(raw);}catch(e){} }
+    if(raw){
+      try { return JSON.parse(raw); } catch(e){}
+    }
     const seed = [{
       id:'c_'+Date.now(),
       name:'沈昼白',
@@ -372,11 +380,15 @@
     localStorage.setItem(WECHAT_KEY, JSON.stringify(seed));
     return seed;
   }
-  function setWechatContacts(arr){ localStorage.setItem(WECHAT_KEY, JSON.stringify(arr)); }
+  function setWechatContacts(arr){
+    localStorage.setItem(WECHAT_KEY, JSON.stringify(arr));
+  }
 
   function getGroups(){
     const raw = localStorage.getItem(GROUP_KEY);
-    if(raw){ try{return JSON.parse(raw);}catch(e){} }
+    if(raw){
+      try { return JSON.parse(raw); } catch(e){}
+    }
     const init = ['朋友','家人','同学','同事'];
     localStorage.setItem(GROUP_KEY, JSON.stringify(init));
     return init;
@@ -388,21 +400,29 @@
   function addGroupIfNeeded(g){
     const v = String(g||'').trim();
     if(!v) return;
-    const gs = getGroups();
-    if(!gs.includes(v)){ gs.push(v); saveGroups(gs); }
+    const groups = getGroups();
+    if(!groups.includes(v)){
+      groups.push(v);
+      saveGroups(groups);
+    }
   }
   function renderGroupOptions(){
-    $('roleGroupList').innerHTML = getGroups().map(g=>`<option value="${escapeHtml(g)}"></option>`).join('');
+    const list = $('roleGroupList');
+    if(!list) return;
+    list.innerHTML = getGroups().map(g=>`<option value="${escapeHtml(g)}"></option>`).join('');
   }
 
   function renderWechatList(keyword=''){
-    const k = keyword.trim();
-    const arr = getWechatContacts().filter(c=>{
+    const list = $('wechatList');
+    if(!list) return;
+    const k = String(keyword||'').trim();
+
+    const contacts = getWechatContacts().filter(c=>{
       if(!k) return true;
       return (c.name||'').includes(k) || (c.group||'').includes(k) || (c.preview||'').includes(k);
     });
 
-    $('wechatList').innerHTML = arr.map(c=>`
+    list.innerHTML = contacts.map(c=>`
       <div class="wechat-item" data-id="${c.id}">
         <img class="wechat-avatar" src="${c.avatar || 'https://via.placeholder.com/88x88?text=头像'}" />
         <div class="wechat-main">
@@ -416,7 +436,7 @@
       </div>
     `).join('') || `<div class="card small">暂无联系人，点右上角 + 创建或导入。</div>`;
 
-    document.querySelectorAll('.wechat-item').forEach(item=>{
+    list.querySelectorAll('.wechat-item').forEach(item=>{
       item.addEventListener('click', ()=>{
         const id = item.dataset.id;
         const c = getWechatContacts().find(x=>x.id===id);
@@ -434,38 +454,44 @@
   }
 
   function saveRole(){
-    const name = $('roleName').value.trim();
-    const group = $('roleGroupInput').value.trim() || '未分组';
-    const avatarUrl = $('roleAvatar').value.trim();
-    const persona = $('rolePersona').value.trim();
+    try{
+      const name = ($('roleName')?.value || '').trim();
+      const group = ($('roleGroupInput')?.value || '').trim() || '未分组';
+      const avatarUrl = ($('roleAvatar')?.value || '').trim();
+      const persona = ($('rolePersona')?.value || '').trim();
 
-    if(!name) return alert('昵称不能为空');
+      if(!name) return alert('昵称不能为空');
 
-    addGroupIfNeeded(group);
+      addGroupIfNeeded(group);
 
-    const arr = getWechatContacts();
-    arr.unshift({
-      id:'c_'+Date.now(),
-      name,
-      group,
-      avatar: roleAvatarData || avatarUrl || '',
-      persona,
-      preview:'新的聊天已创建',
-      time:'刚刚',
-      unread:0
-    });
-    setWechatContacts(arr);
+      const arr = getWechatContacts();
+      arr.unshift({
+        id:'c_'+Date.now()+'_'+Math.floor(Math.random()*9999),
+        name,
+        group,
+        avatar: roleAvatarData || avatarUrl || '',
+        persona,
+        preview:'新的聊天已创建',
+        time:'刚刚',
+        unread:0
+      });
 
-    $('roleName').value = '';
-    $('roleGroupInput').value = '';
-    $('roleAvatar').value = '';
-    $('rolePersona').value = '';
-    roleAvatarData = '';
-    $('roleAvatarPreview').style.display = 'none';
-    $('roleAvatarPreview').src = '';
+      setWechatContacts(arr);
 
-    closeRoleModal();
-    renderWechatList();
+      $('roleName').value = '';
+      $('roleGroupInput').value = '';
+      $('roleAvatar').value = '';
+      $('rolePersona').value = '';
+      roleAvatarData = '';
+      $('roleAvatarPreview').src = '';
+      $('roleAvatarPreview').style.display = 'none';
+
+      closeRoleModal();
+      renderWechatList();
+      alert('角色已保存');
+    }catch(e){
+      alert('保存失败：'+e.message);
+    }
   }
 
   function fileToDataURL(file){
@@ -477,87 +503,85 @@
     });
   }
 
-  function tryExtractJsonFromPngBuffer(buf){
-    const bytes = new Uint8Array(buf);
-    let str = '';
-    for(let i=0;i<bytes.length;i++){
-      const c = bytes[i];
-      str += (c>=32 && c<=126) ? String.fromCharCode(c) : ' ';
-    }
-    const m = str.match(/\{[\s\S]*?"name"[\s\S]*?\}/);
-    if(!m) return null;
-    try { return JSON.parse(m[0]); } catch(e){ return null; }
+  function normalizeRoleObj(x){
+    if(!x || typeof x!=='object') return null;
+    const name = (x.name || x.char_name || x.character_name || '').trim?.() || '';
+    if(!name) return null;
+    return {
+      name,
+      group: x.group || x.category || '朋友',
+      avatar: x.avatar || x.avatar_url || '',
+      persona: x.persona || x.description || x.prompt || '',
+      preview: x.preview || '已导入角色',
+      unread: Number(x.unread || 0)
+    };
   }
 
   async function importRoleFile(file){
     const lower = file.name.toLowerCase();
 
+    // JSON
     if(file.type === 'application/json' || lower.endsWith('.json')){
-      const text = await file.text();
-      const data = JSON.parse(text);
+      let text = await file.text();
+      text = text.replace(/^\uFEFF/, '');
+      let data;
+      try{
+        data = JSON.parse(text);
+      }catch(e){
+        throw new Error('JSON格式错误');
+      }
+
       const list = Array.isArray(data) ? data : [data];
       const arr = getWechatContacts();
+      let ok = 0;
 
-      list.forEach(x=>{
-        if(!x?.name) return;
-        addGroupIfNeeded(x.group || '朋友');
+      for(const item of list){
+        const n = normalizeRoleObj(item);
+        if(!n) continue;
+        addGroupIfNeeded(n.group);
         arr.unshift({
           id:'c_'+Date.now()+'_'+Math.floor(Math.random()*9999),
-          name:x.name,
-          group:x.group || '朋友',
-          avatar:x.avatar || '',
-          persona:x.persona || '',
-          preview:x.preview || '已从JSON导入',
+          name:n.name,
+          group:n.group,
+          avatar:n.avatar,
+          persona:n.persona,
+          preview:n.preview,
           time:'刚刚',
-          unread:Number(x.unread || 0)
+          unread:n.unread
         });
-      });
+        ok++;
+      }
+
+      if(!ok) throw new Error('JSON里没有可识别角色字段（至少需要 name）');
 
       setWechatContacts(arr);
       renderWechatList();
-      alert('JSON导入成功');
+      alert('JSON导入成功：' + ok + '个角色');
       return;
     }
 
+    // PNG（稳定导入：头像模式）
     if(file.type === 'image/png' || lower.endsWith('.png')){
       const dataUrl = await fileToDataURL(file);
-      let parsed = null;
-      try{
-        const buf = await file.arrayBuffer();
-        parsed = tryExtractJsonFromPngBuffer(buf);
-      }catch(e){}
+      const baseName = file.name.replace(/\.png$/i,'');
+      const name = (prompt('输入角色名：', baseName) || baseName).trim();
+      if(!name) throw new Error('已取消导入');
 
+      const group = (prompt('输入分组（可自定义）：','朋友') || '朋友').trim() || '朋友';
+      const persona = (prompt('可选：输入角色人设：','') || '').trim();
+
+      addGroupIfNeeded(group);
       const arr = getWechatContacts();
-
-      if(parsed && parsed.name){
-        addGroupIfNeeded(parsed.group || '朋友');
-        arr.unshift({
-          id:'c_'+Date.now()+'_'+Math.floor(Math.random()*9999),
-          name:parsed.name,
-          group:parsed.group || '朋友',
-          avatar:parsed.avatar || dataUrl,
-          persona:parsed.persona || '',
-          preview:'已从PNG角色卡导入',
-          time:'刚刚',
-          unread:Number(parsed.unread || 0)
-        });
-      }else{
-        const baseName = file.name.replace(/\.png$/i,'');
-        const name = prompt('PNG未检测到角色数据，请输入角色名：', baseName) || baseName;
-        const group = prompt('输入分组（可自定义）：','朋友') || '朋友';
-        const persona = prompt('可选：输入角色人设：','') || '';
-        addGroupIfNeeded(group);
-        arr.unshift({
-          id:'c_'+Date.now()+'_'+Math.floor(Math.random()*9999),
-          name,
-          group,
-          avatar:dataUrl,
-          persona,
-          preview:'已从PNG导入（头像模式）',
-          time:'刚刚',
-          unread:0
-        });
-      }
+      arr.unshift({
+        id:'c_'+Date.now()+'_'+Math.floor(Math.random()*9999),
+        name,
+        group,
+        avatar:dataUrl,
+        persona,
+        preview:'已从PNG导入',
+        time:'刚刚',
+        unread:0
+      });
 
       setWechatContacts(arr);
       renderWechatList();
@@ -565,46 +589,57 @@
       return;
     }
 
-    alert('暂不支持该格式，请使用 .json 或 .png');
+    throw new Error('暂不支持该格式，请使用 .json 或 .png');
   }
 
-  // 绑定
-  $('addRoleBtn').addEventListener('click', ()=>{
-    const create = confirm('点“确定”创建角色；点“取消”导入JSON/PNG');
-    if(create) openRoleModal();
-    else $('roleImportInput').click();
-  });
+  function bindWechatEvents(){
+    $('addRoleBtn')?.addEventListener('click', ()=>{
+      const create = confirm('点“确定”创建角色；点“取消”导入JSON/PNG');
+      if(create) openRoleModal();
+      else $('roleImportInput')?.click();
+    });
 
-  $('groupBtn').addEventListener('click', ()=>alert('群聊选择器下一步接入'));
-  $('wechatSearch').addEventListener('input', e=>renderWechatList(e.target.value));
-  $('cancelRoleBtn').addEventListener('click', closeRoleModal);
-  $('saveRoleBtn').addEventListener('click', saveRole);
+    $('groupBtn')?.addEventListener('click', ()=>alert('群聊选择器下一步接入'));
+    $('wechatSearch')?.addEventListener('input', e=>renderWechatList(e.target.value || ''));
 
-  $('roleImportInput').addEventListener('change', async (e)=>{
-    const f = e.target.files?.[0];
-    if(f){
-      try{ await importRoleFile(f); }
-      catch(err){ alert('导入失败：'+err.message); }
-    }
-    e.target.value = '';
-  });
+    $('cancelRoleBtn')?.addEventListener('click', closeRoleModal);
+    $('saveRoleBtn')?.addEventListener('click', saveRole);
 
-  $('pickAvatarBtn').addEventListener('click', ()=> $('roleAvatarFile').click());
-  $('roleAvatarFile').addEventListener('change', async (e)=>{
-    const f = e.target.files?.[0];
-    if(!f) return;
-    roleAvatarData = await fileToDataURL(f);
-    $('roleAvatarPreview').src = roleAvatarData;
-    $('roleAvatarPreview').style.display = 'block';
-    e.target.value = '';
-  });
+    $('roleImportInput')?.addEventListener('change', async (e)=>{
+      const f = e.target.files?.[0];
+      if(!f) return;
+      try{
+        await importRoleFile(f);
+      }catch(err){
+        alert('导入失败：' + err.message);
+      }
+      e.target.value = '';
+    });
 
-  $('roleModal').addEventListener('click', (e)=>{
-    if(e.target.id === 'roleModal') closeRoleModal();
-  });
+    $('pickAvatarBtn')?.addEventListener('click', ()=> $('roleAvatarFile')?.click());
+    $('roleAvatarFile')?.addEventListener('change', async (e)=>{
+      const f = e.target.files?.[0];
+      if(!f) return;
+      roleAvatarData = await fileToDataURL(f);
+      $('roleAvatarPreview').src = roleAvatarData;
+      $('roleAvatarPreview').style.display = 'block';
+      e.target.value = '';
+    });
 
+    $('roleModal')?.addEventListener('click', (e)=>{
+      if(e.target.id === 'roleModal') closeRoleModal();
+    });
+  }
+
+  // init
+  tick();
+  setInterval(tick, 1000);
+  initPetals();
+  initWallpaper();
+  bindWechatEvents();
   renderGroupOptions();
   renderWechatList();
+})();
 </script>
 </body>
 </html>
