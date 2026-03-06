@@ -4,229 +4,295 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>EPhone · 基础版</title>
+  <title>EPhone</title>
   <style>
     :root{
-      --bg:#0f1115;
-      --panel:#171b24;
-      --panel-2:#1f2531;
-      --line:#2b3445;
-      --text:#eaf0ff;
-      --sub:#9aa5b5;
-      --accent:#5b8cff;
+      --bg:#0c0f14;
+      --panel:#151b24;
+      --panel2:#1b2330;
+      --line:#2a3445;
+      --text:#edf2ff;
+      --sub:#9aa8bd;
+      --accent:#4f8cff;
       --danger:#ff4d4f;
-      --ok:#28c76f;
+      --ok:#22c55e;
     }
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-    html,body{margin:0;height:100%;background:#080a0f;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);}
-    #phone{
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{
+      margin:0;height:100%;
+      background:#06080d;color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+    }
+    #phone-frame{
       width:min(430px,100vw);
       height:100dvh;
       margin:0 auto;
-      background:linear-gradient(180deg,#10141d 0%,#0d1017 100%);
-      border-left:1px solid #1b2230;
-      border-right:1px solid #1b2230;
-      overflow:hidden;
-      position:relative;
+      background:
+        radial-gradient(80% 120% at 50% -20%, #1b2740 0%, transparent 55%),
+        linear-gradient(180deg,#0e131b 0%,#0b0f15 100%);
+      border-left:1px solid #1d2738;
+      border-right:1px solid #1d2738;
+      position:relative;overflow:hidden;
     }
     #status-bar{
-      height:30px;
-      padding:8px 12px 0;
+      height:30px;padding:8px 14px 0;
       display:flex;justify-content:space-between;align-items:center;
       color:var(--sub);font-size:12px;
     }
-    .screen{
-      position:absolute;inset:30px 0 0;
-      display:none;flex-direction:column;
-    }
-    .screen.active{display:flex;}
+    #status-right{display:flex;gap:8px;align-items:center}
+    .screen{position:absolute;inset:30px 0 0;display:none;flex-direction:column}
+    .screen.active{display:flex}
     .header{
-      height:52px;display:flex;align-items:center;justify-content:space-between;
-      padding:0 14px;border-bottom:1px solid var(--line);
-      background:rgba(13,16,23,.88);backdrop-filter:blur(8px);
-      font-weight:600;
+      height:52px;padding:0 14px;
+      display:flex;align-items:center;justify-content:space-between;
+      border-bottom:1px solid var(--line);
+      background:rgba(12,16,23,.86);backdrop-filter:blur(8px);
+      flex-shrink:0;
     }
-    .back{font-size:24px;line-height:1;cursor:pointer;user-select:none;color:#dbe4ff;}
-    .ghost{width:24px;}
-    .btn{
-      border:none;border-radius:10px;padding:10px 12px;cursor:pointer;
-      background:var(--panel-2);color:var(--text);font-weight:600;
+    .back-btn{font-size:24px;cursor:pointer;color:#dbe7ff;user-select:none}
+    .ghost{width:24px}
+    .action-btn{
+      border:none;background:var(--panel2);color:var(--text);
+      border:1px solid var(--line);border-radius:10px;padding:8px 10px;cursor:pointer;font-size:12px
     }
-    .btn.primary{background:var(--accent);color:#fff;}
-    .btn.danger{background:var(--danger);color:#fff;}
-    .btn.small{padding:6px 10px;font-size:12px;border-radius:8px;}
-    /* Home */
-    #home{padding:12px 14px 16px;overflow:auto;}
-    .card{
-      background:var(--panel);border:1px solid var(--line);border-radius:14px;
-      padding:14px;
+
+    /* HOME */
+    #home-screen-pages{
+      overflow:auto;padding:14px;
+      display:flex;flex-direction:column;gap:14px;
     }
-    .profile{display:flex;gap:12px;align-items:flex-start;}
-    .avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;border:1px solid #2f3a4f;}
-    .name{margin:2px 0 6px;font-size:16px;font-weight:700;}
-    .bio{margin:0;color:var(--sub);font-size:13px;line-height:1.45;}
-    .grid{
-      margin-top:14px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;
+    #profile-widget{
+      border:1px solid var(--line);border-radius:16px;background:var(--panel);
+      overflow:hidden;
     }
-    .app{
-      border:1px solid var(--line);background:var(--panel-2);border-radius:12px;
-      min-height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;
-      gap:6px;cursor:pointer;
+    #profile-banner{
+      width:100%;height:110px;object-fit:cover;display:block;
+      background:#111826;
     }
-    .app .emoji{font-size:22px;line-height:1;}
-    .app small{font-size:12px;color:var(--sub);}
-    /* list */
-    #chat-list-wrap{display:flex;flex-direction:column;min-height:0;flex:1;}
-    #chat-list{overflow:auto;flex:1;}
+    .profile-row{
+      padding:12px;display:flex;gap:12px;align-items:flex-start
+    }
+    #profile-avatar{
+      width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid #2f3b50
+    }
+    .profile-name{font-weight:700}
+    .profile-sub{color:var(--sub);font-size:13px;margin-top:3px}
+    .profile-bio{color:var(--sub);font-size:13px;margin-top:8px;line-height:1.45}
+    #desktop-app-container{
+      display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px
+    }
+    .desktop-app-icon{
+      border:1px solid var(--line);background:var(--panel2);
+      border-radius:14px;padding:12px 8px;
+      display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer
+    }
+    .desktop-app-icon .icon{font-size:22px}
+    .desktop-app-icon .label{font-size:12px;color:var(--sub)}
+
+    #desktop-dock{
+      margin-top:auto;
+      display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;
+      padding:10px 14px 14px;
+      border-top:1px solid var(--line);
+      background:rgba(13,17,24,.8);
+      backdrop-filter:blur(8px);
+      flex-shrink:0;
+    }
+
+    /* LIST */
+    #chat-list{overflow:auto;flex:1}
     .chat-item{
-      display:flex;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);
-      cursor:pointer;
+      display:flex;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);cursor:pointer
     }
-    .chat-item img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid #2f3a4f;}
-    .meta{flex:1;min-width:0;}
-    .meta .top{display:flex;justify-content:space-between;gap:10px;align-items:center;}
-    .meta .n{font-weight:600;}
-    .meta .t{font-size:12px;color:var(--sub);}
-    .meta .l{margin-top:4px;color:var(--sub);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .toolbar{padding:10px 12px;border-top:1px solid var(--line);display:flex;gap:8px;background:rgba(13,16,23,.9);}
-    .toolbar input{
-      flex:1;background:#141923;border:1px solid var(--line);color:var(--text);
-      border-radius:10px;padding:10px 12px;outline:none;
+    .chat-item:hover{background:rgba(255,255,255,.02)}
+    .chat-avatar{
+      width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid #30405a
     }
-    /* chat */
+    .chat-meta{flex:1;min-width:0}
+    .chat-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .chat-name{font-weight:600}
+    .chat-time{font-size:12px;color:var(--sub)}
+    .chat-last{
+      margin-top:4px;color:var(--sub);font-size:13px;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+    }
+
+    /* CHAT */
     #chat-messages{
       flex:1;min-height:0;overflow:auto;padding:12px;
-      display:flex;flex-direction:column;gap:10px;
+      display:flex;flex-direction:column;gap:10px
     }
-    .msg{
+    .message-bubble{
       max-width:82%;padding:10px 12px;border-radius:14px;
-      font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word;
-      border:1px solid transparent;
+      line-height:1.5;font-size:14px;word-break:break-word;white-space:pre-wrap
     }
-    .msg.ai{align-self:flex-start;background:#222b3a;border-color:#303c52;border-bottom-left-radius:6px;}
-    .msg.user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:6px;}
-    .msg.sys{
-      align-self:center;max-width:100%;font-size:12px;color:var(--sub);
-      background:transparent;border:none;padding:4px 0;
+    .message-bubble.user{
+      align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:6px
     }
-    #input-row{
-      border-top:1px solid var(--line);padding:10px;display:flex;gap:8px;background:rgba(13,16,23,.9);
+    .message-bubble.ai{
+      align-self:flex-start;background:#232d3c;border:1px solid #33435b;border-bottom-left-radius:6px
     }
-    #input-row textarea{
-      flex:1;resize:none;max-height:120px;height:42px;
-      background:#141923;border:1px solid var(--line);color:var(--text);
-      border-radius:10px;padding:10px 12px;outline:none;
-      font:inherit;line-height:1.4;
+    .message-bubble.system{
+      align-self:center;color:var(--sub);font-size:12px;padding:2px 6px;background:transparent;border:none
     }
-    /* api */
-    .form{padding:14px;overflow:auto;}
-    .form .g{margin-bottom:10px;}
-    .form label{display:block;margin-bottom:6px;font-size:13px;color:var(--sub);}
-    .form input{
-      width:100%;background:#141923;border:1px solid var(--line);
-      color:var(--text);border-radius:10px;padding:11px 12px;outline:none;
+    #chat-input-area{
+      border-top:1px solid var(--line);padding:10px;
+      display:flex;gap:8px;background:rgba(12,16,23,.9);flex-shrink:0
     }
-    .hint{font-size:12px;color:var(--sub);margin:6px 0 0;line-height:1.4;}
+    #chat-input{
+      flex:1;resize:none;height:42px;max-height:120px;
+      border:1px solid var(--line);border-radius:12px;background:#121826;color:var(--text);
+      padding:10px 12px;outline:none;font:inherit
+    }
+    #send-btn{
+      border:none;border-radius:12px;padding:0 14px;
+      background:var(--accent);color:#fff;font-weight:700;cursor:pointer
+    }
+
+    /* API */
+    .form-container{
+      overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px
+    }
+    .form-group label{display:block;margin-bottom:6px;color:var(--sub);font-size:13px}
+    .form-group input,.form-group select{
+      width:100%;padding:11px 12px;border-radius:10px;
+      border:1px solid var(--line);background:#121826;color:var(--text);outline:none
+    }
+    .form-note{
+      font-size:12px;color:var(--sub);line-height:1.4;
+      border:1px solid var(--line);background:#111723;border-radius:10px;padding:10px
+    }
+    .form-button{
+      border:none;border-radius:12px;padding:12px;
+      background:var(--accent);color:#fff;font-weight:700;cursor:pointer
+    }
+
     .toast{
       position:absolute;left:50%;bottom:18px;transform:translateX(-50%);
-      background:#161d2a;border:1px solid #2c3850;color:#dce7ff;
-      border-radius:10px;padding:8px 12px;font-size:12px;z-index:99;
+      background:#182132;border:1px solid #2c3d57;color:#deebff;
+      border-radius:10px;padding:8px 12px;font-size:12px;z-index:9
     }
   </style>
 </head>
 <body>
-  <div id="phone">
+  <div id="phone-frame">
     <div id="status-bar">
-      <span id="time">12:00</span>
-      <span id="battery">100%</span>
+      <span id="status-bar-time">12:00</span>
+      <div id="status-right">
+        <span>5G</span><span id="status-bar-battery">100%</span>
+      </div>
     </div>
 
-    <!-- 主屏幕 -->
-    <section id="screen-home" class="screen active">
-      <div id="home">
-        <div class="card profile">
-          <img class="avatar" src="https://i.postimg.cc/y8xWzCqj/anime-boy.jpg" alt="avatar">
-          <div>
-            <div class="name">弥洛</div>
-            <p class="bio">基础版先跑通：主屏幕、聊天、API 设置。</p>
+    <!-- HOME -->
+    <section id="home-screen" class="screen active">
+      <div id="home-screen-pages">
+        <div id="profile-widget">
+          <img id="profile-banner" src="https://picsum.photos/900/300?random=8" alt="banner">
+          <div class="profile-row">
+            <img id="profile-avatar" src="https://i.pravatar.cc/120?img=12" alt="avatar">
+            <div>
+              <div class="profile-name">@ephone_user</div>
+              <div class="profile-sub">@profile</div>
+              <div class="profile-bio">基础版主屏幕 + 聊天 + API，外观和交互布局与常见移动聊天壳一致。</div>
+            </div>
           </div>
         </div>
 
-        <div class="grid">
-          <div class="app" id="go-chat-list">
-            <div class="emoji">💬</div><small>消息</small>
+        <div id="desktop-app-container">
+          <div class="desktop-app-icon" onclick="showScreen('chat-list-screen')">
+            <div class="icon">💬</div><span class="label">消息</span>
           </div>
-          <div class="app" id="go-api">
-            <div class="emoji">⚙️</div><small>API设置</small>
+          <div class="desktop-app-icon" onclick="showScreen('api-settings-screen')">
+            <div class="icon">⚙️</div><span class="label">API设置</span>
           </div>
+          <div class="desktop-app-icon" onclick="showToast('模块预留')">
+            <div class="icon">🧩</div><span class="label">预设</span>
+          </div>
+          <div class="desktop-app-icon" onclick="showToast('模块预留')">
+            <div class="icon">🎨</div><span class="label">外观</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="desktop-dock">
+        <div class="desktop-app-icon" onclick="showScreen('chat-list-screen')">
+          <div class="icon">📨</div><span class="label">聊天</span>
+        </div>
+        <div class="desktop-app-icon" onclick="showScreen('api-settings-screen')">
+          <div class="icon">🔌</div><span class="label">API</span>
+        </div>
+        <div class="desktop-app-icon" onclick="showToast('模块预留')">
+          <div class="icon">🖼️</div><span class="label">相册</span>
+        </div>
+        <div class="desktop-app-icon" onclick="showToast('模块预留')">
+          <div class="icon">📚</div><span class="label">世界书</span>
         </div>
       </div>
     </section>
 
-    <!-- 聊天列表 -->
-    <section id="screen-chat-list" class="screen">
+    <!-- CHAT LIST -->
+    <section id="chat-list-screen" class="screen">
       <div class="header">
-        <span class="back" data-back="screen-home">‹</span>
+        <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
         <span>消息</span>
-        <button class="btn small" id="add-chat">+ 会话</button>
+        <button class="action-btn" onclick="addChat()">+ 会话</button>
       </div>
-      <div id="chat-list-wrap">
-        <div id="chat-list"></div>
-        <div class="toolbar">
-          <input id="new-chat-name" placeholder="新会话名（可空）">
-          <button class="btn primary" id="create-chat">创建</button>
-        </div>
-      </div>
+      <div id="chat-list"></div>
     </section>
 
-    <!-- 聊天界面 -->
-    <section id="screen-chat" class="screen">
+    <!-- CHAT -->
+    <section id="chat-interface-screen" class="screen">
       <div class="header">
-        <span class="back" data-back="screen-chat-list">‹</span>
-        <span id="chat-title">聊天</span>
-        <button class="btn small danger" id="clear-chat">清空</button>
+        <span class="back-btn" onclick="showScreen('chat-list-screen')">‹</span>
+        <span id="chat-header-title">聊天对象</span>
+        <button class="action-btn" onclick="clearCurrentChat()">清空</button>
       </div>
       <div id="chat-messages"></div>
-      <div id="input-row">
-        <textarea id="chat-input" placeholder="输入消息..." rows="1"></textarea>
-        <button class="btn primary" id="send">发送</button>
+      <div id="chat-input-area">
+        <textarea id="chat-input" placeholder="输入消息..."></textarea>
+        <button id="send-btn" onclick="sendMessage()">发送</button>
       </div>
     </section>
 
-    <!-- API设置 -->
-    <section id="screen-api" class="screen">
+    <!-- API -->
+    <section id="api-settings-screen" class="screen">
       <div class="header">
-        <span class="back" data-back="screen-home">‹</span>
+        <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
         <span>API 设置</span>
         <span class="ghost"></span>
       </div>
-      <div class="form">
-        <div class="g">
-          <label for="proxyUrl">反代地址（不带 /v1）</label>
-          <input id="proxyUrl" type="text" placeholder="https://api.openai.com">
+      <div class="form-container">
+        <div class="form-note">反代地址填写根地址，程序会自动拼接 <code>/v1/chat/completions</code>。</div>
+
+        <div class="form-group">
+          <label for="proxy-url">反代地址</label>
+          <input id="proxy-url" type="text" placeholder="https://api.openai.com">
         </div>
-        <div class="g">
-          <label for="apiKey">API Key</label>
-          <input id="apiKey" type="password" placeholder="sk-...">
+
+        <div class="form-group">
+          <label for="api-key">密钥 API Key</label>
+          <input id="api-key" type="password" placeholder="sk-...">
         </div>
-        <div class="g">
-          <label for="model">模型</label>
-          <input id="model" type="text" placeholder="gpt-4o-mini">
+
+        <div class="form-group">
+          <label for="model-name">模型</label>
+          <input id="model-name" type="text" placeholder="gpt-4o-mini">
         </div>
-        <div class="g">
-          <label for="temperature">Temperature (0~2)</label>
-          <input id="temperature" type="number" min="0" max="2" step="0.1" value="0.8">
-          <p class="hint">如需图片理解请换支持视觉的模型。基础版先走文本。</p>
+
+        <div class="form-group">
+          <label for="api-temperature">Temperature</label>
+          <input id="api-temperature" type="number" min="0" max="2" step="0.1" value="0.8">
         </div>
-        <button class="btn primary" id="save-api" style="width:100%;">保存 API 设置</button>
+
+        <button class="form-button" onclick="saveApiSettings()">保存 API 设置</button>
       </div>
     </section>
   </div>
 
   <script>
-    const STORE = "ephone_base_v1";
+    const STORE_KEY = "ephone_full_base_v2";
     const state = {
-      screen: "screen-home",
+      currentScreen: "home-screen",
       currentChatId: null,
       data: {
         api: {
@@ -237,273 +303,286 @@
         },
         chats: [
           {
-            id: "default",
-            name: "弥洛",
-            avatar: "https://i.postimg.cc/y8xWzCqj/anime-boy.jpg",
+            id: "chat_1",
+            name: "联系人 A",
+            avatar: "https://i.pravatar.cc/100?img=18",
             messages: [
-              { role: "assistant", content: "先把基础版跑通，再往上叠功能。", time: Date.now() }
+              { role: "assistant", content: "欢迎使用基础完整版布局。", time: Date.now() }
+            ]
+          },
+          {
+            id: "chat_2",
+            name: "联系人 B",
+            avatar: "https://i.pravatar.cc/100?img=25",
+            messages: [
+              { role: "assistant", content: "API 配置后即可真实对话。", time: Date.now() }
             ]
           }
         ]
       }
     };
 
-    // ---------- init ----------
-    (function init(){
-      load();
-      bind();
-      renderClock();
-      setInterval(renderClock, 30000);
+    // ===== 初始化 =====
+    (function init() {
+      loadData();
+      bindInputAutoGrow();
+      bindEnterToSend();
+      updateStatusTime();
+      setInterval(updateStatusTime, 30000);
       fillApiForm();
       renderChatList();
     })();
 
-    function bind(){
-      document.getElementById("go-chat-list").onclick = () => show("screen-chat-list");
-      document.getElementById("go-api").onclick = () => show("screen-api");
+    function showScreen(screenId) {
+      document.querySelectorAll(".screen").forEach(el => el.classList.remove("active"));
+      const el = document.getElementById(screenId);
+      if (el) el.classList.add("active");
+      state.currentScreen = screenId;
+      if (screenId === "chat-list-screen") renderChatList();
+    }
 
-      document.querySelectorAll(".back").forEach(el=>{
-        el.onclick = () => show(el.dataset.back);
+    function updateStatusTime() {
+      const d = new Date();
+      const hh = String(d.getHours()).padStart(2, "0");
+      const mm = String(d.getMinutes()).padStart(2, "0");
+      document.getElementById("status-bar-time").textContent = `${hh}:${mm}`;
+    }
+
+    function bindInputAutoGrow() {
+      const ta = document.getElementById("chat-input");
+      ta.addEventListener("input", () => {
+        ta.style.height = "42px";
+        ta.style.height = Math.min(ta.scrollHeight, 120) + "px";
       });
+    }
 
-      document.getElementById("save-api").onclick = saveApi;
-
-      document.getElementById("create-chat").onclick = createChat;
-      document.getElementById("add-chat").onclick = () => {
-        document.getElementById("new-chat-name").focus();
-      };
-
-      document.getElementById("send").onclick = sendMessage;
-      const input = document.getElementById("chat-input");
-      input.addEventListener("input", autoGrow);
-      input.addEventListener("keydown", (e)=>{
-        if(e.key==="Enter" && !e.shiftKey){
+    function bindEnterToSend() {
+      document.getElementById("chat-input").addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault();
           sendMessage();
         }
       });
-
-      document.getElementById("clear-chat").onclick = () => {
-        const chat = curChat();
-        if(!chat) return;
-        chat.messages = [];
-        persist();
-        renderMessages([]);
-      };
     }
 
-    function show(id){
-      document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-      document.getElementById(id).classList.add("active");
-      state.screen = id;
-      if(id==="screen-chat-list") renderChatList();
-    }
-
-    // ---------- clock ----------
-    function renderClock(){
-      const d = new Date();
-      const hh = String(d.getHours()).padStart(2,"0");
-      const mm = String(d.getMinutes()).padStart(2,"0");
-      document.getElementById("time").textContent = `${hh}:${mm}`;
-    }
-
-    // ---------- storage ----------
-    function load(){
-      try{
-        const raw = localStorage.getItem(STORE);
-        if(!raw) return;
+    // ===== 本地存储 =====
+    function loadData() {
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (!raw) return;
         const parsed = JSON.parse(raw);
-        if(parsed?.api && Array.isArray(parsed?.chats)) state.data = parsed;
-      }catch(e){
-        console.warn(e);
+        if (parsed?.api && Array.isArray(parsed?.chats)) {
+          state.data = parsed;
+        }
+      } catch (e) {
+        console.warn("loadData error", e);
       }
     }
-    function persist(){
-      localStorage.setItem(STORE, JSON.stringify(state.data));
+
+    function persist() {
+      localStorage.setItem(STORE_KEY, JSON.stringify(state.data));
     }
 
-    // ---------- API ----------
-    function fillApiForm(){
+    // ===== API设置 =====
+    function fillApiForm() {
       const a = state.data.api;
-      document.getElementById("proxyUrl").value = a.proxyUrl || "";
-      document.getElementById("apiKey").value = a.apiKey || "";
-      document.getElementById("model").value = a.model || "gpt-4o-mini";
-      document.getElementById("temperature").value = a.temperature ?? 0.8;
+      document.getElementById("proxy-url").value = a.proxyUrl || "";
+      document.getElementById("api-key").value = a.apiKey || "";
+      document.getElementById("model-name").value = a.model || "";
+      document.getElementById("api-temperature").value = (a.temperature ?? 0.8);
     }
 
-    function saveApi(){
-      state.data.api.proxyUrl = document.getElementById("proxyUrl").value.trim();
-      state.data.api.apiKey = document.getElementById("apiKey").value.trim();
-      state.data.api.model = document.getElementById("model").value.trim() || "gpt-4o-mini";
-      state.data.api.temperature = Number(document.getElementById("temperature").value || 0.8);
+    function saveApiSettings() {
+      state.data.api.proxyUrl = document.getElementById("proxy-url").value.trim();
+      state.data.api.apiKey = document.getElementById("api-key").value.trim();
+      state.data.api.model = document.getElementById("model-name").value.trim() || "gpt-4o-mini";
+      state.data.api.temperature = Number(document.getElementById("api-temperature").value || 0.8);
       persist();
-      toast("API 设置已保存");
+      showToast("API 设置已保存");
     }
 
-    // ---------- chat list ----------
-    function renderChatList(){
+    // ===== 聊天列表 =====
+    function renderChatList() {
       const list = document.getElementById("chat-list");
       list.innerHTML = "";
-      state.data.chats.forEach(chat=>{
-        const last = chat.messages[chat.messages.length-1];
-        const item = document.createElement("div");
-        item.className = "chat-item";
-        item.innerHTML = `
-          <img src="${escAttr(chat.avatar)}" alt="${escAttr(chat.name)}">
-          <div class="meta">
-            <div class="top">
-              <span class="n">${esc(chat.name)}</span>
-              <span class="t">${last ? time(last.time) : ""}</span>
+
+      state.data.chats.forEach(chat => {
+        const last = chat.messages[chat.messages.length - 1];
+        const div = document.createElement("div");
+        div.className = "chat-item";
+        div.innerHTML = `
+          <img class="chat-avatar" src="${escAttr(chat.avatar)}" alt="">
+          <div class="chat-meta">
+            <div class="chat-top">
+              <span class="chat-name">${esc(chat.name)}</span>
+              <span class="chat-time">${last ? formatTime(last.time) : ""}</span>
             </div>
-            <div class="l">${esc(last ? last.content : "还没有消息")}</div>
+            <div class="chat-last">${esc(last ? last.content : "暂无消息")}</div>
           </div>
         `;
-        item.onclick = ()=>openChat(chat.id);
-        list.appendChild(item);
+        div.onclick = () => openChat(chat.id);
+        list.appendChild(div);
       });
     }
 
-    function createChat(){
-      const v = document.getElementById("new-chat-name");
-      const name = v.value.trim() || `新会话 ${state.data.chats.length + 1}`;
-      const id = "c_" + Date.now();
+    function addChat() {
+      const id = "chat_" + Date.now();
+      const n = state.data.chats.length + 1;
       state.data.chats.unshift({
-        id, name,
-        avatar:"https://i.postimg.cc/y8xWzCqj/anime-boy.jpg",
-        messages:[]
+        id,
+        name: "新会话 " + n,
+        avatar: `https://i.pravatar.cc/100?img=${(10 + n) % 70}`,
+        messages: []
       });
-      v.value = "";
       persist();
       renderChatList();
-      toast("会话已创建");
+      showToast("已创建会话");
     }
 
-    function openChat(id){
-      state.currentChatId = id;
-      const chat = curChat();
-      document.getElementById("chat-title").textContent = chat?.name || "聊天";
-      renderMessages(chat?.messages || []);
-      show("screen-chat");
+    function openChat(chatId) {
+      state.currentChatId = chatId;
+      const chat = getCurrentChat();
+      if (!chat) return;
+      document.getElementById("chat-header-title").textContent = chat.name;
+      renderMessages(chat.messages);
+      showScreen("chat-interface-screen");
     }
 
-    function curChat(){
-      return state.data.chats.find(c=>c.id===state.currentChatId);
+    function getCurrentChat() {
+      return state.data.chats.find(c => c.id === state.currentChatId);
     }
 
-    // ---------- messages ----------
-    function renderMessages(messages){
-      const box = document.getElementById("chat-messages");
-      box.innerHTML = "";
-      if(!messages.length){
-        const d = document.createElement("div");
-        d.className = "msg sys";
-        d.textContent = "开始聊天吧";
-        box.appendChild(d);
-      }else{
-        messages.forEach(m=>{
-          const d = document.createElement("div");
-          d.className = "msg " + (m.role==="user" ? "user" : "ai");
-          d.textContent = m.content;
-          box.appendChild(d);
-        });
-      }
-      box.scrollTop = box.scrollHeight;
-    }
-
-    function pushMsg(role, content){
-      const chat = curChat();
-      if(!chat) return;
-      chat.messages.push({role, content, time: Date.now()});
+    function clearCurrentChat() {
+      const chat = getCurrentChat();
+      if (!chat) return;
+      chat.messages = [];
       persist();
       renderMessages(chat.messages);
     }
 
-    async function sendMessage(){
-      const chat = curChat();
-      if(!chat){
-        toast("请先选择会话");
+    // ===== 聊天渲染 =====
+    function renderMessages(messages) {
+      const box = document.getElementById("chat-messages");
+      box.innerHTML = "";
+
+      if (!messages || !messages.length) {
+        const tip = document.createElement("div");
+        tip.className = "message-bubble system";
+        tip.textContent = "开始聊天吧";
+        box.appendChild(tip);
+      } else {
+        messages.forEach(m => {
+          const d = document.createElement("div");
+          d.className = "message-bubble " + (m.role === "user" ? "user" : "ai");
+          d.textContent = m.content;
+          box.appendChild(d);
+        });
+      }
+
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function appendMessage(role, content) {
+      const chat = getCurrentChat();
+      if (!chat) return;
+      chat.messages.push({ role, content, time: Date.now() });
+      persist();
+      renderMessages(chat.messages);
+    }
+
+    // ===== 发送消息 =====
+    async function sendMessage() {
+      const chat = getCurrentChat();
+      if (!chat) {
+        showToast("请先打开一个会话");
         return;
       }
+
       const input = document.getElementById("chat-input");
       const text = input.value.trim();
-      if(!text) return;
+      if (!text) return;
 
       input.value = "";
       input.style.height = "42px";
 
-      pushMsg("user", text);
+      appendMessage("user", text);
 
       const box = document.getElementById("chat-messages");
       const typing = document.createElement("div");
-      typing.className = "msg sys";
+      typing.className = "message-bubble system";
       typing.textContent = "对方正在输入...";
       box.appendChild(typing);
       box.scrollTop = box.scrollHeight;
 
-      try{
-        const reply = await callAPI(chat.messages);
+      try {
+        const reply = await requestAI(chat.messages);
         typing.remove();
-        pushMsg("assistant", reply || "（空响应）");
-      }catch(err){
+        appendMessage("assistant", reply || "（空响应）");
+      } catch (err) {
         typing.remove();
-        pushMsg("assistant", "请求失败：" + err.message);
+        appendMessage("assistant", "请求失败：" + err.message);
       }
     }
 
-    async function callAPI(messages){
-      const cfg = state.data.api;
-      if(!cfg.proxyUrl || !cfg.apiKey || !cfg.model){
-        throw new Error("请先在 API 设置填写反代地址、Key、模型");
+    async function requestAI(messages) {
+      const { proxyUrl, apiKey, model, temperature } = state.data.api;
+      if (!proxyUrl || !apiKey || !model) {
+        throw new Error("请先配置 API 设置");
       }
 
-      const url = cfg.proxyUrl.replace(/\/+$/,"") + "/v1/chat/completions";
+      const url = proxyUrl.replace(/\/+$/, "") + "/v1/chat/completions";
       const payload = {
-        model: cfg.model,
-        temperature: cfg.temperature,
-        messages: messages.map(m=>({
+        model,
+        temperature,
+        messages: messages.map(m => ({
           role: m.role === "assistant" ? "assistant" : "user",
           content: m.content
         }))
       };
 
-      const res = await fetch(url,{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
-          "Authorization":"Bearer " + cfg.apiKey
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + apiKey
         },
         body: JSON.stringify(payload)
       });
 
-      if(!res.ok){
-        const txt = await res.text();
-        throw new Error(`HTTP ${res.status} ${txt}`);
+      if (!resp.ok) {
+        const text = await resp.text();
+        throw new Error(`HTTP ${resp.status} ${text}`);
       }
 
-      const data = await res.json();
+      const data = await resp.json();
       return data?.choices?.[0]?.message?.content?.trim() || "";
     }
 
-    // ---------- helpers ----------
-    function autoGrow(e){
-      const el = e.target;
-      el.style.height = "42px";
-      el.style.height = Math.min(el.scrollHeight, 120) + "px";
-    }
-    function time(ts){
+    // ===== 工具 =====
+    function formatTime(ts) {
       const d = new Date(ts);
-      return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+      return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
     }
-    function esc(s=""){
-      return s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
+
+    function esc(s = "") {
+      return String(s)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
     }
-    function escAttr(s=""){ return esc(s); }
-    function toast(text){
+
+    function escAttr(s = "") {
+      return esc(s);
+    }
+
+    function showToast(text) {
       const t = document.createElement("div");
       t.className = "toast";
       t.textContent = text;
-      document.getElementById("phone").appendChild(t);
-      setTimeout(()=>t.remove(), 1300);
+      document.getElementById("phone-frame").appendChild(t);
+      setTimeout(() => t.remove(), 1400);
     }
   </script>
 </body>
