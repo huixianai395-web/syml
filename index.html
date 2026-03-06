@@ -1,1376 +1,1123 @@
+
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>EPhone MVP</title>
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="phone-frame show" id="phoneFrame">
-    <div class="phone-screen">
-
-      <!-- 状态栏 -->
-      <header class="status-bar">
-        <span id="statusTime">12:00</span>
-        <div class="status-right">
-          <span id="statusMode">ONLINE</span>
-          <span>●●●</span>
-        </div>
-      </header>
-
-      <!-- HOME -->
-      <section class="screen active" id="homeScreen">
-        <div class="home-header">
-          <h1>EPhone</h1>
-          <p>聊天骨架 · API优先 · 人设驱动</p>
-        </div>
-
-        <div class="app-grid">
-          <button class="app-icon" data-open="chatListScreen">消息</button>
-          <button class="app-icon" data-open="apiScreen">API设置</button>
-          <button class="app-icon" data-open="personaScreen">人设库</button>
-          <button class="app-icon ghost" id="toggleFrameBtn">外框开关</button>
-        </div>
-      </section>
-
-      <!-- API SETTINGS -->
-      <section class="screen" id="apiScreen">
-        <div class="screen-header">
-          <button class="back-btn" data-back="homeScreen">‹</button>
-          <h2>API 设置</h2>
-          <span></span>
-        </div>
-
-        <div class="form">
-          <label>反代 / 网关地址（不带 /v1）</label>
-          <input id="baseUrlInput" placeholder="https://api.openai.com" />
-
-          <label>API Key</label>
-          <input id="apiKeyInput" type="password" placeholder="sk-..." />
-
-          <label>模型</label>
-          <input id="modelInput" placeholder="gpt-4o-mini / 其他兼容模型" />
-
-          <label>温度 <span id="tempValue">0.9</span></label>
-          <input id="tempInput" type="range" min="0" max="2" step="0.1" value="0.9" />
-
-          <label>默认模式</label>
-          <select id="modeSelect">
-            <option value="online">线上模式（自然聊天）</option>
-            <option value="offline">线下模式（RP格式）</option>
-          </select>
-
-          <label>全局美化 CSS（可空）</label>
-          <textarea id="customCssInput" rows="6" placeholder=":root{ --accent:#8b5cf6; }"></textarea>
-
-          <div class="row">
-            <button id="applyCssBtn" class="sub">应用CSS</button>
-            <button id="saveApiBtn">保存设置</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- PERSONA LIBRARY -->
-      <section class="screen" id="personaScreen">
-        <div class="screen-header">
-          <button class="back-btn" data-back="homeScreen">‹</button>
-          <h2>人设库</h2>
-          <span></span>
-        </div>
-
-        <div class="form">
-          <label>名称</label>
-          <input id="personaNameInput" placeholder="例如：弥洛" />
-
-          <label>核心人设（外在行为）</label>
-          <textarea id="personaCoreInput" rows="3" placeholder="开朗、敏锐、边界感强..."></textarea>
-
-          <label>深层动机（需求/恐惧/执念）</label>
-          <textarea id="personaDriveInput" rows="3" placeholder="害怕被忽视，渴望被稳定回应..."></textarea>
-
-          <label>说话风格（节奏/口癖/表达）</label>
-          <textarea id="personaStyleInput" rows="3" placeholder="短句、偶尔反问、会留白..."></textarea>
-
-          <button id="addPersonaBtn">添加人设</button>
-
-          <div class="row">
-            <button id="exportPersonaBtn" class="sub">导出JSON</button>
-            <label class="file-btn sub">
-              导入JSON
-              <input id="importPersonaInput" type="file" accept="application/json" hidden />
-            </label>
-          </div>
-        </div>
-
-        <div id="personaList" class="list"></div>
-      </section>
-
-      <!-- CHAT LIST -->
-      <section class="screen" id="chatListScreen">
-        <div class="screen-header">
-          <button class="back-btn" data-back="homeScreen">‹</button>
-          <h2>消息</h2>
-          <button id="newChatBtn" class="mini-btn">＋</button>
-        </div>
-
-        <div class="toolbar">
-          <button id="newSingleChatBtn">新建单聊</button>
-          <button id="newGroupChatBtn" class="sub">新建群聊</button>
-        </div>
-
-        <div id="chatList" class="list"></div>
-      </section>
-
-      <!-- CHAT -->
-      <section class="screen" id="chatScreen">
-        <div class="screen-header">
-          <button class="back-btn" data-back="chatListScreen">‹</button>
-          <h2 id="chatTitle">聊天</h2>
-          <button id="regenerateBtn" class="mini-btn">↻</button>
-        </div>
-
-        <div class="chat-top-controls">
-          <select id="chatModeSelect">
-            <option value="online">线上模式</option>
-            <option value="offline">线下模式</option>
-          </select>
-          <span class="hint">切换后下一条立即生效</span>
-        </div>
-
-        <div id="chatMessages" class="chat-messages"></div>
-
-        <div class="chat-input-wrap">
-          <textarea id="chatInput" rows="1" placeholder="输入消息..."></textarea>
-          <button id="sendBtn">发送</button>
-        </div>
-      </section>
+  <div id="phone-screen">
+    <div id="status-bar">
+      <span id="status-time">12:00</span>
+      <span id="status-battery">100%</span>
     </div>
-  </div>
 
-  <!-- 新建聊天弹窗 -->
-  <div class="modal" id="newChatModal">
-    <div class="modal-card">
-      <div class="modal-head">
-        <h3 id="newChatModalTitle">新建聊天</h3>
-        <button id="closeNewChatModal">×</button>
+    <!-- Home -->
+    <section id="home-screen" class="screen active">
+      <div class="header home-header">
+        <span>主屏幕</span>
       </div>
 
-      <div class="form">
-        <label>聊天名称</label>
-        <input id="newChatNameInput" placeholder="例如：弥洛 / 207寝室群" />
-
-        <div id="singlePersonaBlock">
-          <label>选择人设（单聊）</label>
-          <select id="singlePersonaSelect"></select>
-        </div>
-
-        <div id="groupPersonaBlock" style="display:none;">
-          <label>选择群成员人设（群聊，可多选）</label>
-          <div id="groupPersonaChecklist" class="checklist"></div>
-        </div>
-
-        <div class="row">
-          <button class="sub" id="cancelCreateChatBtn">取消</button>
-          <button id="confirmCreateChatBtn">创建</button>
+      <div class="home-profile-card">
+        <img class="home-avatar" src="https://i.postimg.cc/y8xWzCqj/anime-boy.jpg" alt="avatar" />
+        <div>
+          <h3>弥洛</h3>
+          <p>你好像过得很好 迫不及待抹去我存在的痕迹</p>
         </div>
       </div>
-    </div>
+
+      <div class="app-grid">
+        <button class="app-icon" onclick="showScreen('chat-list-screen')">
+          <span>💬</span>
+          <small>消息</small>
+        </button>
+        <button class="app-icon" onclick="showScreen('api-settings-screen')">
+          <span>⚙️</span>
+          <small>API设置</small>
+        </button>
+      </div>
+    </section>
+
+    <!-- Chat list -->
+    <section id="chat-list-screen" class="screen">
+      <div class="header">
+        <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
+        <span>消息</span>
+        <span style="width:24px;"></span>
+      </div>
+      <div id="chat-list" class="list-container"></div>
+    </section>
+
+    <!-- Chat interface -->
+    <section id="chat-interface-screen" class="screen">
+      <div class="header">
+        <span class="back-btn" onclick="backToChatList()">‹</span>
+        <span id="chat-header-title">聊天</span>
+        <span style="width:24px;"></span>
+      </div>
+
+      <div id="chat-messages"></div>
+
+      <div id="chat-input-area">
+        <textarea id="chat-input" rows="1" placeholder="输入消息..."></textarea>
+        <button id="send-btn">发送</button>
+      </div>
+    </section>
+
+    <!-- API settings -->
+    <section id="api-settings-screen" class="screen">
+      <div class="header">
+        <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
+        <span>API 设置</span>
+        <span style="width:24px;"></span>
+      </div>
+
+      <div class="form-container">
+        <label>反代地址（不带 /v1）</label>
+        <input id="proxy-url" type="text" placeholder="https://api.openai.com" />
+
+        <label>API Key</label>
+        <input id="api-key" type="password" placeholder="sk-..." />
+
+        <label>模型</label>
+        <input id="model-name" type="text" placeholder="gpt-4o-mini" />
+
+        <label>Temperature</label>
+        <input id="temperature" type="number" min="0" max="2" step="0.1" value="0.8" />
+
+        <button id="save-api-btn" class="full-btn">保存设置</button>
+      </div>
+    </section>
   </div>
 
-  <!-- 动态注入CSS -->
-  <style id="dynamicCustomCss"></style>
-
-  <script src="./script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
-/* ===== style.css | Part 2/3 ===== */
+```
+
+```css
+/* style.css */
 :root{
   --bg:#0f1115;
-  --panel:#171a21;
-  --panel-2:#1e222b;
-  --text:#f3f5f7;
-  --text-dim:#a7afbd;
-  --line:#2a3040;
-  --accent:#7c5cff;
-  --accent-2:#9f86ff;
-  --danger:#ff5a6b;
-  --ok:#22c55e;
-  --shadow:0 8px 30px rgba(0,0,0,.28);
-  --radius:18px;
+  --panel:#1b1f27;
+  --panel-2:#232936;
+  --text:#eef2ff;
+  --sub:#9aa4b2;
+  --accent:#5b8cff;
+  --line:#2f3747;
+  --user:#5b8cff;
+  --ai:#2a3242;
 }
 
-*{
-  box-sizing:border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-
+*{box-sizing:border-box;}
 html,body{
   margin:0;
-  padding:0;
-  width:100%;
   height:100%;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
-  background: radial-gradient(1200px 600px at 20% -10%, #2f3550 0%, #0f1115 48%, #0b0d12 100%);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:#0a0c10;
   color:var(--text);
 }
 
-.phone-frame{
-  width:390px;
-  max-width:100vw;
-  height:844px;
-  max-height:100vh;
+#phone-screen{
+  width:min(430px,100vw);
+  height:100dvh;
   margin:0 auto;
-  border-radius:42px;
-  border:10px solid #0a0c10;
-  box-shadow: 0 18px 60px rgba(0,0,0,.5), inset 0 0 0 2px #232734;
-  background:#000;
+  background:linear-gradient(180deg,#11151d 0%,#0f1115 100%);
+  border-left:1px solid #1d2431;
+  border-right:1px solid #1d2431;
   position:relative;
   overflow:hidden;
 }
 
-.phone-frame:not(.show){
-  border:0;
-  border-radius:0;
-  width:100vw;
-  height:100vh;
-  box-shadow:none;
-}
-
-.phone-screen{
-  width:100%;
-  height:100%;
-  background:linear-gradient(180deg, #12151d 0%, #0e1118 100%);
-  position:relative;
-  overflow:hidden;
-}
-
-.status-bar{
-  position:absolute;
-  top:0;
-  left:0;
-  right:0;
-  height:44px;
-  padding:0 16px;
+#status-bar{
+  height:32px;
+  padding:8px 14px 0;
   display:flex;
-  align-items:center;
   justify-content:space-between;
-  background:rgba(10,12,16,.45);
-  border-bottom:1px solid rgba(255,255,255,.06);
-  backdrop-filter: blur(10px);
-  z-index:90;
-  font-size:13px;
-  letter-spacing:.3px;
-}
-.status-right{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-#statusMode{
-  color:#b8a9ff;
-  font-weight:600;
+  font-size:12px;
+  color:var(--sub);
 }
 
 .screen{
   position:absolute;
-  inset:44px 0 0 0;
-  padding:14px;
-  overflow-y:auto;
+  inset:32px 0 0 0;
   display:none;
+  flex-direction:column;
+  background:transparent;
 }
-.screen.active{
-  display:block;
+.screen.active{display:flex;}
+
+.header{
+  height:52px;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 14px;
+  font-weight:600;
+  background:rgba(15,17,21,.92);
+  backdrop-filter:blur(8px);
+}
+.home-header{border-bottom:none;background:transparent;}
+
+.back-btn{
+  font-size:24px;
+  line-height:1;
+  cursor:pointer;
+  color:#dbe4ff;
 }
 
-.home-header{
-  margin:8px 6px 14px;
+.home-profile-card{
+  margin:18px 14px;
+  padding:14px;
+  border-radius:14px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  display:flex;
+  gap:12px;
 }
-.home-header h1{
-  margin:0;
-  font-size:30px;
-  letter-spacing:.5px;
+.home-avatar{
+  width:54px;height:54px;border-radius:50%;object-fit:cover;
 }
-.home-header p{
-  margin:6px 0 0;
-  color:var(--text-dim);
-  font-size:13px;
-}
+.home-profile-card h3{margin:2px 0 4px;font-size:16px;}
+.home-profile-card p{margin:0;color:var(--sub);font-size:13px;line-height:1.45;}
 
 .app-grid{
+  margin:8px 14px;
   display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-columns:repeat(4,minmax(0,1fr));
   gap:12px;
-  margin-top:8px;
 }
 .app-icon{
-  border:1px solid var(--line);
-  background:linear-gradient(180deg,var(--panel) 0%, #12151c 100%);
-  color:var(--text);
-  border-radius:16px;
-  min-height:90px;
-  font-size:16px;
-  font-weight:600;
-  box-shadow:var(--shadow);
-  cursor:pointer;
-}
-.app-icon:active{ transform:scale(.98); }
-.app-icon.ghost{
-  color:#c4cbda;
-  border-style:dashed;
-  background:#131722;
-}
-
-.screen-header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom:12px;
-}
-.screen-header h2{
-  margin:0;
-  font-size:18px;
-  font-weight:700;
-}
-.back-btn,.mini-btn{
-  min-width:34px;
-  height:34px;
-  border-radius:10px;
-  border:1px solid var(--line);
-  color:var(--text);
-  background:var(--panel);
-  cursor:pointer;
-}
-.mini-btn{
-  padding:0 10px;
-}
-
-.form{
-  background:rgba(18,22,31,.75);
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:12px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-
-label{
-  margin-top:2px;
-  font-size:12px;
-  color:var(--text-dim);
-}
-
-input,select,textarea,button{
-  font:inherit;
-}
-
-input,select,textarea{
-  width:100%;
-  background:var(--panel-2);
-  color:var(--text);
-  border:1px solid #30384a;
-  border-radius:12px;
-  padding:10px 12px;
-  outline:none;
-}
-input:focus,select:focus,textarea:focus{
-  border-color:var(--accent);
-  box-shadow:0 0 0 3px rgba(124,92,255,.18);
-}
-
-textarea{
-  resize:vertical;
-}
-
-button{
   border:none;
-  border-radius:12px;
-  padding:10px 12px;
-  background:var(--accent);
-  color:white;
-  font-weight:600;
-  cursor:pointer;
-}
-button.sub, .file-btn.sub{
-  background:#2a3142;
-  color:#d8dfef;
-}
-button:active{ transform:translateY(1px); }
-
-.row{
-  display:flex;
-  gap:8px;
-  margin-top:6px;
-}
-.row > *{ flex:1; }
-
-.file-btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:12px;
-  padding:10px 12px;
-  font-weight:600;
-  cursor:pointer;
-}
-
-.toolbar{
-  display:flex;
-  gap:8px;
-  margin-bottom:10px;
-}
-.toolbar button{
-  flex:1;
-}
-
-.list{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  margin-top:10px;
-}
-
-.card{
-  background:linear-gradient(180deg,#161b25 0%, #111622 100%);
+  background:var(--panel-2);
   border:1px solid var(--line);
   border-radius:14px;
-  padding:10px 12px;
-}
-.card .title{
-  font-weight:700;
-  font-size:15px;
-  margin-bottom:4px;
-}
-.card .meta{
-  font-size:12px;
-  color:var(--text-dim);
-}
-
-.card-row{
+  color:var(--text);
+  padding:14px 8px;
   display:flex;
-  justify-content:space-between;
+  flex-direction:column;
   align-items:center;
-  gap:8px;
-}
-.card-actions{
-  display:flex;
   gap:6px;
+  cursor:pointer;
 }
-.card-actions button{
-  padding:7px 10px;
-  border-radius:10px;
-  font-size:12px;
-  background:#2c3344;
-}
-.card-actions .danger{
-  background: #472129;
-  color:#ffb8c1;
+.app-icon span{font-size:22px;}
+.app-icon small{font-size:12px;color:var(--sub);}
+
+.list-container{
+  overflow:auto;
+  padding:8px 0 18px;
 }
 
-.chat-top-controls{
+.chat-item{
   display:flex;
-  align-items:center;
   gap:10px;
-  margin-bottom:10px;
+  padding:12px 14px;
+  border-bottom:1px solid var(--line);
+  cursor:pointer;
 }
-.chat-top-controls .hint{
-  font-size:12px;
-  color:var(--text-dim);
+.chat-item img{
+  width:44px;height:44px;border-radius:50%;object-fit:cover;
+}
+.chat-item .meta{flex:1;min-width:0;}
+.chat-item .top{
+  display:flex;justify-content:space-between;gap:8px;
+}
+.chat-item .name{font-weight:600;}
+.chat-item .time{font-size:12px;color:var(--sub);}
+.chat-item .last{
+  margin-top:5px;
+  color:var(--sub);
+  font-size:13px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 
-.chat-messages{
-  background:rgba(14,18,26,.7);
-  border:1px solid var(--line);
-  border-radius:16px;
+/* chat */
+#chat-messages{
+  flex:1;
+  overflow:auto;
   padding:12px;
-  min-height:48vh;
-  max-height:56vh;
-  overflow-y:auto;
   display:flex;
   flex-direction:column;
   gap:10px;
 }
-
 .msg{
-  max-width:88%;
-  display:flex;
-  flex-direction:column;
-  gap:3px;
-}
-.msg .bubble{
-  border-radius:14px;
+  max-width:82%;
   padding:10px 12px;
+  border-radius:14px;
   line-height:1.45;
+  font-size:14px;
   white-space:pre-wrap;
   word-break:break-word;
 }
-.msg .time{
-  font-size:11px;
-  color:#9aa3b7;
-}
 .msg.user{
-  margin-left:auto;
-  align-items:flex-end;
-}
-.msg.user .bubble{
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  align-self:flex-end;
+  background:var(--user);
   color:#fff;
+  border-bottom-right-radius:6px;
 }
 .msg.ai{
-  margin-right:auto;
-  align-items:flex-start;
+  align-self:flex-start;
+  background:var(--ai);
+  border:1px solid var(--line);
+  border-bottom-left-radius:6px;
 }
-.msg.ai .bubble{
-  background:#222a3a;
-  border:1px solid #33405a;
-}
-.msg.system{
-  margin:0 auto;
-  align-items:center;
-}
-.msg.system .bubble{
-  background:#1f2532;
-  color:#c2ccdf;
-  border:1px dashed #39435a;
+.msg.sys{
+  align-self:center;
+  color:var(--sub);
   font-size:12px;
+  background:transparent;
+  border:none;
+  padding:2px 6px;
 }
 
-.chat-input-wrap{
-  margin-top:10px;
+#chat-input-area{
+  border-top:1px solid var(--line);
+  padding:10px;
   display:flex;
   gap:8px;
+  background:rgba(15,17,21,.92);
 }
-#chatInput{
+#chat-input{
   flex:1;
-  min-height:44px;
+  resize:none;
   max-height:120px;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#151a22;
+  color:var(--text);
+  outline:none;
 }
-#sendBtn{
-  width:88px;
+#send-btn{
+  border:none;
+  border-radius:12px;
+  min-width:64px;
+  padding:0 14px;
+  background:var(--accent);
+  color:#fff;
+  font-weight:600;
+  cursor:pointer;
 }
 
-.modal{
-  position:fixed;
-  inset:0;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  background:rgba(5,8,12,.58);
-  z-index:999;
+/* api */
+.form-container{
   padding:14px;
-}
-.modal.show{
-  display:flex;
-}
-.modal-card{
-  width:min(520px,100%);
-  max-height:80vh;
-  overflow:auto;
-  border:1px solid var(--line);
-  border-radius:18px;
-  background:#111622;
-  box-shadow:var(--shadow);
-}
-.modal-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px 14px 8px;
-}
-.modal-head h3{
-  margin:0;
-  font-size:16px;
-}
-.modal-head button{
-  width:34px;
-  height:34px;
-  border-radius:10px;
-  padding:0;
-  background:#2b3344;
-}
-.checklist{
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:8px;
-  background:#151b28;
   display:flex;
   flex-direction:column;
-  gap:6px;
-  max-height:180px;
+  gap:8px;
   overflow:auto;
 }
-.check-item{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-size:14px;
-  color:#dce3f2;
-}
-.check-item input{
-  width:auto;
-  padding:0;
-}
-
-.empty{
-  text-align:center;
-  color:var(--text-dim);
+.form-container label{
   font-size:13px;
-  padding:18px 10px;
+  color:var(--sub);
+  margin-top:6px;
 }
+.form-container input{
+  width:100%;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:11px 12px;
+  background:#151a22;
+  color:var(--text);
+  outline:none;
+}
+.full-btn{
+  margin-top:12px;
+  border:none;
+  border-radius:12px;
+  padding:12px;
+  background:var(--accent);
+  color:#fff;
+  font-weight:600;
+  cursor:pointer;
+}
+```
 
-@media (max-width: 520px){
-  .screen{
-    padding:12px;
-  }
-  .phone-frame.show{
-    width:100vw;
-    height:100vh;
-    border:0;
-    border-radius:0;
-  }
-}// ===== script.js | Part 3/3 =====
-(() => {
-  const $ = (id) => document.getElementById(id);
+```javascript
+// script.js
+const STORE_KEY = "ephone_mvp_data_v1";
 
-  const state = {
-    settings: {
-      baseUrl: "",
+const state = {
+  currentScreen: "home-screen",
+  currentChatId: null,
+  data: {
+    api: {
+      proxyUrl: "",
       apiKey: "",
       model: "gpt-4o-mini",
-      temperature: 0.9,
-      defaultMode: "online",
-      customCss: ""
+      temperature: 0.8
     },
-    personas: [],
-    chats: [],
-    currentChatId: null,
-    createChatType: "single" // single | group
+    chats: [
+      {
+        id: "milo",
+        name: "弥洛",
+        avatar: "https://i.postimg.cc/y8xWzCqj/anime-boy.jpg",
+        messages: [
+          { role: "assistant", content: "嗨，先把基础版跑通，我们一点点加功能。", time: Date.now() }
+        ]
+      }
+    ]
+  }
+};
+
+function init() {
+  loadData();
+  bindEvents();
+  tickClock();
+  setInterval(tickClock, 1000 * 30);
+
+  fillApiForm();
+  renderChatList();
+}
+
+function bindEvents() {
+  document.getElementById("send-btn").addEventListener("click", sendMessage);
+  document.getElementById("chat-input").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  document.getElementById("save-api-btn").addEventListener("click", saveApiSettings);
+}
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  state.currentScreen = id;
+}
+
+function tickClock() {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, "0");
+  const mm = String(now.getMinutes()).padStart(2, "0");
+  document.getElementById("status-time").textContent = `${hh}:${mm}`;
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (parsed?.api && parsed?.chats) state.data = parsed;
+  } catch (e) {
+    console.warn("loadData error:", e);
+  }
+}
+
+function persist() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(state.data));
+}
+
+function fillApiForm() {
+  const { proxyUrl, apiKey, model, temperature } = state.data.api;
+  document.getElementById("proxy-url").value = proxyUrl || "";
+  document.getElementById("api-key").value = apiKey || "";
+  document.getElementById("model-name").value = model || "";
+  document.getElementById("temperature").value = temperature ?? 0.8;
+}
+
+function saveApiSettings() {
+  state.data.api.proxyUrl = document.getElementById("proxy-url").value.trim();
+  state.data.api.apiKey = document.getElementById("api-key").value.trim();
+  state.data.api.model = document.getElementById("model-name").value.trim() || "gpt-4o-mini";
+  state.data.api.temperature = Number(document.getElementById("temperature").value || 0.8);
+
+  persist();
+  toast("API 设置已保存");
+}
+
+function renderChatList() {
+  const el = document.getElementById("chat-list");
+  el.innerHTML = "";
+
+  state.data.chats.forEach(chat => {
+    const last = chat.messages[chat.messages.length - 1];
+    const lastText = last ? last.content : "还没有消息";
+    const time = last ? formatTime(last.time) : "";
+
+    const item = document.createElement("div");
+    item.className = "chat-item";
+    item.innerHTML = `
+      <img src="${escapeAttr(chat.avatar)}" alt="${escapeAttr(chat.name)}">
+      <div class="meta">
+        <div class="top">
+          <span class="name">${escapeHtml(chat.name)}</span>
+          <span class="time">${time}</span>
+        </div>
+        <div class="last">${escapeHtml(lastText)}</div>
+      </div>
+    `;
+    item.onclick = () => openChat(chat.id);
+    el.appendChild(item);
+  });
+}
+
+function openChat(chatId) {
+  state.currentChatId = chatId;
+  const chat = getCurrentChat();
+  if (!chat) return;
+
+  document.getElementById("chat-header-title").textContent = chat.name;
+  renderMessages(chat.messages);
+  showScreen("chat-interface-screen");
+}
+
+function backToChatList() {
+  renderChatList();
+  showScreen("chat-list-screen");
+}
+
+function renderMessages(messages) {
+  const box = document.getElementById("chat-messages");
+  box.innerHTML = "";
+  messages.forEach(msg => {
+    const node = document.createElement("div");
+    node.className = `msg ${msg.role === "user" ? "user" : "ai"}`;
+    node.textContent = msg.content;
+    box.appendChild(node);
+  });
+  scrollChatBottom();
+}
+
+function appendMessage(role, content) {
+  const chat = getCurrentChat();
+  if (!chat) return;
+
+  chat.messages.push({ role, content, time: Date.now() });
+  persist();
+  renderMessages(chat.messages);
+}
+
+function appendSystemText(text) {
+  const box = document.getElementById("chat-messages");
+  const node = document.createElement("div");
+  node.className = "msg sys";
+  node.textContent = text;
+  box.appendChild(node);
+  scrollChatBottom();
+  return node;
+}
+
+async function sendMessage() {
+  const input = document.getElementById("chat-input");
+  const text = input.value.trim();
+  if (!text) return;
+  if (!state.currentChatId) return;
+
+  input.value = "";
+  autoGrowReset(input);
+
+  appendMessage("user", text);
+
+  const typing = appendSystemText("对方正在输入...");
+  try {
+    const reply = await requestChatCompletion();
+    typing.remove();
+    appendMessage("assistant", reply || "（空响应）");
+  } catch (err) {
+    typing.remove();
+    appendMessage("assistant", `请求失败：${err.message}`);
+  }
+}
+
+async function requestChatCompletion() {
+  const chat = getCurrentChat();
+  const { proxyUrl, apiKey, model, temperature } = state.data.api;
+
+  if (!proxyUrl || !apiKey || !model) {
+    throw new Error("请先在 API 设置里填写反代地址、Key 和模型");
+  }
+
+  const payload = {
+    model,
+    temperature,
+    messages: chat.messages.map(m => ({
+      role: m.role === "assistant" ? "assistant" : "user",
+      content: m.content
+    }))
   };
 
-  const LS_KEY = "ephone_mvp_v1";
+  const resp = await fetch(`${proxyUrl.replace(/\/+$/, "")}/v1/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`
+    },
+    body: JSON.stringify(payload)
+  });
 
-  // ---------- Init ----------
-  function init() {
-    bindBaseEvents();
-    loadState();
-    renderAll();
-    tickClock();
-    setInterval(tickClock, 1000 * 30);
+  if (!resp.ok) {
+    const t = await resp.text();
+    throw new Error(`HTTP ${resp.status} ${t}`);
   }
 
-  function bindBaseEvents() {
-    // screen navigation
-    document.querySelectorAll("[data-open]").forEach((btn) => {
-      btn.addEventListener("click", () => openScreen(btn.dataset.open));
-    });
-    document.querySelectorAll("[data-back]").forEach((btn) => {
-      btn.addEventListener("click", () => openScreen(btn.dataset.back));
-    });
+  const data = await resp.json();
+  return data?.choices?.[0]?.message?.content?.trim() || "";
+}
 
-    // status / frame
-    $("toggleFrameBtn").addEventListener("click", () => {
-      $("phoneFrame").classList.toggle("show");
-    });
+function getCurrentChat() {
+  return state.data.chats.find(c => c.id === state.currentChatId);
+}
 
-    // API events
-    $("tempInput").addEventListener("input", (e) => {
-      $("tempValue").textContent = e.target.value;
-    });
+function formatTime(ts) {
+  const d = new Date(ts);
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
 
-    $("applyCssBtn").addEventListener("click", () => {
-      const css = $("customCssInput").value.trim();
-      $("dynamicCustomCss").textContent = css;
-      toast("CSS 已应用");
-    });
+function scrollChatBottom() {
+  const box = document.getElementById("chat-messages");
+  box.scrollTop = box.scrollHeight;
+}
 
-    $("saveApiBtn").addEventListener("click", () => {
-      state.settings.baseUrl = $("baseUrlInput").value.trim();
-      state.settings.apiKey = $("apiKeyInput").value.trim();
-      state.settings.model = $("modelInput").value.trim() || "gpt-4o-mini";
-      state.settings.temperature = Number($("tempInput").value || 0.9);
-      state.settings.defaultMode = $("modeSelect").value;
-      state.settings.customCss = $("customCssInput").value || "";
-      saveState();
-      toast("API 设置已保存");
-    });
+function autoGrowReset(el) {
+  el.style.height = "auto";
+}
 
-    // persona events
-    $("addPersonaBtn").addEventListener("click", addPersona);
-    $("exportPersonaBtn").addEventListener("click", exportPersonas);
-    $("importPersonaInput").addEventListener("change", importPersonas);
+function toast(msg) {
+  const t = document.createElement("div");
+  t.className = "msg sys";
+  t.textContent = msg;
+  t.style.position = "absolute";
+  t.style.left = "50%";
+  t.style.bottom = "20px";
+  t.style.transform = "translateX(-50%)";
+  t.style.background = "#1b1f27";
+  t.style.border = "1px solid #2f3747";
+  t.style.padding = "8px 12px";
+  t.style.borderRadius = "10px";
+  t.style.zIndex = "9999";
+  document.getElementById("phone-screen").appendChild(t);
+  setTimeout(() => t.remove(), 1300);
+}
 
-    // chat modal events
-    $("newSingleChatBtn").addEventListener("click", () => openNewChatModal("single"));
-    $("newGroupChatBtn").addEventListener("click", () => openNewChatModal("group"));
-    $("newChatBtn").addEventListener("click", () => openNewChatModal("single"));
-    $("closeNewChatModal").addEventListener("click", closeNewChatModal);
-    $("cancelCreateChatBtn").addEventListener("click", closeNewChatModal);
-    $("confirmCreateChatBtn").addEventListener("click", confirmCreateChat);
+function escapeHtml(str = "") {
+  return str
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+function escapeAttr(str = "") {
+  return escapeHtml(str);
+}
 
-    // chat screen events
-    $("chatModeSelect").addEventListener("change", onChatModeChange);
-    $("sendBtn").addEventListener("click", handleSend);
-    $("regenerateBtn").addEventListener("click", handleRegenerate);
-    $("chatInput").addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        handleSend();
+window.showScreen = showScreen;
+window.backToChatList = backToChatList;
+
+init();
+:root{
+  --bg:#0f1115;
+  --panel:#1b1f27;
+  --panel-2:#232936;
+  --text:#eef2ff;
+  --sub:#9aa4b2;
+  --accent:#5b8cff;
+  --line:#2f3747;
+  --user:#5b8cff;
+  --ai:#2a3242;
+}
+
+*{box-sizing:border-box;}
+html,body{
+  margin:0;
+  height:100%;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:#0a0c10;
+  color:var(--text);
+}
+
+#phone-screen{
+  width:min(430px,100vw);
+  height:100dvh;
+  margin:0 auto;
+  background:linear-gradient(180deg,#11151d 0%,#0f1115 100%);
+  border-left:1px solid #1d2431;
+  border-right:1px solid #1d2431;
+  position:relative;
+  overflow:hidden;
+}
+
+#status-bar{
+  height:32px;
+  padding:8px 14px 0;
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  color:var(--sub);
+}
+
+.screen{
+  position:absolute;
+  inset:32px 0 0 0;
+  display:none;
+  flex-direction:column;
+  background:transparent;
+}
+.screen.active{display:flex;}
+
+.header{
+  height:52px;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 14px;
+  font-weight:600;
+  background:rgba(15,17,21,.92);
+  backdrop-filter:blur(8px);
+}
+.home-header{border-bottom:none;background:transparent;}
+
+.back-btn{
+  font-size:24px;
+  line-height:1;
+  cursor:pointer;
+  color:#dbe4ff;
+}
+
+.home-profile-card{
+  margin:18px 14px;
+  padding:14px;
+  border-radius:14px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  display:flex;
+  gap:12px;
+}
+.home-avatar{
+  width:54px;height:54px;border-radius:50%;object-fit:cover;
+}
+.home-profile-card h3{margin:2px 0 4px;font-size:16px;}
+.home-profile-card p{margin:0;color:var(--sub);font-size:13px;line-height:1.45;}
+
+.app-grid{
+  margin:8px 14px;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+}
+.app-icon{
+  border:none;
+  background:var(--panel-2);
+  border:1px solid var(--line);
+  border-radius:14px;
+  color:var(--text);
+  padding:14px 8px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  cursor:pointer;
+}
+.app-icon span{font-size:22px;}
+.app-icon small{font-size:12px;color:var(--sub);}
+
+.list-container{
+  overflow:auto;
+  padding:8px 0 18px;
+}
+
+.chat-item{
+  display:flex;
+  gap:10px;
+  padding:12px 14px;
+  border-bottom:1px solid var(--line);
+  cursor:pointer;
+}
+.chat-item img{
+  width:44px;height:44px;border-radius:50%;object-fit:cover;
+}
+.chat-item .meta{flex:1;min-width:0;}
+.chat-item .top{
+  display:flex;justify-content:space-between;gap:8px;
+}
+.chat-item .name{font-weight:600;}
+.chat-item .time{font-size:12px;color:var(--sub);}
+.chat-item .last{
+  margin-top:5px;
+  color:var(--sub);
+  font-size:13px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+#chat-messages{
+  flex:1;
+  overflow:auto;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.msg{
+  max-width:82%;
+  padding:10px 12px;
+  border-radius:14px;
+  line-height:1.45;
+  font-size:14px;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+.msg.user{
+  align-self:flex-end;
+  background:var(--user);
+  color:#fff;
+  border-bottom-right-radius:6px;
+}
+.msg.ai{
+  align-self:flex-start;
+  background:var(--ai);
+  border:1px solid var(--line);
+  border-bottom-left-radius:6px;
+}
+.msg.sys{
+  align-self:center;
+  color:var(--sub);
+  font-size:12px;
+  background:transparent;
+  border:none;
+  padding:2px 6px;
+}
+
+#chat-input-area{
+  border-top:1px solid var(--line);
+  padding:10px;
+  display:flex;
+  gap:8px;
+  background:rgba(15,17,21,.92);
+}
+#chat-input{
+  flex:1;
+  resize:none;
+  max-height:120px;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#151a22;
+  color:var(--text);
+  outline:none;
+}
+#send-btn{
+  border:none;
+  border-radius:12px;
+  min-width:64px;
+  padding:0 14px;
+  background:var(--accent);
+  color:#fff;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.form-container{
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  overflow:auto;
+}
+.form-container label{
+  font-size:13px;
+  color:var(--sub);
+  margin-top:6px;
+}
+.form-container input{
+  width:100%;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:11px 12px;
+  background:#151a22;
+  color:var(--text);
+  outline:none;
+}
+.full-btn{
+  margin-top:12px;
+  border:none;
+  border-radius:12px;
+  padding:12px;
+  background:var(--accent);
+  color:#fff;
+  font-weight:600;
+  cursor:pointer;
+}const STORE_KEY = "ephone_mvp_data_v1";
+
+const state = {
+  currentScreen: "home-screen",
+  currentChatId: null,
+  data: {
+    api: {
+      proxyUrl: "",
+      apiKey: "",
+      model: "gpt-4o-mini",
+      temperature: 0.8
+    },
+    chats: [
+      {
+        id: "milo",
+        name: "弥洛",
+        avatar: "https://i.postimg.cc/y8xWzCqj/anime-boy.jpg",
+        messages: [
+          { role: "assistant", content: "嗨，先把基础版跑通，我们一点点加功能。", time: Date.now() }
+        ]
       }
-    });
-    $("chatInput").addEventListener("input", autoResizeInput);
+    ]
   }
+};
 
-  // ---------- Storage ----------
-  function saveState() {
-    localStorage.setItem(LS_KEY, JSON.stringify(state));
-  }
+function init() {
+  loadData();
+  bindEvents();
+  tickClock();
+  setInterval(tickClock, 1000 * 30);
 
-  function loadState() {
-    const raw = localStorage.getItem(LS_KEY);
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw);
-        Object.assign(state, parsed);
-      } catch (e) {
-        console.warn("loadState parse error:", e);
-      }
+  fillApiForm();
+  renderChatList();
+}
+
+function bindEvents() {
+  document.getElementById("send-btn").addEventListener("click", sendMessage);
+  document.getElementById("chat-input").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
     }
+  });
+
+  document.getElementById("save-api-btn").addEventListener("click", saveApiSettings);
+}
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  state.currentScreen = id;
+}
+
+function tickClock() {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, "0");
+  const mm = String(now.getMinutes()).padStart(2, "0");
+  document.getElementById("status-time").textContent = `${hh}:${mm}`;
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (parsed?.api && parsed?.chats) state.data = parsed;
+  } catch (e) {
+    console.warn("loadData error:", e);
   }
+}
 
-  // ---------- Render ----------
-  function renderAll() {
-    renderSettings();
-    renderPersonaList();
-    renderChatList();
-    applyCustomCss();
-    syncStatusMode();
-    autoResizeInput();
-  }
+function persist() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(state.data));
+}
 
-  function renderSettings() {
-    $("baseUrlInput").value = state.settings.baseUrl || "";
-    $("apiKeyInput").value = state.settings.apiKey || "";
-    $("modelInput").value = state.settings.model || "gpt-4o-mini";
-    $("tempInput").value = String(state.settings.temperature ?? 0.9);
-    $("tempValue").textContent = String(state.settings.temperature ?? 0.9);
-    $("modeSelect").value = state.settings.defaultMode || "online";
-    $("customCssInput").value = state.settings.customCss || "";
-  }
+function fillApiForm() {
+  const { proxyUrl, apiKey, model, temperature } = state.data.api;
+  document.getElementById("proxy-url").value = proxyUrl || "";
+  document.getElementById("api-key").value = apiKey || "";
+  document.getElementById("model-name").value = model || "";
+  document.getElementById("temperature").value = temperature ?? 0.8;
+}
 
-  function renderPersonaList() {
-    const el = $("personaList");
-    el.innerHTML = "";
-    if (!state.personas.length) {
-      el.innerHTML = `<div class="empty">还没有人设，先添加一个吧</div>`;
-      refreshPersonaSelects();
-      return;
-    }
+function saveApiSettings() {
+  state.data.api.proxyUrl = document.getElementById("proxy-url").value.trim();
+  state.data.api.apiKey = document.getElementById("api-key").value.trim();
+  state.data.api.model = document.getElementById("model-name").value.trim() || "gpt-4o-mini";
+  state.data.api.temperature = Number(document.getElementById("temperature").value || 0.8);
 
-    state.personas.forEach((p) => {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
-        <div class="card-row">
-          <div>
-            <div class="title">${escapeHTML(p.name)}</div>
-            <div class="meta">${escapeHTML(shorten(p.core, 28))}</div>
-          </div>
-          <div class="card-actions">
-            <button data-id="${p.id}" data-act="copy">复制</button>
-            <button data-id="${p.id}" data-act="del" class="danger">删除</button>
-          </div>
+  persist();
+  toast("API 设置已保存");
+}
+
+function renderChatList() {
+  const el = document.getElementById("chat-list");
+  el.innerHTML = "";
+
+  state.data.chats.forEach(chat => {
+    const last = chat.messages[chat.messages.length - 1];
+    const lastText = last ? last.content : "还没有消息";
+    const time = last ? formatTime(last.time) : "";
+
+    const item = document.createElement("div");
+    item.className = "chat-item";
+    item.innerHTML = `
+      <img src="${escapeAttr(chat.avatar)}" alt="${escapeAttr(chat.name)}">
+      <div class="meta">
+        <div class="top">
+          <span class="name">${escapeHtml(chat.name)}</span>
+          <span class="time">${time}</span>
         </div>
-      `;
-      card.querySelectorAll("button").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const id = btn.dataset.id;
-          const act = btn.dataset.act;
-          if (act === "copy") {
-            const target = state.personas.find((x) => x.id === id);
-            if (!target) return;
-            navigator.clipboard.writeText(JSON.stringify(target, null, 2));
-            toast("已复制人设JSON");
-          } else if (act === "del") {
-            state.personas = state.personas.filter((x) => x.id !== id);
-            // 同步清理聊天引用
-            state.chats.forEach((c) => {
-              if (c.type === "single" && c.personaId === id) c.personaId = "";
-              if (c.type === "group") c.memberPersonaIds = (c.memberPersonaIds || []).filter((m) => m !== id);
-            });
-            saveState();
-            renderPersonaList();
-            renderChatList();
-          }
-        });
-      });
-      el.appendChild(card);
-    });
+        <div class="last">${escapeHtml(lastText)}</div>
+      </div>
+    `;
+    item.onclick = () => openChat(chat.id);
+    el.appendChild(item);
+  });
+}
 
-    refreshPersonaSelects();
+function openChat(chatId) {
+  state.currentChatId = chatId;
+  const chat = getCurrentChat();
+  if (!chat) return;
+
+  document.getElementById("chat-header-title").textContent = chat.name;
+  renderMessages(chat.messages);
+  showScreen("chat-interface-screen");
+}
+
+function backToChatList() {
+  renderChatList();
+  showScreen("chat-list-screen");
+}
+
+function renderMessages(messages) {
+  const box = document.getElementById("chat-messages");
+  box.innerHTML = "";
+  messages.forEach(msg => {
+    const node = document.createElement("div");
+    node.className = `msg ${msg.role === "user" ? "user" : "ai"}`;
+    node.textContent = msg.content;
+    box.appendChild(node);
+  });
+  scrollChatBottom();
+}
+
+function appendMessage(role, content) {
+  const chat = getCurrentChat();
+  if (!chat) return;
+
+  chat.messages.push({ role, content, time: Date.now() });
+  persist();
+  renderMessages(chat.messages);
+}
+
+function appendSystemText(text) {
+  const box = document.getElementById("chat-messages");
+  const node = document.createElement("div");
+  node.className = "msg sys";
+  node.textContent = text;
+  box.appendChild(node);
+  scrollChatBottom();
+  return node;
+}
+
+async function sendMessage() {
+  const input = document.getElementById("chat-input");
+  const text = input.value.trim();
+  if (!text) return;
+  if (!state.currentChatId) return;
+
+  input.value = "";
+  autoGrowReset(input);
+
+  appendMessage("user", text);
+
+  const typing = appendSystemText("对方正在输入...");
+  try {
+    const reply = await requestChatCompletion();
+    typing.remove();
+    appendMessage("assistant", reply || "（空响应）");
+  } catch (err) {
+    typing.remove();
+    appendMessage("assistant", `请求失败：${err.message}`);
+  }
+}
+
+async function requestChatCompletion() {
+  const chat = getCurrentChat();
+  const { proxyUrl, apiKey, model, temperature } = state.data.api;
+
+  if (!proxyUrl || !apiKey || !model) {
+    throw new Error("请先在 API 设置里填写反代地址、Key 和模型");
   }
 
-  function renderChatList() {
-    const el = $("chatList");
-    el.innerHTML = "";
-    if (!state.chats.length) {
-      el.innerHTML = `<div class="empty">暂无聊天，点击“新建单聊/群聊”</div>`;
-      return;
-    }
+  const payload = {
+    model,
+    temperature,
+    messages: chat.messages.map(m => ({
+      role: m.role === "assistant" ? "assistant" : "user",
+      content: m.content
+    }))
+  };
 
-    state.chats.forEach((chat) => {
-      const last = chat.messages?.slice(-1)[0];
-      const meta = last ? `${formatTime(last.time)} · ${shorten(last.content, 24)}` : "暂无消息";
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
-        <div class="card-row">
-          <div style="flex:1;min-width:0;">
-            <div class="title">${escapeHTML(chat.name)} ${chat.type === "group" ? "（群）" : ""}</div>
-            <div class="meta">${escapeHTML(meta)}</div>
-          </div>
-          <div class="card-actions">
-            <button data-id="${chat.id}" data-act="open">打开</button>
-            <button data-id="${chat.id}" data-act="del" class="danger">删</button>
-          </div>
-        </div>
-      `;
-      card.querySelectorAll("button").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const id = btn.dataset.id;
-          const act = btn.dataset.act;
-          if (act === "open") openChat(id);
-          if (act === "del") {
-            state.chats = state.chats.filter((x) => x.id !== id);
-            if (state.currentChatId === id) state.currentChatId = null;
-            saveState();
-            renderChatList();
-          }
-        });
-      });
-      el.appendChild(card);
-    });
+  const resp = await fetch(`${proxyUrl.replace(/\/+$/, "")}/v1/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!resp.ok) {
+    const t = await resp.text();
+    throw new Error(`HTTP ${resp.status} ${t}`);
   }
 
-  function renderChatMessages(chat) {
-    const wrap = $("chatMessages");
-    wrap.innerHTML = "";
-    (chat.messages || []).forEach((m) => {
-      const item = document.createElement("div");
-      item.className = `msg ${m.role === "user" ? "user" : m.role === "assistant" ? "ai" : "system"}`;
-
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-      bubble.textContent = m.content;
-
-      const time = document.createElement("div");
-      time.className = "time";
-      time.textContent = formatTime(m.time);
-
-      item.appendChild(bubble);
-      item.appendChild(time);
-      wrap.appendChild(item);
-    });
-    wrap.scrollTop = wrap.scrollHeight;
-  }
-
-  function refreshPersonaSelects() {
-    const single = $("singlePersonaSelect");
-    single.innerHTML = `<option value="">-- 请选择 --</option>`;
-    state.personas.forEach((p) => {
-      const opt = document.createElement("option");
-      opt.value = p.id;
-      opt.textContent = p.name;
-      single.appendChild(opt);
-    });
-
-    const list = $("groupPersonaChecklist");
-    list.innerHTML = "";
-    state.personas.forEach((p) => {
-      const row = document.createElement("label");
-      row.className = "check-item";
-      row.innerHTML = `<input type="checkbox" value="${p.id}" /> ${escapeHTML(p.name)}`;
-      list.appendChild(row);
-    });
-  }
-
-  // ---------- Clock / Status ----------
-  function tickClock() {
-    const d = new Date();
-    $("statusTime").textContent = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-  }
-
-  function syncStatusMode() {
-    const chat = getCurrentChat();
-    const mode = chat?.mode || state.settings.defaultMode || "online";
-    $("statusMode").textContent = mode.toUpperCase();
-    if ($("chatModeSelect")) $("chatModeSelect").value = mode;
-  }
-
-  // ---------- Screens ----------
-  function openScreen(id) {
-    document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
-    $(id).classList.add("active");
-    if (id === "chatListScreen") renderChatList();
-    if (id === "personaScreen") renderPersonaList();
-    if (id === "apiScreen") renderSettings();
-    if (id === "chatScreen") syncStatusMode();
-  }
-
-  function openChat(chatId) {
-    state.currentChatId = chatId;
-    const chat = getCurrentChat();
-    if (!chat) return;
-    $("chatTitle").textContent = chat.name;
-    $("chatModeSelect").value = chat.mode || state.settings.defaultMode || "online";
-    renderChatMessages(chat);
-    syncStatusMode();
-    saveState();
-    openScreen("chatScreen");
-  }
-
-  // ---------- Persona ----------
-  function addPersona() {
-    const name = $("personaNameInput").value.trim();
-    const core = $("personaCoreInput").value.trim();
-    const drive = $("personaDriveInput").value.trim();
-    const style = $("personaStyleInput").value.trim();
-
-    if (!name || !core) return toast("名称和核心人设必填");
-
-    state.personas.push({
-      id: uid("p"),
-      name, core, drive, style,
-      createdAt: Date.now()
-    });
-
-    $("personaNameInput").value = "";
-    $("personaCoreInput").value = "";
-    $("personaDriveInput").value = "";
-    $("personaStyleInput").value = "";
-
-    saveState();
-    renderPersonaList();
-    toast("人设已添加");
-  }
-
-  function exportPersonas() {
-    const blob = new Blob([JSON.stringify(state.personas, null, 2)], { type: "application/json;charset=utf-8" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `personas_${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-  }
-
-  async function importPersonas(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const text = await file.text();
-      const arr = JSON.parse(text);
-      if (!Array.isArray(arr)) throw new Error("JSON 不是数组");
-      const normalized = arr
-        .filter((x) => x && x.name)
-        .map((x) => ({
-          id: x.id || uid("p"),
-          name: String(x.name || "").trim(),
-          core: String(x.core || ""),
-          drive: String(x.drive || ""),
-          style: String(x.style || ""),
-          createdAt: x.createdAt || Date.now()
-        }));
-      state.personas.push(...normalized);
-      saveState();
-      renderPersonaList();
-      toast(`导入 ${normalized.length} 个`);
-    } catch (err) {
-      toast("导入失败：JSON 格式不正确");
-    } finally {
-      e.target.value = "";
-    }
-  }
-
-  // ---------- New chat ----------
-  function openNewChatModal(type = "single") {
-    state.createChatType = type;
-    $("newChatModalTitle").textContent = type === "group" ? "新建群聊" : "新建单聊";
-    $("singlePersonaBlock").style.display = type === "single" ? "" : "none";
-    $("groupPersonaBlock").style.display = type === "group" ? "" : "none";
-    $("newChatNameInput").value = "";
-    $("singlePersonaSelect").value = "";
-    document.querySelectorAll('#groupPersonaChecklist input[type="checkbox"]').forEach((c) => (c.checked = false));
-    $("newChatModal").classList.add("show");
-    refreshPersonaSelects();
-  }
-
-  function closeNewChatModal() {
-    $("newChatModal").classList.remove("show");
-  }
-
-  function confirmCreateChat() {
-    const name = $("newChatNameInput").value.trim();
-    if (!name) return toast("请填写聊天名称");
-
-    if (state.createChatType === "single") {
-      const personaId = $("singlePersonaSelect").value;
-      if (!personaId) return toast("单聊必须选择一个人设");
-
-      state.chats.push({
-        id: uid("c"),
-        type: "single",
-        name,
-        personaId,
-        memberPersonaIds: [],
-        mode: state.settings.defaultMode || "online",
-        messages: [{
-          role: "system",
-          content: "聊天已创建。你可以直接开始对话。",
-          time: Date.now()
-        }]
-      });
-    } else {
-      const selected = [...document.querySelectorAll('#groupPersonaChecklist input[type="checkbox"]:checked')].map(i => i.value);
-      if (!selected.length) return toast("群聊至少选择 1 个人设成员");
-
-      state.chats.push({
-        id: uid("c"),
-        type: "group",
-        name,
-        personaId: "",
-        memberPersonaIds: selected,
-        mode: state.settings.defaultMode || "online",
-        messages: [{
-          role: "system",
-          content: "群聊已创建。输入消息后，AI会根据成员人设进行群内互动。",
-          time: Date.now()
-        }]
-      });
-    }
-
-    saveState();
-    renderChatList();
-    closeNewChatModal();
-    toast("创建成功");
-  }
-
-  // ---------- Chat ----------
-  function onChatModeChange() {
-    const chat = getCurrentChat();
-    if (!chat) return;
-    chat.mode = $("chatModeSelect").value;
-    saveState();
-    syncStatusMode();
-    toast(`已切换为 ${chat.mode === "online" ? "线上模式" : "线下模式"}（立即生效）`);
-  }
-
-  async function handleSend() {
-    const chat = getCurrentChat();
-    if (!chat) return;
-
-    const text = $("chatInput").value.trim();
-    if (!text) return;
-
-    if (!state.settings.baseUrl || !state.settings.apiKey || !state.settings.model) {
-      return toast("请先配置 API（反代地址 / Key / 模型）");
-    }
-
-    appendMessage(chat, "user", text);
-    $("chatInput").value = "";
-    autoResizeInput();
-    renderChatMessages(chat);
-    saveState();
-
-    appendMessage(chat, "system", "AI 正在思考中…");
-    renderChatMessages(chat);
-
-    try {
-      const reply = await requestAI(chat, text);
-      removeLastSystemThinking(chat);
-      appendMessage(chat, "assistant", reply);
-      renderChatMessages(chat);
-      saveState();
-    } catch (err) {
-      removeLastSystemThinking(chat);
-      appendMessage(chat, "system", `请求失败：${err.message}`);
-      renderChatMessages(chat);
-      saveState();
-    }
-  }
-
-  async function handleRegenerate() {
-    const chat = getCurrentChat();
-    if (!chat) return;
-
-    const lastUser = [...chat.messages].reverse().find((m) => m.role === "user");
-    if (!lastUser) return toast("没有可重生的用户消息");
-
-    // 删掉末尾 assistant（如果有）
-    for (let i = chat.messages.length - 1; i >= 0; i--) {
-      if (chat.messages[i].role === "assistant") {
-        chat.messages.splice(i, 1);
-        break;
-      }
-      if (chat.messages[i].role === "user") break;
-    }
-
-    appendMessage(chat, "system", "正在重新生成…");
-    renderChatMessages(chat);
-    saveState();
-
-    try {
-      const reply = await requestAI(chat, lastUser.content);
-      removeLastSystemThinking(chat);
-      appendMessage(chat, "assistant", reply);
-      renderChatMessages(chat);
-      saveState();
-    } catch (err) {
-      removeLastSystemThinking(chat);
-      appendMessage(chat, "system", `重生成失败：${err.message}`);
-      renderChatMessages(chat);
-      saveState();
-    }
-  }
-
-  async function requestAI(chat, latestUserText) {
-    const messages = buildMessagesForApi(chat, latestUserText);
-
-    const url = normalizeBaseUrl(state.settings.baseUrl) + "/v1/chat/completions";
-    const body = {
-      model: state.settings.model,
-      temperature: Number(state.settings.temperature ?? 0.9),
-      messages
-    };
-
-    const resp = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${state.settings.apiKey}`
-      },
-      body: JSON.stringify(body)
-    });
-
-    if (!resp.ok) {
-      let detail = "";
-      try {
-        detail = await resp.text();
-      } catch {}
-      throw new Error(`${resp.status} ${resp.statusText}${detail ? " | " + detail.slice(0, 180) : ""}`);
-    }
-
-    const data = await resp.json();
-    const text = data?.choices?.[0]?.message?.content;
-    if (!text) throw new Error("返回内容为空");
-    return String(text).trim();
-  }
-
-  // ---------- Prompt engine ----------
-  function buildMessagesForApi(chat) {
-    const mode = chat.mode || state.settings.defaultMode || "online";
-    const systemPrompt = mode === "online" ? buildOnlineSystemPrompt(chat) : buildOfflineSystemPrompt(chat);
-
-    // 最近上下文
-    const history = (chat.messages || [])
-      .filter((m) => m.role === "user" || m.role === "assistant")
-      .slice(-14)
-      .map((m) => ({
-        role: m.role === "assistant" ? "assistant" : "user",
-        content: m.content
-      }));
-
-    return [{ role: "system", content: systemPrompt }, ...history];
-  }
-
-  function buildOnlineSystemPrompt(chat) {
-    if (chat.type === "single") {
-      const p = state.personas.find((x) => x.id === chat.personaId);
-      return `
-你在进行“高真实感聊天扮演”。目标：不模板化、不浮于表面、持续揣摩人设深层心理。
-
-【角色资料】
-- 名称：${p?.name || "未知"}
-- 核心人设：${p?.core || ""}
-- 深层动机：${p?.drive || ""}
-- 说话风格：${p?.style || ""}
-
-【行为准则】
-1) 每次回复先隐性推断：对方情绪、关系张力、潜台词，再作答。
-2) 回复长度由当下情境自行决定，避免固定句式和固定条数。
-3) 少说教、少空洞鸡汤，尽量“像真人即时反应”。
-4) 允许有停顿、犹豫、转折、反问，但要符合角色本身。
-5) 不要暴露“你在遵循提示词/规则”。
-
-请直接开始对话回复。
-      `.trim();
-    }
-
-    // group
-    const members = (chat.memberPersonaIds || [])
-      .map((id) => state.personas.find((p) => p.id === id))
-      .filter(Boolean);
-
-    const memberText = members.map((m, i) =>
-      `${i + 1}. ${m.name}\n- 核心:${m.core}\n- 动机:${m.drive}\n- 风格:${m.style}`).join("\n\n");
-
-    return `
-你在扮演一个群聊场景，包含多个不同人格成员。禁止同质化发言。
-
-【群成员档案】
-${memberText}
-
-【群聊规则】
-1) 根据上下文，选择“最可能会发言”的1~2名成员回应，不必人人发言。
-2) 每位成员语气、措辞、关注点必须区分明显。
-3) 回复长度和节奏根据场景变化，不固定模板。
-4) 可出现轻微互动（接话、吐槽、支持、误解），但保持自然。
-
-【输出格式要求】
-使用：
-【成员名】内容
-【成员名】内容
-（如只需要一人发言可只输出一段）
-    `.trim();
-  }
-
-  function buildOfflineSystemPrompt(chat) {
-    if (chat.type === "single") {
-      const p = state.personas.find((x) => x.id === chat.personaId);
-      return `
-你正在进行沉浸式角色扮演（线下模式）。
-
-【角色资料】
-- 名称：${p?.name || "未知"}
-- 核心人设：${p?.core || ""}
-- 深层动机：${p?.drive || ""}
-- 说话风格：${p?.style || ""}
-
-【必须格式】
-按以下结构输出（每次都要）：
-*动作/神态/环境细节*
-「对白」
-
-【要求】
-1) 动作与对白要互相支撑，体现情绪递进。
-2) 揣摩角色深层动机，不要只表面“可爱/冷淡”。
-3) 文风自然，不要流水账，不要模板化重复。
-4) 不要解释规则，不要输出无关标记。
-      `.trim();
-    }
-
-    const members = (chat.memberPersonaIds || [])
-      .map((id) => state.personas.find((p) => p.id === id))
-      .filter(Boolean);
-
-    const memberText = members.map((m, i) =>
-      `${i + 1}. ${m.name}\n- 核心:${m.core}\n- 动机:${m.drive}\n- 风格:${m.style}`).join("\n\n");
-
-    return `
-你正在进行群像角色扮演（线下模式）。
-
-【群成员档案】
-${memberText}
-
-【输出格式】
-每位发言成员使用：
-【成员名】
-*动作/状态*
-「对白」
-
-【要求】
-1) 本轮选择最合理的1~2名成员回应。
-2) 每个成员的动作描写与对白风格必须区别明显。
-3) 不模板化，不要所有人同样句式。
-    `.trim();
-  }
-
-  // ---------- Helpers ----------
-  function getCurrentChat() {
-    return state.chats.find((x) => x.id === state.currentChatId);
-  }
-
-  function appendMessage(chat, role, content) {
-    chat.messages = chat.messages || [];
-    chat.messages.push({
-      role, content, time: Date.now()
-    });
-  }
-
-  function removeLastSystemThinking(chat) {
-    const idx = chat.messages.findLastIndex((m) => m.role === "system" && /思考中|重新生成/.test(m.content));
-    if (idx >= 0) chat.messages.splice(idx, 1);
-  }
-
-  function applyCustomCss() {
-    $("dynamicCustomCss").textContent = state.settings.customCss || "";
-  }
-
-  function openToastContainer() {
-    let t = document.getElementById("toast");
-    if (!t) {
-      t = document.createElement("div");
-      t.id = "toast";
-      Object.assign(t.style, {
-        position: "fixed",
-        left: "50%",
-        bottom: "22px",
-        transform: "translateX(-50%)",
-        background: "rgba(20,25,36,.92)",
-        color: "#fff",
-        border: "1px solid #36415a",
-        borderRadius: "10px",
-        padding: "8px 12px",
-        fontSize: "13px",
-        zIndex: "3000",
-        display: "none"
-      });
-      document.body.appendChild(t);
-    }
-    return t;
-  }
-
-  let toastTimer = null;
-  function toast(msg) {
-    const t = openToastContainer();
-    t.textContent = msg;
-    t.style.display = "block";
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => (t.style.display = "none"), 1800);
-  }
-
-  function uid(prefix = "id") {
-    return `${prefix}_${Math.random().toString(36).slice(2, 9)}_${Date.now().toString(36)}`;
-  }
-
-  function shorten(str = "", n = 28) {
-    return str.length > n ? str.slice(0, n) + "…" : str;
-  }
-
-  function formatTime(ts) {
-    const d = new Date(ts || Date.now());
-    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-  }
-
-  function normalizeBaseUrl(url = "") {
-    return url.replace(/\/+$/, "");
-  }
-
-  function escapeHTML(s = "") {
-    return s
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#39;");
-  }
-
-  function autoResizeInput() {
-    const ta = $("chatInput");
-    if (!ta) return;
-    ta.style.height = "auto";
-    ta.style.height = Math.min(ta.scrollHeight, 120) + "px";
-  }
-
-  // start
-  init();
-})();
+  const data = await resp.json();
+  return data?.choices?.[0]?.message?.content?.trim() || "";
+}
+
+function getCurrentChat() {
+  return state.data.chats.find(c => c.id === state.currentChatId);
+}
+
+function formatTime(ts) {
+  const d = new Date(ts);
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+
+function scrollChatBottom() {
+  const box = document.getElementById("chat-messages");
+  box.scrollTop = box.scrollHeight;
+}
+
+function autoGrowReset(el) {
+  el.style.height = "auto";
+}
+
+function toast(msg) {
+  const t = document.createElement("div");
+  t.className = "msg sys";
+  t.textContent = msg;
+  t.style.position = "absolute";
+  t.style.left = "50%";
+  t.style.bottom = "20px";
+  t.style.transform = "translateX(-50%)";
+  t.style.background = "#1b1f27";
+  t.style.border = "1px solid #2f3747";
+  t.style.padding = "8px 12px";
+  t.style.borderRadius = "10px";
+  t.style.zIndex = "9999";
+  document.getElementById("phone-screen").appendChild(t);
+  setTimeout(() => t.remove(), 1300);
+}
+
+function escapeHtml(str = "") {
+  return str
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+function escapeAttr(str = "") {
+  return escapeHtml(str);
+}
+
+window.showScreen = showScreen;
+window.backToChatList = backToChatList;
+
+init();
