@@ -1,642 +1,503 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>EPhone Lite</title>
-  <style>
-    :root{
-      --bg:#0b1020;
-      --card:rgba(255,255,255,.45);
-      --card-border:rgba(255,255,255,.65);
-      --text:#fff;
-      --primary:#3b82f6;
-      --danger:#ef4444;
-    }
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Microsoft YaHei",sans-serif;background:#000}
-    #app{
-      width:100%;
-      max-width:430px;
-      height:100dvh;
-      margin:0 auto;
-      position:relative;
-      overflow:hidden;
-      background:#111;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>古风小手机</title>
+<style>
+:root{
+  --bg:#0e1a1a;
+  --ink:#1f2b2b;
+  --gold:#c9a86a;
+  --paper:#f6f0e2;
+  --glass:rgba(255,248,230,.28);
+  --glass-b:rgba(255,236,194,.45);
+  --text:#f8f2e6;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:#000}
+#app{max-width:430px;height:100dvh;margin:0 auto;position:relative;overflow:hidden;background:#111}
+.screen{position:absolute;inset:0;display:none;background:#f7f7f9;color:#111}
+.screen.active{display:block}
+.header{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#fff;border-bottom:1px solid #ececf1}
+.btn{border:0;border-radius:10px;padding:8px 12px;font-size:13px;background:#edf2ff;color:#163a7a}
+.btn.p{background:#2f66d8;color:#fff}
+.btn.d{background:#dc4d4d;color:#fff}
+.input,.select,.ta{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px;font-size:14px}
+.ta{min-height:90px;resize:vertical}
+.card{background:#fff;border:1px solid #ececf2;border-radius:14px;padding:12px}
+.page{padding:12px;display:flex;flex-direction:column;gap:10px}
 
-    .screen{
-      position:absolute;inset:0;
-      display:none;
-      background:#f5f6fa;
-      color:#111;
-    }
-    .screen.active{display:block}
+/* 主屏古风 */
+#home{color:var(--text);background:#132323}
+.wall{
+  position:absolute;inset:0;z-index:0;
+  background:
+   radial-gradient(120% 100% at 50% 0%, rgba(255,240,210,.15), rgba(0,0,0,0)),
+   linear-gradient(160deg,#203434,#0f1e1e);
+}
+.wall::after{
+  content:"";position:absolute;inset:0;opacity:.2;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");
+}
+#petals{position:absolute;inset:0;z-index:1;pointer-events:none}
+.home-layer{position:relative;z-index:2;height:100%;display:flex;flex-direction:column}
+.status{display:flex;justify-content:space-between;align-items:center;padding:10px 16px 0;font-size:13px;font-weight:600}
+.right{display:flex;align-items:center;gap:8px}
+.signal{display:flex;align-items:flex-end;gap:2px;height:12px}
+.signal i{display:block;width:3px;background:#fff;border-radius:2px}
+.signal i:nth-child(1){height:4px}.signal i:nth-child(2){height:6px}.signal i:nth-child(3){height:9px}.signal i:nth-child(4){height:12px}
+.bat{display:flex;align-items:center;gap:2px}
+.bat b{display:block;width:22px;height:11px;border:1.5px solid #fff;border-radius:3px;position:relative}
+.bat b::after{content:"";position:absolute;left:1px;top:1px;bottom:1px;width:60%;background:#fff;border-radius:2px}
+.bat i{display:block;width:2px;height:6px;background:#fff;border-radius:1px}
 
-    .header{
-      height:52px;display:flex;align-items:center;justify-content:space-between;
-      padding:0 12px;background:#fff;border-bottom:1px solid #e9e9ef;
-      position:sticky;top:0;z-index:5;
-    }
-    .header .title{font-weight:700}
-    .btn{
-      border:none;background:#eef2ff;color:#1e3a8a;padding:8px 12px;border-radius:10px;font-size:13px
-    }
-    .btn.primary{background:var(--primary);color:#fff}
-    .btn.danger{background:var(--danger);color:#fff}
-    .input, .textarea, .select{
-      width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px;font-size:14px;background:#fff
-    }
-    .textarea{min-height:90px;resize:vertical}
-    .card{
-      background:#fff;border:1px solid #ececf2;border-radius:14px;padding:12px
-    }
+.clock{padding:14px 16px 0}
+.date{font-size:14px;opacity:.95}
+.time{font-size:62px;line-height:1.03;font-weight:700;letter-spacing:-1px}
+.windchime{
+  position:absolute;right:12px;top:44px;width:56px;height:120px;opacity:.88;
+  transform-origin:top center;animation:swing 3.4s ease-in-out infinite;
+}
+@keyframes swing{0%,100%{transform:rotate(5deg)}50%{transform:rotate(-5deg)}}
+.windchime:before{
+  content:"";position:absolute;left:26px;top:0;width:2px;height:58px;background:linear-gradient(#dfc390,#8e6b35);
+}
+.windchime:after{
+  content:"";position:absolute;left:9px;top:55px;width:38px;height:38px;border-radius:50%;
+  border:2px solid rgba(214,182,125,.8);box-shadow:inset 0 0 18px rgba(0,0,0,.25);
+}
+.widgets{padding:8px 12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.w{
+  background:var(--glass);border:1px solid var(--glass-b);border-radius:18px;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:10px 12px
+}
+.w .t{font-size:12px;opacity:.85}
+.w .v{font-size:16px;font-weight:700;margin-top:4px}
 
-    /* ============ 主屏 ============ */
-    #home-screen{
-      color:var(--text);overflow:hidden;
-      background:#0a1024;
-    }
-    .wallpaper{
-      position:absolute;inset:0;z-index:0;
-      background:
-        linear-gradient(160deg, rgba(42,116,255,.32), rgba(122,216,255,.2)),
-        url('https://picsum.photos/900/1800?blur=1') center/cover no-repeat;
-      filter:saturate(1.1);
-    }
-    #particle-canvas{position:absolute;inset:0;z-index:1;pointer-events:none}
+.grid{padding:6px 12px 0;display:grid;grid-template-columns:repeat(4,1fr);gap:12px 8px}
+.icon{text-align:center}
+.box{
+  width:62px;height:62px;border-radius:16px;margin:0 auto 6px;display:grid;place-items:center;
+  background:var(--glass);border:1px solid var(--glass-b);font-size:26px;
+  transition:.12s transform ease;backdrop-filter:blur(8px)
+}
+.icon:active .box{transform:scale(.88)}
+.lab{font-size:12px;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.dock-wrap{margin-top:auto;padding:10px 12px 14px}
+.dock{
+  padding:10px;border-radius:24px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
+  background:rgba(240,220,180,.25);border:1px solid rgba(235,205,145,.48);backdrop-filter:blur(12px)
+}
+.dock .lab{display:none}
 
-    .home-layer{position:relative;z-index:2;height:100%;display:flex;flex-direction:column}
-    .statusbar{
-      display:flex;justify-content:space-between;align-items:center;
-      padding:10px 16px 0;font-size:13px;font-weight:600;
-    }
-    .status-right{display:flex;align-items:center;gap:8px}
-    .signal{display:flex;align-items:flex-end;gap:2px;height:12px}
-    .signal i{display:block;width:3px;background:#fff;border-radius:2px;opacity:.95}
-    .signal i:nth-child(1){height:4px}
-    .signal i:nth-child(2){height:6px}
-    .signal i:nth-child(3){height:9px}
-    .signal i:nth-child(4){height:12px}
-    .wifi{width:16px;height:16px}
-    .battery{display:flex;align-items:center;gap:2px}
-    .battery-body{width:22px;height:11px;border:1.5px solid #fff;border-radius:3px;position:relative}
-    .battery-level{position:absolute;left:1px;top:1px;bottom:1px;width:62%;background:#fff;border-radius:2px}
-    .battery-cap{width:2px;height:6px;background:#fff;border-radius:1px}
+/* 聊天 */
+#chat{background:#eef1f6}
+.chatWrap{height:calc(100% - 52px);display:flex;flex-direction:column}
+.chatTop{padding:8px 12px;background:#fff;border-bottom:1px solid #e8e8ee;display:flex;gap:8px;align-items:center}
+#msgs{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:78%;padding:10px 12px;border-radius:14px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.me{align-self:flex-end;background:#2f66d8;color:#fff;border-bottom-right-radius:6px}
+.ai{align-self:flex-start;background:#fff;border:1px solid #e8e8ef;border-bottom-left-radius:6px}
+.inputBar{display:flex;gap:8px;padding:10px;background:#fff;border-top:1px solid #e7e7ee}
+#chatInput{flex:1;min-height:40px;max-height:120px;resize:none;border:1px solid #ddd;border-radius:10px;padding:9px 10px}
+.small{font-size:12px;color:#777}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{background:#fff;border:1px solid #ececf2;border-radius:12px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center}
 
-    .clock-zone{padding:18px 18px 6px}
-    .clock-date{font-size:15px;opacity:.95}
-    .clock-time{font-size:64px;line-height:1;font-weight:760;letter-spacing:-1px;margin-top:4px}
-
-    .widget-row{
-      display:grid;grid-template-columns:1fr 1fr;gap:10px;
-      padding:8px 14px 8px;
-    }
-    .widget{
-      background:var(--card);
-      border:1px solid var(--card-border);
-      border-radius:18px;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      padding:10px 12px;
-      color:#fff;
-    }
-    .widget .t{font-size:12px;opacity:.9}
-    .widget .v{font-size:16px;font-weight:700;margin-top:4px}
-
-    .icon-grid{
-      margin-top:8px;
-      padding:4px 14px 0;
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:14px 10px;
-    }
-    .icon-item{text-align:center;color:#fff}
-    .icon-box{
-      width:62px;height:62px;margin:0 auto 6px;
-      border-radius:16px;overflow:hidden;
-      background:rgba(255,255,255,.38);
-      border:1px solid rgba(255,255,255,.65);
-      backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-      display:flex;align-items:center;justify-content:center;
-      transition:.12s transform ease;
-    }
-    .icon-item:active .icon-box{transform:scale(.88)}
-    .icon-box img{width:100%;height:100%;object-fit:cover}
-    .icon-label{font-size:12px;text-shadow:0 1px 2px rgba(0,0,0,.25)}
-
-    .dock-wrap{
-      margin-top:auto;padding:10px 14px 14px;
-    }
-    .dock{
-      display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
-      padding:10px;
-      border-radius:26px;
-      background:rgba(255,255,255,.32);
-      border:1px solid rgba(255,255,255,.55);
-      backdrop-filter: blur(14px);-webkit-backdrop-filter: blur(14px);
-    }
-    .dock .icon-label{display:none}
-
-    /* ============ 列表 / 表单页 ============ */
-    .page{padding:12px;display:flex;flex-direction:column;gap:12px}
-    .list{display:flex;flex-direction:column;gap:10px}
-    .list-item{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:12px;border-radius:12px;background:#fff;border:1px solid #ececf2
-    }
-
-    /* ============ 聊天页 ============ */
-    #chat-interface-screen{background:#eef1f6}
-    .chat-wrap{height:calc(100% - 52px);display:flex;flex-direction:column}
-    #chat-messages{
-      flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px
-    }
-    .msg{
-      max-width:78%;padding:10px 12px;border-radius:14px;font-size:14px;line-height:1.5;
-      word-break:break-word;white-space:pre-wrap;
-    }
-    .msg.user{align-self:flex-end;background:#3b82f6;color:#fff;border-bottom-right-radius:6px}
-    .msg.ai{align-self:flex-start;background:#fff;color:#111;border:1px solid #e8e8ef;border-bottom-left-radius:6px}
-    .chat-input{
-      padding:10px;background:#fff;border-top:1px solid #e7e7ee;display:flex;gap:8px
-    }
-    .chat-input textarea{
-      flex:1;min-height:40px;max-height:110px;resize:none;border:1px solid #ddd;border-radius:10px;padding:9px 10px
-    }
-
-    .hint{font-size:12px;color:#666}
-    .muted{color:#888}
-    .hr{height:1px;background:#ececf2;margin:4px 0}
-  </style>
+/* JS实验台 */
+#jsOut{background:#0d1117;color:#d1f0d1;border-radius:10px;padding:10px;font-family:monospace;min-height:90px;white-space:pre-wrap}
+</style>
+<style id="customStyle"></style>
 </head>
 <body>
 <div id="app">
 
-  <!-- 主屏 -->
-  <div id="home-screen" class="screen active">
-    <div class="wallpaper" id="wallpaperLayer"></div>
-    <canvas id="particle-canvas"></canvas>
-
+  <!-- HOME -->
+  <section id="home" class="screen active">
+    <div class="wall"></div>
+    <canvas id="petals"></canvas>
     <div class="home-layer">
-      <div class="statusbar">
-        <span id="sb-time">12:00</span>
-        <div class="status-right">
+      <div class="status">
+        <span id="sTime">12:00</span>
+        <div class="right">
           <span class="signal"><i></i><i></i><i></i><i></i></span>
-          <svg class="wifi" viewBox="0 0 24 24" fill="none">
-            <path d="M2 8.82C7.73 4.73 16.27 4.73 22 8.82" stroke="white" stroke-width="2" stroke-linecap="round"/>
-            <path d="M5 12.55C9.21 9.58 14.79 9.58 19 12.55" stroke="white" stroke-width="2" stroke-linecap="round"/>
-            <path d="M8.5 16.09C10.63 14.57 13.37 14.57 15.5 16.09" stroke="white" stroke-width="2" stroke-linecap="round"/>
-            <circle cx="12" cy="19" r="1.4" fill="white"/>
-          </svg>
-          <span class="battery"><span class="battery-body"><span class="battery-level"></span></span><span class="battery-cap"></span></span>
+          <span class="bat"><b></b><i></i></span>
         </div>
       </div>
-
-      <div class="clock-zone">
-        <div class="clock-date" id="clock-date">1月1日 周一</div>
-        <div class="clock-time" id="clock-time">12:00</div>
+      <div class="clock">
+        <div class="date" id="date">正月初一</div>
+        <div class="time" id="time">12:00</div>
       </div>
-
-      <div class="widget-row">
-        <div class="widget">
-          <div class="t">纪念日</div>
-          <div class="v" id="days-counter">第 1 天</div>
-        </div>
-        <div class="widget">
-          <div class="t">天气</div>
-          <div class="v">22°C 晴</div>
-        </div>
+      <div class="windchime" title="风铃"></div>
+      <div class="widgets">
+        <div class="w"><div class="t">纪念日</div><div class="v" id="days">第 1 天</div></div>
+        <div class="w"><div class="t">模式</div><div class="v" id="modeView">线上</div></div>
       </div>
-
-      <div class="icon-grid">
-        <div class="icon-item" onclick="showScreen('chat-list-screen')">
-          <div class="icon-box"><img src="https://i.postimg.cc/MTC3Tkw8/IMG-6436.jpg" alt=""></div><div class="icon-label">消息</div>
-        </div>
-        <div class="icon-item" onclick="showScreen('world-book-screen')">
-          <div class="icon-box"><img src="https://i.postimg.cc/HWf1JKzn/IMG-6435.jpg" alt=""></div><div class="icon-label">世界书</div>
-        </div>
-        <div class="icon-item" onclick="showScreen('api-settings-screen')">
-          <div class="icon-box"><img src="https://i.postimg.cc/MK8rJ8t7/IMG-6438.jpg" alt=""></div><div class="icon-label">API</div>
-        </div>
-        <div class="icon-item" onclick="showScreen('wallpaper-screen')">
-          <div class="icon-box"><img src="https://i.postimg.cc/T1j03pQr/IMG-6440.jpg" alt=""></div><div class="icon-label">外观</div>
-        </div>
-
-        <div class="icon-item" onclick="showScreen('font-settings-screen')">
-          <div class="icon-box"><img src="https://i.postimg.cc/pXxk1JXk/IMG-6442.jpg" alt=""></div><div class="icon-label">字体</div>
-        </div>
-        <div class="icon-item" onclick="showScreen('douban-screen')">
-          <div class="icon-box"><img src="https://i.postimg.cc/Pq2xJN1g/IMG-7301.jpg" alt=""></div><div class="icon-label">豆瓣</div>
-        </div>
-        <div class="icon-item" onclick="showScreen('tutorial-screen')">
-          <div class="icon-box"><img src="https://i.postimg.cc/d10GjC4g/IMG-7302.jpg" alt=""></div><div class="icon-label">教程</div>
-        </div>
-        <div class="icon-item" onclick="showScreen('character-selection-screen')">
-          <div class="icon-box"><img src="https://i.postimg.cc/pXj9h20L/IMG-7275.jpg" alt=""></div><div class="icon-label">CPhone</div>
-        </div>
-      </div>
-
-      <div class="dock-wrap">
-        <div class="dock">
-          <div class="icon-item" onclick="showScreen('chat-list-screen')"><div class="icon-box"><img src="https://i.postimg.cc/MTC3Tkw8/IMG-6436.jpg"></div></div>
-          <div class="icon-item" onclick="showScreen('api-settings-screen')"><div class="icon-box"><img src="https://i.postimg.cc/MK8rJ8t7/IMG-6438.jpg"></div></div>
-          <div class="icon-item" onclick="showScreen('wallpaper-screen')"><div class="icon-box"><img src="https://i.postimg.cc/T1j03pQr/IMG-6440.jpg"></div></div>
-          <div class="icon-item" onclick="showScreen('chat-list-screen')"><div class="icon-box"><img src="https://i.postimg.cc/Pq2xJN1g/IMG-7301.jpg"></div></div>
-        </div>
-      </div>
+      <div class="grid" id="appGrid"></div>
+      <div class="dock-wrap"><div class="dock" id="dock"></div></div>
     </div>
-  </div>
+  </section>
 
   <!-- 消息列表 -->
-  <div id="chat-list-screen" class="screen">
+  <section id="chatList" class="screen">
     <div class="header">
-      <button class="btn" onclick="showScreen('home-screen')">‹ 返回</button>
-      <span class="title">消息</span>
-      <button class="btn primary" onclick="openChat('沈昼白')">打开</button>
+      <button class="btn" onclick="show('home')">‹ 返回</button><b>消息</b>
+      <button class="btn p" onclick="openChat('沈昼白')">进入</button>
     </div>
     <div class="page">
-      <div class="list-item" onclick="openChat('沈昼白')">
-        <div>
-          <div><b>沈昼白</b></div>
-          <div class="muted" style="font-size:12px">点我进入聊天</div>
-        </div>
-        <span class="muted">在线</span>
-      </div>
-      <div class="card hint">这里先做核心。你后面再加群聊/NPC/相册模块。</div>
+      <div class="item" onclick="openChat('沈昼白')"><span>沈昼白</span><span class="small">在线</span></div>
+      <div class="small">只保留一个消息入口，不重复了。</div>
     </div>
-  </div>
+  </section>
 
   <!-- 聊天 -->
-  <div id="chat-interface-screen" class="screen">
+  <section id="chat" class="screen">
     <div class="header">
-      <button class="btn" onclick="showScreen('chat-list-screen')">‹ 返回</button>
-      <span class="title" id="chat-title">聊天</span>
-      <button class="btn" onclick="clearChat()">清空</button>
+      <button class="btn" onclick="show('chatList')">‹ 返回</button>
+      <b id="chatTitle">聊天</b>
+      <button class="btn d" onclick="clearChat()">清空</button>
     </div>
-    <div class="chat-wrap">
-      <div id="chat-messages"></div>
-      <div class="chat-input">
-        <textarea id="chat-input" placeholder="输入消息..."></textarea>
-        <button class="btn primary" onclick="sendMessage()">发送</button>
+    <div class="chatWrap">
+      <div class="chatTop">
+        <label class="small">模式</label>
+        <select id="chatMode" class="select" style="max-width:120px">
+          <option value="online">线上模式</option>
+          <option value="offline">线下模式</option>
+        </select>
+        <span class="small">切换后下一条立即生效</span>
+      </div>
+      <div id="msgs"></div>
+      <div class="inputBar">
+        <textarea id="chatInput" placeholder="输入消息..."></textarea>
+        <button class="btn p" onclick="sendMsg()">发送</button>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- API设置 -->
-  <div id="api-settings-screen" class="screen">
-    <div class="header">
-      <button class="btn" onclick="showScreen('home-screen')">‹ 返回</button>
-      <span class="title">API 设置</span>
-      <button class="btn primary" onclick="saveApiSettings()">保存</button>
+  <!-- API -->
+  <section id="api" class="screen">
+    <div class="header"><button class="btn" onclick="show('home')">‹ 返回</button><b>API 设置</b><button class="btn p" onclick="saveApi()">保存</button></div>
+    <div class="page">
+      <div class="card"><div class="small">Base URL（不带 /v1）</div><input id="apiBase" class="input" placeholder="https://api.openai.com"></div>
+      <div class="card"><div class="small">API Key</div><input id="apiKey" class="input" type="password" placeholder="sk-..."></div>
+      <div class="card"><div class="small">Model</div><input id="apiModel" class="input" value="gpt-4o-mini"></div>
+      <div class="card"><div class="small">Temperature</div><input id="apiTemp" class="input" type="number" min="0" max="2" step="0.1" value="0.8"></div>
     </div>
+  </section>
+
+  <!-- 外观 -->
+  <section id="appearance" class="screen">
+    <div class="header"><button class="btn" onclick="show('home')">‹ 返回</button><b>外观/美化</b><button class="btn p" onclick="applyCss()">应用CSS</button></div>
     <div class="page">
       <div class="card">
-        <label>反代地址（不带 /v1）</label>
-        <input id="api-base" class="input" placeholder="https://api.openai.com" />
+        <div class="small">自定义CSS（实时玩）</div>
+        <textarea id="cssBox" class="ta" placeholder="例如：.time{color:#ffd27a}"></textarea>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="btn" onclick="saveCss()">保存</button>
+          <button class="btn d" onclick="resetCss()">重置</button>
+        </div>
       </div>
-      <div class="card">
-        <label>API Key</label>
-        <input id="api-key" class="input" type="password" placeholder="sk-..." />
-      </div>
-      <div class="card">
-        <label>模型</label>
-        <input id="api-model" class="input" value="gpt-4o-mini" />
-      </div>
-      <div class="card">
-        <label>温度</label>
-        <input id="api-temp" class="input" type="number" min="0" max="2" step="0.1" value="0.8" />
-      </div>
-      <div class="card hint">OpenAI 兼容接口：POST /v1/chat/completions</div>
     </div>
-  </div>
+  </section>
 
-  <!-- 外观设置 -->
-  <div id="wallpaper-screen" class="screen">
-    <div class="header">
-      <button class="btn" onclick="showScreen('home-screen')">‹ 返回</button>
-      <span class="title">外观设置</span>
-      <button class="btn primary" onclick="applyWallpaperUrl()">应用URL</button>
+  <!-- 查手机 -->
+  <section id="phoneCheck" class="screen">
+    <div class="header"><button class="btn" onclick="show('home')">‹ 返回</button><b>查手机</b><span></span></div>
+    <div class="page">
+      <div class="card"><b>相册</b><div class="small">昨晚 23:40：夜景照 x3</div></div>
+      <div class="card"><b>备忘录</b><div class="small">“记得给弥洛买奶茶”</div></div>
+      <div class="card"><b>浏览记录</b><div class="small">“古风头像框素材” / “柯基能吃什么”</div></div>
     </div>
+  </section>
+
+  <!-- 书籍 -->
+  <section id="books" class="screen">
+    <div class="header"><button class="btn" onclick="show('home')">‹ 返回</button><b>书籍工坊</b><button class="btn p" onclick="bookWork()">处理</button></div>
+    <div class="page">
+      <div class="card"><div class="small">导入文本</div><textarea id="bookIn" class="ta" placeholder="粘贴原文..."></textarea></div>
+      <div class="card">
+        <div class="small">操作</div>
+        <select id="bookAction" class="select">
+          <option value="beautify">润色美化</option>
+          <option value="proofread">错别字批改</option>
+          <option value="notes">生成备注/提要</option>
+        </select>
+      </div>
+      <div class="card"><div class="small">结果</div><textarea id="bookOut" class="ta" placeholder="处理结果..."></textarea></div>
+    </div>
+  </section>
+
+  <!-- 拼多多 -->
+  <section id="pdd" class="screen">
+    <div class="header"><button class="btn" onclick="show('home')">‹ 返回</button><b>拼多多</b><span></span></div>
+    <div class="page list" id="pddList"></div>
+  </section>
+
+  <!-- 同人文 -->
+  <section id="fanfic" class="screen">
+    <div class="header"><button class="btn" onclick="show('home')">‹ 返回</button><b>同人文</b><button class="btn p" onclick="genFanfic()">生成</button></div>
+    <div class="page">
+      <div class="card"><input id="ffTopic" class="input" placeholder="主题：雨夜重逢 / 校园 / 古风"></div>
+      <div class="card"><textarea id="ffOut" class="ta" placeholder="生成内容..."></textarea></div>
+    </div>
+  </section>
+
+  <!-- JS实验台 -->
+  <section id="lab" class="screen">
+    <div class="header"><button class="btn" onclick="show('home')">‹ 返回</button><b>JS 实验台</b><button class="btn p" onclick="runJs()">运行</button></div>
     <div class="page">
       <div class="card">
-        <label>壁纸URL</label>
-        <input id="wallpaper-url" class="input" placeholder="https://..." />
+        <div class="small">可用对象：App, state。示例：show('home'); state.mode='offline'; saveState()</div>
+        <textarea id="jsBox" class="ta">log('hello');</textarea>
       </div>
-      <div class="card">
-        <label>本地上传</label><br><br>
-        <input id="wallpaper-file" type="file" accept="image/*" />
-      </div>
-      <button class="btn" onclick="resetWallpaper()">恢复默认</button>
+      <div id="jsOut"></div>
     </div>
-  </div>
-
-  <!-- 占位页面 -->
-  <div id="world-book-screen" class="screen">
-    <div class="header"><button class="btn" onclick="showScreen('home-screen')">‹ 返回</button><span class="title">世界书</span><span></span></div>
-    <div class="page"><div class="card">世界书模块占位（后续可接你原逻辑）</div></div>
-  </div>
-
-  <div id="font-settings-screen" class="screen">
-    <div class="header"><button class="btn" onclick="showScreen('home-screen')">‹ 返回</button><span class="title">字体设置</span><span></span></div>
-    <div class="page">
-      <div class="card">
-        <label>字体URL（ttf/otf/woff）</label>
-        <input id="font-url" class="input" placeholder="https://.../font.ttf">
-      </div>
-      <button class="btn primary" onclick="applyFont()">应用字体</button>
-      <button class="btn" onclick="resetFont()">恢复系统字体</button>
-    </div>
-  </div>
-
-  <div id="tutorial-screen" class="screen">
-    <div class="header"><button class="btn" onclick="showScreen('home-screen')">‹ 返回</button><span class="title">教程</span><span></span></div>
-    <div class="page"><div class="card">教程页占位</div></div>
-  </div>
-
-  <div id="douban-screen" class="screen">
-    <div class="header"><button class="btn" onclick="showScreen('home-screen')">‹ 返回</button><span class="title">豆瓣小组</span><span></span></div>
-    <div class="page"><div class="card">豆瓣模块占位</div></div>
-  </div>
-
-  <div id="character-selection-screen" class="screen">
-    <div class="header"><button class="btn" onclick="showScreen('home-screen')">‹ 返回</button><span class="title">选择手机</span><span></span></div>
-    <div class="page"><div class="card">CPhone 模块占位</div></div>
-  </div>
+  </section>
 
 </div>
 
 <script>
-  // ============= 基础屏幕切换 =============
-  function showScreen(id){
-    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-    const t=document.getElementById(id);
-    if(t) t.classList.add('active');
-  }
+const state = JSON.parse(localStorage.getItem('miniPhoneState')||'{}');
+state.api ??= {base:'',key:'',model:'gpt-4o-mini',temp:0.8};
+state.mode ??= 'online'; // 全局默认模式
+state.chats ??= {'沈昼白':[]};
+state.customCss ??= '';
+state.anniversary ??= '2024-01-01';
 
-  // ============= 时间与纪念日 =============
-  function updateClock(){
-    const now=new Date();
-    const h=String(now.getHours()).padStart(2,'0');
-    const m=String(now.getMinutes()).padStart(2,'0');
-    const week=['周日','周一','周二','周三','周四','周五','周六'][now.getDay()];
-    const date=`${now.getMonth()+1}月${now.getDate()}日 ${week}`;
-    document.getElementById('sb-time').textContent=`${h}:${m}`;
-    document.getElementById('clock-time').textContent=`${h}:${m}`;
-    document.getElementById('clock-date').textContent=date;
-  }
-  function updateDays(){
-    const start = localStorage.getItem('anniversaryStart') || '2024-01-01';
-    const d1 = new Date(start);
-    const d2 = new Date();
-    const days = Math.max(1, Math.floor((d2 - d1) / (1000*60*60*24)) + 1);
-    document.getElementById('days-counter').textContent = `第 ${days} 天`;
-  }
+const App = {state};
+const $ = s => document.querySelector(s);
 
-  // ============= 粒子雪花 =============
-  const canvas = document.getElementById('particle-canvas');
-  const ctx = canvas.getContext('2d');
-  let flakes = [];
+const apps = [
+  {id:'chatList', icon:'💬', label:'消息'},
+  {id:'api', icon:'🔑', label:'API'},
+  {id:'appearance', icon:'🎨', label:'外观'},
+  {id:'phoneCheck', icon:'📱', label:'查手机'},
+  {id:'books', icon:'📚', label:'书籍'},
+  {id:'pdd', icon:'🛍️', label:'拼多多'},
+  {id:'fanfic', icon:'🖋️', label:'同人文'},
+  {id:'lab', icon:'⚙️', label:'JS台'}
+];
+const dockApps = ['chatList','api','appearance','phoneCheck'];
 
-  function resizeCanvas(){
-    const app = document.getElementById('app');
-    canvas.width = app.clientWidth;
-    canvas.height = app.clientHeight;
-  }
-  function initFlakes(){
-    flakes = Array.from({length:40}, ()=>({
-      x:Math.random()*canvas.width,
-      y:Math.random()*canvas.height,
-      r:Math.random()*2.3+0.8,
-      speed:Math.random()*0.55+0.25,
-      drift:(Math.random()-0.5)*0.35,
-      o:Math.random()*0.35+0.08
-    }));
-  }
-  function drawFlakes(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    flakes.forEach(f=>{
-      f.y += f.speed;
-      f.x += f.drift;
-      if(f.y > canvas.height+6){ f.y=-6; f.x=Math.random()*canvas.width; }
-      if(f.x < -6) f.x=canvas.width+6;
-      if(f.x > canvas.width+6) f.x=-6;
-      ctx.beginPath();
-      ctx.arc(f.x,f.y,f.r,0,Math.PI*2);
-      ctx.fillStyle = `rgba(255,255,255,${f.o})`;
-      ctx.fill();
+function saveState(){ localStorage.setItem('miniPhoneState', JSON.stringify(state)); }
+function show(id){
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+window.show = show; window.saveState = saveState;
+
+function renderHomeApps(){
+  $('#appGrid').innerHTML = apps.map(a=>`
+    <div class="icon" onclick="show('${a.id}')">
+      <div class="box">${a.icon}</div><div class="lab">${a.label}</div>
+    </div>`).join('');
+  $('#dock').innerHTML = dockApps.map(id=>{
+    const a=apps.find(x=>x.id===id);
+    return `<div class="icon" onclick="show('${a.id}')"><div class="box">${a.icon}</div><div class="lab">${a.label}</div></div>`;
+  }).join('');
+}
+
+function tick(){
+  const n=new Date();
+  const h=String(n.getHours()).padStart(2,'0');
+  const m=String(n.getMinutes()).padStart(2,'0');
+  const wk=['周日','周一','周二','周三','周四','周五','周六'][n.getDay()];
+  $('#sTime').textContent = `${h}:${m}`;
+  $('#time').textContent = `${h}:${m}`;
+  $('#date').textContent = `${n.getMonth()+1}月${n.getDate()}日 ${wk}`;
+  $('#modeView').textContent = state.mode==='online'?'线上':'线下';
+}
+function updateDays(){
+  const d1 = new Date(state.anniversary), d2 = new Date();
+  const d = Math.max(1, Math.floor((d2-d1)/86400000)+1);
+  $('#days').textContent = `第 ${d} 天`;
+}
+
+function petals(){
+  const c = $('#petals'), ctx = c.getContext('2d');
+  const app = document.getElementById('app');
+  c.width=app.clientWidth; c.height=app.clientHeight;
+  const arr = Array.from({length:36},()=>({
+    x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*2.6+1,
+    vy:Math.random()*0.6+0.2,vx:(Math.random()-.5)*0.35,o:Math.random()*0.45+0.15
+  }));
+  (function loop(){
+    ctx.clearRect(0,0,c.width,c.height);
+    arr.forEach(p=>{
+      p.y+=p.vy; p.x+=p.vx;
+      if(p.y>c.height+10){p.y=-8;p.x=Math.random()*c.width}
+      if(p.x<-10)p.x=c.width+6; if(p.x>c.width+10)p.x=-6;
+      ctx.beginPath(); ctx.ellipse(p.x,p.y,p.r*1.2,p.r,0,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,214,214,${p.o})`; ctx.fill();
     });
-    requestAnimationFrame(drawFlakes);
-  }
+    requestAnimationFrame(loop);
+  })();
+}
 
-  // ============= API 设置 =============
-  function saveApiSettings(){
-    const conf = {
-      base: document.getElementById('api-base').value.trim(),
-      key: document.getElementById('api-key').value.trim(),
-      model: document.getElementById('api-model').value.trim() || 'gpt-4o-mini',
-      temp: Number(document.getElementById('api-temp').value || 0.8)
-    };
-    localStorage.setItem('apiConf', JSON.stringify(conf));
-    alert('API设置已保存');
-  }
-  function loadApiSettings(){
-    const conf = JSON.parse(localStorage.getItem('apiConf') || '{}');
-    if(conf.base) document.getElementById('api-base').value = conf.base;
-    if(conf.key) document.getElementById('api-key').value = conf.key;
-    if(conf.model) document.getElementById('api-model').value = conf.model;
-    if(conf.temp != null) document.getElementById('api-temp').value = conf.temp;
-  }
+/* API */
+function loadApi(){
+  $('#apiBase').value = state.api.base;
+  $('#apiKey').value = state.api.key;
+  $('#apiModel').value = state.api.model;
+  $('#apiTemp').value = state.api.temp;
+}
+function saveApi(){
+  state.api.base = $('#apiBase').value.trim();
+  state.api.key = $('#apiKey').value.trim();
+  state.api.model = $('#apiModel').value.trim() || 'gpt-4o-mini';
+  state.api.temp = Number($('#apiTemp').value||0.8);
+  saveState(); alert('保存好了');
+}
 
-  // ============= 聊天核心 =============
-  let currentChatName = '沈昼白';
-  let chatHistory = [];
+/* 聊天 */
+let current = '沈昼白';
+function openChat(name){ current=name; $('#chatTitle').textContent=name; loadChat(); show('chatList'); show('chat'); }
+window.openChat = openChat;
 
-  function openChat(name){
-    currentChatName = name;
-    document.getElementById('chat-title').textContent = name;
-    loadChat();
-    showScreen('chat-interface-screen');
-  }
+$('#chatMode').addEventListener('change', e=>{
+  state.mode = e.target.value; // 立即更新
+  saveState(); tick();
+});
 
-  function loadChat(){
-    const key = `chat_${currentChatName}`;
-    chatHistory = JSON.parse(localStorage.getItem(key) || '[]');
-    renderChat();
-  }
-
-  function saveChat(){
-    localStorage.setItem(`chat_${currentChatName}`, JSON.stringify(chatHistory));
-  }
-
-  function renderChat(){
-    const box = document.getElementById('chat-messages');
-    box.innerHTML = '';
-    chatHistory.forEach(m=>{
-      const div = document.createElement('div');
-      div.className = `msg ${m.role === 'user' ? 'user' : 'ai'}`;
-      div.textContent = m.content;
-      box.appendChild(div);
-    });
-    box.scrollTop = box.scrollHeight;
-  }
-
-  function pushMsg(role, content){
-    chatHistory.push({ role, content, t: Date.now() });
-    if(chatHistory.length > 120) chatHistory = chatHistory.slice(-120);
-    saveChat();
-    renderChat();
-  }
-
-  async function sendMessage(){
-    const ta = document.getElementById('chat-input');
-    const text = ta.value.trim();
-    if(!text) return;
-    ta.value = '';
-    pushMsg('user', text);
-
-    const conf = JSON.parse(localStorage.getItem('apiConf') || '{}');
-    if(!conf.base || !conf.key){
-      pushMsg('assistant', '你还没配置API（去【API设置】填 base / key / model）');
-      return;
-    }
-
-    const systemPrompt = `
-你现在扮演：沈昼白（男，计算机系大三，爱分享生活，口嫌体正直，尊重女性）。
-语气自然、口语化、简短，不要油腻，不要长篇说教。
-`;
-
-    const messages = [
-      { role:'system', content:systemPrompt.trim() },
-      ...chatHistory.slice(-20).map(m=>({
-        role: m.role === 'assistant' ? 'assistant' : (m.role === 'user' ? 'user' : 'assistant'),
-        content: m.content
-      }))
-    ];
-
-    try{
-      pushMsg('assistant', '…');
-      const resp = await fetch(`${conf.base.replace(/\/$/,'')}/v1/chat/completions`,{
-        method:'POST',
-        headers:{
-          'Content-Type':'application/json',
-          'Authorization':`Bearer ${conf.key}`
-        },
-        body: JSON.stringify({
-          model: conf.model || 'gpt-4o-mini',
-          temperature: conf.temp ?? 0.8,
-          messages
-        })
-      });
-
-      const data = await resp.json();
-      if(!resp.ok){
-        chatHistory.pop(); // 删除 "…"
-        pushMsg('assistant', `请求失败：${data.error?.message || resp.status}`);
-        return;
-      }
-
-      const out = data?.choices?.[0]?.message?.content?.trim() || '（空回复）';
-      chatHistory.pop(); // 删除 "…"
-      pushMsg('assistant', out);
-    }catch(err){
-      chatHistory.pop();
-      pushMsg('assistant', `网络错误：${err.message}`);
-    }
-  }
-
-  function clearChat(){
-    if(!confirm('清空当前聊天？')) return;
-    chatHistory = [];
-    saveChat();
-    renderChat();
-  }
-
-  // ============= 外观设置 =============
-  function applyWallpaperUrl(){
-    const url = document.getElementById('wallpaper-url').value.trim();
-    if(!url) return alert('请先填URL');
-    localStorage.setItem('wallpaperUrl', url);
-    applyWallpaper();
-    alert('壁纸已应用');
-  }
-
-  function applyWallpaper(){
-    const url = localStorage.getItem('wallpaperUrl');
-    const layer = document.getElementById('wallpaperLayer');
-    if(url){
-      layer.style.background = `linear-gradient(160deg, rgba(42,116,255,.25), rgba(122,216,255,.15)), url('${url}') center/cover no-repeat`;
-    }else{
-      layer.style.background = `linear-gradient(160deg, rgba(42,116,255,.32), rgba(122,216,255,.2)), url('https://picsum.photos/900/1800?blur=1') center/cover no-repeat`;
-    }
-  }
-
-  function resetWallpaper(){
-    localStorage.removeItem('wallpaperUrl');
-    document.getElementById('wallpaper-url').value = '';
-    applyWallpaper();
-  }
-
-  document.getElementById('wallpaper-file').addEventListener('change', (e)=>{
-    const file = e.target.files?.[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      localStorage.setItem('wallpaperUrl', reader.result);
-      applyWallpaper();
-      alert('本地壁纸已应用');
-    };
-    reader.readAsDataURL(file);
+function getChat(){ return state.chats[current] || (state.chats[current]=[]); }
+function loadChat(){
+  $('#chatMode').value = state.mode; // 读取最新
+  renderMsgs();
+}
+function renderMsgs(){
+  const box = $('#msgs'); box.innerHTML='';
+  getChat().forEach(m=>{
+    const d=document.createElement('div');
+    d.className='msg '+(m.role==='user'?'me':'ai');
+    d.textContent=m.content; box.appendChild(d);
   });
+  box.scrollTop = box.scrollHeight;
+}
+function push(role,content){
+  const arr=getChat(); arr.push({role,content,t:Date.now()});
+  if(arr.length>120) arr.splice(0,arr.length-120);
+  saveState(); renderMsgs();
+}
+function clearChat(){ if(confirm('清空聊天？')){ state.chats[current]=[]; saveState(); renderMsgs(); } }
 
-  // ============= 字体 =============
-  function applyFont(){
-    const url = document.getElementById('font-url').value.trim();
-    if(!url) return alert('请输入字体URL');
-    const old = document.getElementById('dyn-font-style');
-    if(old) old.remove();
-    const style = document.createElement('style');
-    style.id = 'dyn-font-style';
-    style.textContent = `
-      @font-face{font-family:'CustomUI';src:url('${url}')}
-      #app{font-family:'CustomUI', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif}
-    `;
-    document.head.appendChild(style);
-    localStorage.setItem('fontUrl', url);
-    alert('字体已应用');
-  }
-  function resetFont(){
-    localStorage.removeItem('fontUrl');
-    const old = document.getElementById('dyn-font-style');
-    if(old) old.remove();
-    alert('已恢复默认字体');
-  }
-  function loadFont(){
-    const url = localStorage.getItem('fontUrl');
-    if(!url) return;
-    document.getElementById('font-url').value = url;
-    applyFont();
-  }
+function buildSystemPrompt(){
+  const online = `你是沈昼白。线上聊天模式：短句、自然、及时回应，不写舞台说明。`;
+  const offline = `你是沈昼白。线下剧情模式：回复采用“对话+动作/环境描写”，更有画面感，但不要过长。`;
+  return state.mode==='offline' ? offline : online; // 立即生效核心
+}
 
-  // ============= 回车发送 =============
-  document.getElementById('chat-input').addEventListener('keydown',(e)=>{
-    if(e.key==='Enter' && !e.shiftKey){
-      e.preventDefault();
-      sendMessage();
-    }
+async function callLLM(messages){
+  const {base,key,model,temp}=state.api;
+  if(!base || !key) return null;
+  const res = await fetch(base.replace(/\/$/,'')+'/v1/chat/completions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+    body:JSON.stringify({model,temperature:temp,messages})
   });
+  const data = await res.json();
+  if(!res.ok) throw new Error(data?.error?.message || ('HTTP '+res.status));
+  return data?.choices?.[0]?.message?.content?.trim() || '';
+}
 
-  // ============= 启动 =============
-  window.addEventListener('resize', ()=>{ resizeCanvas(); initFlakes(); });
-  updateClock(); setInterval(updateClock, 1000);
-  updateDays();
-  loadApiSettings();
-  applyWallpaper();
-  loadFont();
+async function sendMsg(){
+  const t = $('#chatInput').value.trim();
+  if(!t) return;
+  $('#chatInput').value='';
+  push('user', t);
+  push('assistant','...');
+  const hist = getChat().slice(-20).filter(x=>x.content!=='...');
+  const messages = [{role:'system',content:buildSystemPrompt()},
+    ...hist.map(m=>({role:m.role==='user'?'user':'assistant',content:m.content}))];
+  try{
+    let out = await callLLM(messages);
+    if(!out){
+      out = state.mode==='offline'
+        ? '【线下模式】他把外套披到你肩上，声音压低了些：“先别着急，慢慢跟我说。”'
+        : '【线上模式】我在 你说 我听着';
+    }
+    getChat().pop(); // remove ...
+    push('assistant', out);
+  }catch(e){
+    getChat().pop();
+    push('assistant','请求失败：'+e.message);
+  }
+}
+window.sendMsg = sendMsg;
+$('#chatInput').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
 
-  resizeCanvas();
-  initFlakes();
-  drawFlakes();
+/* 书籍工坊 */
+async function bookWork(){
+  const txt = $('#bookIn').value.trim();
+  if(!txt) return alert('先贴文本');
+  const act = $('#bookAction').value;
+  const map = {
+    beautify:'请润色以下文本，保留原意，语言更顺滑：',
+    proofread:'请批改以下文本中的错别字和病句，并给出修正版本：',
+    notes:'请为以下文本输出：1)三行摘要 2)要点备注：'
+  };
+  const prompt = map[act] + '\n' + txt;
+  try{
+    const out = await callLLM([{role:'system',content:'你是中文编辑助手。'},{role:'user',content:prompt}]);
+    $('#bookOut').value = out || '（未配置API，无法处理）';
+  }catch(e){ $('#bookOut').value = '失败：'+e.message; }
+}
+
+/* 拼多多 */
+const pddData = [
+  {n:'古风发簪',p:29.9},{n:'柯基抱枕',p:39.0},{n:'风铃挂件',p:19.9},{n:'宣纸手账本',p:22.5}
+];
+function renderPdd(){
+  $('#pddList').innerHTML = pddData.map((x,i)=>`
+    <div class="card">
+      <b>${x.n}</b><div class="small">¥${x.p}</div>
+      <div style="margin-top:8px;display:flex;gap:8px">
+        <button class="btn">购买</button>
+        <button class="btn p" onclick="cut(${i})">砍一刀</button>
+      </div>
+    </div>
+  `).join('');
+}
+window.cut = i => { pddData[i].p = Math.max(0.1, +(pddData[i].p - Math.random()*3).toFixed(2)); renderPdd(); };
+
+/* 同人文 */
+async function genFanfic(){
+  const topic = $('#ffTopic').value.trim() || '雨夜重逢';
+  const prompt = `写一段同人文片段，主题：${topic}。中文，约500字，情绪细腻。`;
+  try{
+    const out = await callLLM([{role:'system',content:'你是同人文写手。'},{role:'user',content:prompt}]);
+    $('#ffOut').value = out || '（未配置API，先填API）';
+  }catch(e){ $('#ffOut').value='失败：'+e.message; }
+}
+
+/* CSS 工坊 */
+function applyCss(){ $('#customStyle').textContent = $('#cssBox').value; }
+function saveCss(){ state.customCss = $('#cssBox').value; saveState(); applyCss(); alert('CSS已保存'); }
+function resetCss(){ $('#cssBox').value=''; state.customCss=''; saveState(); applyCss(); }
+window.applyCss=applyCss; window.saveCss=saveCss; window.resetCss=resetCss;
+
+/* JS 实验台 */
+function log(...a){ $('#jsOut').textContent += a.join(' ') + '\n'; }
+window.log = log;
+function runJs(){
+  $('#jsOut').textContent='';
+  try{
+    const code = $('#jsBox').value;
+    new Function('App','state','show','saveState','log', code)(App,state,show,saveState,log);
+    log('✅ done');
+  }catch(e){ log('❌ '+e.message); }
+}
+window.runJs=runJs;
+
+/* 启动 */
+(function init(){
+  renderHomeApps(); renderPdd(); tick(); updateDays(); petals();
+  setInterval(tick,1000);
+  loadApi();
+  $('#cssBox').value = state.customCss; applyCss();
+  $('#chatMode').value = state.mode;
+  window.addEventListener('resize', ()=>setTimeout(petals,80));
+})();
 </script>
 </body>
 </html>
