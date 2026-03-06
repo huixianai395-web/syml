@@ -2,43 +2,57 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>小手机-可用版</title>
-  <style>
-    *{box-sizing:border-box} html,body{margin:0;height:100%;font-family:-apple-system,PingFang SC,Microsoft YaHei}
-    #app{max-width:430px;height:100dvh;margin:0 auto;position:relative;overflow:hidden;background:#111}
-    .screen{position:absolute;inset:0;display:none;background:#f7f7fb}
-    .screen.active{display:block}
-    .header{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#fff;border-bottom:1px solid #e9e9ef}
-    .btn{border:none;border-radius:10px;padding:8px 12px;background:#edf2ff;color:#173a7a}
-    .btn.p{background:#2f66d8;color:#fff}
-    .page{height:calc(100% - 52px);overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
-    .card{background:#fff;border:1px solid #ececf2;border-radius:12px;padding:12px}
-    .input,.ta{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px}
-    .ta{min-height:42px;max-height:100px;resize:none}
-    .small{font-size:12px;color:#777}
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小手机-稳定短版</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#000;font-family:-apple-system,PingFang SC,Microsoft YaHei}
+#app{max-width:430px;height:100dvh;margin:0 auto;position:relative;overflow:hidden;background:#111}
+.screen{position:absolute;inset:0;display:none;background:#f7f7fb}
+.screen.active{display:block}
+.header{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#fff;border-bottom:1px solid #e9e9ef}
+.btn{border:none;border-radius:10px;padding:8px 12px;background:#edf2ff;color:#173a7a}
+.btn.p{background:#2f66d8;color:#fff}
+.page{height:calc(100% - 52px);overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.card{background:#fff;border:1px solid #ececf2;border-radius:12px;padding:12px}
+.small{font-size:12px;color:#777}
+.input,.ta,.sel{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;background:#fff;font-size:14px}
+.ta{min-height:42px;max-height:100px;resize:none}
 
-    #home{color:#fff}
-    .wall{position:absolute;inset:0;background:linear-gradient(160deg,#3e6cff,#87ddff)}
-    .home-layer{position:relative;height:100%;padding:18px}
-    .time{font-size:64px;font-weight:700}
-    .date{font-size:15px;opacity:.9}
-    .grid{margin-top:20px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-    .icon{text-align:center;cursor:pointer}
-    .ibox{width:62px;height:62px;margin:0 auto 6px;border-radius:16px;background:rgba(255,255,255,.3);display:grid;place-items:center;font-size:27px;border:1px solid rgba(255,255,255,.45)}
-    .lab{font-size:12px}
+/* home */
+#home{color:#fff}
+.wall{position:absolute;inset:0;background:linear-gradient(160deg,#3e6cff,#87ddff)}
+.home-layer{position:relative;height:100%;padding:18px}
+.time{font-size:64px;font-weight:700}
+.date{font-size:15px;opacity:.9}
+.grid{margin-top:20px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.icon{text-align:center;cursor:pointer}
+.ibox{width:62px;height:62px;margin:0 auto 6px;border-radius:16px;background:rgba(255,255,255,.3);display:grid;place-items:center;font-size:27px;border:1px solid rgba(255,255,255,.45)}
+.lab{font-size:12px}
 
-    .list{display:flex;flex-direction:column;gap:8px}
-    .item{background:#fff;border:1px solid #ececf2;border-radius:12px;padding:10px;display:flex;justify-content:space-between;cursor:pointer}
+/* list */
+.list{display:flex;flex-direction:column;gap:8px}
+.item{background:#fff;border:1px solid #ececf2;border-radius:12px;padding:10px;display:flex;gap:10px;align-items:center}
+.avatar{width:44px;height:44px;border-radius:12px;object-fit:cover;background:#eef2ff}
+.main{flex:1;min-width:0}
+.name{font-weight:600;color:#222}
+.preview{margin-top:4px;font-size:12px;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t{font-size:11px;color:#999}
 
-    #chatMsgs{height:calc(100% - 52px - 62px);overflow:auto;padding:12px;background:#eef1f6;display:flex;flex-direction:column;gap:10px}
-    .bubble{max-width:78%;padding:10px 12px;border-radius:12px;white-space:pre-wrap;word-break:break-word}
-    .me{margin-left:auto;background:#2f66d8;color:#fff}
-    .ai{background:#fff;border:1px solid #e8e8ef}
-    .chatbar{position:absolute;left:0;right:0;bottom:0;padding:10px;background:#fff;border-top:1px solid #e9e9ef;display:flex;gap:8px}
-    #chatInput{flex:1}
-  </style>
+/* chat */
+#chatMsgs{height:calc(100% - 52px - 62px);overflow:auto;padding:12px;background:#eef1f6;display:flex;flex-direction:column;gap:10px}
+.bubble{max-width:78%;padding:10px 12px;border-radius:12px;white-space:pre-wrap;word-break:break-word}
+.me{margin-left:auto;background:#2f66d8;color:#fff}
+.ai{background:#fff;border:1px solid #e8e8ef}
+.chatbar{position:absolute;left:0;right:0;bottom:0;padding:10px;background:#fff;border-top:1px solid #e9e9ef;display:flex;gap:8px;align-items:flex-end}
+#chatInput{flex:1;min-height:42px;max-height:96px;overflow:auto;resize:none}
+
+/* modal */
+.mask{position:absolute;inset:0;background:rgba(0,0,0,.35);display:none;place-items:center;z-index:99}
+.mask.show{display:grid}
+.modal{width:88%;max-width:360px;background:#fff;border-radius:14px;padding:12px}
+</style>
 </head>
 <body>
 <div id="app">
@@ -58,11 +72,15 @@
     <div class="header">
       <button class="btn" onclick="show('home')">‹ 返回</button>
       <b>微信</b>
-      <button class="btn" onclick="addContact()">+联系人</button>
+      <div style="display:flex;gap:6px">
+        <button class="btn" onclick="openContactModal()">+联系人</button>
+      </div>
     </div>
-    <div class="page">
-      <input id="searchInput" class="input" placeholder="搜索联系人" oninput="renderContacts(this.value)" />
-      <div id="contactList" class="list"></div>
+    <div class="page" style="padding:0">
+      <div style="padding:10px 12px;border-bottom:1px solid #eee;background:#fff">
+        <input id="searchInput" class="input" placeholder="搜索联系人" oninput="renderContacts(this.value)" />
+      </div>
+      <div id="contactList" class="list" style="padding:10px"></div>
     </div>
   </section>
 
@@ -82,71 +100,112 @@
   <section id="api" class="screen">
     <div class="header">
       <button class="btn" onclick="show('home')">‹ 返回</button>
-      <b>API 设置</b>
+      <b>API设置</b>
       <button class="btn p" onclick="saveApi()">保存</button>
     </div>
     <div class="page">
       <div class="card"><div class="small">Base URL</div><input id="apiBase" class="input" placeholder="https://api.cetaceang.qzz.io" /></div>
       <div class="card"><div class="small">API Key</div><input id="apiKey" class="input" type="password" /></div>
-      <div class="card"><div class="small">Model</div><input id="apiModel" class="input" value="gpt-4o-mini" /></div>
+      <div class="card"><div class="small">Model</div><select id="apiModel" class="sel"></select><div style="margin-top:8px"><button class="btn" onclick="fetchModels()">拉取模型</button></div></div>
       <div class="card"><div class="small">Temperature</div><input id="apiTemp" class="input" type="number" min="0" max="2" step="0.1" value="0.8" /></div>
-      <div class="card">
-        <button class="btn" onclick="testApi()">测试连接</button>
-        <div id="apiStatus" class="small" style="margin-top:8px">状态：未测试</div>
-      </div>
+      <div class="card"><button class="btn" onclick="testApi()">测试连接</button><div id="apiStatus" class="small" style="margin-top:8px">状态：未测试</div></div>
     </div>
   </section>
+
+  <!-- 联系人弹窗 -->
+  <div id="contactMask" class="mask">
+    <div class="modal">
+      <h3 id="modalTitle" style="margin:0 0 10px">新建联系人</h3>
+      <div class="small">昵称</div>
+      <input id="cName" class="input" />
+      <div class="small" style="margin-top:8px">人设</div>
+      <textarea id="cPersona" class="ta" style="min-height:130px;max-height:none"></textarea>
+      <div class="small" style="margin-top:8px">头像URL（可空）</div>
+      <input id="cAvatar" class="input" />
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+        <button class="btn" onclick="closeContactModal()">取消</button>
+        <button class="btn p" onclick="saveContact()">保存</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-const K_API='mini_api_v1', K_CONTACT='mini_contacts_v1', K_CHAT='mini_chats_v1';
-let currentId=null;
+const K_API='m_api_v2', K_CONTACT='m_contact_v2', K_CHAT='m_chat_v2';
+let currentId=null, editingId=null;
 
-function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-function getJ(k,d){ try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d));}catch{return d;} }
-function setJ(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
-function esc(s=''){ return String(s).replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+const getJ=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d));}catch{return d;}};
+const setJ=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
 
-function tick(){
-  const n=new Date(), h=String(n.getHours()).padStart(2,'0'), m=String(n.getMinutes()).padStart(2,'0');
-  const w=['周日','周一','周二','周三','周四','周五','周六'][n.getDay()];
-  homeDate.textContent=`${n.getMonth()+1}月${n.getDate()}日 ${w}`;
-  homeTime.textContent=`${h}:${m}`;
-}
-tick(); setInterval(tick,1000);
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function tick(){const n=new Date(),h=String(n.getHours()).padStart(2,'0'),m=String(n.getMinutes()).padStart(2,'0');const w=['周日','周一','周二','周三','周四','周五','周六'][n.getDay()];homeDate.textContent=`${n.getMonth()+1}月${n.getDate()}日 ${w}`;homeTime.textContent=`${h}:${m}`}
+tick();setInterval(tick,1000);
 
-// contacts
+// ---------- contacts ----------
 function getContacts(){
   let arr=getJ(K_CONTACT,null);
-  if(!arr){
-    arr=[{id:'c1',name:'沈昼白',preview:'在吗',time:'刚刚',persona:'自然聊天'}];
-    setJ(K_CONTACT,arr);
-  }
+  if(!arr){arr=[{id:'c1',name:'沈昼白',preview:'在吗 我刚遛狗回来',time:'刚刚',persona:'计算机系大三，爱分享日常',avatar:'https://i.postimg.cc/y8xWzCqj/anime-boy.jpg'}];setJ(K_CONTACT,arr);}
   return arr;
 }
-function setContacts(a){ setJ(K_CONTACT,a); }
+function setContacts(arr){setJ(K_CONTACT,arr)}
 
 function renderContacts(k=''){
   k=(k||'').trim();
-  const arr=getContacts().filter(c=>!k||c.name.includes(k)||c.preview.includes(k));
+  const arr=getContacts().filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
   contactList.innerHTML=arr.map(c=>`
-    <div class="item" onclick="openChat('${c.id}')">
-      <div><b>${esc(c.name)}</b><div class="small">${esc(c.preview||'')}</div></div>
-      <div class="small">${esc(c.time||'')}</div>
+    <div class="item">
+      <img class="avatar" src="${c.avatar||'https://via.placeholder.com/88x88?text=头像'}"/>
+      <div class="main" style="cursor:pointer" onclick="openChat('${c.id}')">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="name">${esc(c.name)}</div>
+          <div class="t">${esc(c.time||'')}</div>
+        </div>
+        <div class="preview">${esc(c.preview||'')}</div>
+      </div>
+      <button class="btn" onclick="openContactModal('${c.id}')">编辑</button>
     </div>
-  `).join('') || `<div class="card small">暂无联系人</div>`;
-}
-function addContact(){
-  const name=(prompt('联系人昵称')||'').trim(); if(!name) return;
-  const persona=(prompt('人设(可空)')||'').trim();
-  const arr=getContacts();
-  arr.unshift({id:'c'+Date.now(),name,preview:'新的聊天已创建',time:'刚刚',persona});
-  setContacts(arr); renderContacts();
+  `).join('')||`<div class="card small">暂无联系人</div>`;
 }
 
-// chat
-function getChats(){ return getJ(K_CHAT,{}); }
-function setChats(m){ setJ(K_CHAT,m); }
+function openContactModal(id=null){
+  editingId=id;
+  if(id){
+    const c=getContacts().find(x=>x.id===id);
+    if(!c) return;
+    modalTitle.textContent='编辑联系人';
+    cName.value=c.name||''; cPersona.value=c.persona||''; cAvatar.value=c.avatar||'';
+  }else{
+    modalTitle.textContent='新建联系人';
+    cName.value=''; cPersona.value=''; cAvatar.value='';
+  }
+  contactMask.classList.add('show');
+}
+function closeContactModal(){contactMask.classList.remove('show'); editingId=null;}
+
+function safeSaveContact(obj){
+  const arr=getContacts();
+  if(editingId){
+    const i=arr.findIndex(x=>x.id===editingId); if(i>=0) arr[i]={...arr[i],...obj};
+  }else{
+    arr.unshift(obj);
+  }
+  try{ setContacts(arr); return true; }catch{return false; }
+}
+
+function saveContact(){
+  const name=(cName.value||'').trim(); if(!name) return alert('昵称不能为空');
+  const persona=(cPersona.value||'').trim();
+  const avatar=(cAvatar.value||'').trim();
+  const obj=editingId?{name,persona,avatar}:{id:'c'+Date.now(),name,persona,avatar,preview:'新的聊天已创建',time:'刚刚'};
+  if(!safeSaveContact(obj)) return alert('保存失败：本地存储空间不足');
+  closeContactModal();
+  renderContacts(searchInput.value||'');
+}
+
+// ---------- chat ----------
+function getChats(){return getJ(K_CHAT,{})}
+function setChats(m){setJ(K_CHAT,m)}
 
 function openChat(id){
   currentId=id;
@@ -165,26 +224,29 @@ function renderChat(){
 function clearChat(){
   if(!currentId) return;
   if(!confirm('清空当前聊天？')) return;
-  const m=getChats(); m[currentId]=[]; setChats(m); renderChat();
+  const map=getChats(); map[currentId]=[]; setChats(map); renderChat();
 }
+function autoResize(){ chatInput.style.height='42px'; chatInput.style.height=Math.min(chatInput.scrollHeight,96)+'px'; }
+chatInput.addEventListener('input', autoResize);
+chatInput.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} });
 
-// api
+// ---------- API ----------
 function loadApi(){
   const cfg=getJ(K_API,{base:'',key:'',model:'gpt-4o-mini',temp:0.8});
-  apiBase.value=cfg.base||''; apiKey.value=cfg.key||''; apiModel.value=cfg.model||'gpt-4o-mini'; apiTemp.value=cfg.temp??0.8;
+  apiBase.value=cfg.base||''; apiKey.value=cfg.key||''; apiTemp.value=cfg.temp??0.8;
+  apiModel.innerHTML=`<option value="${cfg.model||'gpt-4o-mini'}">${cfg.model||'gpt-4o-mini'}</option>`;
 }
 function saveApi(){
-  const cfg={base:apiBase.value.trim(),key:apiKey.value.trim(),model:apiModel.value.trim()||'gpt-4o-mini',temp:Number(apiTemp.value||0.8)};
+  const cfg={base:apiBase.value.trim(),key:apiKey.value.trim(),model:(apiModel.value||'gpt-4o-mini').trim(),temp:Number(apiTemp.value||0.8)};
   setJ(K_API,cfg); apiStatus.textContent='状态：已保存'; return cfg;
 }
-function apiUrl(base){
-  const b=base.replace(/\/+$/,'');
-  return b.endsWith('/v1') ? b+'/chat/completions' : b+'/v1/chat/completions';
-}
+function chatUrl(base){const b=(base||'').replace(/\/+$/,'');return b.endsWith('/v1')?b+'/chat/completions':b+'/v1/chat/completions'}
+function modelUrl(base){const b=(base||'').replace(/\/+$/,'');return b.endsWith('/v1')?b+'/models':b+'/v1/models'}
+
 async function callApi(messages){
   const cfg=saveApi();
   if(!cfg.base||!cfg.key) throw new Error('先填 Base URL 和 API Key');
-  const r=await fetch(apiUrl(cfg.base),{
+  const r=await fetch(chatUrl(cfg.base),{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.key},
     body:JSON.stringify({model:cfg.model,temperature:cfg.temp,messages})
@@ -193,20 +255,39 @@ async function callApi(messages){
   if(!r.ok) throw new Error(data?.error?.message||('HTTP '+r.status));
   return data?.choices?.[0]?.message?.content?.trim()||'';
 }
+
+async function fetchModels(){
+  try{
+    const cfg=saveApi();
+    if(!cfg.base||!cfg.key) throw new Error('先填 Base URL 和 API Key');
+    apiStatus.textContent='状态：拉取模型中...';
+    const r=await fetch(modelUrl(cfg.base),{headers:{Authorization:'Bearer '+cfg.key}});
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(data?.error?.message||('HTTP '+r.status));
+    const list=(data.data||[]).map(x=>x.id).filter(Boolean);
+    if(!list.length) throw new Error('未返回模型列表');
+    apiModel.innerHTML=list.map(m=>`<option value="${m}">${m}</option>`).join('');
+    if(list.includes(cfg.model)) apiModel.value=cfg.model;
+    apiStatus.textContent='状态：模型拉取成功（'+list.length+'）';
+  }catch(e){apiStatus.textContent='状态：拉取失败 -> '+e.message;}
+}
 async function testApi(){
   try{
     apiStatus.textContent='状态：测试中...';
     const out=await callApi([{role:'user',content:'只回复 ok'}]);
     apiStatus.textContent='状态：连接成功 -> '+(out||'ok');
-  }catch(e){ apiStatus.textContent='状态：失败 -> '+e.message; }
+  }catch(e){apiStatus.textContent='状态：失败 -> '+e.message;}
 }
 
+// send
 async function sendMsg(){
-  const t=chatInput.value.trim(); if(!t||!currentId) return;
+  const t=(chatInput.value||'').trim(); if(!t||!currentId) return;
   const map=getChats(); map[currentId]=map[currentId]||[];
-  map[currentId].push({role:'user',text:t,time:Date.now()}); chatInput.value=''; setChats(map); renderChat();
+  map[currentId].push({role:'user',text:t,time:Date.now()});
+  setChats(map); chatInput.value=''; autoResize(); renderChat();
 
-  map[currentId].push({role:'assistant',text:'...',time:Date.now()}); setChats(map); renderChat();
+  map[currentId].push({role:'assistant',text:'...',time:Date.now()});
+  setChats(map); renderChat();
 
   try{
     const c=getContacts().find(x=>x.id===currentId);
@@ -216,11 +297,14 @@ async function sendMsg(){
       ...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:x.text}))
     ];
     const out=await callApi(messages);
-
     const arr=map[currentId];
     if(arr.length&&arr[arr.length-1].text==='...') arr.pop();
     arr.push({role:'assistant',text:out||'...',time:Date.now()});
-    setChats(map); renderChat();
+    setChats(map);
+    // 更新列表预览
+    const cs=getContacts(); const i=cs.findIndex(x=>x.id===currentId);
+    if(i>=0){cs[i].preview=out||'...'; cs[i].time='刚刚'; setContacts(cs);}
+    renderChat(); renderContacts(searchInput.value||'');
   }catch(e){
     const arr=map[currentId];
     if(arr.length&&arr[arr.length-1].text==='...') arr.pop();
@@ -228,10 +312,16 @@ async function sendMsg(){
     setChats(map); renderChat();
   }
 }
-chatInput?.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} });
 
+// bind api btns
+saveApiBtn.onclick=saveApi;
+fetchModelsBtn.onclick=fetchModels;
+testApiBtn.onclick=testApi;
+
+// init
 loadApi();
 renderContacts();
+})();
 </script>
 </body>
 </html>
