@@ -1,2158 +1,1376 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>小手机AI · 重构骨架</title>
-  <meta name="theme-color" content="#e9e9ef" />
-  <style>
-    :root{
-      /* ===== Design Tokens（后续主题系统直接改这里）===== */
-      --bg-0:#f3f4f8;
-      --bg-1:#eceef4;
-      --bg-2:#e4e7f0;
-      --ink:#1a1d28;
-      --muted:#6e7386;
-      --line:rgba(255,255,255,.72);
-      --glass:rgba(255,255,255,.45);
-      --glass-strong:rgba(255,255,255,.62);
-      --accent:#8a86ff;
-      --accent-2:#6f6aff;
-      --danger:#d75f6f;
-      --ok:#57b881;
-
-      --radius-xl:26px;
-      --radius-lg:20px;
-      --radius-md:14px;
-      --radius-sm:10px;
-
-      --shadow-1:0 8px 20px rgba(46,55,88,.12);
-      --shadow-2:0 14px 28px rgba(46,55,88,.16);
-
-      --safe-top:env(safe-area-inset-top);
-      --safe-bottom:env(safe-area-inset-bottom);
-    }
-
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html,body{height:100%;margin:0}
-    body{
-      background:linear-gradient(180deg,#f8f8fc,#f2f3f8);
-      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
-      color:var(--ink);
-      user-select:none;
-      -webkit-user-select:none;
-    }
-
-    .phone{
-      width:100%;
-      max-width:430px;
-      height:100dvh;
-      margin:0 auto;
-      overflow:hidden;
-      position:relative;
-      background:var(--bg-0);
-      border-left:1px solid rgba(255,255,255,.6);
-      border-right:1px solid rgba(255,255,255,.6);
-    }
-
-    .wallpaper{
-      position:absolute;inset:0;z-index:0;
-      background:
-        radial-gradient(1200px 500px at 10% -20%, #fff 0%, transparent 55%),
-        radial-gradient(900px 500px at 100% 0%, #f0ecff 0%, transparent 45%),
-        linear-gradient(180deg,var(--bg-1),var(--bg-2));
-      background-size:cover;background-position:center;
-      filter:saturate(1.02);
-    }
-
-    #particles{
-      position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.75
-    }
-
-    .page{
-      position:absolute;inset:0;z-index:2;
-      opacity:0;transform:translateX(12%);
-      transition:.26s ease;
-      pointer-events:none;
-    }
-    .page.active{opacity:1;transform:translateX(0);pointer-events:auto}
-
-    .glass{
-      background:var(--glass);
-      border:1px solid var(--line);
-      backdrop-filter:blur(12px);
-      -webkit-backdrop-filter:blur(12px);
-      box-shadow:var(--shadow-1);
-    }
-
-    .statusbar{
-      padding:calc(var(--safe-top) + 8px) 16px 8px;
-      display:flex;align-items:center;justify-content:space-between;
-      font-size:18px;font-weight:700;
-    }
-    .status-icons{display:flex;align-items:center;gap:7px}
-    .status-icons svg{display:block}
-
-    /* ===== HOME ===== */
-    .home-scroll{
-      height:calc(100dvh - 56px - var(--safe-top));
-      overflow:auto;
-      padding:4px 16px calc(120px + var(--safe-bottom));
-      scrollbar-width:none;
-    }
-    .home-scroll::-webkit-scrollbar{display:none}
-    .date-line{text-align:center;font-weight:700;font-size:17px;margin-top:8px}
-    .clock-big{text-align:center;font-size:82px;line-height:1;font-weight:300;letter-spacing:1px;margin:6px 0 16px}
-
-    .hero-row{
-      display:grid;grid-template-columns:1.1fr .9fr;gap:12px;margin-bottom:14px
-    }
-    .hero-cover{
-      border-radius:var(--radius-xl);
-      overflow:hidden;min-height:146px;position:relative;
-    }
-    .hero-cover img{width:100%;height:100%;object-fit:cover;display:block}
-    .hero-meta{
-      border-radius:var(--radius-xl);
-      padding:12px;display:grid;grid-template-rows:1fr 1fr;gap:10px
-    }
-    .meta-box{
-      border-radius:16px;padding:10px;
-      background:rgba(255,255,255,.38);
-      border:1px solid rgba(255,255,255,.68);
-      display:flex;align-items:center;justify-content:space-between;
-      font-size:13px;font-weight:700;color:#4a5168;
-    }
-
-    .apps-grid{
-      display:grid;grid-template-columns:repeat(4,1fr);gap:14px 10px;
-      margin-top:4px;
-    }
-
-    .app-icon{text-align:center}
-    .app-btn{
-      width:74px;height:74px;margin:0 auto 7px;border-radius:22px;border:1px solid rgba(255,255,255,.7);
-      background:rgba(255,255,255,.48);
-      backdrop-filter:blur(10px);
-      box-shadow:0 8px 16px rgba(56,66,95,.16);
-      display:grid;place-items:center;
-      transition:transform .11s ease, filter .2s ease;
-      overflow:hidden;
-      cursor:pointer;
-    }
-    .app-btn:active{transform:scale(.9)}
-    .app-btn img{width:100%;height:100%;object-fit:cover}
-    .app-emoji{font-size:30px}
-    .app-name{font-size:13px;font-weight:700;color:#2c3246;text-shadow:0 1px 0 rgba(255,255,255,.6)}
-
-    .dock{
-      position:absolute;left:16px;right:16px;bottom:calc(14px + var(--safe-bottom));z-index:3;
-      border-radius:32px;padding:14px 12px;
-      display:grid;grid-template-columns:repeat(4,1fr);gap:6px;
-      background:var(--glass-strong);
-      border:1px solid rgba(255,255,255,.78);
-      box-shadow:var(--shadow-2);
-      backdrop-filter:blur(16px);
-      -webkit-backdrop-filter:blur(16px);
-    }
-
-    .floating-actions{
-      position:absolute;right:12px;bottom:calc(126px + var(--safe-bottom));z-index:3;
-      display:flex;flex-direction:column;gap:10px
-    }
-    .fab{
-      width:52px;height:52px;border:0;border-radius:999px;
-      background:linear-gradient(145deg,var(--accent),var(--accent-2));
-      color:#fff;font-size:22px;font-weight:700;box-shadow:var(--shadow-2);cursor:pointer;
-    }
-
-    /* ===== common app layout ===== */
-    .app-shell{
-      height:100%;
-      display:grid;grid-template-rows:auto 1fr;
-    }
-    .topbar{
-      padding:calc(var(--safe-top) + 8px) 12px 10px;
-      display:flex;align-items:center;gap:8px;
-    }
-    .topbar .btn-icon{
-      width:38px;height:38px;border:0;border-radius:12px;cursor:pointer;
-      background:rgba(255,255,255,.68);border:1px solid rgba(255,255,255,.78);
-      box-shadow:var(--shadow-1);font-size:18px;font-weight:700;
-    }
-    .topbar-title{
-      flex:1;text-align:center;font-size:17px;font-weight:800;letter-spacing:.3px;margin-right:46px;
-    }
-
-    .scroll{
-      overflow:auto;padding:0 12px calc(14px + var(--safe-bottom));scrollbar-width:none;
-    }
-    .scroll::-webkit-scrollbar{display:none}
-
-    .card{
-      margin-top:10px;padding:12px;border-radius:18px;
-      background:rgba(255,255,255,.55);
-      border:1px solid rgba(255,255,255,.8);
-      backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-      box-shadow:var(--shadow-1);
-    }
-    .card h3{margin:0 0 10px;font-size:15px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .field{margin-bottom:10px}
-    .field label{display:block;font-size:12px;font-weight:700;color:#545b73;margin-bottom:5px}
-    .input,.select,.textarea{
-      width:100%;border:1px solid rgba(200,206,224,.85);background:rgba(255,255,255,.85);
-      border-radius:11px;outline:none;font-size:14px;color:#1f2334;
-    }
-    .input,.select{height:38px;padding:0 10px}
-    .textarea{min-height:70px;padding:9px 10px;resize:vertical}
-    .input:focus,.select:focus,.textarea:focus{border-color:#a9a5ff}
-    .actions{display:flex;gap:8px;flex-wrap:wrap}
-    .btn{
-      border:0;border-radius:10px;padding:9px 12px;cursor:pointer;
-      background:linear-gradient(140deg,var(--accent),var(--accent-2));
-      color:#fff;font-weight:800;font-size:13px;
-    }
-    .btn.secondary{background:#8890a8}
-    .btn.danger{background:var(--danger)}
-    .btn.ghost{
-      background:rgba(255,255,255,.7);color:#273049;border:1px solid rgba(255,255,255,.86)
-    }
-    .hint{font-size:12px;color:#666f88}
-
-    /* ===== roles ===== */
-    .role-list,.room-list{display:grid;gap:10px}
-    .role-item,.room-item{
-      display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;
-      padding:10px;border-radius:14px;border:1px solid rgba(255,255,255,.78);background:rgba(255,255,255,.62);
-    }
-    .avatar{
-      width:50px;height:50px;border-radius:15px;overflow:hidden;background:#dfe3ee;display:grid;place-items:center;font-size:22px;
-      box-shadow:0 4px 10px rgba(46,55,88,.12)
-    }
-    .avatar img{width:100%;height:100%;object-fit:cover}
-    .role-meta b{display:block;font-size:14px}
-    .role-meta span{font-size:12px;color:#636d87}
-
-    /* ===== chat ===== */
-    .chat-wrap{
-      height:calc(100dvh - 60px - var(--safe-top));
-      display:grid;grid-template-rows:auto 1fr auto;
-      gap:8px;padding:0 10px calc(10px + var(--safe-bottom));
-    }
-    .chat-head{
-      border-radius:14px;padding:8px 10px;
-      background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.8);
-      display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;
-    }
-    .chat-head .title{font-size:14px;font-weight:800}
-    .chip{
-      border:1px solid rgba(255,255,255,.85);
-      background:rgba(255,255,255,.72);
-      color:#31374d;
-      border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700;
-    }
-    .chat-list{
-      overflow:auto;display:flex;flex-direction:column;gap:8px;padding:4px 2px;
-      scrollbar-width:none;
-    }
-    .chat-list::-webkit-scrollbar{display:none}
-
-    .msg{
-      max-width:86%;padding:10px 12px;border-radius:14px;
-      font-size:14px;line-height:1.45;white-space:pre-wrap;word-break:break-word;
-      border:1px solid rgba(255,255,255,.84);
-      backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-      box-shadow:0 4px 10px rgba(46,55,88,.08);
-      user-select:text;-webkit-user-select:text;
-    }
-    .msg.user{align-self:flex-end;background:rgba(132,128,255,.16)}
-    .msg.assistant{align-self:flex-start;background:rgba(255,255,255,.66)}
-    .msg.system{align-self:center;background:rgba(223,227,240,.72);font-size:12px;color:#4f576d}
-    .msg small{display:block;margin-top:4px;color:#6f7690;font-size:11px}
-    .sender{font-size:11px;color:#59617a;font-weight:800;margin-bottom:4px}
-
-    .card-msg{
-      border-radius:13px;border:1px solid rgba(255,255,255,.85);
-      background:rgba(255,255,255,.72);padding:9px 10px
-    }
-    .card-title{font-size:12px;font-weight:800;color:#4d5570;margin-bottom:4px}
-    .voice-pill{
-      display:inline-flex;align-items:center;gap:8px;
-      background:rgba(138,134,255,.14);padding:7px 10px;border-radius:999px;font-weight:700;font-size:12px
-    }
-
-    .composer{
-      border-radius:16px;padding:8px;background:rgba(255,255,255,.66);border:1px solid rgba(255,255,255,.84);
-      display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:end;
-      box-shadow:var(--shadow-1);
-    }
-    .composer textarea{
-      min-height:42px;max-height:120px;resize:none;border-radius:11px;border:1px solid #d4d8e8;background:#fff;
-      padding:10px;outline:none;font-size:14px
-    }
-    .circle-btn{
-      width:38px;height:38px;border:0;border-radius:999px;background:#eceffc;
-      font-size:19px;font-weight:800;color:#3d4563;cursor:pointer
-    }
-    .send-btn{
-      border:0;border-radius:11px;padding:10px 12px;cursor:pointer;color:#fff;font-weight:800;
-      background:linear-gradient(140deg,var(--accent),var(--accent-2));
-    }
-    .send-btn:disabled{opacity:.6;cursor:not-allowed}
-
-    .quick-panel{
-      margin-top:6px;border-radius:13px;padding:9px;background:rgba(255,255,255,.62);
-      border:1px solid rgba(255,255,255,.82);display:none;gap:8px;flex-wrap:wrap
-    }
-    .quick-panel.show{display:flex}
-    .q-btn{
-      border:1px solid rgba(255,255,255,.85);background:rgba(255,255,255,.8);
-      border-radius:999px;padding:6px 10px;font-size:12px;font-weight:800;cursor:pointer
-    }
-
-    /* sticker picker */
-    .picker{
-      position:fixed;left:50%;bottom:0;transform:translate(-50%,100%);
-      width:min(430px,100%);z-index:20;
-      transition:.24s ease;
-      background:rgba(245,246,251,.95);
-      border-top-left-radius:18px;border-top-right-radius:18px;
-      border:1px solid rgba(255,255,255,.85);
-      box-shadow:0 -8px 24px rgba(46,55,88,.16);
-      padding:10px 10px calc(10px + var(--safe-bottom));
-    }
-    .picker.show{transform:translate(-50%,0)}
-    .picker-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-height:240px;overflow:auto}
-    .sticker{
-      aspect-ratio:1;border-radius:12px;background:#fff;border:1px solid #e3e6f2;overflow:hidden;display:grid;place-items:center;cursor:pointer
-    }
-    .sticker img{width:100%;height:100%;object-fit:cover}
-    .sticker span{font-size:30px}
-
-    .switch{
-      display:flex;align-items:center;justify-content:space-between;padding:8px 0;font-size:14px;font-weight:700
-    }
-
-    /* modal */
-    .overlay{
-      position:fixed;inset:0;background:rgba(17,20,31,.36);z-index:30;display:none;
-      align-items:flex-end;justify-content:center;
-    }
-    .overlay.show{display:flex}
-    .sheet{
-      width:min(430px,100%);
-      background:#f8f8fc;border-top-left-radius:18px;border-top-right-radius:18px;
-      padding:12px 12px calc(10px + var(--safe-bottom));max-height:80dvh;overflow:auto;
-      border:1px solid rgba(255,255,255,.9);
-    }
-
-    /* custom inject */
-    #custom-style-slot{display:none}
-  </style>
-  <style id="custom-style-slot"></style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>EPhone MVP</title>
+  <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-<div class="phone">
-  <div id="wallpaper" class="wallpaper"></div>
-  <canvas id="particles"></canvas>
+  <div class="phone-frame show" id="phoneFrame">
+    <div class="phone-screen">
 
-  <!-- Home -->
-  <section class="page active" id="page-home">
-    <div class="statusbar">
-      <div id="sb-time">23:33</div>
-      <div class="status-icons">
-        <svg width="22" height="16" viewBox="0 0 22 16" fill="none">
-          <rect x="1" y="10" width="3" height="5" rx="1" fill="#191c2a"/>
-          <rect x="6" y="8" width="3" height="7" rx="1" fill="#191c2a"/>
-          <rect x="11" y="5" width="3" height="10" rx="1" fill="#191c2a"/>
-          <rect x="16" y="2" width="3" height="13" rx="1" fill="#191c2a"/>
-        </svg>
-        <svg width="20" height="16" viewBox="0 0 20 16" fill="none">
-          <path d="M2 6.3a12 12 0 0 1 16 0" stroke="#191c2a" stroke-width="2" stroke-linecap="round"/>
-          <path d="M5 9a8 8 0 0 1 10 0" stroke="#191c2a" stroke-width="2" stroke-linecap="round"/>
-          <path d="M8.1 11.6a4 4 0 0 1 3.8 0" stroke="#191c2a" stroke-width="2" stroke-linecap="round"/>
-          <circle cx="10" cy="14" r="1.3" fill="#191c2a"/>
-        </svg>
-        <svg width="32" height="16" viewBox="0 0 32 16" fill="none">
-          <rect x="1" y="1.3" width="27" height="13.4" rx="3.2" stroke="#191c2a" stroke-width="1.4"/>
-          <rect x="29" y="5" width="2.2" height="5.8" rx="1" fill="#191c2a"/>
-          <rect id="battery-fill" x="3.1" y="3.4" width="18" height="9.2" rx="2.2" fill="#191c2a"/>
-        </svg>
-      </div>
-    </div>
-
-    <div class="home-scroll">
-      <div class="date-line" id="home-date">3月6日 星期五</div>
-      <div class="clock-big" id="home-clock">23:33</div>
-
-      <div class="hero-row">
-        <div class="hero-cover glass">
-          <img id="cover-img" alt="cover" />
+      <!-- 状态栏 -->
+      <header class="status-bar">
+        <span id="statusTime">12:00</span>
+        <div class="status-right">
+          <span id="statusMode">ONLINE</span>
+          <span>●●●</span>
         </div>
-        <div class="hero-meta glass">
-          <div class="meta-box">
-            <span>当前模式</span>
-            <b id="meta-mode">日常</b>
-          </div>
-          <div class="meta-box">
-            <span>未读提醒</span>
-            <b id="meta-unread">0</b>
-          </div>
-        </div>
-      </div>
+      </header>
 
-      <div id="apps-grid" class="apps-grid"></div>
-    </div>
-
-    <div id="dock" class="dock"></div>
-
-    <div class="floating-actions">
-      <button class="fab" id="btn-home-edit" title="编辑桌面">✎</button>
-      <button class="fab" id="btn-home-settings" title="设置">⚙</button>
-    </div>
-  </section>
-
-  <!-- Roles -->
-  <section class="page" id="page-roles">
-    <div class="app-shell">
-      <div class="topbar">
-        <button class="btn-icon" data-back-home>‹</button>
-        <div class="topbar-title">角色与群聊</div>
-        <button class="btn-icon" id="btn-role-create-toggle">＋</button>
-      </div>
-      <div class="scroll">
-        <div class="card">
-          <h3>角色列表</h3>
-          <div id="role-list" class="role-list"></div>
+      <!-- HOME -->
+      <section class="screen active" id="homeScreen">
+        <div class="home-header">
+          <h1>EPhone</h1>
+          <p>聊天骨架 · API优先 · 人设驱动</p>
         </div>
 
-        <div class="card">
-          <h3>群聊</h3>
-          <div class="actions" style="margin-bottom:8px">
-            <button class="btn" id="btn-create-group">创建群聊</button>
-          </div>
-          <div id="room-list" class="room-list"></div>
+        <div class="app-grid">
+          <button class="app-icon" data-open="chatListScreen">消息</button>
+          <button class="app-icon" data-open="apiScreen">API设置</button>
+          <button class="app-icon" data-open="personaScreen">人设库</button>
+          <button class="app-icon ghost" id="toggleFrameBtn">外框开关</button>
+        </div>
+      </section>
+
+      <!-- API SETTINGS -->
+      <section class="screen" id="apiScreen">
+        <div class="screen-header">
+          <button class="back-btn" data-back="homeScreen">‹</button>
+          <h2>API 设置</h2>
+          <span></span>
         </div>
 
-        <div class="card" id="role-create-card" style="display:none">
-          <h3>创建角色</h3>
-          <div class="field"><label>角色名</label><input id="role-name" class="input" placeholder="例如：弥洛"></div>
-          <div class="field"><label>关系称谓</label><input id="role-relation" class="input" placeholder="例如：恋人 / 朋友"></div>
-          <div class="field"><label>人设（核心）</label><textarea id="role-persona" class="textarea" placeholder="性格、经历、价值观、雷点、说话方式"></textarea></div>
-          <div class="field"><label>说话风格</label><textarea id="role-style" class="textarea" placeholder="语气词、句长习惯、是否会撒娇/毒舌"></textarea></div>
-          <div class="field"><label>用户人设（TA眼里的我）</label><textarea id="role-userpersona" class="textarea" placeholder="TA如何称呼你、对你的固定认知"></textarea></div>
-          <div class="field"><label>头像</label><input id="role-avatar-file" class="input" type="file" accept="image/*" style="padding-top:8px"></div>
-          <div class="actions">
-            <button class="btn" id="btn-role-save">保存角色</button>
-            <button class="btn secondary" id="btn-role-clear">清空</button>
-          </div>
-        </div>
+        <div class="form">
+          <label>反代 / 网关地址（不带 /v1）</label>
+          <input id="baseUrlInput" placeholder="https://api.openai.com" />
 
-        <div class="card">
-          <h3>导入角色卡</h3>
-          <div class="row">
-            <div class="field"><label>JSON角色卡</label><input id="import-role-json" class="input" type="file" accept=".json,application/json" style="padding-top:8px"></div>
-            <div class="field"><label>PNG角色卡</label><input id="import-role-png" class="input" type="file" accept=".png,image/png" style="padding-top:8px"></div>
-          </div>
-          <div class="hint">PNG会尝试读取元数据；读取失败时会至少导入头像和名称，可手动补全人设。</div>
-        </div>
-      </div>
-    </div>
-  </section>
+          <label>API Key</label>
+          <input id="apiKeyInput" type="password" placeholder="sk-..." />
 
-  <!-- Chat -->
-  <section class="page" id="page-chat">
-    <div class="app-shell">
-      <div class="topbar">
-        <button class="btn-icon" id="btn-chat-back">‹</button>
-        <div class="topbar-title">聊天</div>
-        <button class="btn-icon" id="btn-chat-clear">⌫</button>
-      </div>
+          <label>模型</label>
+          <input id="modelInput" placeholder="gpt-4o-mini / 其他兼容模型" />
 
-      <div class="chat-wrap">
-        <div class="chat-head">
-          <div>
-            <div class="title" id="chat-room-title">未选择会话</div>
-            <div class="hint" id="chat-profile-hint">API未配置</div>
-          </div>
-          <select id="chat-mode" class="select" style="height:32px">
-            <option value="daily">日常模式</option>
-            <option value="offline">线下剧情模式</option>
+          <label>温度 <span id="tempValue">0.9</span></label>
+          <input id="tempInput" type="range" min="0" max="2" step="0.1" value="0.9" />
+
+          <label>默认模式</label>
+          <select id="modeSelect">
+            <option value="online">线上模式（自然聊天）</option>
+            <option value="offline">线下模式（RP格式）</option>
           </select>
-          <button id="btn-chat-switch-room" class="chip">切换</button>
-        </div>
 
-        <div id="chat-list" class="chat-list"></div>
+          <label>全局美化 CSS（可空）</label>
+          <textarea id="customCssInput" rows="6" placeholder=":root{ --accent:#8b5cf6; }"></textarea>
 
-        <div>
-          <div id="quick-panel" class="quick-panel">
-            <button class="q-btn" id="q-sticker">表情包</button>
-            <button class="q-btn" id="q-voice">语音卡片</button>
-            <button class="q-btn" id="q-transfer">转账卡片</button>
-            <button class="q-btn" id="q-location">定位卡片</button>
-          </div>
-          <div class="composer">
-            <button id="btn-plus" class="circle-btn">＋</button>
-            <textarea id="chat-input" placeholder="输入消息，回车发送（Shift+Enter换行）"></textarea>
-            <button id="btn-send" class="send-btn">发送</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Assets -->
-  <section class="page" id="page-assets">
-    <div class="app-shell">
-      <div class="topbar">
-        <button class="btn-icon" data-back-home>‹</button>
-        <div class="topbar-title">资源库</div>
-        <button class="btn-icon" id="btn-assets-refresh">↻</button>
-      </div>
-
-      <div class="scroll">
-        <div class="card">
-          <h3>表情包</h3>
-          <div class="field"><label>上传（png/jpg/webp/gif）</label><input id="upload-stickers" class="input" type="file" accept="image/*" multiple style="padding-top:8px"></div>
-          <div id="stickers-list" class="apps-grid"></div>
-        </div>
-
-        <div class="card">
-          <h3>图标素材（桌面图标可用）</h3>
-          <div class="field"><label>上传图标</label><input id="upload-icons" class="input" type="file" accept="image/*" multiple style="padding-top:8px"></div>
-          <div id="icons-list" class="apps-grid"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- API / Settings -->
-  <section class="page" id="page-api">
-    <div class="app-shell">
-      <div class="topbar">
-        <button class="btn-icon" data-back-home>‹</button>
-        <div class="topbar-title">API与系统设置</div>
-        <button class="btn-icon" id="btn-save-all">✓</button>
-      </div>
-
-      <div class="scroll">
-        <div class="card">
-          <h3>API配置（支持反代）</h3>
           <div class="row">
-            <div class="field"><label>配置</label><select id="api-profile-select" class="select"></select></div>
-            <div class="field"><label>配置名</label><input id="api-profile-name" class="input" placeholder="默认"></div>
+            <button id="applyCssBtn" class="sub">应用CSS</button>
+            <button id="saveApiBtn">保存设置</button>
           </div>
-          <div class="field"><label>聊天URL（优先）</label><input id="api-chat-url" class="input" placeholder="https://xx.com/v1/chat/completions"></div>
-          <div class="field"><label>Base URL（备用）</label><input id="api-base-url" class="input" placeholder="https://api.xx.com"></div>
-          <div class="row">
-            <div class="field"><label>Chat Path</label><input id="api-chat-path" class="input" placeholder="/v1/chat/completions"></div>
-            <div class="field"><label>Models URL（可独立）</label><input id="api-models-url" class="input" placeholder="https://xx.com/v1/models"></div>
-          </div>
-          <div class="row">
-            <div class="field"><label>API Key</label><input id="api-key" class="input" placeholder="sk-..."></div>
-            <div class="field"><label>模型</label><input id="api-model" class="input" placeholder="gpt-4o-mini"></div>
-          </div>
-          <div class="row">
-            <div class="field"><label>temperature</label><input id="api-temperature" class="input" type="number" min="0" max="2" step="0.1"></div>
-            <div class="field"><label>max_tokens</label><input id="api-max-tokens" class="input" type="number" min="1" max="8192" step="1"></div>
-          </div>
-          <div class="row">
-            <div class="field"><label>上下文条数</label><input id="api-context-n" class="input" type="number" min="6" max="80" step="1"></div>
-            <div class="field"><label>请求超时(ms)</label><input id="api-timeout" class="input" type="number" min="3000" max="120000" step="1000"></div>
-          </div>
-          <div class="switch"><span>流式输出</span><input id="api-stream" type="checkbox"></div>
-          <div class="actions">
-            <button class="btn" id="btn-api-save">保存配置</button>
-            <button class="btn secondary" id="btn-api-new">新建</button>
-            <button class="btn secondary" id="btn-api-delete">删除</button>
-            <button class="btn ghost" id="btn-api-test">连接测试</button>
-            <button class="btn ghost" id="btn-api-models">拉取模型</button>
-          </div>
-          <div id="api-status" class="hint" style="margin-top:8px">状态：就绪</div>
+        </div>
+      </section>
+
+      <!-- PERSONA LIBRARY -->
+      <section class="screen" id="personaScreen">
+        <div class="screen-header">
+          <button class="back-btn" data-back="homeScreen">‹</button>
+          <h2>人设库</h2>
+          <span></span>
         </div>
 
-        <div class="card">
-          <h3>外观与系统</h3>
-          <div class="field"><label>壁纸</label><input id="wallpaper-file" class="input" type="file" accept="image/*" style="padding-top:8px"></div>
-          <div class="field"><label>主卡片图片</label><input id="cover-file" class="input" type="file" accept="image/*" style="padding-top:8px"></div>
-          <div class="switch"><span>粒子特效</span><input id="toggle-particles" type="checkbox"></div>
-          <div class="actions">
-            <button class="btn secondary" id="btn-reset-look">恢复默认外观</button>
+        <div class="form">
+          <label>名称</label>
+          <input id="personaNameInput" placeholder="例如：弥洛" />
+
+          <label>核心人设（外在行为）</label>
+          <textarea id="personaCoreInput" rows="3" placeholder="开朗、敏锐、边界感强..."></textarea>
+
+          <label>深层动机（需求/恐惧/执念）</label>
+          <textarea id="personaDriveInput" rows="3" placeholder="害怕被忽视，渴望被稳定回应..."></textarea>
+
+          <label>说话风格（节奏/口癖/表达）</label>
+          <textarea id="personaStyleInput" rows="3" placeholder="短句、偶尔反问、会留白..."></textarea>
+
+          <button id="addPersonaBtn">添加人设</button>
+
+          <div class="row">
+            <button id="exportPersonaBtn" class="sub">导出JSON</button>
+            <label class="file-btn sub">
+              导入JSON
+              <input id="importPersonaInput" type="file" accept="application/json" hidden />
+            </label>
           </div>
         </div>
 
-        <div class="card">
-          <h3>全局美化预留（后续扩展核心）</h3>
-          <div class="field">
-            <label>Custom CSS（实时生效）</label>
-            <textarea id="custom-css" class="textarea" placeholder=":root{ --accent:#ff8a8a; }"></textarea>
-          </div>
-          <div class="field">
-            <label>Custom JS（谨慎）</label>
-            <textarea id="custom-js" class="textarea" placeholder="console.log('hello custom js')"></textarea>
-          </div>
-          <div class="actions">
-            <button class="btn" id="btn-apply-custom">应用</button>
-            <button class="btn secondary" id="btn-clear-custom">清空</button>
-          </div>
-          <div class="hint">这块是给你后期做全局美化/动画/行为注入用，底层已预留。</div>
+        <div id="personaList" class="list"></div>
+      </section>
+
+      <!-- CHAT LIST -->
+      <section class="screen" id="chatListScreen">
+        <div class="screen-header">
+          <button class="back-btn" data-back="homeScreen">‹</button>
+          <h2>消息</h2>
+          <button id="newChatBtn" class="mini-btn">＋</button>
         </div>
-      </div>
-    </div>
-  </section>
-</div>
 
-<!-- sticker picker -->
-<div id="sticker-picker" class="picker">
-  <div class="actions" style="margin-bottom:8px">
-    <button class="btn secondary" id="picker-close">关闭</button>
-  </div>
-  <div id="picker-grid" class="picker-grid"></div>
-</div>
+        <div class="toolbar">
+          <button id="newSingleChatBtn">新建单聊</button>
+          <button id="newGroupChatBtn" class="sub">新建群聊</button>
+        </div>
 
-<!-- sheet: home editor -->
-<div id="overlay-home-editor" class="overlay">
-  <div class="sheet">
-    <h3 style="margin:0 0 10px">桌面编辑</h3>
-    <div id="home-editor-list" style="display:grid;gap:10px"></div>
-    <div class="actions" style="margin-top:10px">
-      <button class="btn secondary" id="home-editor-close">完成</button>
+        <div id="chatList" class="list"></div>
+      </section>
+
+      <!-- CHAT -->
+      <section class="screen" id="chatScreen">
+        <div class="screen-header">
+          <button class="back-btn" data-back="chatListScreen">‹</button>
+          <h2 id="chatTitle">聊天</h2>
+          <button id="regenerateBtn" class="mini-btn">↻</button>
+        </div>
+
+        <div class="chat-top-controls">
+          <select id="chatModeSelect">
+            <option value="online">线上模式</option>
+            <option value="offline">线下模式</option>
+          </select>
+          <span class="hint">切换后下一条立即生效</span>
+        </div>
+
+        <div id="chatMessages" class="chat-messages"></div>
+
+        <div class="chat-input-wrap">
+          <textarea id="chatInput" rows="1" placeholder="输入消息..."></textarea>
+          <button id="sendBtn">发送</button>
+        </div>
+      </section>
     </div>
   </div>
-</div>
 
-<script>
-(() => {
-  /* =========================
-     State
-  ========================== */
-  const K = {
-    APP: "mini_phone_refactor_v1",
-  };
+  <!-- 新建聊天弹窗 -->
+  <div class="modal" id="newChatModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="newChatModalTitle">新建聊天</h3>
+        <button id="closeNewChatModal">×</button>
+      </div>
 
-  const defaults = {
-    ui: {
-      wallpaper: "",
-      cover: "",
-      particles: false,
-      customCss: "",
-      customJs: ""
-    },
-    api: {
-      current: "默认",
-      profiles: [{
-        name: "默认",
-        chatUrl: "",
-        baseUrl: "",
-        chatPath: "/v1/chat/completions",
-        modelsUrl: "",
-        apiKey: "",
-        model: "gpt-4o-mini",
-        temperature: 0.8,
-        maxTokens: 1024,
-        contextN: 24,
-        timeout: 45000,
-        stream: false
-      }]
-    },
-    assets: {
-      stickers: [], // {id,name,data}
-      icons: []     // {id,name,data}
-    },
-    roles: [], // {id,name,relation,persona,style,userPersona,avatar}
-    rooms: [], // {id,type:'dm'|'group',name,avatar,members:[roleId],mode:'daily'|'offline',messages:[]}
-    currentRoomId: "",
-    homeApps: [
-      {id:"a1",name:"短信",route:"roles",iconType:"emoji",iconValue:"💬",dock:true},
-      {id:"a2",name:"角色",route:"roles",iconType:"emoji",iconValue:"🧾",dock:false},
-      {id:"a3",name:"资源库",route:"assets",iconType:"emoji",iconValue:"🧸",dock:false},
-      {id:"a4",name:"API设置",route:"api",iconType:"emoji",iconValue:"⚙️",dock:true},
-      {id:"a5",name:"记忆",route:"placeholder",iconType:"emoji",iconValue:"🧠",dock:false},
-      {id:"a6",name:"相册",route:"placeholder",iconType:"emoji",iconValue:"🖼️",dock:false},
-      {id:"a7",name:"电话",route:"placeholder",iconType:"emoji",iconValue:"📞",dock:true},
-      {id:"a8",name:"论坛",route:"placeholder",iconType:"emoji",iconValue:"👥",dock:true}
-    ]
-  };
+      <div class="form">
+        <label>聊天名称</label>
+        <input id="newChatNameInput" placeholder="例如：弥洛 / 207寝室群" />
 
-  let state = loadState();
-  let route = "home";
-  let activeRoleAvatarCache = "";
-
-  function loadState(){
-    try{
-      const raw = localStorage.getItem(K.APP);
-      if(!raw) return deepClone(defaults);
-      const got = JSON.parse(raw);
-      return mergeDeep(deepClone(defaults), got);
-    }catch{
-      return deepClone(defaults);
-    }
-  }
-  function saveState(){ localStorage.setItem(K.APP, JSON.stringify(state)); }
-
-  function deepClone(o){ return JSON.parse(JSON.stringify(o)); }
-  function mergeDeep(target, source){
-    for(const k in source){
-      if(source[k] && typeof source[k] === "object" && !Array.isArray(source[k])){
-        if(!target[k] || typeof target[k] !== "object") target[k] = {};
-        mergeDeep(target[k], source[k]);
-      }else{
-        target[k] = source[k];
-      }
-    }
-    return target;
-  }
-  function uid(){
-    return "id_" + Math.random().toString(36).slice(2,10) + Date.now().toString(36);
-  }
-  function esc(s){
-    return String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-  }
-
-  /* =========================
-     DOM
-  ========================== */
-  const $ = (sel)=>document.querySelector(sel);
-  const $$ = (sel)=>Array.from(document.querySelectorAll(sel));
-
-  const pages = {
-    home: $("#page-home"),
-    roles: $("#page-roles"),
-    chat: $("#page-chat"),
-    assets: $("#page-assets"),
-    api: $("#page-api"),
-  };
-
-  const el = {
-    sbTime: $("#sb-time"),
-    homeDate: $("#home-date"),
-    homeClock: $("#home-clock"),
-    batteryFill: $("#battery-fill"),
-    wallpaper: $("#wallpaper"),
-    coverImg: $("#cover-img"),
-    metaMode: $("#meta-mode"),
-    metaUnread: $("#meta-unread"),
-    appsGrid: $("#apps-grid"),
-    dock: $("#dock"),
-
-    roleList: $("#role-list"),
-    roomList: $("#room-list"),
-
-    roleCreateCard: $("#role-create-card"),
-    roleName: $("#role-name"),
-    roleRelation: $("#role-relation"),
-    rolePersona: $("#role-persona"),
-    roleStyle: $("#role-style"),
-    roleUserPersona: $("#role-userpersona"),
-    roleAvatarFile: $("#role-avatar-file"),
-
-    importRoleJson: $("#import-role-json"),
-    importRolePng: $("#import-role-png"),
-
-    chatRoomTitle: $("#chat-room-title"),
-    chatProfileHint: $("#chat-profile-hint"),
-    chatMode: $("#chat-mode"),
-    chatList: $("#chat-list"),
-    chatInput: $("#chat-input"),
-    btnSend: $("#btn-send"),
-    quickPanel: $("#quick-panel"),
-
-    picker: $("#sticker-picker"),
-    pickerGrid: $("#picker-grid"),
-
-    stickersList: $("#stickers-list"),
-    iconsList: $("#icons-list"),
-
-    uploadStickers: $("#upload-stickers"),
-    uploadIcons: $("#upload-icons"),
-
-    apiProfileSelect: $("#api-profile-select"),
-    apiProfileName: $("#api-profile-name"),
-    apiChatUrl: $("#api-chat-url"),
-    apiBaseUrl: $("#api-base-url"),
-    apiChatPath: $("#api-chat-path"),
-    apiModelsUrl: $("#api-models-url"),
-    apiKey: $("#api-key"),
-    apiModel: $("#api-model"),
-    apiTemperature: $("#api-temperature"),
-    apiMaxTokens: $("#api-max-tokens"),
-    apiContextN: $("#api-context-n"),
-    apiTimeout: $("#api-timeout"),
-    apiStream: $("#api-stream"),
-    apiStatus: $("#api-status"),
-
-    wallpaperFile: $("#wallpaper-file"),
-    coverFile: $("#cover-file"),
-    toggleParticles: $("#toggle-particles"),
-
-    customCss: $("#custom-css"),
-    customJs: $("#custom-js"),
-
-    homeEditorOverlay: $("#overlay-home-editor"),
-    homeEditorList: $("#home-editor-list"),
-  };
-
-  /* =========================
-     Router
-  ========================== */
-  function go(page){
-    route = page;
-    Object.values(pages).forEach(p=>p.classList.remove("active"));
-    pages[page].classList.add("active");
-
-    if(page === "home") renderHome();
-    if(page === "roles") renderRoles();
-    if(page === "chat") renderChat();
-    if(page === "assets") renderAssets();
-    if(page === "api") renderApi();
-  }
-
-  /* =========================
-     Time / Status
-  ========================== */
-  function nowParts(){
-    const d = new Date();
-    const hh = String(d.getHours()).padStart(2,"0");
-    const mm = String(d.getMinutes()).padStart(2,"0");
-    const week = "日一二三四五六"[d.getDay()];
-    return {
-      time:`${hh}:${mm}`,
-      date:`${d.getMonth()+1}月${d.getDate()}日 星期${week}`,
-      hh,mm
-    };
-  }
-  function tick(){
-    const t = nowParts();
-    el.sbTime.textContent = t.time;
-    el.homeClock.textContent = t.time;
-    el.homeDate.textContent = t.date;
-    const fakeBattery = 34 + (new Date().getMinutes() % 62);
-    const w = Math.max(6, Math.min(23, fakeBattery * 0.26));
-    el.batteryFill.setAttribute("width", String(w));
-  }
-
-  /* =========================
-     Home
-  ========================== */
-  function iconHTML(app, size=74){
-    if(app.iconType === "image" && app.iconValue){
-      return `<div class="app-btn" style="width:${size}px;height:${size}px"><img src="${app.iconValue}" alt=""></div>`;
-    }
-    return `<div class="app-btn" style="width:${size}px;height:${size}px"><span class="app-emoji">${esc(app.iconValue || "📦")}</span></div>`;
-  }
-
-  function renderHome(){
-    const room = state.rooms.find(r=>r.id===state.currentRoomId);
-    el.metaMode.textContent = room ? (room.mode === "offline" ? "线下剧情" : "日常") : "日常";
-    el.metaUnread.textContent = "0";
-
-    el.appsGrid.innerHTML = "";
-    state.homeApps.filter(a=>!a.dock).forEach(app=>{
-      const box = document.createElement("div");
-      box.className = "app-icon";
-      box.innerHTML = `${iconHTML(app)}<div class="app-name">${esc(app.name)}</div>`;
-      box.addEventListener("click", ()=>openApp(app));
-      el.appsGrid.appendChild(box);
-    });
-
-    el.dock.innerHTML = "";
-    state.homeApps.filter(a=>a.dock).slice(0,4).forEach(app=>{
-      const box = document.createElement("div");
-      box.className = "app-icon";
-      box.innerHTML = `${iconHTML(app,64)}<div class="app-name">${esc(app.name)}</div>`;
-      box.addEventListener("click", ()=>openApp(app));
-      el.dock.appendChild(box);
-    });
-
-    applyLook();
-  }
-
-  function openApp(app){
-    if(app.route === "roles"){ go("roles"); return; }
-    if(app.route === "assets"){ go("assets"); return; }
-    if(app.route === "api"){ go("api"); return; }
-    toast("该模块骨架已预留，后续可直接扩展。");
-  }
-
-  function openHomeEditor(){
-    el.homeEditorList.innerHTML = "";
-    state.homeApps.forEach((app,idx)=>{
-      const wrap = document.createElement("div");
-      wrap.className = "role-item";
-      wrap.innerHTML = `
-        <div class="avatar">${app.iconType==="image"&&app.iconValue?`<img src="${app.iconValue}">`:`<span>${esc(app.iconValue||"📦")}</span>`}</div>
-        <div class="role-meta">
-          <b>图标 ${idx+1}</b>
-          <div class="hint">route: ${esc(app.route)}</div>
-          <input data-k="name" data-id="${app.id}" class="input" value="${esc(app.name)}" style="margin-top:6px">
-          <div class="row" style="margin-top:6px">
-            <input data-k="emoji" data-id="${app.id}" class="input" placeholder="emoji，如 💬">
-            <input data-k="file" data-id="${app.id}" class="input" type="file" accept="image/*" style="padding-top:8px">
-          </div>
-          <div class="switch">
-            <span>放入Dock</span>
-            <input data-k="dock" data-id="${app.id}" type="checkbox" ${app.dock?"checked":""}>
-          </div>
+        <div id="singlePersonaBlock">
+          <label>选择人设（单聊）</label>
+          <select id="singlePersonaSelect"></select>
         </div>
-        <div><button class="btn secondary" data-act="reset" data-id="${app.id}">重置</button></div>
-      `;
 
-      const emojiInput = wrap.querySelector('input[data-k="emoji"]');
-      emojiInput.value = app.iconType==="emoji" ? (app.iconValue||"") : "";
-
-      wrap.querySelectorAll('input[data-k="name"]').forEach(ip=>{
-        ip.addEventListener("input",e=>{
-          const it = state.homeApps.find(x=>x.id===e.target.dataset.id); if(!it) return;
-          it.name = e.target.value.trim() || it.name;
-          saveState(); renderHome();
-        });
-      });
-
-      wrap.querySelectorAll('input[data-k="emoji"]').forEach(ip=>{
-        ip.addEventListener("change",e=>{
-          const it = state.homeApps.find(x=>x.id===e.target.dataset.id); if(!it) return;
-          if(e.target.value.trim()){
-            it.iconType = "emoji";
-            it.iconValue = e.target.value.trim();
-            saveState(); renderHome();
-          }
-        });
-      });
-
-      wrap.querySelectorAll('input[data-k="file"]').forEach(ip=>{
-        ip.addEventListener("change",async e=>{
-          const file = e.target.files && e.target.files[0];
-          if(!file) return;
-          const data = await fileToDataURL(file);
-          const it = state.homeApps.find(x=>x.id===e.target.dataset.id); if(!it) return;
-          it.iconType = "image";
-          it.iconValue = data;
-          saveState(); renderHome();
-          openHomeEditor();
-        });
-      });
-
-      wrap.querySelectorAll('input[data-k="dock"]').forEach(ip=>{
-        ip.addEventListener("change",e=>{
-          const it = state.homeApps.find(x=>x.id===e.target.dataset.id); if(!it) return;
-          it.dock = !!e.target.checked;
-          saveState(); renderHome();
-        });
-      });
-
-      wrap.querySelectorAll('[data-act="reset"]').forEach(btn=>{
-        btn.addEventListener("click",()=>{
-          const it = state.homeApps.find(x=>x.id===btn.dataset.id); if(!it) return;
-          const df = defaults.homeApps.find(x=>x.id===it.id);
-          if(df){
-            it.name = df.name; it.iconType=df.iconType; it.iconValue=df.iconValue; it.dock=df.dock;
-            saveState(); renderHome(); openHomeEditor();
-          }
-        });
-      });
-
-      el.homeEditorList.appendChild(wrap);
-    });
-    el.homeEditorOverlay.classList.add("show");
-  }
-
-  /* =========================
-     Roles / Rooms
-  ========================== */
-  function renderRoles(){
-    el.roleList.innerHTML = "";
-    if(!state.roles.length){
-      const empty = document.createElement("div");
-      empty.className = "hint";
-      empty.textContent = "还没有角色，先创建或导入角色卡。";
-      el.roleList.appendChild(empty);
-    }else{
-      state.roles.forEach(r=>{
-        const item = document.createElement("div");
-        item.className = "role-item";
-        item.innerHTML = `
-          <div class="avatar">${r.avatar?`<img src="${r.avatar}">`:"👤"}</div>
-          <div class="role-meta">
-            <b>${esc(r.name)}</b>
-            <span>${esc(r.relation || "未设关系")} · ${esc(shorten(r.persona, 24))}</span>
-          </div>
-          <div class="actions" style="justify-content:flex-end">
-            <button class="btn" data-open="${r.id}">聊天</button>
-            <button class="btn secondary" data-edit="${r.id}">编辑</button>
-            <button class="btn danger" data-del="${r.id}">删</button>
-          </div>
-        `;
-        item.querySelector('[data-open]').addEventListener("click",()=>openDM(r.id));
-        item.querySelector('[data-edit]').addEventListener("click",()=>editRole(r.id));
-        item.querySelector('[data-del]').addEventListener("click",()=>deleteRole(r.id));
-        el.roleList.appendChild(item);
-      });
-    }
-
-    el.roomList.innerHTML = "";
-    const groups = state.rooms.filter(r=>r.type==="group");
-    if(!groups.length){
-      const empty = document.createElement("div");
-      empty.className = "hint";
-      empty.textContent = "暂无群聊。";
-      el.roomList.appendChild(empty);
-    }else{
-      groups.forEach(g=>{
-        const members = g.members.map(id=>roleName(id)).join("、");
-        const item = document.createElement("div");
-        item.className = "room-item";
-        item.innerHTML = `
-          <div class="avatar">👥</div>
-          <div class="role-meta">
-            <b>${esc(g.name)}</b>
-            <span>${esc(members || "空群")}</span>
-          </div>
-          <div class="actions" style="justify-content:flex-end">
-            <button class="btn" data-open="${g.id}">进入</button>
-            <button class="btn danger" data-del="${g.id}">删</button>
-          </div>
-        `;
-        item.querySelector('[data-open]').addEventListener("click",()=>openRoom(g.id));
-        item.querySelector('[data-del]').addEventListener("click",()=>deleteGroup(g.id));
-        el.roomList.appendChild(item);
-      });
-    }
-  }
-
-  function roleName(id){
-    return (state.roles.find(r=>r.id===id)||{}).name || "未知角色";
-  }
-
-  function createRole(data){
-    const role = {
-      id: uid(),
-      name: data.name || "未命名角色",
-      relation: data.relation || "",
-      persona: data.persona || "",
-      style: data.style || "",
-      userPersona: data.userPersona || "",
-      avatar: data.avatar || ""
-    };
-    state.roles.unshift(role);
-    saveState();
-    renderRoles();
-    return role;
-  }
-
-  async function saveRoleFromForm(){
-    const name = el.roleName.value.trim();
-    if(!name) return toast("请填写角色名");
-    let avatar = "";
-    if(el.roleAvatarFile.files && el.roleAvatarFile.files[0]){
-      avatar = await fileToDataURL(el.roleAvatarFile.files[0]);
-    }
-    createRole({
-      name,
-      relation: el.roleRelation.value.trim(),
-      persona: el.rolePersona.value.trim(),
-      style: el.roleStyle.value.trim(),
-      userPersona: el.roleUserPersona.value.trim(),
-      avatar
-    });
-    clearRoleForm();
-    toast("角色已创建");
-  }
-  function clearRoleForm(){
-    el.roleName.value="";
-    el.roleRelation.value="";
-    el.rolePersona.value="";
-    el.roleStyle.value="";
-    el.roleUserPersona.value="";
-    el.roleAvatarFile.value="";
-  }
-
-  function editRole(roleId){
-    const r = state.roles.find(x=>x.id===roleId);
-    if(!r) return;
-    const name = prompt("角色名", r.name); if(name===null) return;
-    const relation = prompt("关系称谓", r.relation||""); if(relation===null) return;
-    const persona = prompt("人设", r.persona||""); if(persona===null) return;
-    const style = prompt("说话风格", r.style||""); if(style===null) return;
-    const userPersona = prompt("用户人设", r.userPersona||""); if(userPersona===null) return;
-    r.name=name.trim()||r.name; r.relation=relation.trim(); r.persona=persona.trim(); r.style=style.trim(); r.userPersona=userPersona.trim();
-    saveState(); renderRoles();
-  }
-
-  function deleteRole(roleId){
-    if(!confirm("删除角色？其单聊会话也会删除。")) return;
-    state.roles = state.roles.filter(r=>r.id!==roleId);
-    state.rooms = state.rooms.filter(room=>!(room.type==="dm" && room.members[0]===roleId) && !room.members.includes(roleId));
-    if(state.currentRoomId && !state.rooms.find(r=>r.id===state.currentRoomId)) state.currentRoomId = "";
-    saveState();
-    renderRoles();
-  }
-
-  function openDM(roleId){
-    let room = state.rooms.find(r=>r.type==="dm" && r.members[0]===roleId);
-    if(!room){
-      const rr = state.roles.find(r=>r.id===roleId);
-      room = {
-        id: uid(),
-        type:"dm",
-        name: rr ? rr.name : "私聊",
-        avatar: rr ? rr.avatar : "",
-        members:[roleId],
-        mode:"daily",
-        messages:[{id:uid(),sender:"system",type:"text",content:"会话创建完成，开始聊天吧。",time:timeHM()}]
-      };
-      state.rooms.unshift(room);
-    }
-    state.currentRoomId = room.id;
-    saveState();
-    go("chat");
-  }
-
-  function openRoom(roomId){
-    state.currentRoomId = roomId;
-    saveState();
-    go("chat");
-  }
-
-  function deleteGroup(roomId){
-    if(!confirm("删除该群聊？")) return;
-    state.rooms = state.rooms.filter(r=>r.id!==roomId);
-    if(state.currentRoomId===roomId) state.currentRoomId = "";
-    saveState(); renderRoles();
-  }
-
-  function createGroup(){
-    if(state.roles.length < 2) return toast("至少需要两个角色才能建群");
-    const name = prompt("群聊名称", "新群聊");
-    if(name===null) return;
-    const roleTips = state.roles.map((r,i)=>`${i+1}. ${r.name}`).join("\n");
-    const input = prompt(`输入成员序号，用逗号分隔：\n${roleTips}`, "1,2");
-    if(input===null) return;
-    const idxs = input.split(",").map(s=>parseInt(s.trim(),10)-1).filter(n=>!isNaN(n)&&n>=0&&n<state.roles.length);
-    const ids = [...new Set(idxs.map(i=>state.roles[i].id))];
-    if(ids.length < 2) return toast("群成员至少2个");
-    const room = {
-      id: uid(),
-      type:"group",
-      name: name.trim() || "群聊",
-      avatar: "",
-      members: ids,
-      mode:"daily",
-      messages:[{id:uid(),sender:"system",type:"text",content:"群聊已创建。",time:timeHM()}]
-    };
-    state.rooms.unshift(room);
-    state.currentRoomId = room.id;
-    saveState();
-    go("chat");
-  }
-
-  /* =========================
-     Chat
-  ========================== */
-  function getCurrentRoom(){
-    return state.rooms.find(r=>r.id===state.currentRoomId);
-  }
-
-  function renderChat(){
-    const room = getCurrentRoom();
-    if(!room){
-      el.chatRoomTitle.textContent = "未选择会话";
-      el.chatList.innerHTML = `<div class="msg system">请先从“角色与群聊”进入会话。</div>`;
-      return;
-    }
-    el.chatRoomTitle.textContent = room.name + (room.type==="group" ? " · 群聊" : " · 私聊");
-    el.chatMode.value = room.mode || "daily";
-    const p = getCurrentProfile();
-    el.chatProfileHint.textContent = `配置：${p.name} · 模型：${p.model || "未填"}`;
-    renderRoomMessages(room);
-    el.metaMode.textContent = room.mode==="offline"?"线下剧情":"日常";
-  }
-
-  function renderRoomMessages(room){
-    el.chatList.innerHTML = "";
-    if(!room.messages.length){
-      appendSystem("开始聊天吧。");
-      return;
-    }
-    room.messages.forEach(m=>appendMessageToList(m, room));
-    scrollChatBottom();
-  }
-
-  function appendMessageToList(m, room){
-    const div = document.createElement("div");
-    const cls = m.sender==="user"?"user":m.sender==="assistant"?"assistant":"system";
-    div.className = "msg " + cls;
-
-    if(m.sender==="assistant" && room.type==="group" && m.senderRoleId){
-      div.innerHTML = `<div class="sender">${esc(roleName(m.senderRoleId))}</div>`;
-    }
-
-    if(m.type==="text"){
-      div.innerHTML += esc(m.content || "");
-    }else if(m.type==="sticker"){
-      div.innerHTML += `
-        <div class="card-msg">
-          <div class="card-title">表情包</div>
-          ${m.meta && m.meta.data ? `<img src="${m.meta.data}" style="width:120px;height:120px;object-fit:cover;border-radius:10px">` : "🙂"}
-          <div class="hint">${esc(m.meta?.name || "表情")}</div>
+        <div id="groupPersonaBlock" style="display:none;">
+          <label>选择群成员人设（群聊，可多选）</label>
+          <div id="groupPersonaChecklist" class="checklist"></div>
         </div>
-      `;
-    }else if(m.type==="voice"){
-      div.innerHTML += `
-        <div class="card-msg">
-          <div class="card-title">语音消息（模拟）</div>
-          <span class="voice-pill">🔊 ${esc(String(m.meta?.duration || 3))}''</span>
-          <div style="margin-top:6px">${esc(m.content || "")}</div>
+
+        <div class="row">
+          <button class="sub" id="cancelCreateChatBtn">取消</button>
+          <button id="confirmCreateChatBtn">创建</button>
         </div>
-      `;
-    }else if(m.type==="transfer"){
-      div.innerHTML += `
-        <div class="card-msg">
-          <div class="card-title">转账</div>
-          <div style="font-size:20px;font-weight:800">¥ ${esc(String(m.meta?.amount || 0))}</div>
-          <div class="hint">${esc(m.meta?.remark || "无备注")} · 虚拟货币</div>
-        </div>
-      `;
-    }else if(m.type==="location"){
-      div.innerHTML += `
-        <div class="card-msg">
-          <div class="card-title">定位</div>
-          <div style="font-weight:800">📍 ${esc(m.meta?.place || "未知地点")}</div>
-          <div class="hint">${esc(m.meta?.note || "")}</div>
-        </div>
-      `;
-    }
+      </div>
+    </div>
+  </div>
 
-    if(m.time) div.innerHTML += `<small>${esc(m.time)}</small>`;
-    el.chatList.appendChild(div);
-  }
+  <!-- 动态注入CSS -->
+  <style id="dynamicCustomCss"></style>
 
-  function appendSystem(text){
-    const div = document.createElement("div");
-    div.className = "msg system";
-    div.textContent = text;
-    el.chatList.appendChild(div);
-  }
-
-  function scrollChatBottom(){
-    el.chatList.scrollTop = el.chatList.scrollHeight;
-  }
-
-  function pushMessage(room, msg){
-    room.messages.push(msg);
-    if(room.messages.length > 300) room.messages.splice(0, room.messages.length - 300);
-    saveState();
-  }
-
-  function timeHM(){
-    const d = new Date();
-    return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
-  }
-
-  function autoGrow(){
-    el.chatInput.style.height = "auto";
-    el.chatInput.style.height = Math.min(120, el.chatInput.scrollHeight) + "px";
-  }
-
-  async function sendTextMessage(){
-    const room = getCurrentRoom();
-    if(!room) return toast("请先进入会话");
-    const text = el.chatInput.value.trim();
-    if(!text) return;
-    const m = {id:uid(), sender:"user", type:"text", content:text, time:timeHM()};
-    pushMessage(room, m);
-    appendMessageToList(m, room);
-    el.chatInput.value = "";
-    autoGrow();
-    scrollChatBottom();
-    await aiReply(room);
-  }
-
-  async function sendCard(type){
-    const room = getCurrentRoom();
-    if(!room) return toast("请先进入会话");
-
-    if(type==="sticker"){
-      if(!state.assets.stickers.length) return toast("先去资源库上传表情包");
-      openStickerPicker();
-      return;
-    }
-
-    if(type==="voice"){
-      const sec = prompt("语音时长(秒)", "3"); if(sec===null) return;
-      const txt = prompt("语音内容（AI可读）", "（语音内容）"); if(txt===null) return;
-      const m = {id:uid(),sender:"user",type:"voice",content:txt,time:timeHM(),meta:{duration:Number(sec)||3}};
-      pushMessage(room,m); appendMessageToList(m,room); scrollChatBottom(); await aiReply(room); return;
-    }
-
-    if(type==="transfer"){
-      const amount = prompt("转账金额（虚拟）", "52.00"); if(amount===null) return;
-      const remark = prompt("备注", "请你喝奶茶"); if(remark===null) return;
-      const m = {id:uid(),sender:"user",type:"transfer",content:"",time:timeHM(),meta:{amount,remark}};
-      pushMessage(room,m); appendMessageToList(m,room); scrollChatBottom(); await aiReply(room); return;
-    }
-
-    if(type==="location"){
-      const place = prompt("地点", "上海市静安区某咖啡店"); if(place===null) return;
-      const note = prompt("附言", "来不来？"); if(note===null) return;
-      const m = {id:uid(),sender:"user",type:"location",content:"",time:timeHM(),meta:{place,note}};
-      pushMessage(room,m); appendMessageToList(m,room); scrollChatBottom(); await aiReply(room); return;
-    }
-  }
-
-  function openStickerPicker(){
-    el.pickerGrid.innerHTML = "";
-    state.assets.stickers.forEach(st=>{
-      const div = document.createElement("div");
-      div.className = "sticker";
-      div.innerHTML = st.data ? `<img src="${st.data}">` : `<span>🙂</span>`;
-      div.title = st.name || "sticker";
-      div.addEventListener("click", async ()=>{
-        const room = getCurrentRoom(); if(!room) return;
-        const m = {id:uid(),sender:"user",type:"sticker",content:"",time:timeHM(),meta:{name:st.name,data:st.data}};
-        pushMessage(room,m); appendMessageToList(m,room); scrollChatBottom();
-        closeStickerPicker();
-        await aiReply(room);
-      });
-      el.pickerGrid.appendChild(div);
-    });
-    el.picker.classList.add("show");
-  }
-  function closeStickerPicker(){ el.picker.classList.remove("show"); }
-
-  async function aiReply(room){
-    const profile = getCurrentProfile();
-    if(!profile) return appendSystem("未找到API配置");
-
-    const chatUrl = resolveChatUrl(profile);
-    if(!chatUrl) return appendSystem("请先配置聊天URL或Base URL");
-
-    el.btnSend.disabled = true;
-    setApiStatus("状态：请求中...");
-
-    try{
-      if(room.type==="dm"){
-        const rid = room.members[0];
-        const text = await callModelForRole(room, rid, profile);
-        const parsed = parseAssistantSpecial(text);
-        if(parsed.text){
-          const msg = {id:uid(), sender:"assistant", senderRoleId:rid, type:"text", content:parsed.text, time:timeHM()};
-          pushMessage(room, msg); appendMessageToList(msg, room);
-        }
-        if(parsed.stickerName){
-          maybeSendAssistantSticker(room, rid, parsed.stickerName);
-        }else{
-          maybeSendAssistantSticker(room, rid, null, 0.12);
-        }
-      }else{
-        // 群聊：依次回复（稳优先）
-        for(const rid of room.members){
-          const text = await callModelForRole(room, rid, profile);
-          const parsed = parseAssistantSpecial(text);
-          if(parsed.text){
-            const msg = {id:uid(), sender:"assistant", senderRoleId:rid, type:"text", content:parsed.text, time:timeHM()};
-            pushMessage(room, msg); appendMessageToList(msg, room);
-          }
-          if(parsed.stickerName){
-            maybeSendAssistantSticker(room, rid, parsed.stickerName);
-          }else{
-            maybeSendAssistantSticker(room, rid, null, 0.08);
-          }
-        }
-      }
-      setApiStatus("状态：完成");
-    }catch(err){
-      appendSystem("请求失败：" + normalizeErr(err));
-      setApiStatus("状态：失败");
-    }finally{
-      el.btnSend.disabled = false;
-      saveState();
-      scrollChatBottom();
-    }
-  }
-
-  function maybeSendAssistantSticker(room, rid, byName, randomChance=1){
-    if(!state.assets.stickers.length) return;
-    if(Math.random() > randomChance) return;
-    let st = null;
-    if(byName){
-      st = state.assets.stickers.find(x=> (x.name||"").toLowerCase().includes(byName.toLowerCase()));
-    }
-    if(!st) st = state.assets.stickers[Math.floor(Math.random()*state.assets.stickers.length)];
-    if(!st) return;
-    const m = {id:uid(), sender:"assistant", senderRoleId:rid, type:"sticker", content:"", time:timeHM(), meta:{name:st.name,data:st.data}};
-    pushMessage(room,m); appendMessageToList(m,room);
-  }
-
-  function parseAssistantSpecial(text){
-    const out = {text:String(text||""), stickerName:""};
-    const reg = /\[\[sticker:([^\]]+)\]\]/i;
-    const m = out.text.match(reg);
-    if(m){
-      out.stickerName = m[1].trim();
-      out.text = out.text.replace(reg, "").trim();
-    }
-    return out;
-  }
-
-  async function callModelForRole(room, roleId, profile){
-    const role = state.roles.find(r=>r.id===roleId);
-    if(!role) throw new Error("角色不存在");
-
-    const system = buildSystemPrompt(role, room);
-    const transcript = buildTranscript(room, Number(profile.contextN||24));
-    const userMsg = `以下是最近对话记录（供你参考）：
-${transcript}
-
-请你现在以角色“${role.name}”继续对话，保持自然、真实、有人味。
-- 不要模板腔
-- 回复长度灵活
-- 可以结合前文提到的表情包/语音/转账/定位
-- 允许情绪波动与临场反应
-- 若你想发表情包，可在回复里附加：[[sticker:表情名]]（可选）`;
-
-    const payload = {
-      model: profile.model,
-      temperature: clampNum(profile.temperature, 0, 2, 0.8),
-      max_tokens: Math.max(1, Number(profile.maxTokens||1024)),
-      stream: !!profile.stream,
-      messages: [
-        {role:"system", content: system},
-        {role:"user", content: userMsg}
-      ]
-    };
-
-    const result = await requestChat(payload, profile);
-    return result || "……";
-  }
-
-  function buildSystemPrompt(role, room){
-    const mode = room.mode || "daily";
-    const modePrompt = mode === "offline"
-      ? `【线下剧情模式】
-你要采用“对话+动作/环境描写”的沉浸写法，但保持克制，不要每句都舞台剧。
-允许更强叙事感、场景感、心理活动。`
-      : `【日常模式】
-以即时通讯聊天口吻回复，自然、简洁、有温度。`;
-
-    const core = `你是一个长期稳定扮演角色的AI，不要跳脱设定，不要承认自己是模型。
-你要让用户感到“这个角色住在手机里”，并持续维护关系连续性。
-回复要求：
-1) 不模板化，不机械重复；
-2) 结合关系与记忆，避免空泛赞美；
-3) 在合适时主动推进话题；
-4) 不要频繁说教。`;
-
-    return `${core}
-
-【角色信息】
-- 角色名：${role.name}
-- 关系：${role.relation || "未设定"}
-- 人设：${role.persona || "未设定"}
-- 说话风格：${role.style || "自然"}
-- 用户人设：${role.userPersona || "未设定"}
-
-${modePrompt}`;
-  }
-
-  function buildTranscript(room, n){
-    const rows = room.messages.slice(-Math.max(6,n)).map(m=>{
-      const who = m.sender==="user" ? "我" : m.sender==="assistant" ? (m.senderRoleId?roleName(m.senderRoleId):"TA") : "系统";
-      if(m.type==="text") return `[${m.time||""}] ${who}: ${m.content||""}`;
-      if(m.type==="sticker") return `[${m.time||""}] ${who}: [表情包:${m.meta?.name||"未命名"}]`;
-      if(m.type==="voice") return `[${m.time||""}] ${who}: [语音 ${m.meta?.duration||3}s] 内容:${m.content||""}`;
-      if(m.type==="transfer") return `[${m.time||""}] ${who}: [转账 ¥${m.meta?.amount||0}] 备注:${m.meta?.remark||""}`;
-      if(m.type==="location") return `[${m.time||""}] ${who}: [定位 ${m.meta?.place||""}] ${m.meta?.note||""}`;
-      return `[${m.time||""}] ${who}: ${m.content||""}`;
-    });
-    return rows.join("\n");
-  }
-
-  /* =========================
-     API client
-  ========================== */
-  function getCurrentProfile(){
-    let p = state.api.profiles.find(x=>x.name===state.api.current);
-    if(!p){
-      p = deepClone(defaults.api.profiles[0]);
-      state.api.profiles = [p];
-      state.api.current = p.name;
-      saveState();
-    }
-    return p;
-  }
-
-  function resolveChatUrl(p){
-    if((p.chatUrl||"").trim()) return p.chatUrl.trim();
-    const base = (p.baseUrl||"").trim().replace(/\/+$/,"");
-    const path = (p.chatPath||"/v1/chat/completions").trim();
-    if(!base) return "";
-    return base + (path.startsWith("/")?path:"/"+path);
-  }
-  function resolveModelsCandidates(p){
-    const arr = [];
-    if((p.modelsUrl||"").trim()) arr.push(p.modelsUrl.trim());
-    const base = (p.baseUrl||"").trim().replace(/\/+$/,"");
-    if(base){
-      arr.push(base + "/v1/models");
-      arr.push(base + "/models");
-    }
-    return [...new Set(arr)];
-  }
-
-  async function requestChat(payload, profile){
-    const url = resolveChatUrl(profile);
-    if(!url) throw new Error("未配置聊天URL");
-
-    const headers = {"Content-Type":"application/json"};
-    if(profile.apiKey) headers["Authorization"] = "Bearer " + profile.apiKey;
-
-    const ctl = new AbortController();
-    const timer = setTimeout(()=>ctl.abort(), Math.max(3000, Number(profile.timeout||45000)));
-
-    const res = await fetch(url,{
-      method:"POST",
-      headers,
-      body:JSON.stringify(payload),
-      signal:ctl.signal
-    }).finally(()=>clearTimeout(timer));
-
-    if(!res.ok){
-      const t = await safeText(res);
-      throw new Error(`HTTP ${res.status} ${truncate(t,220)}`);
-    }
-
-    if(payload.stream){
-      return await readSSEContent(res);
-    }else{
-      const data = await res.json();
-      return parseContentFromResponse(data);
-    }
-  }
-
-  async function readSSEContent(res){
-    if(!res.body){
-      const j = await res.json().catch(()=>null);
-      return parseContentFromResponse(j);
-    }
-    const reader = res.body.getReader();
-    const dec = new TextDecoder("utf-8");
-    let buf = "", full = "";
-    while(true){
-      const {done,value} = await reader.read();
-      if(done) break;
-      buf += dec.decode(value,{stream:true});
-      const lines = buf.split("\n");
-      buf = lines.pop() || "";
-      for(const raw of lines){
-        const line = raw.trim();
-        if(!line.startsWith("data:")) continue;
-        const data = line.slice(5).trim();
-        if(data === "[DONE]") continue;
-        try{
-          const j = JSON.parse(data);
-          const delta = j?.choices?.[0]?.delta?.content ?? j?.choices?.[0]?.message?.content ?? "";
-          if(delta) full += delta;
-        }catch{}
-      }
-    }
-    return full || "（流式返回为空）";
-  }
-
-  function parseContentFromResponse(data){
-    return data?.choices?.[0]?.message?.content
-      ?? data?.choices?.[0]?.text
-      ?? data?.output_text
-      ?? data?.reply
-      ?? data?.message
-      ?? "";
-  }
-
-  async function safeText(res){
-    try{return await res.text();}catch{return "";}
-  }
-
-  function normalizeErr(err){
-    const msg = err?.message || String(err);
-    if(msg.includes("Failed to fetch")) return "网络/CORS错误，检查反代与跨域";
-    if(msg.includes("AbortError")) return "请求超时";
-    return msg;
-  }
-
-  function setApiStatus(t){ el.apiStatus.textContent = t; }
-
-  /* =========================
-     API Settings render & actions
-  ========================== */
-  function renderApi(){
-    const p = getCurrentProfile();
-
-    el.apiProfileSelect.innerHTML = "";
-    state.api.profiles.forEach(pp=>{
-      const op = document.createElement("option");
-      op.value = pp.name; op.textContent = pp.name;
-      el.apiProfileSelect.appendChild(op);
-    });
-    el.apiProfileSelect.value = p.name;
-
-    el.apiProfileName.value = p.name || "";
-    el.apiChatUrl.value = p.chatUrl || "";
-    el.apiBaseUrl.value = p.baseUrl || "";
-    el.apiChatPath.value = p.chatPath || "/v1/chat/completions";
-    el.apiModelsUrl.value = p.modelsUrl || "";
-    el.apiKey.value = p.apiKey || "";
-    el.apiModel.value = p.model || "";
-    el.apiTemperature.value = p.temperature ?? 0.8;
-    el.apiMaxTokens.value = p.maxTokens ?? 1024;
-    el.apiContextN.value = p.contextN ?? 24;
-    el.apiTimeout.value = p.timeout ?? 45000;
-    el.apiStream.checked = !!p.stream;
-
-    el.toggleParticles.checked = !!state.ui.particles;
-    el.customCss.value = state.ui.customCss || "";
-    el.customJs.value = state.ui.customJs || "";
-  }
-
-  function readApiForm(){
-    const obj = {
-      name: (el.apiProfileName.value||"默认").trim(),
-      chatUrl: el.apiChatUrl.value.trim(),
-      baseUrl: el.apiBaseUrl.value.trim().replace(/\/+$/,""),
-      chatPath: el.apiChatPath.value.trim() || "/v1/chat/completions",
-      modelsUrl: el.apiModelsUrl.value.trim(),
-      apiKey: el.apiKey.value.trim(),
-      model: el.apiModel.value.trim() || "gpt-4o-mini",
-      temperature: Number(el.apiTemperature.value || 0.8),
-      maxTokens: Number(el.apiMaxTokens.value || 1024),
-      contextN: Number(el.apiContextN.value || 24),
-      timeout: Number(el.apiTimeout.value || 45000),
-      stream: !!el.apiStream.checked
-    };
-    if(!obj.chatPath.startsWith("/")) obj.chatPath = "/" + obj.chatPath;
-    return obj;
-  }
-
-  function saveApiProfile(){
-    const oldName = state.api.current;
-    const p = readApiForm();
-
-    // remove old selected
-    const oldIdx = state.api.profiles.findIndex(x=>x.name===oldName);
-    if(oldIdx>=0) state.api.profiles.splice(oldIdx,1);
-
-    const dup = state.api.profiles.find(x=>x.name===p.name);
-    if(dup) Object.assign(dup,p);
-    else state.api.profiles.push(p);
-
-    state.api.current = p.name;
-    saveState();
-    renderApi();
-    renderChat();
-    setApiStatus("状态：配置已保存");
-  }
-
-  function newApiProfile(){
-    const name = "配置" + (state.api.profiles.length + 1);
-    const p = deepClone(defaults.api.profiles[0]);
-    p.name = name;
-    state.api.profiles.push(p);
-    state.api.current = name;
-    saveState();
-    renderApi();
-    setApiStatus("状态：已新建");
-  }
-
-  function deleteApiProfile(){
-    if(state.api.profiles.length<=1) return setApiStatus("状态：至少保留一个配置");
-    const cur = state.api.current;
-    if(!confirm(`删除配置：${cur} ?`)) return;
-    state.api.profiles = state.api.profiles.filter(x=>x.name!==cur);
-    state.api.current = state.api.profiles[0].name;
-    saveState();
-    renderApi();
-    setApiStatus("状态：已删除");
-  }
-
-  async function testApi(){
-    const p = readApiForm();
-    try{
-      const payload = {
-        model:p.model,
-        messages:[
-          {role:"system",content:"你是测试助手。"},
-          {role:"user",content:"请只回复：ok"}
-        ],
-        temperature:0,
-        max_tokens:8,
-        stream:false
-      };
-      const txt = await requestChat(payload,p);
-      setApiStatus("状态：连接成功 | 返回：" + truncate(txt,50));
-    }catch(err){
-      setApiStatus("状态：连接失败 | " + normalizeErr(err));
-    }
-  }
-
-  async function loadModels(){
-    const p = readApiForm();
-    const cands = resolveModelsCandidates(p);
-    if(!cands.length){
-      setApiStatus("状态：请先填 Base URL 或 Models URL");
-      return;
-    }
-
-    const headers = {};
-    if(p.apiKey) headers["Authorization"] = "Bearer " + p.apiKey;
-
-    let ok = false;
-    for(const url of cands){
-      try{
-        const ctl = new AbortController();
-        const timer = setTimeout(()=>ctl.abort(), 12000);
-        const res = await fetch(url,{headers,signal:ctl.signal}).finally(()=>clearTimeout(timer));
-        if(!res.ok) throw new Error("HTTP " + res.status);
-        const data = await res.json();
-        const arr = (data?.data || []).map(x=>x.id).filter(Boolean);
-        if(arr.length){
-          el.apiModel.value = arr[0];
-          setApiStatus(`状态：模型拉取成功 (${arr.length})，已填入 ${arr[0]}`);
-          ok = true;
-          break;
-        }else{
-          throw new Error("空模型列表");
-        }
-      }catch(e){
-        // try next
-      }
-    }
-    if(!ok) setApiStatus("状态：拉取失败（可手填模型继续聊天）");
-  }
-
-  /* =========================
-     Assets
-  ========================== */
-  function renderAssets(){
-    renderStickerList();
-    renderIconList();
-  }
-
-  function renderStickerList(){
-    el.stickersList.innerHTML = "";
-    if(!state.assets.stickers.length){
-      el.stickersList.innerHTML = `<div class="hint">还没有表情包。</div>`;
-      return;
-    }
-    state.assets.stickers.forEach(st=>{
-      const box = document.createElement("div");
-      box.className = "app-icon";
-      box.innerHTML = `
-        <div class="app-btn" style="overflow:hidden">${st.data?`<img src="${st.data}">`:`🙂`}</div>
-        <div class="app-name">${esc(st.name||"表情")}</div>
-      `;
-      box.addEventListener("contextmenu",(e)=>{e.preventDefault();});
-      box.addEventListener("click",()=>{
-        if(confirm(`删除表情包：${st.name || "未命名"} ?`)){
-          state.assets.stickers = state.assets.stickers.filter(x=>x.id!==st.id);
-          saveState(); renderAssets();
-        }
-      });
-      el.stickersList.appendChild(box);
-    });
-  }
-
-  function renderIconList(){
-    el.iconsList.innerHTML = "";
-    if(!state.assets.icons.length){
-      el.iconsList.innerHTML = `<div class="hint">还没有图标素材。</div>`;
-      return;
-    }
-    state.assets.icons.forEach(ic=>{
-      const box = document.createElement("div");
-      box.className = "app-icon";
-      box.innerHTML = `
-        <div class="app-btn" style="overflow:hidden"><img src="${ic.data}"></div>
-        <div class="app-name">${esc(ic.name||"图标")}</div>
-      `;
-      box.addEventListener("click",()=>{
-        const apps = state.homeApps.map((a,i)=>`${i+1}. ${a.name}`).join("\n");
-        const n = prompt(`设为哪个桌面图标？输入序号\n${apps}`, "1");
-        if(n===null) return;
-        const idx = Number(n)-1;
-        if(idx<0 || idx>=state.homeApps.length) return toast("序号无效");
-        state.homeApps[idx].iconType = "image";
-        state.homeApps[idx].iconValue = ic.data;
-        saveState(); renderHome(); toast("已应用到桌面");
-      });
-      el.iconsList.appendChild(box);
-    });
-  }
-
-  /* =========================
-     Import role cards
-  ========================== */
-  async function importRolesFromJsonFile(file){
-    try{
-      const text = await file.text();
-      const data = JSON.parse(text);
-      const arr = Array.isArray(data) ? data : [data];
-      let cnt = 0;
-      for(const one of arr){
-        const role = normalizeRoleFromAny(one);
-        if(role){
-          createRole(role);
-          cnt++;
-        }
-      }
-      toast(`JSON导入完成：${cnt}个角色`);
-    }catch(err){
-      toast("JSON导入失败");
-    }
-  }
-
-  function normalizeRoleFromAny(obj){
-    if(!obj || typeof obj!=="object") return null;
-    const name =
-      obj.name || obj.character_name || obj.char_name || obj?.data?.name || obj?.spec?.name || "";
-    if(!name) return null;
-    const persona =
-      obj.persona || obj.description || obj?.data?.description || obj?.spec?.description || "";
-    const style =
-      obj.style || obj.tone || obj?.data?.personality || obj?.spec?.personality || "";
-    const userPersona =
-      obj.userPersona || obj?.data?.first_mes || obj?.spec?.scenario || "";
-    const avatar = obj.avatar || obj.image || "";
-    return {
-      name,
-      relation: obj.relation || "",
-      persona,
-      style,
-      userPersona,
-      avatar
-    };
-  }
-
-  async function importRoleFromPng(file){
-    const dataUrl = await fileToDataURL(file);
-    const arrBuf = await file.arrayBuffer();
-    const metaText = extractPngText(arrBuf);
-    let roleData = null;
-
-    if(metaText){
-      try{
-        let candidate = metaText.trim();
-        if(/^[A-Za-z0-9+/=\s]+$/.test(candidate) && candidate.length > 80){
-          try{ candidate = atob(candidate.replace(/\s/g,"")); }catch{}
-        }
-        const maybe = JSON.parse(candidate);
-        roleData = normalizeRoleFromAny(maybe);
-      }catch{}
-    }
-
-    if(!roleData){
-      roleData = {
-        name: file.name.replace(/\.png$/i,"") || "PNG角色",
-        relation: "",
-        persona: "",
-        style: "",
-        userPersona: ""
-      };
-    }
-
-    roleData.avatar = dataUrl;
-    createRole(roleData);
-    saveState();
-    renderRoles();
-    toast("PNG角色卡导入完成");
-  }
-
-  function extractPngText(arrayBuffer){
-    // 尝试读取 PNG 的 tEXt / iTXt / zTXt
-    const bytes = new Uint8Array(arrayBuffer);
-    const dv = new DataView(arrayBuffer);
-    let off = 8; // skip png signature
-    const decoder = new TextDecoder("utf-8");
-
-    while(off + 8 <= bytes.length){
-      if(off + 8 > bytes.length) break;
-      const len = dv.getUint32(off); off += 4;
-      const type = decoder.decode(bytes.slice(off, off + 4)); off += 4;
-      if(off + len + 4 > bytes.length) break;
-
-      const chunk = bytes.slice(off, off + len);
-      off += len;
-      off += 4; // crc
-
-      if(type === "tEXt" || type === "iTXt"){
-        const txt = decoder.decode(chunk);
-        // 常见键名尝试：chara / character / comment / prompt
-        const hit = txt.match(/(?:chara|character|comment|description|prompt)\x00([\s\S]+)/i);
-        if(hit && hit[1]) return hit[1];
-        // 没命中键名就返回整段
-        if(txt.includes("{") && txt.includes("}")) return txt.slice(txt.indexOf("{"));
-      }
-    }
-    return "";
-  }
-
-  async function fileToDataURL(file){
-    return await new Promise((resolve,reject)=>{
-      const fr = new FileReader();
-      fr.onload = ()=>resolve(String(fr.result || ""));
-      fr.onerror = reject;
-      fr.readAsDataURL(file);
-    });
-  }
-
-  function truncate(s,n=80){
-    s = String(s||"");
-    return s.length>n ? s.slice(0,n) + "..." : s;
-  }
-  function shorten(s,n=20){ return truncate(s,n); }
-  function clampNum(v,min,max,def){
-    const x = Number(v);
-    if(Number.isNaN(x)) return def;
-    return Math.max(min, Math.min(max, x));
-  }
-
-  function toast(text){
-    // 简单系统消息提示（不打断）
-    const room = getCurrentRoom();
-    if(route === "chat" && room){
-      appendSystem(text);
-      scrollChatBottom();
-      return;
-    }
-    setApiStatus?.("状态：" + text);
-    console.log("[toast]", text);
-  }
-
-  function applyLook(){
-    if(state.ui.wallpaper){
-      el.wallpaper.style.backgroundImage = `url("${state.ui.wallpaper}")`;
-    }else{
-      el.wallpaper.style.backgroundImage =
-        "radial-gradient(1200px 500px at 10% -20%, #fff 0%, transparent 55%), radial-gradient(900px 500px at 100% 0%, #f0ecff 0%, transparent 45%), linear-gradient(180deg,var(--bg-1),var(--bg-2))";
-    }
-    if(state.ui.cover){
-      el.coverImg.src = state.ui.cover;
-    }else{
-      el.coverImg.src =
-        "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='600'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23dadcf4'/%3E%3Cstop offset='1' stop-color='%23c9d1ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23g)'/%3E%3Ctext x='50%25' y='52%25' font-size='42' text-anchor='middle' fill='white' font-family='Arial'%E5%B0%8F%E6%89%8B%E6%9C%BAAI%3C/text%3E%3C/svg%3E";
-    }
-    applyCustomStyle();
-    applyCustomScriptSafe();
-  }
-
-  function applyCustomStyle(){
-    const slot = document.getElementById("custom-style-slot");
-    slot.textContent = state.ui.customCss || "";
-  }
-
-  function applyCustomScriptSafe(){
-    if(!state.ui.customJs) return;
-    try{
-      // 隔离执行，避免污染主作用域
-      new Function('"use strict";\n' + state.ui.customJs)();
-    }catch(err){
-      console.warn("custom js error:", err);
-    }
-  }
-
-  // particles
-  let particleRAF = 0;
-  function startParticles(){
-    const c = document.getElementById("particles");
-    const ctx = c.getContext("2d");
-    let w=0,h=0,pts=[];
-
-    const setup=()=>{
-      const dpr = Math.max(1,window.devicePixelRatio||1);
-      w = c.clientWidth; h = c.clientHeight;
-      c.width = Math.floor(w*dpr); c.height = Math.floor(h*dpr);
-      ctx.setTransform(dpr,0,0,dpr,0,0);
-      pts = Array.from({length:34},()=>({
-        x:Math.random()*w,
-        y:Math.random()*h,
-        r:Math.random()*1.8+.6,
-        vy:Math.random()*.22+.08,
-        vx:(Math.random()-.5)*.1,
-        o:Math.random()*.35+.08
-      }));
-    };
-    const loop=()=>{
-      ctx.clearRect(0,0,w,h);
-      for(const p of pts){
-        p.x += p.vx; p.y += p.vy;
-        if(p.y > h+10){ p.y = -8; p.x = Math.random()*w; }
-        if(p.x < -10) p.x = w+5;
-        if(p.x > w+10) p.x = -5;
-        ctx.beginPath();
-        ctx.fillStyle = `rgba(160,168,210,${p.o})`;
-        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-        ctx.fill();
-      }
-      particleRAF = requestAnimationFrame(loop);
-    };
-    setup();
-    loop();
-    window.addEventListener("resize", setup, {passive:true});
-  }
-  function stopParticles(){
-    cancelAnimationFrame(particleRAF);
-    const c = document.getElementById("particles");
-    const ctx = c.getContext("2d");
-    ctx.clearRect(0,0,c.width,c.height);
-  }
-  function syncParticles(){
-    if(state.ui.particles) startParticles();
-    else stopParticles();
-  }
-
-  // event binding
-  function bindEvents(){
-    // nav
-    $$("[data-back-home]").forEach(b=>b.addEventListener("click",()=>go("home")));
-    $("#btn-home-settings").addEventListener("click",()=>go("api"));
-    $("#btn-home-edit").addEventListener("click",openHomeEditor);
-    $("#home-editor-close").addEventListener("click",()=>el.homeEditorOverlay.classList.remove("show"));
-
-    // roles
-    $("#btn-role-create-toggle").addEventListener("click",()=>{
-      el.roleCreateCard.style.display = el.roleCreateCard.style.display === "none" ? "block" : "none";
-    });
-    $("#btn-role-save").addEventListener("click",saveRoleFromForm);
-    $("#btn-role-clear").addEventListener("click",clearRoleForm);
-    $("#btn-create-group").addEventListener("click",createGroup);
-
-    el.importRoleJson.addEventListener("change",async e=>{
-      const f = e.target.files?.[0];
-      if(!f) return;
-      await importRolesFromJsonFile(f);
-      e.target.value = "";
-    });
-    el.importRolePng.addEventListener("change",async e=>{
-      const f = e.target.files?.[0];
-      if(!f) return;
-      await importRoleFromPng(f);
-      e.target.value = "";
-    });
-
-    // chat
-    $("#btn-chat-back").addEventListener("click",()=>go("roles"));
-    $("#btn-chat-clear").addEventListener("click",()=>{
-      const room = getCurrentRoom();
-      if(!room) return;
-      if(!confirm("清空当前会话？")) return;
-      room.messages = [];
-      saveState();
-      renderChat();
-    });
-    el.chatMode.addEventListener("change",()=>{
-      const room = getCurrentRoom();
-      if(!room) return;
-      room.mode = el.chatMode.value;
-      saveState();
-      renderChat();
-      toast("模式已切换，下一条立即生效");
-    });
-    $("#btn-chat-switch-room").addEventListener("click",()=>go("roles"));
-    $("#btn-plus").addEventListener("click",()=>el.quickPanel.classList.toggle("show"));
-    el.btnSend.addEventListener("click",sendTextMessage);
-    el.chatInput.addEventListener("input",autoGrow);
-    el.chatInput.addEventListener("keydown",e=>{
-      if(e.key==="Enter" && !e.shiftKey){
-        e.preventDefault();
-        sendTextMessage();
-      }
-    });
-
-    $("#q-sticker").addEventListener("click",()=>sendCard("sticker"));
-    $("#q-voice").addEventListener("click",()=>sendCard("voice"));
-    $("#q-transfer").addEventListener("click",()=>sendCard("transfer"));
-    $("#q-location").addEventListener("click",()=>sendCard("location"));
-    $("#picker-close").addEventListener("click",closeStickerPicker);
-
-    // assets
-    $("#btn-assets-refresh").addEventListener("click",renderAssets);
-    el.uploadStickers.addEventListener("change", async e=>{
-      const files = Array.from(e.target.files||[]);
-      for(const f of files){
-        const data = await fileToDataURL(f);
-        state.assets.stickers.unshift({id:uid(),name:f.name.replace(/\.[^.]+$/,""),data});
-      }
-      saveState(); renderAssets(); e.target.value="";
-    });
-    el.uploadIcons.addEventListener("change", async e=>{
-      const files = Array.from(e.target.files||[]);
-      for(const f of files){
-        const data = await fileToDataURL(f);
-        state.assets.icons.unshift({id:uid(),name:f.name.replace(/\.[^.]+$/,""),data});
-      }
-      saveState(); renderAssets(); e.target.value="";
-    });
-
-    // api
-    el.apiProfileSelect.addEventListener("change",()=>{
-      state.api.current = el.apiProfileSelect.value;
-      saveState(); renderApi(); renderChat();
-    });
-    $("#btn-api-save").addEventListener("click",saveApiProfile);
-    $("#btn-save-all").addEventListener("click",saveApiProfile);
-    $("#btn-api-new").addEventListener("click",newApiProfile);
-    $("#btn-api-delete").addEventListener("click",deleteApiProfile);
-    $("#btn-api-test").addEventListener("click",testApi);
-    $("#btn-api-models").addEventListener("click",loadModels);
-
-    el.wallpaperFile.addEventListener("change", async e=>{
-      const f = e.target.files?.[0]; if(!f) return;
-      state.ui.wallpaper = await fileToDataURL(f);
-      saveState(); applyLook(); e.target.value="";
-    });
-    el.coverFile.addEventListener("change", async e=>{
-      const f = e.target.files?.[0]; if(!f) return;
-      state.ui.cover = await fileToDataURL(f);
-      saveState(); applyLook(); e.target.value="";
-    });
-    el.toggleParticles.addEventListener("change",()=>{
-      state.ui.particles = !!el.toggleParticles.checked;
-      saveState(); syncParticles();
-    });
-    $("#btn-reset-look").addEventListener("click",()=>{
-      state.ui.wallpaper = "";
-      state.ui.cover = "";
-      saveState(); applyLook();
-    });
-
-    $("#btn-apply-custom").addEventListener("click",()=>{
-      state.ui.customCss = el.customCss.value || "";
-      state.ui.customJs = el.customJs.value || "";
-      saveState(); applyLook(); toast("自定义已应用");
-    });
-    $("#btn-clear-custom").addEventListener("click",()=>{
-      state.ui.customCss = "";
-      state.ui.customJs = "";
-      el.customCss.value = "";
-      el.customJs.value = "";
-      saveState(); applyLook(); toast("已清空自定义");
-    });
-  }
-
-  // init
-  function init(){
-    tick();
-    setInterval(tick, 1000);
-    bindEvents();
-    applyLook();
-    syncParticles();
-    renderHome();
-    renderRoles();
-    renderAssets();
-    renderApi();
-    go("home");
-  }
-
-  init();
-})();
-</script>
+  <script src="./script.js"></script>
 </body>
 </html>
+/* ===== style.css | Part 2/3 ===== */
+:root{
+  --bg:#0f1115;
+  --panel:#171a21;
+  --panel-2:#1e222b;
+  --text:#f3f5f7;
+  --text-dim:#a7afbd;
+  --line:#2a3040;
+  --accent:#7c5cff;
+  --accent-2:#9f86ff;
+  --danger:#ff5a6b;
+  --ok:#22c55e;
+  --shadow:0 8px 30px rgba(0,0,0,.28);
+  --radius:18px;
+}
+
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,body{
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background: radial-gradient(1200px 600px at 20% -10%, #2f3550 0%, #0f1115 48%, #0b0d12 100%);
+  color:var(--text);
+}
+
+.phone-frame{
+  width:390px;
+  max-width:100vw;
+  height:844px;
+  max-height:100vh;
+  margin:0 auto;
+  border-radius:42px;
+  border:10px solid #0a0c10;
+  box-shadow: 0 18px 60px rgba(0,0,0,.5), inset 0 0 0 2px #232734;
+  background:#000;
+  position:relative;
+  overflow:hidden;
+}
+
+.phone-frame:not(.show){
+  border:0;
+  border-radius:0;
+  width:100vw;
+  height:100vh;
+  box-shadow:none;
+}
+
+.phone-screen{
+  width:100%;
+  height:100%;
+  background:linear-gradient(180deg, #12151d 0%, #0e1118 100%);
+  position:relative;
+  overflow:hidden;
+}
+
+.status-bar{
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:44px;
+  padding:0 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:rgba(10,12,16,.45);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  backdrop-filter: blur(10px);
+  z-index:90;
+  font-size:13px;
+  letter-spacing:.3px;
+}
+.status-right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+#statusMode{
+  color:#b8a9ff;
+  font-weight:600;
+}
+
+.screen{
+  position:absolute;
+  inset:44px 0 0 0;
+  padding:14px;
+  overflow-y:auto;
+  display:none;
+}
+.screen.active{
+  display:block;
+}
+
+.home-header{
+  margin:8px 6px 14px;
+}
+.home-header h1{
+  margin:0;
+  font-size:30px;
+  letter-spacing:.5px;
+}
+.home-header p{
+  margin:6px 0 0;
+  color:var(--text-dim);
+  font-size:13px;
+}
+
+.app-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin-top:8px;
+}
+.app-icon{
+  border:1px solid var(--line);
+  background:linear-gradient(180deg,var(--panel) 0%, #12151c 100%);
+  color:var(--text);
+  border-radius:16px;
+  min-height:90px;
+  font-size:16px;
+  font-weight:600;
+  box-shadow:var(--shadow);
+  cursor:pointer;
+}
+.app-icon:active{ transform:scale(.98); }
+.app-icon.ghost{
+  color:#c4cbda;
+  border-style:dashed;
+  background:#131722;
+}
+
+.screen-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:12px;
+}
+.screen-header h2{
+  margin:0;
+  font-size:18px;
+  font-weight:700;
+}
+.back-btn,.mini-btn{
+  min-width:34px;
+  height:34px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  color:var(--text);
+  background:var(--panel);
+  cursor:pointer;
+}
+.mini-btn{
+  padding:0 10px;
+}
+
+.form{
+  background:rgba(18,22,31,.75);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+label{
+  margin-top:2px;
+  font-size:12px;
+  color:var(--text-dim);
+}
+
+input,select,textarea,button{
+  font:inherit;
+}
+
+input,select,textarea{
+  width:100%;
+  background:var(--panel-2);
+  color:var(--text);
+  border:1px solid #30384a;
+  border-radius:12px;
+  padding:10px 12px;
+  outline:none;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(124,92,255,.18);
+}
+
+textarea{
+  resize:vertical;
+}
+
+button{
+  border:none;
+  border-radius:12px;
+  padding:10px 12px;
+  background:var(--accent);
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+}
+button.sub, .file-btn.sub{
+  background:#2a3142;
+  color:#d8dfef;
+}
+button:active{ transform:translateY(1px); }
+
+.row{
+  display:flex;
+  gap:8px;
+  margin-top:6px;
+}
+.row > *{ flex:1; }
+
+.file-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:12px;
+  padding:10px 12px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.toolbar{
+  display:flex;
+  gap:8px;
+  margin-bottom:10px;
+}
+.toolbar button{
+  flex:1;
+}
+
+.list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:10px;
+}
+
+.card{
+  background:linear-gradient(180deg,#161b25 0%, #111622 100%);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:10px 12px;
+}
+.card .title{
+  font-weight:700;
+  font-size:15px;
+  margin-bottom:4px;
+}
+.card .meta{
+  font-size:12px;
+  color:var(--text-dim);
+}
+
+.card-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+}
+.card-actions{
+  display:flex;
+  gap:6px;
+}
+.card-actions button{
+  padding:7px 10px;
+  border-radius:10px;
+  font-size:12px;
+  background:#2c3344;
+}
+.card-actions .danger{
+  background: #472129;
+  color:#ffb8c1;
+}
+
+.chat-top-controls{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+}
+.chat-top-controls .hint{
+  font-size:12px;
+  color:var(--text-dim);
+}
+
+.chat-messages{
+  background:rgba(14,18,26,.7);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:12px;
+  min-height:48vh;
+  max-height:56vh;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.msg{
+  max-width:88%;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.msg .bubble{
+  border-radius:14px;
+  padding:10px 12px;
+  line-height:1.45;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+.msg .time{
+  font-size:11px;
+  color:#9aa3b7;
+}
+.msg.user{
+  margin-left:auto;
+  align-items:flex-end;
+}
+.msg.user .bubble{
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#fff;
+}
+.msg.ai{
+  margin-right:auto;
+  align-items:flex-start;
+}
+.msg.ai .bubble{
+  background:#222a3a;
+  border:1px solid #33405a;
+}
+.msg.system{
+  margin:0 auto;
+  align-items:center;
+}
+.msg.system .bubble{
+  background:#1f2532;
+  color:#c2ccdf;
+  border:1px dashed #39435a;
+  font-size:12px;
+}
+
+.chat-input-wrap{
+  margin-top:10px;
+  display:flex;
+  gap:8px;
+}
+#chatInput{
+  flex:1;
+  min-height:44px;
+  max-height:120px;
+}
+#sendBtn{
+  width:88px;
+}
+
+.modal{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(5,8,12,.58);
+  z-index:999;
+  padding:14px;
+}
+.modal.show{
+  display:flex;
+}
+.modal-card{
+  width:min(520px,100%);
+  max-height:80vh;
+  overflow:auto;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:#111622;
+  box-shadow:var(--shadow);
+}
+.modal-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 14px 8px;
+}
+.modal-head h3{
+  margin:0;
+  font-size:16px;
+}
+.modal-head button{
+  width:34px;
+  height:34px;
+  border-radius:10px;
+  padding:0;
+  background:#2b3344;
+}
+.checklist{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:8px;
+  background:#151b28;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  max-height:180px;
+  overflow:auto;
+}
+.check-item{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:14px;
+  color:#dce3f2;
+}
+.check-item input{
+  width:auto;
+  padding:0;
+}
+
+.empty{
+  text-align:center;
+  color:var(--text-dim);
+  font-size:13px;
+  padding:18px 10px;
+}
+
+@media (max-width: 520px){
+  .screen{
+    padding:12px;
+  }
+  .phone-frame.show{
+    width:100vw;
+    height:100vh;
+    border:0;
+    border-radius:0;
+  }
+}// ===== script.js | Part 3/3 =====
+(() => {
+  const $ = (id) => document.getElementById(id);
+
+  const state = {
+    settings: {
+      baseUrl: "",
+      apiKey: "",
+      model: "gpt-4o-mini",
+      temperature: 0.9,
+      defaultMode: "online",
+      customCss: ""
+    },
+    personas: [],
+    chats: [],
+    currentChatId: null,
+    createChatType: "single" // single | group
+  };
+
+  const LS_KEY = "ephone_mvp_v1";
+
+  // ---------- Init ----------
+  function init() {
+    bindBaseEvents();
+    loadState();
+    renderAll();
+    tickClock();
+    setInterval(tickClock, 1000 * 30);
+  }
+
+  function bindBaseEvents() {
+    // screen navigation
+    document.querySelectorAll("[data-open]").forEach((btn) => {
+      btn.addEventListener("click", () => openScreen(btn.dataset.open));
+    });
+    document.querySelectorAll("[data-back]").forEach((btn) => {
+      btn.addEventListener("click", () => openScreen(btn.dataset.back));
+    });
+
+    // status / frame
+    $("toggleFrameBtn").addEventListener("click", () => {
+      $("phoneFrame").classList.toggle("show");
+    });
+
+    // API events
+    $("tempInput").addEventListener("input", (e) => {
+      $("tempValue").textContent = e.target.value;
+    });
+
+    $("applyCssBtn").addEventListener("click", () => {
+      const css = $("customCssInput").value.trim();
+      $("dynamicCustomCss").textContent = css;
+      toast("CSS 已应用");
+    });
+
+    $("saveApiBtn").addEventListener("click", () => {
+      state.settings.baseUrl = $("baseUrlInput").value.trim();
+      state.settings.apiKey = $("apiKeyInput").value.trim();
+      state.settings.model = $("modelInput").value.trim() || "gpt-4o-mini";
+      state.settings.temperature = Number($("tempInput").value || 0.9);
+      state.settings.defaultMode = $("modeSelect").value;
+      state.settings.customCss = $("customCssInput").value || "";
+      saveState();
+      toast("API 设置已保存");
+    });
+
+    // persona events
+    $("addPersonaBtn").addEventListener("click", addPersona);
+    $("exportPersonaBtn").addEventListener("click", exportPersonas);
+    $("importPersonaInput").addEventListener("change", importPersonas);
+
+    // chat modal events
+    $("newSingleChatBtn").addEventListener("click", () => openNewChatModal("single"));
+    $("newGroupChatBtn").addEventListener("click", () => openNewChatModal("group"));
+    $("newChatBtn").addEventListener("click", () => openNewChatModal("single"));
+    $("closeNewChatModal").addEventListener("click", closeNewChatModal);
+    $("cancelCreateChatBtn").addEventListener("click", closeNewChatModal);
+    $("confirmCreateChatBtn").addEventListener("click", confirmCreateChat);
+
+    // chat screen events
+    $("chatModeSelect").addEventListener("change", onChatModeChange);
+    $("sendBtn").addEventListener("click", handleSend);
+    $("regenerateBtn").addEventListener("click", handleRegenerate);
+    $("chatInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSend();
+      }
+    });
+    $("chatInput").addEventListener("input", autoResizeInput);
+  }
+
+  // ---------- Storage ----------
+  function saveState() {
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+  }
+
+  function loadState() {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        Object.assign(state, parsed);
+      } catch (e) {
+        console.warn("loadState parse error:", e);
+      }
+    }
+  }
+
+  // ---------- Render ----------
+  function renderAll() {
+    renderSettings();
+    renderPersonaList();
+    renderChatList();
+    applyCustomCss();
+    syncStatusMode();
+    autoResizeInput();
+  }
+
+  function renderSettings() {
+    $("baseUrlInput").value = state.settings.baseUrl || "";
+    $("apiKeyInput").value = state.settings.apiKey || "";
+    $("modelInput").value = state.settings.model || "gpt-4o-mini";
+    $("tempInput").value = String(state.settings.temperature ?? 0.9);
+    $("tempValue").textContent = String(state.settings.temperature ?? 0.9);
+    $("modeSelect").value = state.settings.defaultMode || "online";
+    $("customCssInput").value = state.settings.customCss || "";
+  }
+
+  function renderPersonaList() {
+    const el = $("personaList");
+    el.innerHTML = "";
+    if (!state.personas.length) {
+      el.innerHTML = `<div class="empty">还没有人设，先添加一个吧</div>`;
+      refreshPersonaSelects();
+      return;
+    }
+
+    state.personas.forEach((p) => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="card-row">
+          <div>
+            <div class="title">${escapeHTML(p.name)}</div>
+            <div class="meta">${escapeHTML(shorten(p.core, 28))}</div>
+          </div>
+          <div class="card-actions">
+            <button data-id="${p.id}" data-act="copy">复制</button>
+            <button data-id="${p.id}" data-act="del" class="danger">删除</button>
+          </div>
+        </div>
+      `;
+      card.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.id;
+          const act = btn.dataset.act;
+          if (act === "copy") {
+            const target = state.personas.find((x) => x.id === id);
+            if (!target) return;
+            navigator.clipboard.writeText(JSON.stringify(target, null, 2));
+            toast("已复制人设JSON");
+          } else if (act === "del") {
+            state.personas = state.personas.filter((x) => x.id !== id);
+            // 同步清理聊天引用
+            state.chats.forEach((c) => {
+              if (c.type === "single" && c.personaId === id) c.personaId = "";
+              if (c.type === "group") c.memberPersonaIds = (c.memberPersonaIds || []).filter((m) => m !== id);
+            });
+            saveState();
+            renderPersonaList();
+            renderChatList();
+          }
+        });
+      });
+      el.appendChild(card);
+    });
+
+    refreshPersonaSelects();
+  }
+
+  function renderChatList() {
+    const el = $("chatList");
+    el.innerHTML = "";
+    if (!state.chats.length) {
+      el.innerHTML = `<div class="empty">暂无聊天，点击“新建单聊/群聊”</div>`;
+      return;
+    }
+
+    state.chats.forEach((chat) => {
+      const last = chat.messages?.slice(-1)[0];
+      const meta = last ? `${formatTime(last.time)} · ${shorten(last.content, 24)}` : "暂无消息";
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="card-row">
+          <div style="flex:1;min-width:0;">
+            <div class="title">${escapeHTML(chat.name)} ${chat.type === "group" ? "（群）" : ""}</div>
+            <div class="meta">${escapeHTML(meta)}</div>
+          </div>
+          <div class="card-actions">
+            <button data-id="${chat.id}" data-act="open">打开</button>
+            <button data-id="${chat.id}" data-act="del" class="danger">删</button>
+          </div>
+        </div>
+      `;
+      card.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.id;
+          const act = btn.dataset.act;
+          if (act === "open") openChat(id);
+          if (act === "del") {
+            state.chats = state.chats.filter((x) => x.id !== id);
+            if (state.currentChatId === id) state.currentChatId = null;
+            saveState();
+            renderChatList();
+          }
+        });
+      });
+      el.appendChild(card);
+    });
+  }
+
+  function renderChatMessages(chat) {
+    const wrap = $("chatMessages");
+    wrap.innerHTML = "";
+    (chat.messages || []).forEach((m) => {
+      const item = document.createElement("div");
+      item.className = `msg ${m.role === "user" ? "user" : m.role === "assistant" ? "ai" : "system"}`;
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.textContent = m.content;
+
+      const time = document.createElement("div");
+      time.className = "time";
+      time.textContent = formatTime(m.time);
+
+      item.appendChild(bubble);
+      item.appendChild(time);
+      wrap.appendChild(item);
+    });
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+
+  function refreshPersonaSelects() {
+    const single = $("singlePersonaSelect");
+    single.innerHTML = `<option value="">-- 请选择 --</option>`;
+    state.personas.forEach((p) => {
+      const opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = p.name;
+      single.appendChild(opt);
+    });
+
+    const list = $("groupPersonaChecklist");
+    list.innerHTML = "";
+    state.personas.forEach((p) => {
+      const row = document.createElement("label");
+      row.className = "check-item";
+      row.innerHTML = `<input type="checkbox" value="${p.id}" /> ${escapeHTML(p.name)}`;
+      list.appendChild(row);
+    });
+  }
+
+  // ---------- Clock / Status ----------
+  function tickClock() {
+    const d = new Date();
+    $("statusTime").textContent = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  }
+
+  function syncStatusMode() {
+    const chat = getCurrentChat();
+    const mode = chat?.mode || state.settings.defaultMode || "online";
+    $("statusMode").textContent = mode.toUpperCase();
+    if ($("chatModeSelect")) $("chatModeSelect").value = mode;
+  }
+
+  // ---------- Screens ----------
+  function openScreen(id) {
+    document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
+    $(id).classList.add("active");
+    if (id === "chatListScreen") renderChatList();
+    if (id === "personaScreen") renderPersonaList();
+    if (id === "apiScreen") renderSettings();
+    if (id === "chatScreen") syncStatusMode();
+  }
+
+  function openChat(chatId) {
+    state.currentChatId = chatId;
+    const chat = getCurrentChat();
+    if (!chat) return;
+    $("chatTitle").textContent = chat.name;
+    $("chatModeSelect").value = chat.mode || state.settings.defaultMode || "online";
+    renderChatMessages(chat);
+    syncStatusMode();
+    saveState();
+    openScreen("chatScreen");
+  }
+
+  // ---------- Persona ----------
+  function addPersona() {
+    const name = $("personaNameInput").value.trim();
+    const core = $("personaCoreInput").value.trim();
+    const drive = $("personaDriveInput").value.trim();
+    const style = $("personaStyleInput").value.trim();
+
+    if (!name || !core) return toast("名称和核心人设必填");
+
+    state.personas.push({
+      id: uid("p"),
+      name, core, drive, style,
+      createdAt: Date.now()
+    });
+
+    $("personaNameInput").value = "";
+    $("personaCoreInput").value = "";
+    $("personaDriveInput").value = "";
+    $("personaStyleInput").value = "";
+
+    saveState();
+    renderPersonaList();
+    toast("人设已添加");
+  }
+
+  function exportPersonas() {
+    const blob = new Blob([JSON.stringify(state.personas, null, 2)], { type: "application/json;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `personas_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  async function importPersonas(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const arr = JSON.parse(text);
+      if (!Array.isArray(arr)) throw new Error("JSON 不是数组");
+      const normalized = arr
+        .filter((x) => x && x.name)
+        .map((x) => ({
+          id: x.id || uid("p"),
+          name: String(x.name || "").trim(),
+          core: String(x.core || ""),
+          drive: String(x.drive || ""),
+          style: String(x.style || ""),
+          createdAt: x.createdAt || Date.now()
+        }));
+      state.personas.push(...normalized);
+      saveState();
+      renderPersonaList();
+      toast(`导入 ${normalized.length} 个`);
+    } catch (err) {
+      toast("导入失败：JSON 格式不正确");
+    } finally {
+      e.target.value = "";
+    }
+  }
+
+  // ---------- New chat ----------
+  function openNewChatModal(type = "single") {
+    state.createChatType = type;
+    $("newChatModalTitle").textContent = type === "group" ? "新建群聊" : "新建单聊";
+    $("singlePersonaBlock").style.display = type === "single" ? "" : "none";
+    $("groupPersonaBlock").style.display = type === "group" ? "" : "none";
+    $("newChatNameInput").value = "";
+    $("singlePersonaSelect").value = "";
+    document.querySelectorAll('#groupPersonaChecklist input[type="checkbox"]').forEach((c) => (c.checked = false));
+    $("newChatModal").classList.add("show");
+    refreshPersonaSelects();
+  }
+
+  function closeNewChatModal() {
+    $("newChatModal").classList.remove("show");
+  }
+
+  function confirmCreateChat() {
+    const name = $("newChatNameInput").value.trim();
+    if (!name) return toast("请填写聊天名称");
+
+    if (state.createChatType === "single") {
+      const personaId = $("singlePersonaSelect").value;
+      if (!personaId) return toast("单聊必须选择一个人设");
+
+      state.chats.push({
+        id: uid("c"),
+        type: "single",
+        name,
+        personaId,
+        memberPersonaIds: [],
+        mode: state.settings.defaultMode || "online",
+        messages: [{
+          role: "system",
+          content: "聊天已创建。你可以直接开始对话。",
+          time: Date.now()
+        }]
+      });
+    } else {
+      const selected = [...document.querySelectorAll('#groupPersonaChecklist input[type="checkbox"]:checked')].map(i => i.value);
+      if (!selected.length) return toast("群聊至少选择 1 个人设成员");
+
+      state.chats.push({
+        id: uid("c"),
+        type: "group",
+        name,
+        personaId: "",
+        memberPersonaIds: selected,
+        mode: state.settings.defaultMode || "online",
+        messages: [{
+          role: "system",
+          content: "群聊已创建。输入消息后，AI会根据成员人设进行群内互动。",
+          time: Date.now()
+        }]
+      });
+    }
+
+    saveState();
+    renderChatList();
+    closeNewChatModal();
+    toast("创建成功");
+  }
+
+  // ---------- Chat ----------
+  function onChatModeChange() {
+    const chat = getCurrentChat();
+    if (!chat) return;
+    chat.mode = $("chatModeSelect").value;
+    saveState();
+    syncStatusMode();
+    toast(`已切换为 ${chat.mode === "online" ? "线上模式" : "线下模式"}（立即生效）`);
+  }
+
+  async function handleSend() {
+    const chat = getCurrentChat();
+    if (!chat) return;
+
+    const text = $("chatInput").value.trim();
+    if (!text) return;
+
+    if (!state.settings.baseUrl || !state.settings.apiKey || !state.settings.model) {
+      return toast("请先配置 API（反代地址 / Key / 模型）");
+    }
+
+    appendMessage(chat, "user", text);
+    $("chatInput").value = "";
+    autoResizeInput();
+    renderChatMessages(chat);
+    saveState();
+
+    appendMessage(chat, "system", "AI 正在思考中…");
+    renderChatMessages(chat);
+
+    try {
+      const reply = await requestAI(chat, text);
+      removeLastSystemThinking(chat);
+      appendMessage(chat, "assistant", reply);
+      renderChatMessages(chat);
+      saveState();
+    } catch (err) {
+      removeLastSystemThinking(chat);
+      appendMessage(chat, "system", `请求失败：${err.message}`);
+      renderChatMessages(chat);
+      saveState();
+    }
+  }
+
+  async function handleRegenerate() {
+    const chat = getCurrentChat();
+    if (!chat) return;
+
+    const lastUser = [...chat.messages].reverse().find((m) => m.role === "user");
+    if (!lastUser) return toast("没有可重生的用户消息");
+
+    // 删掉末尾 assistant（如果有）
+    for (let i = chat.messages.length - 1; i >= 0; i--) {
+      if (chat.messages[i].role === "assistant") {
+        chat.messages.splice(i, 1);
+        break;
+      }
+      if (chat.messages[i].role === "user") break;
+    }
+
+    appendMessage(chat, "system", "正在重新生成…");
+    renderChatMessages(chat);
+    saveState();
+
+    try {
+      const reply = await requestAI(chat, lastUser.content);
+      removeLastSystemThinking(chat);
+      appendMessage(chat, "assistant", reply);
+      renderChatMessages(chat);
+      saveState();
+    } catch (err) {
+      removeLastSystemThinking(chat);
+      appendMessage(chat, "system", `重生成失败：${err.message}`);
+      renderChatMessages(chat);
+      saveState();
+    }
+  }
+
+  async function requestAI(chat, latestUserText) {
+    const messages = buildMessagesForApi(chat, latestUserText);
+
+    const url = normalizeBaseUrl(state.settings.baseUrl) + "/v1/chat/completions";
+    const body = {
+      model: state.settings.model,
+      temperature: Number(state.settings.temperature ?? 0.9),
+      messages
+    };
+
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${state.settings.apiKey}`
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!resp.ok) {
+      let detail = "";
+      try {
+        detail = await resp.text();
+      } catch {}
+      throw new Error(`${resp.status} ${resp.statusText}${detail ? " | " + detail.slice(0, 180) : ""}`);
+    }
+
+    const data = await resp.json();
+    const text = data?.choices?.[0]?.message?.content;
+    if (!text) throw new Error("返回内容为空");
+    return String(text).trim();
+  }
+
+  // ---------- Prompt engine ----------
+  function buildMessagesForApi(chat) {
+    const mode = chat.mode || state.settings.defaultMode || "online";
+    const systemPrompt = mode === "online" ? buildOnlineSystemPrompt(chat) : buildOfflineSystemPrompt(chat);
+
+    // 最近上下文
+    const history = (chat.messages || [])
+      .filter((m) => m.role === "user" || m.role === "assistant")
+      .slice(-14)
+      .map((m) => ({
+        role: m.role === "assistant" ? "assistant" : "user",
+        content: m.content
+      }));
+
+    return [{ role: "system", content: systemPrompt }, ...history];
+  }
+
+  function buildOnlineSystemPrompt(chat) {
+    if (chat.type === "single") {
+      const p = state.personas.find((x) => x.id === chat.personaId);
+      return `
+你在进行“高真实感聊天扮演”。目标：不模板化、不浮于表面、持续揣摩人设深层心理。
+
+【角色资料】
+- 名称：${p?.name || "未知"}
+- 核心人设：${p?.core || ""}
+- 深层动机：${p?.drive || ""}
+- 说话风格：${p?.style || ""}
+
+【行为准则】
+1) 每次回复先隐性推断：对方情绪、关系张力、潜台词，再作答。
+2) 回复长度由当下情境自行决定，避免固定句式和固定条数。
+3) 少说教、少空洞鸡汤，尽量“像真人即时反应”。
+4) 允许有停顿、犹豫、转折、反问，但要符合角色本身。
+5) 不要暴露“你在遵循提示词/规则”。
+
+请直接开始对话回复。
+      `.trim();
+    }
+
+    // group
+    const members = (chat.memberPersonaIds || [])
+      .map((id) => state.personas.find((p) => p.id === id))
+      .filter(Boolean);
+
+    const memberText = members.map((m, i) =>
+      `${i + 1}. ${m.name}\n- 核心:${m.core}\n- 动机:${m.drive}\n- 风格:${m.style}`).join("\n\n");
+
+    return `
+你在扮演一个群聊场景，包含多个不同人格成员。禁止同质化发言。
+
+【群成员档案】
+${memberText}
+
+【群聊规则】
+1) 根据上下文，选择“最可能会发言”的1~2名成员回应，不必人人发言。
+2) 每位成员语气、措辞、关注点必须区分明显。
+3) 回复长度和节奏根据场景变化，不固定模板。
+4) 可出现轻微互动（接话、吐槽、支持、误解），但保持自然。
+
+【输出格式要求】
+使用：
+【成员名】内容
+【成员名】内容
+（如只需要一人发言可只输出一段）
+    `.trim();
+  }
+
+  function buildOfflineSystemPrompt(chat) {
+    if (chat.type === "single") {
+      const p = state.personas.find((x) => x.id === chat.personaId);
+      return `
+你正在进行沉浸式角色扮演（线下模式）。
+
+【角色资料】
+- 名称：${p?.name || "未知"}
+- 核心人设：${p?.core || ""}
+- 深层动机：${p?.drive || ""}
+- 说话风格：${p?.style || ""}
+
+【必须格式】
+按以下结构输出（每次都要）：
+*动作/神态/环境细节*
+「对白」
+
+【要求】
+1) 动作与对白要互相支撑，体现情绪递进。
+2) 揣摩角色深层动机，不要只表面“可爱/冷淡”。
+3) 文风自然，不要流水账，不要模板化重复。
+4) 不要解释规则，不要输出无关标记。
+      `.trim();
+    }
+
+    const members = (chat.memberPersonaIds || [])
+      .map((id) => state.personas.find((p) => p.id === id))
+      .filter(Boolean);
+
+    const memberText = members.map((m, i) =>
+      `${i + 1}. ${m.name}\n- 核心:${m.core}\n- 动机:${m.drive}\n- 风格:${m.style}`).join("\n\n");
+
+    return `
+你正在进行群像角色扮演（线下模式）。
+
+【群成员档案】
+${memberText}
+
+【输出格式】
+每位发言成员使用：
+【成员名】
+*动作/状态*
+「对白」
+
+【要求】
+1) 本轮选择最合理的1~2名成员回应。
+2) 每个成员的动作描写与对白风格必须区别明显。
+3) 不模板化，不要所有人同样句式。
+    `.trim();
+  }
+
+  // ---------- Helpers ----------
+  function getCurrentChat() {
+    return state.chats.find((x) => x.id === state.currentChatId);
+  }
+
+  function appendMessage(chat, role, content) {
+    chat.messages = chat.messages || [];
+    chat.messages.push({
+      role, content, time: Date.now()
+    });
+  }
+
+  function removeLastSystemThinking(chat) {
+    const idx = chat.messages.findLastIndex((m) => m.role === "system" && /思考中|重新生成/.test(m.content));
+    if (idx >= 0) chat.messages.splice(idx, 1);
+  }
+
+  function applyCustomCss() {
+    $("dynamicCustomCss").textContent = state.settings.customCss || "";
+  }
+
+  function openToastContainer() {
+    let t = document.getElementById("toast");
+    if (!t) {
+      t = document.createElement("div");
+      t.id = "toast";
+      Object.assign(t.style, {
+        position: "fixed",
+        left: "50%",
+        bottom: "22px",
+        transform: "translateX(-50%)",
+        background: "rgba(20,25,36,.92)",
+        color: "#fff",
+        border: "1px solid #36415a",
+        borderRadius: "10px",
+        padding: "8px 12px",
+        fontSize: "13px",
+        zIndex: "3000",
+        display: "none"
+      });
+      document.body.appendChild(t);
+    }
+    return t;
+  }
+
+  let toastTimer = null;
+  function toast(msg) {
+    const t = openToastContainer();
+    t.textContent = msg;
+    t.style.display = "block";
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => (t.style.display = "none"), 1800);
+  }
+
+  function uid(prefix = "id") {
+    return `${prefix}_${Math.random().toString(36).slice(2, 9)}_${Date.now().toString(36)}`;
+  }
+
+  function shorten(str = "", n = 28) {
+    return str.length > n ? str.slice(0, n) + "…" : str;
+  }
+
+  function formatTime(ts) {
+    const d = new Date(ts || Date.now());
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  }
+
+  function normalizeBaseUrl(url = "") {
+    return url.replace(/\/+$/, "");
+  }
+
+  function escapeHTML(s = "") {
+    return s
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
+
+  function autoResizeInput() {
+    const ta = $("chatInput");
+    if (!ta) return;
+    ta.style.height = "auto";
+    ta.style.height = Math.min(ta.scrollHeight, 120) + "px";
+  }
+
+  // start
+  init();
+})();
