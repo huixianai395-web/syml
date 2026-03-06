@@ -1,1123 +1,510 @@
 
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>EPhone MVP</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>EPhone · 基础版</title>
+  <style>
+    :root{
+      --bg:#0f1115;
+      --panel:#171b24;
+      --panel-2:#1f2531;
+      --line:#2b3445;
+      --text:#eaf0ff;
+      --sub:#9aa5b5;
+      --accent:#5b8cff;
+      --danger:#ff4d4f;
+      --ok:#28c76f;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    html,body{margin:0;height:100%;background:#080a0f;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);}
+    #phone{
+      width:min(430px,100vw);
+      height:100dvh;
+      margin:0 auto;
+      background:linear-gradient(180deg,#10141d 0%,#0d1017 100%);
+      border-left:1px solid #1b2230;
+      border-right:1px solid #1b2230;
+      overflow:hidden;
+      position:relative;
+    }
+    #status-bar{
+      height:30px;
+      padding:8px 12px 0;
+      display:flex;justify-content:space-between;align-items:center;
+      color:var(--sub);font-size:12px;
+    }
+    .screen{
+      position:absolute;inset:30px 0 0;
+      display:none;flex-direction:column;
+    }
+    .screen.active{display:flex;}
+    .header{
+      height:52px;display:flex;align-items:center;justify-content:space-between;
+      padding:0 14px;border-bottom:1px solid var(--line);
+      background:rgba(13,16,23,.88);backdrop-filter:blur(8px);
+      font-weight:600;
+    }
+    .back{font-size:24px;line-height:1;cursor:pointer;user-select:none;color:#dbe4ff;}
+    .ghost{width:24px;}
+    .btn{
+      border:none;border-radius:10px;padding:10px 12px;cursor:pointer;
+      background:var(--panel-2);color:var(--text);font-weight:600;
+    }
+    .btn.primary{background:var(--accent);color:#fff;}
+    .btn.danger{background:var(--danger);color:#fff;}
+    .btn.small{padding:6px 10px;font-size:12px;border-radius:8px;}
+    /* Home */
+    #home{padding:12px 14px 16px;overflow:auto;}
+    .card{
+      background:var(--panel);border:1px solid var(--line);border-radius:14px;
+      padding:14px;
+    }
+    .profile{display:flex;gap:12px;align-items:flex-start;}
+    .avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;border:1px solid #2f3a4f;}
+    .name{margin:2px 0 6px;font-size:16px;font-weight:700;}
+    .bio{margin:0;color:var(--sub);font-size:13px;line-height:1.45;}
+    .grid{
+      margin-top:14px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;
+    }
+    .app{
+      border:1px solid var(--line);background:var(--panel-2);border-radius:12px;
+      min-height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:6px;cursor:pointer;
+    }
+    .app .emoji{font-size:22px;line-height:1;}
+    .app small{font-size:12px;color:var(--sub);}
+    /* list */
+    #chat-list-wrap{display:flex;flex-direction:column;min-height:0;flex:1;}
+    #chat-list{overflow:auto;flex:1;}
+    .chat-item{
+      display:flex;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);
+      cursor:pointer;
+    }
+    .chat-item img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid #2f3a4f;}
+    .meta{flex:1;min-width:0;}
+    .meta .top{display:flex;justify-content:space-between;gap:10px;align-items:center;}
+    .meta .n{font-weight:600;}
+    .meta .t{font-size:12px;color:var(--sub);}
+    .meta .l{margin-top:4px;color:var(--sub);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .toolbar{padding:10px 12px;border-top:1px solid var(--line);display:flex;gap:8px;background:rgba(13,16,23,.9);}
+    .toolbar input{
+      flex:1;background:#141923;border:1px solid var(--line);color:var(--text);
+      border-radius:10px;padding:10px 12px;outline:none;
+    }
+    /* chat */
+    #chat-messages{
+      flex:1;min-height:0;overflow:auto;padding:12px;
+      display:flex;flex-direction:column;gap:10px;
+    }
+    .msg{
+      max-width:82%;padding:10px 12px;border-radius:14px;
+      font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word;
+      border:1px solid transparent;
+    }
+    .msg.ai{align-self:flex-start;background:#222b3a;border-color:#303c52;border-bottom-left-radius:6px;}
+    .msg.user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:6px;}
+    .msg.sys{
+      align-self:center;max-width:100%;font-size:12px;color:var(--sub);
+      background:transparent;border:none;padding:4px 0;
+    }
+    #input-row{
+      border-top:1px solid var(--line);padding:10px;display:flex;gap:8px;background:rgba(13,16,23,.9);
+    }
+    #input-row textarea{
+      flex:1;resize:none;max-height:120px;height:42px;
+      background:#141923;border:1px solid var(--line);color:var(--text);
+      border-radius:10px;padding:10px 12px;outline:none;
+      font:inherit;line-height:1.4;
+    }
+    /* api */
+    .form{padding:14px;overflow:auto;}
+    .form .g{margin-bottom:10px;}
+    .form label{display:block;margin-bottom:6px;font-size:13px;color:var(--sub);}
+    .form input{
+      width:100%;background:#141923;border:1px solid var(--line);
+      color:var(--text);border-radius:10px;padding:11px 12px;outline:none;
+    }
+    .hint{font-size:12px;color:var(--sub);margin:6px 0 0;line-height:1.4;}
+    .toast{
+      position:absolute;left:50%;bottom:18px;transform:translateX(-50%);
+      background:#161d2a;border:1px solid #2c3850;color:#dce7ff;
+      border-radius:10px;padding:8px 12px;font-size:12px;z-index:99;
+    }
+  </style>
 </head>
 <body>
-  <div id="phone-screen">
+  <div id="phone">
     <div id="status-bar">
-      <span id="status-time">12:00</span>
-      <span id="status-battery">100%</span>
+      <span id="time">12:00</span>
+      <span id="battery">100%</span>
     </div>
 
-    <!-- Home -->
-    <section id="home-screen" class="screen active">
-      <div class="header home-header">
-        <span>主屏幕</span>
-      </div>
+    <!-- 主屏幕 -->
+    <section id="screen-home" class="screen active">
+      <div id="home">
+        <div class="card profile">
+          <img class="avatar" src="https://i.postimg.cc/y8xWzCqj/anime-boy.jpg" alt="avatar">
+          <div>
+            <div class="name">弥洛</div>
+            <p class="bio">基础版先跑通：主屏幕、聊天、API 设置。</p>
+          </div>
+        </div>
 
-      <div class="home-profile-card">
-        <img class="home-avatar" src="https://i.postimg.cc/y8xWzCqj/anime-boy.jpg" alt="avatar" />
-        <div>
-          <h3>弥洛</h3>
-          <p>你好像过得很好 迫不及待抹去我存在的痕迹</p>
+        <div class="grid">
+          <div class="app" id="go-chat-list">
+            <div class="emoji">💬</div><small>消息</small>
+          </div>
+          <div class="app" id="go-api">
+            <div class="emoji">⚙️</div><small>API设置</small>
+          </div>
         </div>
       </div>
-
-      <div class="app-grid">
-        <button class="app-icon" onclick="showScreen('chat-list-screen')">
-          <span>💬</span>
-          <small>消息</small>
-        </button>
-        <button class="app-icon" onclick="showScreen('api-settings-screen')">
-          <span>⚙️</span>
-          <small>API设置</small>
-        </button>
-      </div>
     </section>
 
-    <!-- Chat list -->
-    <section id="chat-list-screen" class="screen">
+    <!-- 聊天列表 -->
+    <section id="screen-chat-list" class="screen">
       <div class="header">
-        <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
+        <span class="back" data-back="screen-home">‹</span>
         <span>消息</span>
-        <span style="width:24px;"></span>
+        <button class="btn small" id="add-chat">+ 会话</button>
       </div>
-      <div id="chat-list" class="list-container"></div>
+      <div id="chat-list-wrap">
+        <div id="chat-list"></div>
+        <div class="toolbar">
+          <input id="new-chat-name" placeholder="新会话名（可空）">
+          <button class="btn primary" id="create-chat">创建</button>
+        </div>
+      </div>
     </section>
 
-    <!-- Chat interface -->
-    <section id="chat-interface-screen" class="screen">
+    <!-- 聊天界面 -->
+    <section id="screen-chat" class="screen">
       <div class="header">
-        <span class="back-btn" onclick="backToChatList()">‹</span>
-        <span id="chat-header-title">聊天</span>
-        <span style="width:24px;"></span>
+        <span class="back" data-back="screen-chat-list">‹</span>
+        <span id="chat-title">聊天</span>
+        <button class="btn small danger" id="clear-chat">清空</button>
       </div>
-
       <div id="chat-messages"></div>
-
-      <div id="chat-input-area">
-        <textarea id="chat-input" rows="1" placeholder="输入消息..."></textarea>
-        <button id="send-btn">发送</button>
+      <div id="input-row">
+        <textarea id="chat-input" placeholder="输入消息..." rows="1"></textarea>
+        <button class="btn primary" id="send">发送</button>
       </div>
     </section>
 
-    <!-- API settings -->
-    <section id="api-settings-screen" class="screen">
+    <!-- API设置 -->
+    <section id="screen-api" class="screen">
       <div class="header">
-        <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
+        <span class="back" data-back="screen-home">‹</span>
         <span>API 设置</span>
-        <span style="width:24px;"></span>
+        <span class="ghost"></span>
       </div>
-
-      <div class="form-container">
-        <label>反代地址（不带 /v1）</label>
-        <input id="proxy-url" type="text" placeholder="https://api.openai.com" />
-
-        <label>API Key</label>
-        <input id="api-key" type="password" placeholder="sk-..." />
-
-        <label>模型</label>
-        <input id="model-name" type="text" placeholder="gpt-4o-mini" />
-
-        <label>Temperature</label>
-        <input id="temperature" type="number" min="0" max="2" step="0.1" value="0.8" />
-
-        <button id="save-api-btn" class="full-btn">保存设置</button>
+      <div class="form">
+        <div class="g">
+          <label for="proxyUrl">反代地址（不带 /v1）</label>
+          <input id="proxyUrl" type="text" placeholder="https://api.openai.com">
+        </div>
+        <div class="g">
+          <label for="apiKey">API Key</label>
+          <input id="apiKey" type="password" placeholder="sk-...">
+        </div>
+        <div class="g">
+          <label for="model">模型</label>
+          <input id="model" type="text" placeholder="gpt-4o-mini">
+        </div>
+        <div class="g">
+          <label for="temperature">Temperature (0~2)</label>
+          <input id="temperature" type="number" min="0" max="2" step="0.1" value="0.8">
+          <p class="hint">如需图片理解请换支持视觉的模型。基础版先走文本。</p>
+        </div>
+        <button class="btn primary" id="save-api" style="width:100%;">保存 API 设置</button>
       </div>
     </section>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    const STORE = "ephone_base_v1";
+    const state = {
+      screen: "screen-home",
+      currentChatId: null,
+      data: {
+        api: {
+          proxyUrl: "",
+          apiKey: "",
+          model: "gpt-4o-mini",
+          temperature: 0.8
+        },
+        chats: [
+          {
+            id: "default",
+            name: "弥洛",
+            avatar: "https://i.postimg.cc/y8xWzCqj/anime-boy.jpg",
+            messages: [
+              { role: "assistant", content: "先把基础版跑通，再往上叠功能。", time: Date.now() }
+            ]
+          }
+        ]
+      }
+    };
+
+    // ---------- init ----------
+    (function init(){
+      load();
+      bind();
+      renderClock();
+      setInterval(renderClock, 30000);
+      fillApiForm();
+      renderChatList();
+    })();
+
+    function bind(){
+      document.getElementById("go-chat-list").onclick = () => show("screen-chat-list");
+      document.getElementById("go-api").onclick = () => show("screen-api");
+
+      document.querySelectorAll(".back").forEach(el=>{
+        el.onclick = () => show(el.dataset.back);
+      });
+
+      document.getElementById("save-api").onclick = saveApi;
+
+      document.getElementById("create-chat").onclick = createChat;
+      document.getElementById("add-chat").onclick = () => {
+        document.getElementById("new-chat-name").focus();
+      };
+
+      document.getElementById("send").onclick = sendMessage;
+      const input = document.getElementById("chat-input");
+      input.addEventListener("input", autoGrow);
+      input.addEventListener("keydown", (e)=>{
+        if(e.key==="Enter" && !e.shiftKey){
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      document.getElementById("clear-chat").onclick = () => {
+        const chat = curChat();
+        if(!chat) return;
+        chat.messages = [];
+        persist();
+        renderMessages([]);
+      };
+    }
+
+    function show(id){
+      document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+      state.screen = id;
+      if(id==="screen-chat-list") renderChatList();
+    }
+
+    // ---------- clock ----------
+    function renderClock(){
+      const d = new Date();
+      const hh = String(d.getHours()).padStart(2,"0");
+      const mm = String(d.getMinutes()).padStart(2,"0");
+      document.getElementById("time").textContent = `${hh}:${mm}`;
+    }
+
+    // ---------- storage ----------
+    function load(){
+      try{
+        const raw = localStorage.getItem(STORE);
+        if(!raw) return;
+        const parsed = JSON.parse(raw);
+        if(parsed?.api && Array.isArray(parsed?.chats)) state.data = parsed;
+      }catch(e){
+        console.warn(e);
+      }
+    }
+    function persist(){
+      localStorage.setItem(STORE, JSON.stringify(state.data));
+    }
+
+    // ---------- API ----------
+    function fillApiForm(){
+      const a = state.data.api;
+      document.getElementById("proxyUrl").value = a.proxyUrl || "";
+      document.getElementById("apiKey").value = a.apiKey || "";
+      document.getElementById("model").value = a.model || "gpt-4o-mini";
+      document.getElementById("temperature").value = a.temperature ?? 0.8;
+    }
+
+    function saveApi(){
+      state.data.api.proxyUrl = document.getElementById("proxyUrl").value.trim();
+      state.data.api.apiKey = document.getElementById("apiKey").value.trim();
+      state.data.api.model = document.getElementById("model").value.trim() || "gpt-4o-mini";
+      state.data.api.temperature = Number(document.getElementById("temperature").value || 0.8);
+      persist();
+      toast("API 设置已保存");
+    }
+
+    // ---------- chat list ----------
+    function renderChatList(){
+      const list = document.getElementById("chat-list");
+      list.innerHTML = "";
+      state.data.chats.forEach(chat=>{
+        const last = chat.messages[chat.messages.length-1];
+        const item = document.createElement("div");
+        item.className = "chat-item";
+        item.innerHTML = `
+          <img src="${escAttr(chat.avatar)}" alt="${escAttr(chat.name)}">
+          <div class="meta">
+            <div class="top">
+              <span class="n">${esc(chat.name)}</span>
+              <span class="t">${last ? time(last.time) : ""}</span>
+            </div>
+            <div class="l">${esc(last ? last.content : "还没有消息")}</div>
+          </div>
+        `;
+        item.onclick = ()=>openChat(chat.id);
+        list.appendChild(item);
+      });
+    }
+
+    function createChat(){
+      const v = document.getElementById("new-chat-name");
+      const name = v.value.trim() || `新会话 ${state.data.chats.length + 1}`;
+      const id = "c_" + Date.now();
+      state.data.chats.unshift({
+        id, name,
+        avatar:"https://i.postimg.cc/y8xWzCqj/anime-boy.jpg",
+        messages:[]
+      });
+      v.value = "";
+      persist();
+      renderChatList();
+      toast("会话已创建");
+    }
+
+    function openChat(id){
+      state.currentChatId = id;
+      const chat = curChat();
+      document.getElementById("chat-title").textContent = chat?.name || "聊天";
+      renderMessages(chat?.messages || []);
+      show("screen-chat");
+    }
+
+    function curChat(){
+      return state.data.chats.find(c=>c.id===state.currentChatId);
+    }
+
+    // ---------- messages ----------
+    function renderMessages(messages){
+      const box = document.getElementById("chat-messages");
+      box.innerHTML = "";
+      if(!messages.length){
+        const d = document.createElement("div");
+        d.className = "msg sys";
+        d.textContent = "开始聊天吧";
+        box.appendChild(d);
+      }else{
+        messages.forEach(m=>{
+          const d = document.createElement("div");
+          d.className = "msg " + (m.role==="user" ? "user" : "ai");
+          d.textContent = m.content;
+          box.appendChild(d);
+        });
+      }
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function pushMsg(role, content){
+      const chat = curChat();
+      if(!chat) return;
+      chat.messages.push({role, content, time: Date.now()});
+      persist();
+      renderMessages(chat.messages);
+    }
+
+    async function sendMessage(){
+      const chat = curChat();
+      if(!chat){
+        toast("请先选择会话");
+        return;
+      }
+      const input = document.getElementById("chat-input");
+      const text = input.value.trim();
+      if(!text) return;
+
+      input.value = "";
+      input.style.height = "42px";
+
+      pushMsg("user", text);
+
+      const box = document.getElementById("chat-messages");
+      const typing = document.createElement("div");
+      typing.className = "msg sys";
+      typing.textContent = "对方正在输入...";
+      box.appendChild(typing);
+      box.scrollTop = box.scrollHeight;
+
+      try{
+        const reply = await callAPI(chat.messages);
+        typing.remove();
+        pushMsg("assistant", reply || "（空响应）");
+      }catch(err){
+        typing.remove();
+        pushMsg("assistant", "请求失败：" + err.message);
+      }
+    }
+
+    async function callAPI(messages){
+      const cfg = state.data.api;
+      if(!cfg.proxyUrl || !cfg.apiKey || !cfg.model){
+        throw new Error("请先在 API 设置填写反代地址、Key、模型");
+      }
+
+      const url = cfg.proxyUrl.replace(/\/+$/,"") + "/v1/chat/completions";
+      const payload = {
+        model: cfg.model,
+        temperature: cfg.temperature,
+        messages: messages.map(m=>({
+          role: m.role === "assistant" ? "assistant" : "user",
+          content: m.content
+        }))
+      };
+
+      const res = await fetch(url,{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "Authorization":"Bearer " + cfg.apiKey
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if(!res.ok){
+        const txt = await res.text();
+        throw new Error(`HTTP ${res.status} ${txt}`);
+      }
+
+      const data = await res.json();
+      return data?.choices?.[0]?.message?.content?.trim() || "";
+    }
+
+    // ---------- helpers ----------
+    function autoGrow(e){
+      const el = e.target;
+      el.style.height = "42px";
+      el.style.height = Math.min(el.scrollHeight, 120) + "px";
+    }
+    function time(ts){
+      const d = new Date(ts);
+      return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+    }
+    function esc(s=""){
+      return s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
+    }
+    function escAttr(s=""){ return esc(s); }
+    function toast(text){
+      const t = document.createElement("div");
+      t.className = "toast";
+      t.textContent = text;
+      document.getElementById("phone").appendChild(t);
+      setTimeout(()=>t.remove(), 1300);
+    }
+  </script>
 </body>
 </html>
-```
-
-```css
-/* style.css */
-:root{
-  --bg:#0f1115;
-  --panel:#1b1f27;
-  --panel-2:#232936;
-  --text:#eef2ff;
-  --sub:#9aa4b2;
-  --accent:#5b8cff;
-  --line:#2f3747;
-  --user:#5b8cff;
-  --ai:#2a3242;
-}
-
-*{box-sizing:border-box;}
-html,body{
-  margin:0;
-  height:100%;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
-  background:#0a0c10;
-  color:var(--text);
-}
-
-#phone-screen{
-  width:min(430px,100vw);
-  height:100dvh;
-  margin:0 auto;
-  background:linear-gradient(180deg,#11151d 0%,#0f1115 100%);
-  border-left:1px solid #1d2431;
-  border-right:1px solid #1d2431;
-  position:relative;
-  overflow:hidden;
-}
-
-#status-bar{
-  height:32px;
-  padding:8px 14px 0;
-  display:flex;
-  justify-content:space-between;
-  font-size:12px;
-  color:var(--sub);
-}
-
-.screen{
-  position:absolute;
-  inset:32px 0 0 0;
-  display:none;
-  flex-direction:column;
-  background:transparent;
-}
-.screen.active{display:flex;}
-
-.header{
-  height:52px;
-  border-bottom:1px solid var(--line);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 14px;
-  font-weight:600;
-  background:rgba(15,17,21,.92);
-  backdrop-filter:blur(8px);
-}
-.home-header{border-bottom:none;background:transparent;}
-
-.back-btn{
-  font-size:24px;
-  line-height:1;
-  cursor:pointer;
-  color:#dbe4ff;
-}
-
-.home-profile-card{
-  margin:18px 14px;
-  padding:14px;
-  border-radius:14px;
-  background:var(--panel);
-  border:1px solid var(--line);
-  display:flex;
-  gap:12px;
-}
-.home-avatar{
-  width:54px;height:54px;border-radius:50%;object-fit:cover;
-}
-.home-profile-card h3{margin:2px 0 4px;font-size:16px;}
-.home-profile-card p{margin:0;color:var(--sub);font-size:13px;line-height:1.45;}
-
-.app-grid{
-  margin:8px 14px;
-  display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:12px;
-}
-.app-icon{
-  border:none;
-  background:var(--panel-2);
-  border:1px solid var(--line);
-  border-radius:14px;
-  color:var(--text);
-  padding:14px 8px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:6px;
-  cursor:pointer;
-}
-.app-icon span{font-size:22px;}
-.app-icon small{font-size:12px;color:var(--sub);}
-
-.list-container{
-  overflow:auto;
-  padding:8px 0 18px;
-}
-
-.chat-item{
-  display:flex;
-  gap:10px;
-  padding:12px 14px;
-  border-bottom:1px solid var(--line);
-  cursor:pointer;
-}
-.chat-item img{
-  width:44px;height:44px;border-radius:50%;object-fit:cover;
-}
-.chat-item .meta{flex:1;min-width:0;}
-.chat-item .top{
-  display:flex;justify-content:space-between;gap:8px;
-}
-.chat-item .name{font-weight:600;}
-.chat-item .time{font-size:12px;color:var(--sub);}
-.chat-item .last{
-  margin-top:5px;
-  color:var(--sub);
-  font-size:13px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-
-/* chat */
-#chat-messages{
-  flex:1;
-  overflow:auto;
-  padding:12px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-.msg{
-  max-width:82%;
-  padding:10px 12px;
-  border-radius:14px;
-  line-height:1.45;
-  font-size:14px;
-  white-space:pre-wrap;
-  word-break:break-word;
-}
-.msg.user{
-  align-self:flex-end;
-  background:var(--user);
-  color:#fff;
-  border-bottom-right-radius:6px;
-}
-.msg.ai{
-  align-self:flex-start;
-  background:var(--ai);
-  border:1px solid var(--line);
-  border-bottom-left-radius:6px;
-}
-.msg.sys{
-  align-self:center;
-  color:var(--sub);
-  font-size:12px;
-  background:transparent;
-  border:none;
-  padding:2px 6px;
-}
-
-#chat-input-area{
-  border-top:1px solid var(--line);
-  padding:10px;
-  display:flex;
-  gap:8px;
-  background:rgba(15,17,21,.92);
-}
-#chat-input{
-  flex:1;
-  resize:none;
-  max-height:120px;
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background:#151a22;
-  color:var(--text);
-  outline:none;
-}
-#send-btn{
-  border:none;
-  border-radius:12px;
-  min-width:64px;
-  padding:0 14px;
-  background:var(--accent);
-  color:#fff;
-  font-weight:600;
-  cursor:pointer;
-}
-
-/* api */
-.form-container{
-  padding:14px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  overflow:auto;
-}
-.form-container label{
-  font-size:13px;
-  color:var(--sub);
-  margin-top:6px;
-}
-.form-container input{
-  width:100%;
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:11px 12px;
-  background:#151a22;
-  color:var(--text);
-  outline:none;
-}
-.full-btn{
-  margin-top:12px;
-  border:none;
-  border-radius:12px;
-  padding:12px;
-  background:var(--accent);
-  color:#fff;
-  font-weight:600;
-  cursor:pointer;
-}
-```
-
-```javascript
-// script.js
-const STORE_KEY = "ephone_mvp_data_v1";
-
-const state = {
-  currentScreen: "home-screen",
-  currentChatId: null,
-  data: {
-    api: {
-      proxyUrl: "",
-      apiKey: "",
-      model: "gpt-4o-mini",
-      temperature: 0.8
-    },
-    chats: [
-      {
-        id: "milo",
-        name: "弥洛",
-        avatar: "https://i.postimg.cc/y8xWzCqj/anime-boy.jpg",
-        messages: [
-          { role: "assistant", content: "嗨，先把基础版跑通，我们一点点加功能。", time: Date.now() }
-        ]
-      }
-    ]
-  }
-};
-
-function init() {
-  loadData();
-  bindEvents();
-  tickClock();
-  setInterval(tickClock, 1000 * 30);
-
-  fillApiForm();
-  renderChatList();
-}
-
-function bindEvents() {
-  document.getElementById("send-btn").addEventListener("click", sendMessage);
-  document.getElementById("chat-input").addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  });
-
-  document.getElementById("save-api-btn").addEventListener("click", saveApiSettings);
-}
-
-function showScreen(id) {
-  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  state.currentScreen = id;
-}
-
-function tickClock() {
-  const now = new Date();
-  const hh = String(now.getHours()).padStart(2, "0");
-  const mm = String(now.getMinutes()).padStart(2, "0");
-  document.getElementById("status-time").textContent = `${hh}:${mm}`;
-}
-
-function loadData() {
-  try {
-    const raw = localStorage.getItem(STORE_KEY);
-    if (!raw) return;
-    const parsed = JSON.parse(raw);
-    if (parsed?.api && parsed?.chats) state.data = parsed;
-  } catch (e) {
-    console.warn("loadData error:", e);
-  }
-}
-
-function persist() {
-  localStorage.setItem(STORE_KEY, JSON.stringify(state.data));
-}
-
-function fillApiForm() {
-  const { proxyUrl, apiKey, model, temperature } = state.data.api;
-  document.getElementById("proxy-url").value = proxyUrl || "";
-  document.getElementById("api-key").value = apiKey || "";
-  document.getElementById("model-name").value = model || "";
-  document.getElementById("temperature").value = temperature ?? 0.8;
-}
-
-function saveApiSettings() {
-  state.data.api.proxyUrl = document.getElementById("proxy-url").value.trim();
-  state.data.api.apiKey = document.getElementById("api-key").value.trim();
-  state.data.api.model = document.getElementById("model-name").value.trim() || "gpt-4o-mini";
-  state.data.api.temperature = Number(document.getElementById("temperature").value || 0.8);
-
-  persist();
-  toast("API 设置已保存");
-}
-
-function renderChatList() {
-  const el = document.getElementById("chat-list");
-  el.innerHTML = "";
-
-  state.data.chats.forEach(chat => {
-    const last = chat.messages[chat.messages.length - 1];
-    const lastText = last ? last.content : "还没有消息";
-    const time = last ? formatTime(last.time) : "";
-
-    const item = document.createElement("div");
-    item.className = "chat-item";
-    item.innerHTML = `
-      <img src="${escapeAttr(chat.avatar)}" alt="${escapeAttr(chat.name)}">
-      <div class="meta">
-        <div class="top">
-          <span class="name">${escapeHtml(chat.name)}</span>
-          <span class="time">${time}</span>
-        </div>
-        <div class="last">${escapeHtml(lastText)}</div>
-      </div>
-    `;
-    item.onclick = () => openChat(chat.id);
-    el.appendChild(item);
-  });
-}
-
-function openChat(chatId) {
-  state.currentChatId = chatId;
-  const chat = getCurrentChat();
-  if (!chat) return;
-
-  document.getElementById("chat-header-title").textContent = chat.name;
-  renderMessages(chat.messages);
-  showScreen("chat-interface-screen");
-}
-
-function backToChatList() {
-  renderChatList();
-  showScreen("chat-list-screen");
-}
-
-function renderMessages(messages) {
-  const box = document.getElementById("chat-messages");
-  box.innerHTML = "";
-  messages.forEach(msg => {
-    const node = document.createElement("div");
-    node.className = `msg ${msg.role === "user" ? "user" : "ai"}`;
-    node.textContent = msg.content;
-    box.appendChild(node);
-  });
-  scrollChatBottom();
-}
-
-function appendMessage(role, content) {
-  const chat = getCurrentChat();
-  if (!chat) return;
-
-  chat.messages.push({ role, content, time: Date.now() });
-  persist();
-  renderMessages(chat.messages);
-}
-
-function appendSystemText(text) {
-  const box = document.getElementById("chat-messages");
-  const node = document.createElement("div");
-  node.className = "msg sys";
-  node.textContent = text;
-  box.appendChild(node);
-  scrollChatBottom();
-  return node;
-}
-
-async function sendMessage() {
-  const input = document.getElementById("chat-input");
-  const text = input.value.trim();
-  if (!text) return;
-  if (!state.currentChatId) return;
-
-  input.value = "";
-  autoGrowReset(input);
-
-  appendMessage("user", text);
-
-  const typing = appendSystemText("对方正在输入...");
-  try {
-    const reply = await requestChatCompletion();
-    typing.remove();
-    appendMessage("assistant", reply || "（空响应）");
-  } catch (err) {
-    typing.remove();
-    appendMessage("assistant", `请求失败：${err.message}`);
-  }
-}
-
-async function requestChatCompletion() {
-  const chat = getCurrentChat();
-  const { proxyUrl, apiKey, model, temperature } = state.data.api;
-
-  if (!proxyUrl || !apiKey || !model) {
-    throw new Error("请先在 API 设置里填写反代地址、Key 和模型");
-  }
-
-  const payload = {
-    model,
-    temperature,
-    messages: chat.messages.map(m => ({
-      role: m.role === "assistant" ? "assistant" : "user",
-      content: m.content
-    }))
-  };
-
-  const resp = await fetch(`${proxyUrl.replace(/\/+$/, "")}/v1/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!resp.ok) {
-    const t = await resp.text();
-    throw new Error(`HTTP ${resp.status} ${t}`);
-  }
-
-  const data = await resp.json();
-  return data?.choices?.[0]?.message?.content?.trim() || "";
-}
-
-function getCurrentChat() {
-  return state.data.chats.find(c => c.id === state.currentChatId);
-}
-
-function formatTime(ts) {
-  const d = new Date(ts);
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  return `${hh}:${mm}`;
-}
-
-function scrollChatBottom() {
-  const box = document.getElementById("chat-messages");
-  box.scrollTop = box.scrollHeight;
-}
-
-function autoGrowReset(el) {
-  el.style.height = "auto";
-}
-
-function toast(msg) {
-  const t = document.createElement("div");
-  t.className = "msg sys";
-  t.textContent = msg;
-  t.style.position = "absolute";
-  t.style.left = "50%";
-  t.style.bottom = "20px";
-  t.style.transform = "translateX(-50%)";
-  t.style.background = "#1b1f27";
-  t.style.border = "1px solid #2f3747";
-  t.style.padding = "8px 12px";
-  t.style.borderRadius = "10px";
-  t.style.zIndex = "9999";
-  document.getElementById("phone-screen").appendChild(t);
-  setTimeout(() => t.remove(), 1300);
-}
-
-function escapeHtml(str = "") {
-  return str
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-function escapeAttr(str = "") {
-  return escapeHtml(str);
-}
-
-window.showScreen = showScreen;
-window.backToChatList = backToChatList;
-
-init();
-:root{
-  --bg:#0f1115;
-  --panel:#1b1f27;
-  --panel-2:#232936;
-  --text:#eef2ff;
-  --sub:#9aa4b2;
-  --accent:#5b8cff;
-  --line:#2f3747;
-  --user:#5b8cff;
-  --ai:#2a3242;
-}
-
-*{box-sizing:border-box;}
-html,body{
-  margin:0;
-  height:100%;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
-  background:#0a0c10;
-  color:var(--text);
-}
-
-#phone-screen{
-  width:min(430px,100vw);
-  height:100dvh;
-  margin:0 auto;
-  background:linear-gradient(180deg,#11151d 0%,#0f1115 100%);
-  border-left:1px solid #1d2431;
-  border-right:1px solid #1d2431;
-  position:relative;
-  overflow:hidden;
-}
-
-#status-bar{
-  height:32px;
-  padding:8px 14px 0;
-  display:flex;
-  justify-content:space-between;
-  font-size:12px;
-  color:var(--sub);
-}
-
-.screen{
-  position:absolute;
-  inset:32px 0 0 0;
-  display:none;
-  flex-direction:column;
-  background:transparent;
-}
-.screen.active{display:flex;}
-
-.header{
-  height:52px;
-  border-bottom:1px solid var(--line);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 14px;
-  font-weight:600;
-  background:rgba(15,17,21,.92);
-  backdrop-filter:blur(8px);
-}
-.home-header{border-bottom:none;background:transparent;}
-
-.back-btn{
-  font-size:24px;
-  line-height:1;
-  cursor:pointer;
-  color:#dbe4ff;
-}
-
-.home-profile-card{
-  margin:18px 14px;
-  padding:14px;
-  border-radius:14px;
-  background:var(--panel);
-  border:1px solid var(--line);
-  display:flex;
-  gap:12px;
-}
-.home-avatar{
-  width:54px;height:54px;border-radius:50%;object-fit:cover;
-}
-.home-profile-card h3{margin:2px 0 4px;font-size:16px;}
-.home-profile-card p{margin:0;color:var(--sub);font-size:13px;line-height:1.45;}
-
-.app-grid{
-  margin:8px 14px;
-  display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:12px;
-}
-.app-icon{
-  border:none;
-  background:var(--panel-2);
-  border:1px solid var(--line);
-  border-radius:14px;
-  color:var(--text);
-  padding:14px 8px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:6px;
-  cursor:pointer;
-}
-.app-icon span{font-size:22px;}
-.app-icon small{font-size:12px;color:var(--sub);}
-
-.list-container{
-  overflow:auto;
-  padding:8px 0 18px;
-}
-
-.chat-item{
-  display:flex;
-  gap:10px;
-  padding:12px 14px;
-  border-bottom:1px solid var(--line);
-  cursor:pointer;
-}
-.chat-item img{
-  width:44px;height:44px;border-radius:50%;object-fit:cover;
-}
-.chat-item .meta{flex:1;min-width:0;}
-.chat-item .top{
-  display:flex;justify-content:space-between;gap:8px;
-}
-.chat-item .name{font-weight:600;}
-.chat-item .time{font-size:12px;color:var(--sub);}
-.chat-item .last{
-  margin-top:5px;
-  color:var(--sub);
-  font-size:13px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-
-#chat-messages{
-  flex:1;
-  overflow:auto;
-  padding:12px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-.msg{
-  max-width:82%;
-  padding:10px 12px;
-  border-radius:14px;
-  line-height:1.45;
-  font-size:14px;
-  white-space:pre-wrap;
-  word-break:break-word;
-}
-.msg.user{
-  align-self:flex-end;
-  background:var(--user);
-  color:#fff;
-  border-bottom-right-radius:6px;
-}
-.msg.ai{
-  align-self:flex-start;
-  background:var(--ai);
-  border:1px solid var(--line);
-  border-bottom-left-radius:6px;
-}
-.msg.sys{
-  align-self:center;
-  color:var(--sub);
-  font-size:12px;
-  background:transparent;
-  border:none;
-  padding:2px 6px;
-}
-
-#chat-input-area{
-  border-top:1px solid var(--line);
-  padding:10px;
-  display:flex;
-  gap:8px;
-  background:rgba(15,17,21,.92);
-}
-#chat-input{
-  flex:1;
-  resize:none;
-  max-height:120px;
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background:#151a22;
-  color:var(--text);
-  outline:none;
-}
-#send-btn{
-  border:none;
-  border-radius:12px;
-  min-width:64px;
-  padding:0 14px;
-  background:var(--accent);
-  color:#fff;
-  font-weight:600;
-  cursor:pointer;
-}
-
-.form-container{
-  padding:14px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  overflow:auto;
-}
-.form-container label{
-  font-size:13px;
-  color:var(--sub);
-  margin-top:6px;
-}
-.form-container input{
-  width:100%;
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:11px 12px;
-  background:#151a22;
-  color:var(--text);
-  outline:none;
-}
-.full-btn{
-  margin-top:12px;
-  border:none;
-  border-radius:12px;
-  padding:12px;
-  background:var(--accent);
-  color:#fff;
-  font-weight:600;
-  cursor:pointer;
-}const STORE_KEY = "ephone_mvp_data_v1";
-
-const state = {
-  currentScreen: "home-screen",
-  currentChatId: null,
-  data: {
-    api: {
-      proxyUrl: "",
-      apiKey: "",
-      model: "gpt-4o-mini",
-      temperature: 0.8
-    },
-    chats: [
-      {
-        id: "milo",
-        name: "弥洛",
-        avatar: "https://i.postimg.cc/y8xWzCqj/anime-boy.jpg",
-        messages: [
-          { role: "assistant", content: "嗨，先把基础版跑通，我们一点点加功能。", time: Date.now() }
-        ]
-      }
-    ]
-  }
-};
-
-function init() {
-  loadData();
-  bindEvents();
-  tickClock();
-  setInterval(tickClock, 1000 * 30);
-
-  fillApiForm();
-  renderChatList();
-}
-
-function bindEvents() {
-  document.getElementById("send-btn").addEventListener("click", sendMessage);
-  document.getElementById("chat-input").addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  });
-
-  document.getElementById("save-api-btn").addEventListener("click", saveApiSettings);
-}
-
-function showScreen(id) {
-  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  state.currentScreen = id;
-}
-
-function tickClock() {
-  const now = new Date();
-  const hh = String(now.getHours()).padStart(2, "0");
-  const mm = String(now.getMinutes()).padStart(2, "0");
-  document.getElementById("status-time").textContent = `${hh}:${mm}`;
-}
-
-function loadData() {
-  try {
-    const raw = localStorage.getItem(STORE_KEY);
-    if (!raw) return;
-    const parsed = JSON.parse(raw);
-    if (parsed?.api && parsed?.chats) state.data = parsed;
-  } catch (e) {
-    console.warn("loadData error:", e);
-  }
-}
-
-function persist() {
-  localStorage.setItem(STORE_KEY, JSON.stringify(state.data));
-}
-
-function fillApiForm() {
-  const { proxyUrl, apiKey, model, temperature } = state.data.api;
-  document.getElementById("proxy-url").value = proxyUrl || "";
-  document.getElementById("api-key").value = apiKey || "";
-  document.getElementById("model-name").value = model || "";
-  document.getElementById("temperature").value = temperature ?? 0.8;
-}
-
-function saveApiSettings() {
-  state.data.api.proxyUrl = document.getElementById("proxy-url").value.trim();
-  state.data.api.apiKey = document.getElementById("api-key").value.trim();
-  state.data.api.model = document.getElementById("model-name").value.trim() || "gpt-4o-mini";
-  state.data.api.temperature = Number(document.getElementById("temperature").value || 0.8);
-
-  persist();
-  toast("API 设置已保存");
-}
-
-function renderChatList() {
-  const el = document.getElementById("chat-list");
-  el.innerHTML = "";
-
-  state.data.chats.forEach(chat => {
-    const last = chat.messages[chat.messages.length - 1];
-    const lastText = last ? last.content : "还没有消息";
-    const time = last ? formatTime(last.time) : "";
-
-    const item = document.createElement("div");
-    item.className = "chat-item";
-    item.innerHTML = `
-      <img src="${escapeAttr(chat.avatar)}" alt="${escapeAttr(chat.name)}">
-      <div class="meta">
-        <div class="top">
-          <span class="name">${escapeHtml(chat.name)}</span>
-          <span class="time">${time}</span>
-        </div>
-        <div class="last">${escapeHtml(lastText)}</div>
-      </div>
-    `;
-    item.onclick = () => openChat(chat.id);
-    el.appendChild(item);
-  });
-}
-
-function openChat(chatId) {
-  state.currentChatId = chatId;
-  const chat = getCurrentChat();
-  if (!chat) return;
-
-  document.getElementById("chat-header-title").textContent = chat.name;
-  renderMessages(chat.messages);
-  showScreen("chat-interface-screen");
-}
-
-function backToChatList() {
-  renderChatList();
-  showScreen("chat-list-screen");
-}
-
-function renderMessages(messages) {
-  const box = document.getElementById("chat-messages");
-  box.innerHTML = "";
-  messages.forEach(msg => {
-    const node = document.createElement("div");
-    node.className = `msg ${msg.role === "user" ? "user" : "ai"}`;
-    node.textContent = msg.content;
-    box.appendChild(node);
-  });
-  scrollChatBottom();
-}
-
-function appendMessage(role, content) {
-  const chat = getCurrentChat();
-  if (!chat) return;
-
-  chat.messages.push({ role, content, time: Date.now() });
-  persist();
-  renderMessages(chat.messages);
-}
-
-function appendSystemText(text) {
-  const box = document.getElementById("chat-messages");
-  const node = document.createElement("div");
-  node.className = "msg sys";
-  node.textContent = text;
-  box.appendChild(node);
-  scrollChatBottom();
-  return node;
-}
-
-async function sendMessage() {
-  const input = document.getElementById("chat-input");
-  const text = input.value.trim();
-  if (!text) return;
-  if (!state.currentChatId) return;
-
-  input.value = "";
-  autoGrowReset(input);
-
-  appendMessage("user", text);
-
-  const typing = appendSystemText("对方正在输入...");
-  try {
-    const reply = await requestChatCompletion();
-    typing.remove();
-    appendMessage("assistant", reply || "（空响应）");
-  } catch (err) {
-    typing.remove();
-    appendMessage("assistant", `请求失败：${err.message}`);
-  }
-}
-
-async function requestChatCompletion() {
-  const chat = getCurrentChat();
-  const { proxyUrl, apiKey, model, temperature } = state.data.api;
-
-  if (!proxyUrl || !apiKey || !model) {
-    throw new Error("请先在 API 设置里填写反代地址、Key 和模型");
-  }
-
-  const payload = {
-    model,
-    temperature,
-    messages: chat.messages.map(m => ({
-      role: m.role === "assistant" ? "assistant" : "user",
-      content: m.content
-    }))
-  };
-
-  const resp = await fetch(`${proxyUrl.replace(/\/+$/, "")}/v1/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!resp.ok) {
-    const t = await resp.text();
-    throw new Error(`HTTP ${resp.status} ${t}`);
-  }
-
-  const data = await resp.json();
-  return data?.choices?.[0]?.message?.content?.trim() || "";
-}
-
-function getCurrentChat() {
-  return state.data.chats.find(c => c.id === state.currentChatId);
-}
-
-function formatTime(ts) {
-  const d = new Date(ts);
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  return `${hh}:${mm}`;
-}
-
-function scrollChatBottom() {
-  const box = document.getElementById("chat-messages");
-  box.scrollTop = box.scrollHeight;
-}
-
-function autoGrowReset(el) {
-  el.style.height = "auto";
-}
-
-function toast(msg) {
-  const t = document.createElement("div");
-  t.className = "msg sys";
-  t.textContent = msg;
-  t.style.position = "absolute";
-  t.style.left = "50%";
-  t.style.bottom = "20px";
-  t.style.transform = "translateX(-50%)";
-  t.style.background = "#1b1f27";
-  t.style.border = "1px solid #2f3747";
-  t.style.padding = "8px 12px";
-  t.style.borderRadius = "10px";
-  t.style.zIndex = "9999";
-  document.getElementById("phone-screen").appendChild(t);
-  setTimeout(() => t.remove(), 1300);
-}
-
-function escapeHtml(str = "") {
-  return str
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-function escapeAttr(str = "") {
-  return escapeHtml(str);
-}
-
-window.showScreen = showScreen;
-window.backToChatList = backToChatList;
-
-init();
