@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>小手机 v1.5.1 稳定</title>
+  <title>小手机 v1.4.4 稳定</title>
   <style>
     :root{
       --safe-top: env(safe-area-inset-top, 0px);
@@ -185,7 +185,6 @@
       background:linear-gradient(180deg,#edf2ff,#edf1f8);
       display:flex;flex-direction:column;gap:10px;
     }
-
     .msg-row{display:flex;gap:8px;align-items:flex-end;width:100%}
     .msg-row.me{justify-content:flex-end}
     .chat-avatar{
@@ -194,17 +193,13 @@
     .bubble-wrap{display:flex;flex-direction:column;max-width:calc(100% - 48px)}
     .bubble-wrap.me{align-items:flex-end}
     .bubble-wrap.ai{align-items:flex-start}
-
     .bubble{
       max-width:100%;
-      padding:7px 10px;
-      border-radius:12px;
-      line-height:1.32;
+      padding:10px 12px;
+      border-radius:14px;
+      line-height:1.45;
       word-break:break-word;
       white-space:pre-wrap;
-      -webkit-touch-callout:none;
-      -webkit-user-select:none;
-      user-select:none;
     }
     .bubble.me{background:#2f66d8;color:#fff;border-bottom-right-radius:6px}
     .bubble.ai{background:#fff;border:1px solid #e8e8ef;border-bottom-left-radius:6px}
@@ -219,13 +214,13 @@
       background:linear-gradient(180deg,#f8f9ff,#f6f8ff);
       border-top:1px solid #e4e8f5;
       display:flex;gap:8px;align-items:flex-end;
-      z-index:6;
     }
     #chatInput{
       flex:1;height:44px;min-height:44px;max-height:96px;overflow-y:auto;resize:none;
     }
     .send-actions{display:flex;gap:8px;align-items:center;align-self:flex-end}
 
+    /* 储存键 */
     .btn.store{
       width:40px;height:40px;padding:0;border-radius:999px;
       border:1px solid #cfe3ff;
@@ -241,31 +236,49 @@
       box-shadow:0 0 8px rgba(186,224,255,.45);
     }
 
+    /* 你给的头部样式（原样） */
     .chat-head-center{
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      flex:1;min-width:0;padding:0 8px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      flex:1;
+      min-width:0;
+      padding:0 8px;
     }
     .chat-head-title{
-      width:100%;text-align:center;font-weight:700;color:#222;
-      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      width:100%;
+      text-align:center;
+      font-weight:700;
+      color:#222;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     .chat-head-sub{
-      font-size:11px;color:#7a86a8;line-height:1.2;margin-top:2px;min-height:13px;
+      font-size:11px;
+      color:#7a86a8;
+      line-height:1.2;
+      margin-top:2px;
+      min-height:13px;
     }
 
     .icon-btn{
-      width:32px;height:32px;border-radius:10px;border:1px solid #d7e3ff;
+      width:32px;
+      height:32px;
+      border-radius:10px;
+      border:1px solid #d7e3ff;
       background:linear-gradient(180deg,#f3f7ff,#e8f0ff);
-      color:#4a67a8;font-size:16px;cursor:pointer;display:grid;place-items:center;
+      color:#4a67a8;
+      font-size:16px;
+      cursor:pointer;
+      display:grid;
+      place-items:center;
       box-shadow:0 1px 3px rgba(61,93,161,.12);
     }
     .icon-btn:active{transform:translateY(1px)}
 
-    /* 仅线上对齐头像 */
-    #chatRoom:not(.offline) .msg-row{align-items:flex-start}
-    #chatRoom:not(.offline) .bubble-wrap{margin-top:2px}
-
-    /* 线下模式 */
+    /* 线下模式（更贴边） */
     #chatRoom.offline #chatMsgs{
       background:
         radial-gradient(120% 80% at 20% 0%, rgba(255,255,255,.58), rgba(255,255,255,0) 45%),
@@ -273,36 +286,48 @@
       padding:6px !important;
       gap:10px;
     }
-    .msg-block{display:flex;flex-direction:column;gap:6px;width:100%}
+    .msg-block{
+      display:flex;flex-direction:column;gap:6px;width:100%;
+    }
     .msg-block.ai,.msg-block.me{align-items:stretch !important}
     #chatRoom.offline .chat-avatar{
-      width:42px;height:42px;border-radius:12px;align-self:flex-start;
+      width:42px;height:42px;border-radius:12px;
+      align-self:flex-start;
     }
-    #chatRoom.offline .bubble-wrap{width:100% !important;max-width:100% !important}
-    #chatRoom.offline .bubble,#chatRoom.offline .offline-card{width:100% !important;max-width:100% !important}
-    #chatRoom.offline .bubble{border-radius:12px;line-height:1.45}
+    #chatRoom.offline .bubble-wrap{
+      width:100% !important;
+      max-width:100% !important;
+    }
+    #chatRoom.offline .bubble,
+    #chatRoom.offline .offline-card{
+      width:100% !important;
+      max-width:100% !important;
+    }
+    #chatRoom.offline .bubble{
+      border-radius:14px;line-height:1.62;
+    }
 
     .offline-card{
       border:1px solid #e8dccb;
       background:linear-gradient(180deg,#fffdf9,#fbf6ef);
-      border-radius:14px;overflow:hidden;
+      border-radius:14px;
+      overflow:hidden;
       box-shadow:0 2px 8px rgba(110,78,42,.08);
-      -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;
     }
     .offline-state{
-      padding:7px 9px;
+      padding:9px 10px;
       font-size:12px;
       color:#7b5f3a;
       border-bottom:1px solid #efe4d5;
       background:linear-gradient(180deg,#fff7ea,#f8efdf);
       white-space:pre-wrap;
-      line-height:1.4;
+      line-height:1.5;
     }
     .offline-body{
-      padding:9px 9px 10px;
+      padding:11px 10px 12px;
       color:#3b2f22;
       white-space:pre-wrap;
-      line-height:1.5;
+      line-height:1.68;
     }
 
     .modal{
@@ -319,51 +344,6 @@
       width:64px;height:64px;border-radius:12px;object-fit:cover;
       border:1px solid #eee;background:#f3f5ff;
     }
-
-    .quote-bar{
-      position:absolute;
-      left:10px; right:10px;
-      bottom:calc(66px + var(--safe-bottom));
-      z-index:8;
-
-      margin:0;
-      padding:8px 10px;
-      border:1px solid #dfe7fb;
-      border-radius:10px;
-      background:#f5f8ff;
-      display:flex;gap:8px;align-items:center;justify-content:space-between;
-    }
-    .quote-t{
-      font-size:12px;color:#48639a;
-      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-    }
-    .quote-chip{
-      font-size:11px;color:#5872a8;
-      background:#eef3ff;border:1px solid #dbe6ff;
-      border-radius:8px;padding:4px 6px;margin-bottom:6px;
-    }
-
-    .multi-bar{
-      position:absolute;
-      left:10px; right:10px;
-      bottom:calc(116px + var(--safe-bottom));
-      z-index:8;
-
-      margin:0;
-      padding:8px 10px;
-      border:1px solid #e3e6f3;
-      border-radius:10px;
-      background:#fff;
-    }
-
-    .sel-dot{
-      width:20px;height:20px;border-radius:999px;border:1px solid #c9d5f3;background:#fff;
-      display:grid;place-items:center;font-size:12px;color:#2f66d8;flex-shrink:0;cursor:pointer;
-    }
-    .sel-dot.on{background:#2f66d8;color:#fff;border-color:#2f66d8}
-    .bubble.hidden-msg{opacity:.92}
-    .bubble.revoked-msg{opacity:.72}
-    .fav-tag{margin-left:6px;color:#f3a600;font-size:12px}
   </style>
 </head>
 <body>
@@ -413,33 +393,16 @@
   <section id="chatRoom" class="screen">
     <div class="header">
       <button class="btn" data-nav="wechat">‹ 返回</button>
+
       <div class="chat-head-center">
         <div class="chat-head-title" id="chatTitle">聊天</div>
         <div class="chat-head-sub" id="chatSub"></div>
       </div>
-      <div class="row" style="gap:6px;">
-        <button class="icon-btn" id="favBoxBtn" aria-label="收藏夹">☆</button>
-        <button class="icon-btn" id="chatSettingBtn" aria-label="设置">⋯</button>
-      </div>
+
+      <button class="icon-btn" id="chatSettingBtn" aria-label="设置">⋯</button>
     </div>
 
     <div id="chatMsgs"></div>
-
-    <div id="quoteBar" class="quote-bar hidden">
-      <div class="quote-t" id="quoteBarText"></div>
-      <button class="btn" id="clearQuoteBtn">取消引用</button>
-    </div>
-
-    <div id="multiBar" class="multi-bar hidden">
-      <span id="multiCount" class="small">已选 0 条</span>
-      <div class="row" style="gap:6px;flex-wrap:wrap;margin-top:6px;">
-        <button class="btn" id="multiDeleteBtn">删除</button>
-        <button class="btn" id="multiHideBtn">隐藏</button>
-        <button class="btn" id="multiUnhideBtn">取消隐藏</button>
-        <button class="btn" id="multiFavBtn">收藏</button>
-        <button class="btn d" id="multiCancelBtn">退出多选</button>
-      </div>
-    </div>
 
     <div class="chatInputBar">
       <textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
@@ -450,7 +413,7 @@
     </div>
   </section>
 
-  <!-- CHAT SETTING -->
+  <!-- CHAT SETTING FULL SCREEN -->
   <section id="chatSetting" class="screen">
     <div class="header">
       <button class="btn" data-nav="chatRoom">‹ 返回</button>
@@ -585,34 +548,6 @@
     </div>
   </div>
 
-  <!-- 长按菜单 -->
-  <div id="msgMenu" class="modal">
-    <div class="modal-card" id="msgMenuCard"></div>
-  </div>
-
-  <!-- 编辑消息 -->
-  <div id="editModal" class="modal">
-    <div class="modal-card">
-      <h3 style="margin:0 0 10px;">编辑消息</h3>
-      <textarea id="editMsgInput" class="ta" style="min-height:42dvh;max-height:62dvh;"></textarea>
-      <div class="row" style="justify-content:flex-end;margin-top:10px;">
-        <button class="btn" id="cancelEditBtn">取消</button>
-        <button class="btn p" id="saveEditBtn">保存</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 收藏夹 -->
-  <div id="favModal" class="modal">
-    <div class="modal-card">
-      <h3 style="margin:0 0 10px;">收藏夹</h3>
-      <div id="favList"></div>
-      <div class="row" style="justify-content:flex-end;margin-top:10px;">
-        <button class="btn" id="closeFavBtn">关闭</button>
-      </div>
-    </div>
-  </div>
-
 </div>
 
 <script>
@@ -636,59 +571,71 @@
   let createAvatar='';
   let typingForId=null;
 
-  let menuMsgIndex=-1;
-  let editMsgIndex=-1;
-  let quotePayload=null;
-  let multiMode=false;
-  let selectedMsgIdx=new Set();
-
   const $ = id => document.getElementById(id);
   const clean=s=>String(s||'').replace(/[\u0000-\u001F\u007F\uFFFD]/g,'').trim();
   const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
   function getJ(k,d){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d));}catch{return d;}}
+
   function isQuotaErr(e){
-    const n=(e&&e.name)||'', m=(e&&e.message)||'';
-    return n==='QuotaExceededError'||n==='NS_ERROR_DOM_QUOTA_REACHED'||/quota|exceeded/i.test(m);
+    const n = (e && e.name) || '';
+    const m = (e && e.message) || '';
+    return n === 'QuotaExceededError' || n === 'NS_ERROR_DOM_QUOTA_REACHED' || /quota|exceeded/i.test(m);
   }
+
   function trimChatsForSpace(map, keepMsg=18, maxLen=260){
     const out={};
     Object.keys(map||{}).forEach(id=>{
-      const arr=Array.isArray(map[id])?map[id]:[];
-      out[id]=arr.slice(-keepMsg).map(m=>({
+      const arr = Array.isArray(map[id]) ? map[id] : [];
+      out[id] = arr.slice(-keepMsg).map(m=>({
         role:m.role,
         text:String(m.text||'').slice(0,maxLen),
-        time:m.time||Date.now(),
-        hidden:!!m.hidden,
-        revoked:!!m.revoked,
-        fav:!!m.fav,
-        quote:m.quote||null
+        time:m.time||Date.now()
       }));
     });
     return out;
   }
+
   function stripDataAvatar(v){
     if(!v) return v;
-    if(typeof v.avatar==='string'&&v.avatar.startsWith('data:image/')) v.avatar='';
+    if(typeof v.avatar==='string' && v.avatar.startsWith('data:image/')) v.avatar='';
     return v;
   }
+
   function setJ(k,v){
-    const write=(val)=>localStorage.setItem(k, JSON.stringify(val));
-    try{ write(v); return; }catch(e){ if(!isQuotaErr(e)) throw e; }
+    const write = (val)=>localStorage.setItem(k, JSON.stringify(val));
+    try{
+      write(v);
+      return;
+    }catch(e){
+      if(!isQuotaErr(e)) throw e;
+    }
 
     try{
-      localStorage.setItem(K_CHAT, JSON.stringify(trimChatsForSpace(getJ(K_CHAT,{}),16,220)));
-      write(v); return;
-    }catch(e2){ if(!isQuotaErr(e2)) throw e2; }
+      const c1 = trimChatsForSpace(getJ(K_CHAT,{}), 16, 220);
+      localStorage.setItem(K_CHAT, JSON.stringify(c1));
+      write(v);
+      return;
+    }catch(e2){
+      if(!isQuotaErr(e2)) throw e2;
+    }
 
     try{
-      localStorage.setItem(K_CONTACT, JSON.stringify((getJ(K_CONTACT,[])||[]).map(x=>stripDataAvatar({...x}))));
-      localStorage.setItem(K_ME, JSON.stringify(stripDataAvatar({...getJ(K_ME,{name:'我',avatar:'',persona:'',note:''})})));
-      write(v); return;
-    }catch(e3){ if(!isQuotaErr(e3)) throw e3; }
+      const contacts = (getJ(K_CONTACT,[])||[]).map(x=>stripDataAvatar({...x}));
+      localStorage.setItem(K_CONTACT, JSON.stringify(contacts));
 
-    localStorage.setItem(K_CHAT, JSON.stringify(trimChatsForSpace(getJ(K_CHAT,{}),8,140)));
+      const me = stripDataAvatar({...getJ(K_ME,{name:'我',avatar:'',persona:'',note:''})});
+      localStorage.setItem(K_ME, JSON.stringify(me));
+
+      write(v);
+      return;
+    }catch(e3){
+      if(!isQuotaErr(e3)) throw e3;
+    }
+
+    const c2 = trimChatsForSpace(getJ(K_CHAT,{}), 8, 140);
+    localStorage.setItem(K_CHAT, JSON.stringify(c2));
     write(v);
   }
 
@@ -703,12 +650,16 @@
     return o;
   }
 
-  function getPref(){return getJ(K_PREF,{showTs:false,bubbleCss:''});}
-  function setPref(v){setJ(K_PREF,v);}
+  function getPref(){ return getJ(K_PREF,{showTs:false,bubbleCss:''}); }
+  function setPref(v){ setJ(K_PREF,v); }
   function applyBubbleCss(){
     const p=getPref();
     let el=document.getElementById('bubbleCssStyle');
-    if(!el){ el=document.createElement('style'); el.id='bubbleCssStyle'; document.head.appendChild(el); }
+    if(!el){
+      el=document.createElement('style');
+      el.id='bubbleCssStyle';
+      document.head.appendChild(el);
+    }
     el.textContent=String(p.bubbleCss||'');
   }
 
@@ -731,62 +682,21 @@
     return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   }
 
-  function getMsgViewText(m){
-    if(m?.revoked) return (m.role==='user'?'你撤回了一条消息':'对方撤回了一条消息');
-    return String(m?.text||'');
-  }
-  function renderQuoteChip(q){
-    if(!q||!q.text) return '';
-    return `<div class="quote-chip">引用：${esc(String(q.text).slice(0,60))}</div>`;
-  }
-  function renderStateChips(m){
-    let html='';
-    if(m?.hidden) html += `<div class="quote-chip">🙈 仅你可见（AI不可见）</div>`;
-    if(m?.quote?.text) html += renderQuoteChip(m.quote);
-    return html;
-  }
-  function refreshQuoteBar(){
-    if(!quotePayload){ $('quoteBar').classList.add('hidden'); $('quoteBarText').textContent=''; return; }
-    $('quoteBar').classList.remove('hidden');
-    $('quoteBarText').textContent=`引用：${String(quotePayload.text||'').slice(0,80)}`;
-  }
-  function exitMultiMode(){
-    multiMode=false; selectedMsgIdx.clear();
-    $('multiBar').classList.add('hidden');
-  }
-  function refreshMultiBar(){
-    if(!multiMode){ $('multiBar').classList.add('hidden'); return; }
-    $('multiBar').classList.remove('hidden');
-    $('multiCount').textContent=`已选 ${selectedMsgIdx.size} 条`;
-  }
-  function updateMessageAt(idx, patch){
-    if(!currentId) return;
-    const map=getChats(), arr=map[currentId]||[];
-    if(idx<0||idx>=arr.length) return;
-    arr[idx]={...arr[idx],...patch};
-    map[currentId]=arr; setChats(map);
-  }
-  function removeMessageAt(idx){
-    if(!currentId) return;
-    const map=getChats(), arr=map[currentId]||[];
-    if(idx<0||idx>=arr.length) return;
-    arr.splice(idx,1); map[currentId]=arr; setChats(map);
-  }
-
   // data
   function getContacts(){
     const arr=getJ(K_CONTACT,[]);
-    return Array.isArray(arr)?arr.map(c=>({...c,settings:normSettings(c.settings)})):[];
+    return Array.isArray(arr) ? arr.map(c=>({...c,settings:normSettings(c.settings)})) : [];
   }
-  function setContacts(v){setJ(K_CONTACT,(v||[]).map(c=>({...c,settings:normSettings(c.settings)})));}
+  function setContacts(v){ setJ(K_CONTACT,(v||[]).map(c=>({...c,settings:normSettings(c.settings)}))); }
   function getChats(){return getJ(K_CHAT,{});}
   function setChats(v){setJ(K_CHAT,v);}
   function getMe(){return getJ(K_ME,{name:'我',avatar:'',persona:'',note:''});}
   function setMe(v){setJ(K_ME,v);}
-  function getContactById(id){return getContacts().find(x=>x.id===id);}
+  function getContactById(id){ return getContacts().find(x=>x.id===id); }
   function updateContact(id,patch){
-    const arr=getContacts(), i=arr.findIndex(x=>x.id===id); if(i<0) return;
-    arr[i]={...arr[i],...patch}; if(patch.settings) arr[i].settings=normSettings(patch.settings);
+    const arr=getContacts(); const i=arr.findIndex(x=>x.id===id); if(i<0) return;
+    arr[i]={...arr[i],...patch};
+    if(patch.settings) arr[i].settings=normSettings(patch.settings);
     setContacts(arr);
   }
 
@@ -821,11 +731,20 @@
         const img=new Image();
         img.onload=()=>{
           let w=img.width,h=img.height;
-          const s=Math.min(1,maxSide/Math.max(w,h)); w=Math.round(w*s); h=Math.round(h*s);
-          const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h);
-          let out=''; try{ out=c.toDataURL('image/webp',quality);}catch(e){}
-          if(!out||out.startsWith('data:,')) out=c.toDataURL('image/jpeg',quality);
-          if(out.length>120000) out=c.toDataURL('image/jpeg',0.32);
+          const s=Math.min(1,maxSide/Math.max(w,h));
+          w=Math.round(w*s); h=Math.round(h*s);
+
+          const c=document.createElement('canvas');
+          c.width=w; c.height=h;
+          c.getContext('2d').drawImage(img,0,0,w,h);
+
+          let out='';
+          try{ out=c.toDataURL('image/webp',quality); }catch(e){}
+          if(!out || out.startsWith('data:,')) out=c.toDataURL('image/jpeg',quality);
+
+          if(out.length > 120000){
+            out=c.toDataURL('image/jpeg',0.32);
+          }
           resolve(out);
         };
         img.onerror=reject; img.src=fr.result;
@@ -835,18 +754,26 @@
   }
 
   async function saveContact(){
-    const name=clean($('newName').value); if(!name) return alert('昵称不能为空');
+    const name=clean($('newName').value);
+    if(!name) return alert('昵称不能为空');
     const avatarUrl=clean($('newAvatarUrl').value);
     const persona=clean($('newPersona').value);
 
     const arr=getContacts();
     arr.unshift({
       id:'c'+Date.now()+'_'+Math.floor(Math.random()*9999),
-      name,note:'',avatar:createAvatar||avatarUrl||'',
-      preview:'新的聊天已创建',time:'刚刚',persona,
+      name, note:'',
+      avatar:createAvatar||avatarUrl||'',
+      preview:'新的聊天已创建',
+      time:'刚刚',
+      persona,
       settings:{...DEFAULT_CHAT_SETTINGS}
     });
-    try{ setContacts(arr); }catch{ return alert('保存失败：存储空间不足（已自动瘦身，仍不足）'); }
+    try{
+      setContacts(arr);
+    }catch{
+      return alert('保存失败：存储空间不足（已自动瘦身，仍不足）');
+    }
 
     renderContacts($('searchInput').value||'');
     closeCreateModal();
@@ -861,7 +788,8 @@
   $('newAvatarFile').onchange=async e=>{
     const f=e.target.files?.[0]; if(!f) return;
     createAvatar=await compressImage(f,180,0.42);
-    $('newAvatarPreview').src=createAvatar; $('newAvatarPreview').classList.remove('hidden');
+    $('newAvatarPreview').src=createAvatar;
+    $('newAvatarPreview').classList.remove('hidden');
     e.target.value='';
   };
 
@@ -871,18 +799,16 @@
     updateChatSub();
   }
   function updateChatSub(){
-    $('chatSub').textContent=(currentId&&typingForId===currentId)?'对方正在输入中…':'';
+    $('chatSub').textContent = (currentId && typingForId===currentId) ? '对方正在输入中…' : '';
   }
   function applyModeUI(){
-    const c=getContactById(currentId), st=normSettings(c?.settings);
+    const c=getContactById(currentId); const st=normSettings(c?.settings);
     $('chatRoom').classList.toggle('offline', st.mode==='offline');
     updateChatSub();
   }
 
   window.openChat=function(id){
     currentId=id;
-    quotePayload=null; exitMultiMode(); refreshQuoteBar();
-
     const c=getContactById(id);
     $('chatTitle').textContent=c?c.name:'聊天';
     applyModeUI();
@@ -890,21 +816,19 @@
     show('chatRoom');
   };
 
-  function renderOfflineAssistant(text,ts,pref,idx,fav){
+  function renderOfflineAssistant(text,ts,pref){
     const raw=String(text||'');
     const m=raw.match(/【状态栏】\s*([\s\S]*?)\s*【正文】\s*([\s\S]*)/);
     if(!m){
-      return `<div class="bubble-wrap ai">
-        <div class="bubble ai" data-idx="${idx}">${esc(raw)}${fav?'<span class="fav-tag">★</span>':''}</div>
-        ${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}
-      </div>`;
+      return `<div class="bubble-wrap ai"><div class="bubble ai">${esc(raw)}</div>${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}</div>`;
     }
-    const state=clean(m[1]), body=clean(m[2]);
+    const state=clean(m[1]);
+    const body=clean(m[2]);
     return `
       <div class="bubble-wrap ai">
-        <div class="offline-card" data-idx="${idx}">
+        <div class="offline-card">
           <div class="offline-state">${esc(state||'状态未记录')}</div>
-          <div class="offline-body">${esc(body||'')}${fav?'<span class="fav-tag">★</span>':''}</div>
+          <div class="offline-body">${esc(body||'')}</div>
         </div>
         ${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}
       </div>
@@ -922,80 +846,45 @@
     const arr=map[currentId]||[];
 
     if(st.mode==='offline'){
-      $('chatMsgs').innerHTML=arr.map((m,i)=>{
+      $('chatMsgs').innerHTML=arr.map(m=>{
         const cls=m.role==='user'?'me':'ai';
         const av=m.role==='user'?meAvatar:roleAvatar;
-        const t=getMsgViewText(m);
-        const bcls=`${m.hidden?'hidden-msg':''} ${m.revoked?'revoked-msg':''}`;
-        const fav=!!m.fav;
 
         if(m.role==='user'){
           return `<div class="msg-block ${cls}">
-            ${multiMode?`<button class="sel-dot ${selectedMsgIdx.has(i)?'on':''}" data-sel="${i}">${selectedMsgIdx.has(i)?'✓':''}</button>`:''}
             <img class="chat-avatar" src="${av}">
             <div class="bubble-wrap me">
-              <div class="bubble me ${bcls}" data-idx="${i}">
-                ${renderStateChips(m)}
-                ${esc(t)}${fav?'<span class="fav-tag">★</span>':''}
-              </div>
-              ${pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:''}
-            </div>
-          </div>`;
-        }
-
-        if(m.hidden || m.revoked){
-          return `<div class="msg-block ${cls}">
-            ${multiMode?`<button class="sel-dot ${selectedMsgIdx.has(i)?'on':''}" data-sel="${i}">${selectedMsgIdx.has(i)?'✓':''}</button>`:''}
-            <img class="chat-avatar" src="${av}">
-            <div class="bubble-wrap ai">
-              <div class="bubble ai ${bcls}" data-idx="${i}">
-                ${renderStateChips(m)}
-                ${esc(t)}${fav?'<span class="fav-tag">★</span>':''}
-              </div>
+              <div class="bubble me">${esc(m.text)}</div>
               ${pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:''}
             </div>
           </div>`;
         }
 
         return `<div class="msg-block ${cls}">
-          ${multiMode?`<button class="sel-dot ${selectedMsgIdx.has(i)?'on':''}" data-sel="${i}">${selectedMsgIdx.has(i)?'✓':''}</button>`:''}
           <img class="chat-avatar" src="${av}">
-          ${renderOfflineAssistant(m.text,m.time,pref,i,fav)}
+          ${renderOfflineAssistant(m.text,m.time,pref)}
         </div>`;
       }).join('');
     }else{
-      $('chatMsgs').innerHTML=arr.map((m,i)=>{
-        const t=getMsgViewText(m);
-        const bcls=`${m.hidden?'hidden-msg':''} ${m.revoked?'revoked-msg':''}`;
-        const fav=m.fav?`<span class="fav-tag">★</span>`:'';
-
+      $('chatMsgs').innerHTML=arr.map(m=>{
         if(m.role==='user'){
           return `<div class="msg-row me">
-            ${multiMode?`<button class="sel-dot ${selectedMsgIdx.has(i)?'on':''}" data-sel="${i}">${selectedMsgIdx.has(i)?'✓':''}</button>`:''}
             <div class="bubble-wrap me">
-              <div class="bubble me ${bcls}" data-idx="${i}">
-                ${renderStateChips(m)}
-                ${esc(t)}${fav}
-              </div>
+              <div class="bubble me">${esc(m.text)}</div>
               ${pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:''}
             </div>
             <img class="chat-avatar" src="${meAvatar}">
           </div>`;
         }
         return `<div class="msg-row">
-          ${multiMode?`<button class="sel-dot ${selectedMsgIdx.has(i)?'on':''}" data-sel="${i}">${selectedMsgIdx.has(i)?'✓':''}</button>`:''}
           <img class="chat-avatar" src="${roleAvatar}">
           <div class="bubble-wrap ai">
-            <div class="bubble ai ${bcls}" data-idx="${i}">
-              ${renderStateChips(m)}
-              ${esc(t)}${fav}
-            </div>
+            <div class="bubble ai">${esc(m.text)}</div>
             ${pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:''}
           </div>
         </div>`;
       }).join('');
     }
-    refreshMultiBar();
     $('chatMsgs').scrollTop=$('chatMsgs').scrollHeight;
   }
 
@@ -1008,15 +897,20 @@
   function deleteCurrentContact(){
     if(!currentId) return;
     if(!confirm('删除当前好友及聊天记录？')) return;
-    setContacts(getContacts().filter(c=>c.id!==currentId));
-    const map=getChats(); delete map[currentId]; setChats(map);
+    const arr=getContacts().filter(c=>c.id!==currentId);
+    setContacts(arr);
+
+    const map=getChats();
+    delete map[currentId];
+    setChats(map);
+
     currentId=null;
     renderContacts($('searchInput').value||'');
     show('wechat');
   }
 
   function resetInputH(){ $('chatInput').style.height='44px'; }
-  $('chatInput').addEventListener('input',()=>{
+  $('chatInput').addEventListener('input', ()=>{
     const el=$('chatInput');
     el.style.height='44px';
     el.style.height=Math.min(el.scrollHeight,96)+'px';
@@ -1024,19 +918,13 @@
 
   function pushUser(text){
     const map=getChats(); map[currentId]=map[currentId]||[];
-    const payload={role:'user',text,time:Date.now(),stored:true};
-    if(quotePayload&&quotePayload.text){
-      payload.quote={text:String(quotePayload.text).slice(0,200), time:quotePayload.time||Date.now(), role:quotePayload.role||'assistant'};
-    }
-    map[currentId].push(payload);
+    map[currentId].push({role:'user',text,time:Date.now(),stored:true});
     setChats(map);
-    quotePayload=null;
-    refreshQuoteBar();
   }
-
   function storeCurrentInput(){
     if(!currentId) return;
-    const t=clean($('chatInput').value); if(!t) return;
+    const t=clean($('chatInput').value);
+    if(!t) return;
     pushUser(t);
     $('chatInput').value=''; resetInputH(); renderChat();
   }
@@ -1064,12 +952,17 @@
   }
   function splitAiBubbles(raw){
     const txt=clean(raw); if(!txt) return ['...'];
+
     const byJson=parseJsonMessages(txt);
-    if(byJson&&byJson.length){
+    if(byJson && byJson.length){
       const out=[];
-      for(const s of byJson){ if(s.length>44) out.push(...forceSplitByLen(s,28)); else out.push(s); }
+      for(const s of byJson){
+        if(s.length>44) out.push(...forceSplitByLen(s,28));
+        else out.push(s);
+      }
       return out.filter(Boolean);
     }
+
     const normalized=txt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
     const blocks=normalized.split(/\n{2,}/).filter(Boolean);
     const pieces=[];
@@ -1084,15 +977,16 @@
           continue;
         }
         if((buf+seg).length<=34) buf+=seg;
-        else{ if(buf) pieces.push(buf); buf=seg; }
+        else { if(buf) pieces.push(buf); buf=seg; }
       }
       if(buf) pieces.push(buf);
     }
-    return pieces.filter(Boolean).length?pieces.filter(Boolean):[txt];
+    return pieces.filter(Boolean).length ? pieces.filter(Boolean) : [txt];
   }
   function enforceCountRange(parts,min,max){
     let arr=[...(parts||[])].filter(Boolean);
     min=Math.max(1,min); max=Math.max(min,max);
+
     while(arr.length<min){
       const idx=arr.findIndex(x=>x.length>12);
       if(idx<0) break;
@@ -1115,20 +1009,24 @@
       if(currentId===targetId) renderChat();
 
       const len=parts[i]?.length||10;
-      const delay=mode==='offline'
-        ? 1200+Math.floor(Math.random()*1200)+Math.min(1300,len*8)
-        : (i===0?850:1300)+Math.floor(Math.random()*(i===0?900:1400))+Math.min(1000,len*12);
+      const delay = mode==='offline'
+        ? 1200 + Math.floor(Math.random()*1200) + Math.min(1300,len*8)
+        : (i===0?850:1300) + Math.floor(Math.random()*(i===0?900:1400)) + Math.min(1000,len*12);
       await sleep(delay);
     }
   }
 
   // API
   function getApiState(){
-    return getJ(K_API,{current:'默认',presets:{'默认':{base:'',key:'',model:'gpt-4o-mini',temp:0.8}}});
+    return getJ(K_API,{
+      current:'默认',
+      presets:{'默认':{base:'',key:'',model:'gpt-4o-mini',temp:0.8}}
+    });
   }
   function setApiState(v){setJ(K_API,v);}
   function refreshPresetUI(){
-    const s=getApiState(), names=Object.keys(s.presets);
+    const s=getApiState();
+    const names=Object.keys(s.presets);
     $('apiPresetSelect').innerHTML=names.map(n=>`<option ${n===s.current?'selected':''}>${n}</option>`).join('');
     loadApiForm();
   }
@@ -1160,13 +1058,13 @@
       model:clean($('apiModel').value)||'gpt-4o-mini',
       temp:Number($('apiTemp').value||0.8)
     };
-    s.current=e.target.value;
-    setApiState(s);
-    loadApiForm();
+    s.current=e.target.value; setApiState(s); loadApiForm();
   };
   $('newPresetBtn').onclick=()=>{
-    const name=(prompt('新预设名：')||'').trim(); if(!name) return;
-    const s=getApiState(); if(s.presets[name]) return alert('预设已存在');
+    const name=(prompt('新预设名：')||'').trim();
+    if(!name) return;
+    const s=getApiState();
+    if(s.presets[name]) return alert('预设已存在');
     s.presets[name]={base:'',key:'',model:'gpt-4o-mini',temp:0.8};
     s.current=name; setApiState(s); refreshPresetUI();
   };
@@ -1218,7 +1116,7 @@
       const url=buildUrl(c.base,'/v1/models');
       const r=await fetch(url,{headers:{'Authorization':'Bearer '+c.key}});
       const data=await r.json().catch(()=>({}));
-      if(!r.ok) throw new Error(data?.error?.message||('HTTP '+r.status));
+      if(!r.ok) throw new Error(data?.error?.message || ('HTTP '+r.status));
       const list=(data.data||[]).map(x=>x.id).filter(Boolean);
       if(!list.length) throw new Error('未返回模型列表');
       $('apiModel').innerHTML=list.map(m=>`<option>${m}</option>`).join('');
@@ -1242,7 +1140,9 @@
   $('testApiBtn').onclick=testApi;
 
   function buildOnlineSystem(c,me,st){
-    const rangeRule=st.onlineStyle==='range'?`本次回复 ${st.onlineMin}-${st.onlineMax} 条消息。`:`本次条数由你根据语境自由发挥。`;
+    const rangeRule = st.onlineStyle==='range'
+      ? `本次回复 ${st.onlineMin}-${st.onlineMax} 条消息。`
+      : `本次条数由你根据语境自由发挥。`;
     return [
       `你正在扮演：${c?.name||'聊天对象'}`,
       `对方名称：${me?.name||'我'}`,
@@ -1290,19 +1190,23 @@
     if(currentId===chatId) renderChat();
 
     const map=getChats();
-    const hist=(map[chatId]||[]).filter(x=>x.text&&!x.hidden&&!x.revoked).slice(-30);
+    const hist=(map[chatId]||[]).filter(x=>x.text).slice(-30);
     if(!hist.length) return;
 
     setTyping(chatId,true);
 
     try{
-      const system=st.mode==='offline'?buildOfflineSystem(c,me,st):buildOnlineSystem(c,me,st);
-      const messages=[{role:'system',content:system}, ...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:x.text}))];
+      const system = st.mode==='offline' ? buildOfflineSystem(c,me,st) : buildOnlineSystem(c,me,st);
+      const messages=[
+        {role:'system',content:system},
+        ...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:x.text}))
+      ];
       const out=await callApi(messages);
 
       let parts=[];
-      if(st.mode==='offline') parts=[clean(out)||'...'];
-      else{
+      if(st.mode==='offline'){
+        parts=[clean(out)||'...'];
+      }else{
         parts=splitAiBubbles(out);
         if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);
       }
@@ -1329,200 +1233,27 @@
 
   $('sendBtn').onclick=sendMsg;
   $('chatInput').addEventListener('keydown',e=>{
-    if(e.key==='Enter'&&!e.shiftKey){
+    if(e.key==='Enter' && !e.shiftKey){
       e.preventDefault();
-      if(e.ctrlKey||e.metaKey) sendMsg();
+      if(e.ctrlKey || e.metaKey) sendMsg();
       else storeCurrentInput();
     }
   });
 
-  $('clearQuoteBtn').onclick=()=>{ quotePayload=null; refreshQuoteBar(); };
-
-  function openMsgMenu(idx){
-    if(!currentId) return;
-    menuMsgIndex=idx;
-    const arr=getChats()[currentId]||[];
-    const m=arr[idx]; if(!m) return;
-
-    const acts=[
-      ['quote','引用'],
-      ['copy','复制'],
-      ['edit','编辑功能'],
-      ['revoke','撤回'],
-      ['delete','删除'],
-      ['multi','多选'],
-      ['all','全选'],
-      [m.hidden?'unhide':'hide', m.hidden?'取消隐藏':'隐藏消息'],
-      ['fav', m.fav?'已收藏':'收藏']
-    ];
-
-    $('msgMenuCard').innerHTML=`
-      <div class="small" style="margin-bottom:8px;">消息操作</div>
-      <div class="row" style="flex-wrap:wrap;gap:8px;">
-        ${acts.map(x=>`<button class="btn msg-act" data-act="${x[0]}">${x[1]}</button>`).join('')}
-      </div>
-      <div class="row" style="justify-content:flex-end;margin-top:10px;">
-        <button class="btn" id="closeMsgMenuBtn">取消</button>
-      </div>
-    `;
-    $('msgMenu').classList.add('active');
-
-    $('closeMsgMenuBtn').onclick=()=>$('msgMenu').classList.remove('active');
-
-    document.querySelectorAll('.msg-act').forEach(b=>{
-      b.onclick=async ()=>{
-        const act=b.dataset.act;
-        const map=getChats(), arr=map[currentId]||[], msg=arr[menuMsgIndex];
-        if(!msg) return;
-
-        if(act==='quote'){
-          quotePayload={text:getMsgViewText(msg), time:msg.time, role:msg.role};
-          refreshQuoteBar();
-          try{ $('chatInput').focus(); }catch{}
-        }else if(act==='copy'){
-          try{ await navigator.clipboard.writeText(getMsgViewText(msg)); }catch{}
-        }else if(act==='edit'){
-          editMsgIndex=menuMsgIndex;
-          $('editMsgInput').value=msg.text||'';
-          $('editModal').classList.add('active');
-        }else if(act==='revoke'){
-          updateMessageAt(menuMsgIndex,{revoked:true});
-        }else if(act==='delete'){
-          removeMessageAt(menuMsgIndex);
-        }else if(act==='hide'){
-          updateMessageAt(menuMsgIndex,{hidden:true});
-        }else if(act==='unhide'){
-          updateMessageAt(menuMsgIndex,{hidden:false});
-        }else if(act==='fav'){
-          updateMessageAt(menuMsgIndex,{fav:!msg.fav});
-        }else if(act==='multi'){
-          multiMode=true; selectedMsgIdx.add(menuMsgIndex);
-        }else if(act==='all'){
-          multiMode=true; selectedMsgIdx=new Set((arr||[]).map((_,i)=>i));
-        }
-
-        $('msgMenu').classList.remove('active');
-        renderChat();
-      };
-    });
-  }
-
-  $('msgMenu').addEventListener('click',e=>{ if(e.target.id==='msgMenu') $('msgMenu').classList.remove('active'); });
-  $('editModal').addEventListener('click',e=>{ if(e.target.id==='editModal') $('editModal').classList.remove('active'); });
-  $('cancelEditBtn').onclick=()=> $('editModal').classList.remove('active');
-  $('saveEditBtn').onclick=()=>{
-    const t=clean($('editMsgInput').value);
-    if(editMsgIndex<0) return;
-    updateMessageAt(editMsgIndex,{text:t||'（空）',revoked:false});
-    $('editModal').classList.remove('active');
-    renderChat();
-  };
-
-  let lpTimer=null, sx=0, sy=0;
-  $('chatMsgs').addEventListener('touchstart',e=>{
-    const target=e.target.closest('.bubble, .offline-card');
-    if(!target) return;
-    const idx=Number(target.dataset.idx);
-    if(Number.isNaN(idx)) return;
-    sx=e.touches[0].clientX; sy=e.touches[0].clientY;
-    lpTimer=setTimeout(()=>openMsgMenu(idx),460);
-  },{passive:true});
-  $('chatMsgs').addEventListener('touchmove',e=>{
-    if(!lpTimer) return;
-    const dx=Math.abs(e.touches[0].clientX-sx), dy=Math.abs(e.touches[0].clientY-sy);
-    if(dx>8||dy>8){ clearTimeout(lpTimer); lpTimer=null; }
-  },{passive:true});
-  ['touchend','touchcancel'].forEach(k=>{
-    $('chatMsgs').addEventListener(k,()=>{ if(lpTimer){ clearTimeout(lpTimer); lpTimer=null; } },{passive:true});
-  });
-  $('chatMsgs').addEventListener('contextmenu',e=>{
-    const target=e.target.closest('.bubble, .offline-card');
-    if(!target) return;
-    e.preventDefault();
-    const idx=Number(target.dataset.idx);
-    if(!Number.isNaN(idx)) openMsgMenu(idx);
-  });
-
-  $('chatMsgs').addEventListener('click',e=>{
-    const s=e.target.closest('.sel-dot');
-    const b=e.target.closest('.bubble, .offline-card');
-    if(s){
-      const i=Number(s.dataset.sel);
-      if(selectedMsgIdx.has(i)) selectedMsgIdx.delete(i); else selectedMsgIdx.add(i);
-      renderChat(); return;
-    }
-    if(multiMode&&b){
-      const i=Number(b.dataset.idx);
-      if(selectedMsgIdx.has(i)) selectedMsgIdx.delete(i); else selectedMsgIdx.add(i);
-      renderChat();
-    }
-  });
-
-  $('multiCancelBtn').onclick=()=>{ exitMultiMode(); renderChat(); };
-  $('multiDeleteBtn').onclick=()=>{
-    if(!currentId) return;
-    const map=getChats(), arr=map[currentId]||[];
-    map[currentId]=arr.filter((_,i)=>!selectedMsgIdx.has(i));
-    setChats(map); exitMultiMode(); renderChat();
-  };
-  $('multiHideBtn').onclick=()=>{
-    if(!currentId) return;
-    const map=getChats(), arr=map[currentId]||[];
-    arr.forEach((m,i)=>{ if(selectedMsgIdx.has(i)) m.hidden=true; });
-    setChats(map); exitMultiMode(); renderChat();
-  };
-  $('multiUnhideBtn').onclick=()=>{
-    if(!currentId) return;
-    const map=getChats(), arr=map[currentId]||[];
-    arr.forEach((m,i)=>{ if(selectedMsgIdx.has(i)) m.hidden=false; });
-    setChats(map); exitMultiMode(); renderChat();
-  };
-  $('multiFavBtn').onclick=()=>{
-    if(!currentId) return;
-    const map=getChats(), arr=map[currentId]||[];
-    arr.forEach((m,i)=>{ if(selectedMsgIdx.has(i)) m.fav=true; });
-    setChats(map); exitMultiMode(); renderChat();
-  };
-
-  function openFavModal(){
-    if(!currentId) return;
-    const arr=(getChats()[currentId]||[]);
-    const list=arr.map((m,i)=>({m,i})).filter(x=>x.m.fav);
-    $('favList').innerHTML=list.length?list.map(x=>`
-      <div class="card" style="margin-bottom:8px;">
-        <div class="small">#${x.i+1} · ${fmtTs(x.m.time)}</div>
-        <div style="margin-top:6px;white-space:pre-wrap;">${esc(getMsgViewText(x.m).slice(0,220))}</div>
-        <div class="row" style="justify-content:flex-end;margin-top:8px;">
-          <button class="btn d" data-unfav="${x.i}">取消收藏</button>
-        </div>
-      </div>
-    `).join(''):`<div class="small">暂无收藏消息</div>`;
-    $('favModal').classList.add('active');
-
-    document.querySelectorAll('[data-unfav]').forEach(btn=>{
-      btn.onclick=()=>{
-        const i=Number(btn.dataset.unfav);
-        updateMessageAt(i,{fav:false});
-        openFavModal();
-        renderChat();
-      };
-    });
-  }
-  $('favBoxBtn').onclick=openFavModal;
-  $('closeFavBtn').onclick=()=>$('favModal').classList.remove('active');
-  $('favModal').addEventListener('click',e=>{ if(e.target.id==='favModal') $('favModal').classList.remove('active'); });
-
-  // setting
+  // setting full page
   function refreshSettingUI(){
     const mode=$('replyModeSelect').value;
-    $('onlineSettingCard').style.display=mode==='online'?'':'none';
-    $('offlineSettingCard').style.display=mode==='offline'?'':'none';
-    $('onlineRangeBox').style.display=(mode==='online'&&$('onlineStyleSelect').value==='range')?'':'none';
+    $('onlineSettingCard').style.display = mode==='online' ? '' : 'none';
+    $('offlineSettingCard').style.display = mode==='offline' ? '' : 'none';
+    $('onlineRangeBox').style.display = (mode==='online' && $('onlineStyleSelect').value==='range') ? '' : 'none';
   }
 
   function openChatSettingPage(){
     if(!currentId) return;
-    const c=getContactById(currentId), st=normSettings(c?.settings), me=getMe(), p=getPref();
+    const c=getContactById(currentId);
+    const st=normSettings(c?.settings);
+    const me=getMe();
+    const p=getPref();
 
     $('meNameInput').value=me.name||'';
     $('meNoteInput').value=me.note||'';
@@ -1554,8 +1285,8 @@
     if(!currentId) return;
     try{
       const me=getMe();
-      const mode=$('replyModeSelect').value==='offline'?'offline':'online';
-      const onlineStyle=$('onlineStyleSelect').value==='range'?'range':'free';
+      const mode = $('replyModeSelect').value==='offline'?'offline':'online';
+      const onlineStyle = $('onlineStyleSelect').value==='range'?'range':'free';
       const onlineMin=Math.max(1, Number($('onlineMinInput').value||2));
       const onlineMax=Math.max(onlineMin, Number($('onlineMaxInput').value||6));
       const offlineMin=Math.max(80, Number($('offlineMinInput').value||220));
@@ -1581,7 +1312,8 @@
       setPref(p);
       applyBubbleCss();
 
-      $('chatTitle').textContent=(getContactById(currentId)?.name)||'聊天';
+      const now=getContactById(currentId);
+      $('chatTitle').textContent=now?.name||'聊天';
 
       applyModeUI();
       renderChat();
@@ -1597,7 +1329,14 @@
 
   // import/export
   $('exportBtn').onclick=()=>{
-    const data={contacts:getContacts(),chats:getChats(),api:getApiState(),me:getMe(),pref:getPref(),ts:Date.now()};
+    const data={
+      contacts:getContacts(),
+      chats:getChats(),
+      api:getApiState(),
+      me:getMe(),
+      pref:getPref(),
+      ts:Date.now()
+    };
     const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
@@ -1633,7 +1372,6 @@
   applyBubbleCss();
   refreshPresetUI();
   renderContacts();
-  refreshQuoteBar();
 })();
 </script>
 </body>
