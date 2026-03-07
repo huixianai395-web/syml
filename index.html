@@ -1,10 +1,9 @@
-
 <!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>小手机 v1.3.7 稳定</title>
+  <title>小手机 v1.3.7a 稳定修复</title>
   <style>
     :root{
       --safe-top: env(safe-area-inset-top, 0px);
@@ -105,8 +104,7 @@
       position:absolute;
       top:calc(6px + var(--safe-top));
       right:12px;
-      width:72px;
-      height:126px;
+      width:72px;height:126px;
       transform-origin:top center;
       animation:chimeSwing 3.2s ease-in-out infinite;
       filter:drop-shadow(0 4px 10px rgba(0,0,0,.26));
@@ -118,7 +116,6 @@
       border:2px solid rgba(255,255,255,.95);
       border-radius:999px;
       background:rgba(255,255,255,.18);
-      backdrop-filter:blur(1px);
     }
     .windchime .line{
       position:absolute;top:10px;width:2px;
@@ -127,8 +124,7 @@
     }
     .windchime .line span{
       position:absolute;left:50%;transform:translateX(-50%);
-      border-radius:999px;
-      background:rgba(255,255,255,.92);
+      border-radius:999px;background:rgba(255,255,255,.92);
       box-shadow:0 0 10px rgba(255,255,255,.5);
     }
     .windchime .l1{left:17px;height:42px;animation:lineSwingA 3.2s ease-in-out infinite}
@@ -145,12 +141,10 @@
     .windchime .pendulum::after{
       content:"";
       position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);
-      width:22px;height:14px;
-      border-radius:4px 4px 8px 8px;
+      width:22px;height:14px;border-radius:4px 4px 8px 8px;
       background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(220,240,255,.72));
       box-shadow:0 0 12px rgba(255,255,255,.5);
     }
-
     @keyframes chimeSwing{0%,100%{transform:rotate(8deg)}50%{transform:rotate(-8deg)}}
     @keyframes lineSwingA{0%,100%{transform:rotate(6deg)}50%{transform:rotate(-5deg)}}
     @keyframes lineSwingB{0%,100%{transform:rotate(3deg)}50%{transform:rotate(-3deg)}}
@@ -174,24 +168,23 @@
     .icon:active .ibox{transform:scale(.88)}
     .lab{font-size:12px;text-shadow:0 1px 2px rgba(0,0,0,.25)}
 
-    /* Wechat list */
+    /* 联系人 */
     .list{display:flex;flex-direction:column;gap:8px}
     .item{
       background:#fff;border:1px solid #ececf2;border-radius:12px;padding:10px;
       display:flex;gap:10px;align-items:center;
-      position:relative;
     }
     .avatar{width:44px;height:44px;border-radius:12px;object-fit:cover;background:#eef2ff;flex-shrink:0}
     .main{flex:1;min-width:0;cursor:pointer}
     .name{font-weight:600;color:#222}
     .preview{margin-top:4px;font-size:12px;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .t{font-size:11px;color:#999}
-    .hint-tail{
-      font-size:12px;color:#9aa3bf;
-      padding-left:4px;
+    .more-btn{
+      border:none;background:#f2f5ff;color:#6173a8;border:1px solid #dfe6ff;
+      border-radius:8px;padding:6px 8px;cursor:pointer;font-size:12px;
     }
 
-    /* Chat Header Center */
+    /* Chat Header */
     .chat-head-center{
       display:flex;flex-direction:column;align-items:center;justify-content:center;
       flex:1;min-width:0;padding:0 8px;
@@ -204,7 +197,6 @@
     .chat-head-sub{
       font-size:11px;color:#7a86a8;line-height:1.2;margin-top:2px;min-height:13px;
     }
-
     .icon-btn{
       width:32px;height:32px;border-radius:10px;border:1px solid #d7e3ff;
       background:linear-gradient(180deg,#f3f7ff,#e8f0ff);
@@ -212,7 +204,6 @@
       display:grid;place-items:center;
       box-shadow:0 1px 3px rgba(61,93,161,.12);
     }
-    .icon-btn:active{transform:translateY(1px)}
 
     /* Chat */
     #chatMsgs{
@@ -293,16 +284,10 @@
       display:flex;gap:8px;align-items:flex-end;
     }
     #chatInput{
-      flex:1;
-      height:44px;
-      min-height:44px;
-      max-height:96px;
-      overflow-y:auto;
-      resize:none;
+      flex:1;height:44px;min-height:44px;max-height:96px;overflow-y:auto;resize:none;
     }
     .send-actions{display:flex;gap:8px;align-items:center;align-self:flex-end}
 
-    /* 储存键高级感 */
     .btn.store{
       width:40px;height:40px;padding:0;border-radius:999px;
       border:1px solid #cfe3ff;
@@ -331,10 +316,6 @@
       background:#fff;border-radius:14px;padding:12px;
       box-shadow:0 10px 30px rgba(0,0,0,.18);
     }
-    .preview-img{
-      width:64px;height:64px;border-radius:12px;object-fit:cover;
-      border:1px solid #eee;background:#f3f5ff;
-    }
 
     .seg{
       display:flex;gap:6px;align-items:center;
@@ -350,9 +331,7 @@
       box-shadow:0 1px 3px rgba(35,67,137,.15);
     }
 
-    .avatar-row{
-      display:flex;align-items:center;gap:10px;margin-top:8px;
-    }
+    .avatar-row{display:flex;align-items:center;gap:10px;margin-top:8px}
     .mini-avatar{
       width:46px;height:46px;border-radius:12px;object-fit:cover;background:#eef2ff;border:1px solid #dfe6ff;
     }
@@ -360,10 +339,6 @@
     .avatar-btn{
       border:none;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;
       background:#edf2ff;color:#2b4f97;
-    }
-
-    .contact-action-footer{
-      display:flex;gap:8px;justify-content:flex-end;margin-top:10px;
     }
   </style>
 </head>
@@ -375,21 +350,14 @@
     <div class="wall"></div>
     <div class="home-layer">
       <div class="windchime" aria-hidden="true">
-        <div class="ring"></div>
-        <div class="line l1"><span></span></div>
-        <div class="line l2"><span></span></div>
-        <div class="line l3"><span></span></div>
-        <div class="pendulum"></div>
+        <div class="ring"></div><div class="line l1"><span></span></div><div class="line l2"><span></span></div><div class="line l3"><span></span></div><div class="pendulum"></div>
       </div>
-
       <div class="date" id="homeDate"></div>
       <div class="time" id="homeTime"></div>
-
       <div class="widgets">
         <div class="widget"><div class="t">纪念日</div><div class="v">第 233 天</div></div>
         <div class="widget"><div class="t">天气</div><div class="v">22°C 晴</div></div>
       </div>
-
       <div class="grid">
         <div class="icon" data-nav="wechat"><div class="ibox">💬</div><div class="lab">微信</div></div>
         <div class="icon" data-nav="api"><div class="ibox">🔑</div><div class="lab">API</div></div>
@@ -414,17 +382,13 @@
   <section id="chatRoom" class="screen">
     <div class="header">
       <button class="btn" data-nav="wechat">‹ 返回</button>
-
       <div class="chat-head-center">
         <div id="chatTitle" class="chat-head-title">聊天</div>
         <div id="chatSubStatus" class="chat-head-sub">在线</div>
       </div>
-
       <button class="icon-btn" id="chatToolsBtn" title="聊天工具">✦</button>
     </div>
-
     <div id="chatMsgs"></div>
-
     <div class="chatInputBar">
       <textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
       <div class="send-actions">
@@ -450,7 +414,6 @@
           <button class="btn d" id="delPresetBtn">删</button>
         </div>
       </div>
-
       <div class="card"><div class="small">Base URL</div><input id="apiBase" class="input" placeholder="https://api.cetaceang.qzz.io" /></div>
       <div class="card"><div class="small">API Key</div><input id="apiKey" class="input" type="password" /></div>
       <div class="card">
@@ -469,18 +432,15 @@
       <h3 style="margin:0 0 10px;">创建联系人</h3>
       <div class="small">昵称</div>
       <input id="newName" class="input" placeholder="例如：弥洛" />
-
       <div class="small" style="margin-top:8px;">头像（上传 或 URL）</div>
       <div class="row">
         <button class="btn" id="pickAvatarBtn">上传</button>
         <input id="newAvatarUrl" class="input" placeholder="https://..." />
       </div>
       <input id="newAvatarFile" type="file" accept="image/*" class="hidden" />
-      <img id="newAvatarPreview" class="preview-img hidden" style="margin-top:8px;" />
-
+      <img id="newAvatarPreview" class="mini-avatar hidden" style="margin-top:8px;" />
       <div class="small" style="margin-top:8px;">人设</div>
-      <textarea id="newPersona" class="ta" style="min-height:220px;"></textarea>
-
+      <textarea id="newPersona" class="ta" style="min-height:180px;"></textarea>
       <div class="row" style="justify-content:flex-end;margin-top:10px;">
         <button class="btn" id="cancelCreateBtn">取消</button>
         <button class="btn p" id="saveCreateBtn">保存</button>
@@ -488,12 +448,12 @@
     </div>
   </div>
 
-  <!-- 联系人长按操作 -->
+  <!-- 联系人操作 -->
   <div id="contactActionModal" class="modal">
     <div class="modal-card">
       <h3 style="margin:0 0 8px;">联系人操作</h3>
-      <div class="small" id="contactActionText">你可以删除该联系人及聊天记录。</div>
-      <div class="contact-action-footer">
+      <div class="small" id="contactActionText">删除联系人及聊天记录</div>
+      <div class="row" style="justify-content:flex-end;margin-top:10px;">
         <button class="btn" id="cancelContactActionBtn">取消</button>
         <button class="btn d" id="deleteContactBtn">删除</button>
       </div>
@@ -510,7 +470,6 @@
         <button id="toolModeOnlineBtn" class="active">线上</button>
         <button id="toolModeOfflineBtn">线下</button>
       </div>
-      <div class="small" style="margin-top:8px;color:#5f6b92;">线上：自由条数短气泡；线下：一条长消息（酒馆风）</div>
 
       <hr style="opacity:.2;margin:14px 0;">
       <div class="small"><b>线下字数区间</b></div>
@@ -527,7 +486,7 @@
 
       <hr style="opacity:.2;margin:14px 0;">
       <div class="small"><b>对方人设（当前联系人）</b></div>
-      <textarea id="toolAiPersona" class="ta" style="min-height:95px;margin-top:8px;"></textarea>
+      <textarea id="toolAiPersona" class="ta" style="min-height:85px;margin-top:8px;"></textarea>
       <div class="avatar-row">
         <img id="toolAiAvatarPreview" class="mini-avatar" src="" />
         <div style="flex:1;">
@@ -541,7 +500,7 @@
 
       <hr style="opacity:.2;margin:14px 0;">
       <div class="small"><b>我的人设（全局）</b></div>
-      <textarea id="toolMyPersona" class="ta" style="min-height:95px;margin-top:8px;"></textarea>
+      <textarea id="toolMyPersona" class="ta" style="min-height:85px;margin-top:8px;"></textarea>
       <div class="avatar-row">
         <img id="toolMyAvatarPreview" class="mini-avatar" src="" />
         <div style="flex:1;">
@@ -560,7 +519,6 @@
     </div>
   </div>
 
-  <!-- 隐藏上传控件 -->
   <input id="toolAiAvatarFile" type="file" accept="image/*" hidden />
   <input id="toolMyAvatarFile" type="file" accept="image/*" hidden />
 
@@ -568,40 +526,29 @@
 
 <script>
 (() => {
-  // ===== 存储层（localStorage + 内存回退）=====
+  // storage
   const memStore = {};
   const STORAGE_OK = (() => {
-    try{
-      localStorage.setItem('__mp_test__','1');
-      localStorage.removeItem('__mp_test__');
-      return true;
-    }catch{
-      return false;
-    }
+    try{ localStorage.setItem('__mp_test__','1'); localStorage.removeItem('__mp_test__'); return true; }catch{ return false; }
   })();
 
-  function getJ(k,d){
+  const getJ=(k,d)=>{
     if(STORAGE_OK){
-      try{
-        const v=localStorage.getItem(k);
-        return v===null?d:JSON.parse(v);
-      }catch{return d;}
+      try{ const v=localStorage.getItem(k); return v===null?d:JSON.parse(v); }catch{return d;}
     }
-    return (k in memStore) ? memStore[k] : d;
-  }
-  function setJ(k,v){
-    if(STORAGE_OK){
-      try{ localStorage.setItem(k,JSON.stringify(v)); return; }catch{}
-    }
+    return k in memStore ? memStore[k] : d;
+  };
+  const setJ=(k,v)=>{
+    if(STORAGE_OK){ try{ localStorage.setItem(k,JSON.stringify(v)); return; }catch{} }
     memStore[k]=v;
-  }
+  };
 
-  // 新 key，避免旧版本污染
-  const K_CONTACT='mp_v137_contacts';
-  const K_CHAT='mp_v137_chats';
-  const K_API='mp_v137_api';
-  const K_ME='mp_v137_me';
-  const K_MODE='mp_v137_mode_cfg';
+  // keys
+  const K_CONTACT='mp_v137a_contacts';
+  const K_CHAT='mp_v137a_chats';
+  const K_API='mp_v137a_api';
+  const K_ME='mp_v137a_me';
+  const K_MODE='mp_v137a_mode';
 
   let currentId=null;
   let createAvatar='';
@@ -609,23 +556,18 @@
   let toolMyAvatarTemp='';
   let selectedContactForAction=null;
 
-  let pressTimer=null;
-  let suppressOpenUntil=0;
-
   const $ = id => document.getElementById(id);
   const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
   const clean=s=>String(s||'').replace(/[\u0000-\u001F\u007F\uFFFD]/g,'').trim();
   const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
   const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
 
-  // navigation
   function show(id){
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     const el=$(id); if(el) el.classList.add('active');
   }
   document.querySelectorAll('[data-nav]').forEach(el=>el.onclick=()=>show(el.getAttribute('data-nav')));
 
-  // time
   function tick(){
     const n=new Date(), h=String(n.getHours()).padStart(2,'0'), m=String(n.getMinutes()).padStart(2,'0');
     const w=['周日','周一','周二','周三','周四','周五','周六'][n.getDay()];
@@ -637,10 +579,7 @@
   // data
   function getContacts(){
     let arr=getJ(K_CONTACT,null);
-    if(!Array.isArray(arr)){
-      arr=[]; // 首次空列表，不内置角色
-      setJ(K_CONTACT,arr);
-    }
+    if(!Array.isArray(arr)){ arr=[]; setJ(K_CONTACT,arr); }
     return arr;
   }
   function setContacts(v){setJ(K_CONTACT,v);}
@@ -653,13 +592,13 @@
 
   function getMe(){
     const me=getJ(K_ME,{name:'我',avatar:'',persona:''});
-    return (me && typeof me==='object')?me:{name:'我',avatar:'',persona:''};
+    return (me&&typeof me==='object')?me:{name:'我',avatar:'',persona:''};
   }
   function setMe(v){setJ(K_ME,v);}
 
   function getModeMap(){
     const m=getJ(K_MODE,{});
-    return (m && typeof m==='object')?m:{};
+    return (m&&typeof m==='object')?m:{};
   }
   function setModeMap(v){setJ(K_MODE,v);}
   function getModeCfg(chatId){
@@ -669,9 +608,7 @@
     c.mode=(c.mode==='offline')?'offline':'online';
     c.offlineMin=clamp(Number(c.offlineMin||140),60,2000);
     c.offlineMax=clamp(Number(c.offlineMax||280),80,2600);
-    if(c.offlineMin>c.offlineMax){
-      const t=c.offlineMin;c.offlineMin=c.offlineMax;c.offlineMax=t;
-    }
+    if(c.offlineMin>c.offlineMax){ const t=c.offlineMin;c.offlineMin=c.offlineMax;c.offlineMax=t; }
     return c;
   }
   function setModeCfg(chatId,cfg){
@@ -680,49 +617,31 @@
     setModeMap(map);
   }
 
-  // contacts render + long press
+  // contacts render
   function renderContacts(k=''){
     k=(k||'').trim();
     const arr=getContacts().filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
-
     $('contactList').innerHTML=arr.map(c=>`
-      <div class="item contact-row"
-           data-id="${c.id}"
-           onpointerdown="startContactPress(event,'${c.id}')"
-           onpointerup="endContactPress()"
-           onpointerleave="endContactPress()"
-           onpointercancel="endContactPress()">
+      <div class="item">
         <img class="avatar" src="${c.avatar||'https://via.placeholder.com/88x88?text=头像'}"/>
         <div class="main" onclick="openChat('${c.id}')">
           <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div class="name">${esc(c.name)}</div>
-            <div class="t">${esc(c.time||'')}</div>
+            <div class="name">${esc(c.name)}</div><div class="t">${esc(c.time||'')}</div>
           </div>
           <div class="preview">${esc(c.preview||'')}</div>
         </div>
-        <div class="hint-tail">⋯</div>
+        <button class="more-btn" onclick="openContactAction('${c.id}',event)">⋯</button>
       </div>
     `).join('') || `<div class="card small">暂无联系人，点击右上角 +联系人 创建。</div>`;
   }
 
-  window.startContactPress=function(e,id){
-    endContactPress();
-    pressTimer=setTimeout(()=>{
-      suppressOpenUntil=Date.now()+600;
-      openContactAction(id);
-      if(e) e.preventDefault();
-    }, 450);
-  };
-  window.endContactPress=function(){
-    if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; }
-  };
-
-  function openContactAction(id){
+  window.openContactAction=function(id,e){
+    if(e) e.stopPropagation();
     selectedContactForAction=id;
     const c=getContacts().find(x=>x.id===id);
-    $('contactActionText').textContent=`将删除「${c?.name||'该联系人'}」及其聊天记录。`;
+    $('contactActionText').textContent=`将删除「${c?.name||'该联系人'}」及聊天记录。`;
     $('contactActionModal').classList.add('active');
-  }
+  };
   function closeContactAction(){
     $('contactActionModal').classList.remove('active');
     selectedContactForAction=null;
@@ -730,7 +649,6 @@
 
   $('cancelContactActionBtn').onclick=closeContactAction;
   $('contactActionModal').addEventListener('click',e=>{ if(e.target.id==='contactActionModal') closeContactAction(); });
-
   $('deleteContactBtn').onclick=()=>{
     if(!selectedContactForAction) return;
     const id=selectedContactForAction;
@@ -738,23 +656,16 @@
     const contacts=getContacts().filter(c=>c.id!==id);
     setContacts(contacts);
 
-    const chats=getChats();
-    if(chats[id]) delete chats[id];
-    setChats(chats);
+    const chats=getChats(); if(chats[id]) delete chats[id]; setChats(chats);
+    const modeMap=getModeMap(); if(modeMap[id]) delete modeMap[id]; setModeMap(modeMap);
 
-    const modeMap=getModeMap();
-    if(modeMap[id]){ delete modeMap[id]; setModeMap(modeMap); }
-
-    if(currentId===id){
-      currentId=null;
-      show('wechat');
-    }
+    if(currentId===id){ currentId=null; show('wechat'); }
 
     closeContactAction();
     renderContacts($('searchInput').value||'');
   };
 
-  // create contact modal
+  // create contact
   function openCreateModal(){ $('contactModal').classList.add('active'); }
   function closeCreateModal(){
     $('contactModal').classList.remove('active');
@@ -779,11 +690,9 @@
           if(!out || out.startsWith('data:,')) out=c.toDataURL('image/jpeg',quality);
           resolve(out);
         };
-        img.onerror=reject;
-        img.src=fr.result;
+        img.onerror=reject; img.src=fr.result;
       };
-      fr.onerror=reject;
-      fr.readAsDataURL(file);
+      fr.onerror=reject; fr.readAsDataURL(file);
     });
   }
 
@@ -803,7 +712,6 @@
       persona
     });
     setContacts(arr);
-
     renderContacts($('searchInput').value||'');
     closeCreateModal();
   }
@@ -813,8 +721,6 @@
   $('saveCreateBtn').onclick=saveContact;
   $('contactModal').addEventListener('click',e=>{ if(e.target.id==='contactModal') closeCreateModal(); });
   $('searchInput').oninput=e=>renderContacts(e.target.value||'');
-
-  $('pickAvatarBtn').onclick=()=> $('newAvatarFile').click();
   $('newAvatarFile').onchange=async e=>{
     const f=e.target.files?.[0]; if(!f) return;
     createAvatar=await compressImage(f,260,0.5);
@@ -822,14 +728,12 @@
     $('newAvatarPreview').classList.remove('hidden');
     e.target.value='';
   };
+  $('pickAvatarBtn').onclick=()=> $('newAvatarFile').click();
 
-  // chat open/render
-  function setChatSubStatus(text='在线'){
-    $('chatSubStatus').textContent=text;
-  }
+  // chat
+  function setChatSubStatus(text='在线'){ $('chatSubStatus').textContent=text; }
 
   window.openChat=function(id){
-    if(Date.now()<suppressOpenUntil) return; // 长按触发后抑制误打开
     currentId=id;
     const c=getContacts().find(x=>x.id===id);
     $('chatTitle').textContent=c?c.name:'聊天';
@@ -899,12 +803,11 @@
     $('chatMsgs').scrollTop=$('chatMsgs').scrollHeight;
   }
 
-  function clearChat(){
+  $('clearChatBtn').onclick=()=>{
     if(!currentId) return;
     if(!confirm('清空当前聊天？')) return;
     const map=getChats(); map[currentId]=[]; setChats(map); renderChat();
-  }
-  $('clearChatBtn').onclick=clearChat;
+  };
 
   function resetInputH(){ $('chatInput').style.height='44px'; }
   $('chatInput').addEventListener('input', ()=>{
@@ -928,43 +831,28 @@
   }
   $('storeBtn').onclick=storeCurrentInput;
 
-  // split helpers
+  // split
   function splitSentence(text){
     const arr=text.match(/[^。！？!?；;]+[。！？!?；;]?/g);
     return arr&&arr.length?arr.map(s=>s.trim()).filter(Boolean):[text];
   }
-
   function splitLongSmart(s,target=28,hardMax=36){
-    const out=[];
-    let str=s.trim();
+    const out=[]; let str=s.trim();
     while(str.length>hardMax){
       let cut=-1;
-      const nearMin=Math.max(10,target-8);
-      const nearMax=Math.min(str.length-1,target+8);
-
-      for(let i=nearMax;i>=nearMin;i--){
-        if('，、；：,;:'.includes(str[i])){ cut=i+1; break; }
-      }
-      if(cut<0){
-        for(let i=nearMax;i>=nearMin;i--){
-          if(str[i]===' '){ cut=i+1; break; }
-        }
-      }
+      const nearMin=Math.max(10,target-8), nearMax=Math.min(str.length-1,target+8);
+      for(let i=nearMax;i>=nearMin;i--){ if('，、；：,;:'.includes(str[i])){ cut=i+1; break; } }
+      if(cut<0){ for(let i=nearMax;i>=nearMin;i--){ if(str[i]===' '){ cut=i+1; break; } } }
       if(cut<0) cut=target;
-
       out.push(str.slice(0,cut).trim());
       str=str.slice(cut).trim();
     }
     if(str) out.push(str);
     return out.filter(Boolean);
   }
-
   function splitAiBubbles(raw){
-    let txt=clean(raw);
-    if(!txt) return ['...'];
-
+    let txt=clean(raw); if(!txt) return ['...'];
     txt=txt.replace(/^```[\w-]*\n?/,'').replace(/```$/,'').trim();
-
     let lines=txt.split(/\n+/).map(s=>s.trim()).filter(Boolean);
     if(lines.length<=1) lines=splitSentence(txt);
 
@@ -972,7 +860,6 @@
     for(let line of lines){
       if(!line) continue;
       if(line.length<=36){ bubbles.push(line); continue; }
-
       const segs=splitSentence(line);
       let buf='';
       for(let seg of segs){
@@ -983,10 +870,7 @@
           continue;
         }
         if((buf+seg).length<=30) buf+=seg;
-        else{
-          if(buf) bubbles.push(buf);
-          buf=seg;
-        }
+        else{ if(buf) bubbles.push(buf); buf=seg; }
       }
       if(buf) bubbles.push(buf);
     }
@@ -994,11 +878,8 @@
     const merged=[];
     for(const b of bubbles){
       if(!merged.length){ merged.push(b); continue; }
-      if(b.length<=2 && merged[merged.length-1].length+b.length<=36){
-        merged[merged.length-1]+=b;
-      }else{
-        merged.push(b);
-      }
+      if(b.length<=2 && merged[merged.length-1].length+b.length<=36) merged[merged.length-1]+=b;
+      else merged.push(b);
     }
     return merged.filter(Boolean).slice(0,24);
   }
@@ -1008,15 +889,12 @@
       const t=parts[i];
       map[currentId].push({role:'assistant',text:t,time:Date.now()});
       setChats(map); renderChat();
-
-      const delay=i===0
-        ? 700 + Math.floor(Math.random()*280)
-        : Math.min(4200, 1200 + t.length*85 + Math.floor(Math.random()*220));
+      const delay=i===0 ? 700+Math.floor(Math.random()*280) : Math.min(4200,1200+t.length*85+Math.floor(Math.random()*220));
       await sleep(delay);
     }
   }
 
-  // API preset
+  // API
   function getApiState(){
     return getJ(K_API,{
       current:'默认',
@@ -1024,14 +902,6 @@
     });
   }
   function setApiState(v){setJ(K_API,v);}
-
-  function refreshPresetUI(){
-    const s=getApiState();
-    const names=Object.keys(s.presets||{});
-    $('apiPresetSelect').innerHTML=names.map(n=>`<option ${n===s.current?'selected':''}>${n}</option>`).join('');
-    loadApiForm();
-  }
-
   function loadApiForm(){
     const s=getApiState(), c=s.presets[s.current]||{};
     $('apiBase').value=c.base||'';
@@ -1039,7 +909,12 @@
     $('apiTemp').value=c.temp??0.8;
     $('apiModel').innerHTML=`<option value="${c.model||'gpt-4o-mini'}">${c.model||'gpt-4o-mini'}</option>`;
   }
-
+  function refreshPresetUI(){
+    const s=getApiState();
+    const names=Object.keys(s.presets||{});
+    $('apiPresetSelect').innerHTML=names.map(n=>`<option ${n===s.current?'selected':''}>${n}</option>`).join('');
+    loadApiForm();
+  }
   function readApiForm(){
     return {
       base:clean($('apiBase').value),
@@ -1048,7 +923,6 @@
       temp:Number($('apiTemp').value||0.8)
     };
   }
-
   function saveApiForm(){
     const s=getApiState();
     s.presets[s.current]=readApiForm();
@@ -1056,7 +930,6 @@
     $('apiStatus').textContent='状态：已保存';
     return s.presets[s.current];
   }
-
   function getActiveApiCfg(){
     const s=getApiState();
     return s.presets[s.current]||{};
@@ -1069,7 +942,6 @@
     setApiState(s);
     loadApiForm();
   };
-
   $('newPresetBtn').onclick=()=>{
     const name=(prompt('新预设名：')||'').trim();
     if(!name) return;
@@ -1079,7 +951,6 @@
     s.presets[name]={base:'',key:'',model:'gpt-4o-mini',temp:0.8};
     s.current=name; setApiState(s); refreshPresetUI();
   };
-
   $('delPresetBtn').onclick=()=>{
     const s=getApiState(), names=Object.keys(s.presets);
     if(names.length<=1) return alert('至少保留一个预设');
@@ -1094,22 +965,20 @@
     if(b.endsWith('/v1')) return b+path.replace('/v1','');
     return b+path;
   }
-
   async function callApi(messages,cfg){
     if(!cfg.base||!cfg.key) throw new Error('请先配置 Base URL 和 API Key 并保存');
     const url=buildUrl(cfg.base,'/v1/chat/completions');
-
     const r=await fetch(url,{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.key},
       body:JSON.stringify({model:cfg.model,temperature:cfg.temp,messages})
     });
     const data=await r.json().catch(()=>({}));
-    if(!r.ok) throw new Error(data?.error?.message || ('HTTP '+r.status));
+    if(!r.ok) throw new Error(data?.error?.message||('HTTP '+r.status));
     return clean(data?.choices?.[0]?.message?.content||'');
   }
 
-  async function fetchModels(){
+  $('fetchModelsBtn').onclick=async()=>{
     try{
       const c=readApiForm();
       if(!c.base||!c.key) throw new Error('请先配置 Base URL 和 API Key');
@@ -1117,7 +986,7 @@
       const url=buildUrl(c.base,'/v1/models');
       const r=await fetch(url,{headers:{'Authorization':'Bearer '+c.key}});
       const data=await r.json().catch(()=>({}));
-      if(!r.ok) throw new Error(data?.error?.message || ('HTTP '+r.status));
+      if(!r.ok) throw new Error(data?.error?.message||('HTTP '+r.status));
       const list=(data.data||[]).map(x=>x.id).filter(Boolean);
       if(!list.length) throw new Error('未返回模型列表');
       $('apiModel').innerHTML=list.map(m=>`<option value="${m}">${m}</option>`).join('');
@@ -1126,9 +995,8 @@
     }catch(e){
       $('apiStatus').textContent='状态：拉取失败 -> '+e.message;
     }
-  }
-
-  async function testApi(){
+  };
+  $('testApiBtn').onclick=async()=>{
     try{
       $('apiStatus').textContent='状态：测试中...';
       const out=await callApi([{role:'user',content:'只回复 ok'}], readApiForm());
@@ -1136,11 +1004,8 @@
     }catch(e){
       $('apiStatus').textContent='状态：失败 -> '+e.message;
     }
-  }
-
+  };
   $('saveApiBtn').onclick=saveApiForm;
-  $('fetchModelsBtn').onclick=fetchModels;
-  $('testApiBtn').onclick=testApi;
 
   // prompts
   function onlinePrompt(c,me){
@@ -1148,24 +1013,22 @@
 你是「${c?.name||'聊天对象'}」。
 人设：${c?.persona||'自然聊天。'}
 用户人设参考：${me?.persona||'自然。'}
-
 要求：
-1) 像真实即时聊天，不要客服腔。
-2) 一条消息一行，短句为主。
-3) 单行建议 6~26 字，通常不超过 34 字。
-4) 内容多时拆成多行，语义自然断开，不能生硬断词。
-5) 不要编号/项目符号/系统解释。
+- 像真实即时聊天，不要客服腔。
+- 一条消息一行，短句为主。
+- 单行建议 6~26 字，通常不超过 34 字。
+- 内容多时拆成多行，语义自然断开，不能生硬断词。
+- 不要编号/项目符号/系统解释。
 `.trim();
   }
-
   function offlinePrompt(c,me,minLen,maxLen){
     return `
 你是「${c?.name||'聊天对象'}」。
 人设：${c?.persona||'自然聊天。'}
 用户人设参考：${me?.persona||'自然。'}
 
-现在是线下沉浸模式：
-- 只输出 1 条长消息；
+线下沉浸模式：
+- 只输出1条长消息；
 - 长度控制在 ${minLen}-${maxLen} 字；
 - 格式：
 【状态】
@@ -1176,7 +1039,6 @@
 关系温度：...
 
 正文：沉浸式叙事+自然对白，贴合人设。
-不要编号，不要解释规则。
 `.trim();
   }
 
@@ -1199,14 +1061,8 @@
     setChatSubStatus('对方正在输入…');
 
     try{
-      const system = cfg.mode==='online'
-        ? onlinePrompt(c,me)
-        : offlinePrompt(c,me,cfg.offlineMin,cfg.offlineMax);
-
-      const messages=[
-        {role:'system',content:system},
-        ...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:x.text}))
-      ];
+      const system=cfg.mode==='online' ? onlinePrompt(c,me) : offlinePrompt(c,me,cfg.offlineMin,cfg.offlineMax);
+      const messages=[{role:'system',content:system}, ...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:x.text}))];
 
       let out=await callApi(messages,api);
 
@@ -1216,33 +1072,20 @@
 
         const contacts=getContacts();
         const i=contacts.findIndex(x=>x.id===currentId);
-        if(i>=0){
-          contacts[i].preview=parts[0]||'...';
-          contacts[i].time='刚刚';
-          setContacts(contacts);
-        }
+        if(i>=0){ contacts[i].preview=parts[0]||'...'; contacts[i].time='刚刚'; setContacts(contacts); }
         renderContacts($('searchInput').value||'');
       }else{
-        if(out.length < Math.floor(cfg.offlineMin*0.75)){
-          const retry=[
-            {role:'system',content:offlinePrompt(c,me,cfg.offlineMin,cfg.offlineMax)},
-            ...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:x.text})),
-            {role:'user',content:`请重写，严格控制在 ${cfg.offlineMin}-${cfg.offlineMax} 字，保留“状态+正文”格式。`}
-          ];
+        if(out.length<Math.floor(cfg.offlineMin*0.75)){
+          const retry=[{role:'system',content:offlinePrompt(c,me,cfg.offlineMin,cfg.offlineMax)}, ...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:x.text})), {role:'user',content:`请重写，严格控制在 ${cfg.offlineMin}-${cfg.offlineMax} 字，保留“状态+正文”格式。`}];
           out=await callApi(retry,api);
         }
-
         await sleep(900+Math.floor(Math.random()*260));
         map[currentId].push({role:'assistant',text:out||'…',time:Date.now()});
         setChats(map); renderChat();
 
         const contacts=getContacts();
         const i=contacts.findIndex(x=>x.id===currentId);
-        if(i>=0){
-          contacts[i].preview='[线下沉浸回复]';
-          contacts[i].time='刚刚';
-          setContacts(contacts);
-        }
+        if(i>=0){ contacts[i].preview='[线下沉浸回复]'; contacts[i].time='刚刚'; setContacts(contacts); }
         renderContacts($('searchInput').value||'');
       }
 
@@ -1251,22 +1094,23 @@
       const arr=map[currentId]||[];
       arr.push({role:'assistant',text:'请求失败：'+clean(e.message),time:Date.now()});
       map[currentId]=arr;
-      setChats(map); renderChat();
+      setChats(map);
+      renderChat();
       setChatSubStatus('在线');
     }
   }
 
   $('sendBtn').onclick=sendMsg;
-
+  $('storeBtn').onclick=storeCurrentInput;
   $('chatInput').addEventListener('keydown',e=>{
     if(e.key==='Enter' && !e.shiftKey){
       e.preventDefault();
-      if(e.ctrlKey || e.metaKey) sendMsg();
+      if(e.ctrlKey||e.metaKey) sendMsg();
       else storeCurrentInput();
     }
   });
 
-  // ===== 聊天工具逻辑 =====
+  // tools
   function syncToolUI(){
     if(!currentId) return;
     const cfg=getModeCfg(currentId);
@@ -1342,13 +1186,10 @@
 
   $('saveToolsBtn').onclick=()=>{
     if(!currentId) return;
-
     const cfg=getModeCfg(currentId);
     cfg.offlineMin=clamp(Number($('toolOfflineMin').value||140),60,2000);
     cfg.offlineMax=clamp(Number($('toolOfflineMax').value||280),80,2600);
-    if(cfg.offlineMin>cfg.offlineMax){
-      const t=cfg.offlineMin; cfg.offlineMin=cfg.offlineMax; cfg.offlineMax=t;
-    }
+    if(cfg.offlineMin>cfg.offlineMax){ const t=cfg.offlineMin; cfg.offlineMin=cfg.offlineMax; cfg.offlineMax=t; }
     setModeCfg(currentId,cfg);
 
     const contacts=getContacts();
@@ -1356,14 +1197,14 @@
     if(idx>=0){
       contacts[idx].persona=clean($('toolAiPersona').value);
       const url=clean($('toolAiAvatarUrl').value);
-      contacts[idx].avatar = toolAiAvatarTemp || url || contacts[idx].avatar || '';
+      contacts[idx].avatar=toolAiAvatarTemp||url||contacts[idx].avatar||'';
       setContacts(contacts);
     }
 
     const me=getMe();
     me.persona=clean($('toolMyPersona').value);
     const myUrl=clean($('toolMyAvatarUrl').value);
-    me.avatar = toolMyAvatarTemp || myUrl || me.avatar || '';
+    me.avatar=toolMyAvatarTemp||myUrl||me.avatar||'';
     setMe(me);
 
     applyModeUI();
@@ -1371,18 +1212,29 @@
     closeChatTools();
   };
 
-  // init
+  // create contact handlers
   $('addContactBtn').onclick=openCreateModal;
   $('cancelCreateBtn').onclick=closeCreateModal;
   $('saveCreateBtn').onclick=saveContact;
+  $('contactModal').addEventListener('click',e=>{ if(e.target.id==='contactModal') closeCreateModal(); });
+  $('searchInput').oninput=e=>renderContacts(e.target.value||'');
 
+  $('pickAvatarBtn').onclick=()=> $('newAvatarFile').click();
+  $('newAvatarFile').onchange=async e=>{
+    const f=e.target.files?.[0]; if(!f) return;
+    createAvatar=await compressImage(f,260,0.5);
+    $('newAvatarPreview').src=createAvatar;
+    $('newAvatarPreview').classList.remove('hidden');
+    e.target.value='';
+  };
+
+  // init
   refreshPresetUI();
+  $('searchInput').value='';
   renderContacts();
 
   if(!STORAGE_OK){
-    setTimeout(()=>{
-      alert('当前环境本地存储受限，退出后数据可能丢失。建议用系统浏览器普通标签页打开。');
-    },200);
+    setTimeout(()=>alert('当前环境本地存储受限，重进会丢失数据。建议用系统浏览器普通标签页打开。'),200);
   }
 })();
 </script>
