@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>小手机 v1.3.4 稳定</title>
+  <title>小手机 v1.3.5 稳定</title>
   <style>
     :root{
       --safe-top: env(safe-area-inset-top, 0px);
@@ -13,15 +13,16 @@
       --bg:#f6f8ff;
       --blue:#2f66d8;
       --blue2:#5f8eff;
-
-      --chat-tools-h: 0px;
+      --text:#243250;
     }
+
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     html,body{
       margin:0;height:100%;
       background:linear-gradient(160deg,#2c57c8,#5ba9ff);
       font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
     }
+
     #app{
       width:100%;
       max-width:430px;
@@ -41,7 +42,7 @@
       padding-top:var(--safe-top);
       display:flex;align-items:center;justify-content:space-between;
       padding-left:12px;padding-right:12px;
-      background:linear-gradient(180deg,#f8f9ff,#f6f8ff);
+      background:linear-gradient(180deg,#f9fbff,#f4f8ff);
       border-bottom:1px solid var(--line);
     }
 
@@ -63,7 +64,7 @@
     }
 
     .card{background:#fff;border:1px solid #ececf2;border-radius:14px;padding:12px}
-    .small{font-size:12px;color:#777;line-height:1.5}
+    .small{font-size:12px;color:#778;line-height:1.5}
     .row{display:flex;gap:8px;align-items:center}
     .input,.ta,.select{
       width:100%;
@@ -84,9 +85,9 @@
     /* HOME */
     #home{color:#fff;background:transparent}
     .wall{
-      position:absolute;left:0;right:0;
+      position:absolute;
+      left:0;right:0;
       top:calc(-1 * var(--safe-top));
-      bottom:0;
       height:calc(100% + var(--safe-top));
       z-index:0;
       background:
@@ -98,7 +99,7 @@
       padding:calc(18px + var(--safe-top)) 12px calc(14px + var(--safe-bottom));
       display:flex;flex-direction:column;
     }
-    .date{font-size:15px;opacity:.95}
+    .date{font-size:15px;opacity:.96}
     .time{
       font-size:72px;line-height:1.02;font-weight:760;letter-spacing:-2px;
       text-shadow:0 2px 12px rgba(0,0,0,.2);
@@ -159,7 +160,7 @@
       border:1px solid rgba(255,255,255,.48);
       border-radius:18px;padding:10px 12px;backdrop-filter:blur(12px)
     }
-    .widget .t{font-size:12px;opacity:.88}
+    .widget .t{font-size:12px;opacity:.9}
     .widget .v{font-size:16px;font-weight:700;margin-top:4px}
 
     .grid{margin-top:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px 8px}
@@ -172,7 +173,7 @@
     .icon:active .ibox{transform:scale(.88)}
     .lab{font-size:12px;text-shadow:0 1px 2px rgba(0,0,0,.25)}
 
-    /* Wechat list */
+    /* list */
     .list{display:flex;flex-direction:column;gap:8px}
     .item{
       background:#fff;border:1px solid #ececf2;border-radius:12px;padding:10px;
@@ -184,22 +185,17 @@
     .preview{margin-top:4px;font-size:12px;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .t{font-size:11px;color:#999}
 
-    /* Chat Header */
+    /* chat header */
     .chat-head-center{
-      min-width:0;
-      flex:1;
-      text-align:center;
-      padding:0 10px;
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      gap:2px;
+      min-width:0;flex:1;text-align:center;padding:0 8px;
+      display:flex;flex-direction:column;gap:2px;
     }
     .chat-head-title{
-      max-width:100%;
+      color:#1f2742;font-weight:700;font-size:15px;
       white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-      font-weight:700;color:#1f2742;font-size:15px;
     }
     .chat-head-sub{
-      font-size:11px;color:#6a7397;line-height:1;
+      color:#6b7598;font-size:11px;line-height:1;
       min-height:12px;
     }
     .icon-btn{
@@ -210,8 +206,9 @@
       display:grid;place-items:center;
       box-shadow:0 1px 3px rgba(61,93,161,.12);
     }
+    .icon-btn:active{transform:translateY(1px)}
 
-    /* Chat list area */
+    /* chat list area */
     #chatMsgs{
       height:calc(100% - (52px + var(--safe-top)) - (78px + var(--safe-bottom)));
       overflow:auto;
@@ -219,7 +216,6 @@
       background:linear-gradient(180deg,#edf2ff,#edf1f8);
       display:flex;flex-direction:column;gap:10px;
     }
-
     .msg-row{display:flex;gap:8px;align-items:flex-end}
     .msg-row.me{justify-content:flex-end}
     .chat-avatar{
@@ -233,6 +229,7 @@
       word-break:break-word;
       white-space:pre-wrap;
       letter-spacing:.2px;
+      color:var(--text);
     }
     .bubble.me{
       background:linear-gradient(160deg,#5f8eff,#2f66d8);
@@ -241,53 +238,40 @@
     }
     .bubble.ai{
       background:#fff;border:1px solid #e8e8ef;border-bottom-left-radius:7px;
-      color:#25304f;
     }
 
-    /* 线下模式（酒馆感） */
+    /* offline layout */
     #chatRoom.offline-layout #chatMsgs{
       background:linear-gradient(180deg,#f2f6ff,#edf2ff);
-      padding:10px 8px;
-      gap:14px;
+      padding:10px 8px;gap:14px;
     }
-    #chatRoom.offline-layout .msg-row{
-      display:block;max-width:100%;
-    }
+    #chatRoom.offline-layout .msg-row{display:block;max-width:100%}
     #chatRoom.offline-layout .msg-head{
-      display:flex;align-items:center;gap:8px;
-      margin:0 6px 7px;
+      display:flex;align-items:center;gap:8px;margin:0 6px 7px;
       color:#5d678b;font-size:12px;font-weight:600;
     }
-    #chatRoom.offline-layout .msg-row.me .msg-head{
-      justify-content:flex-end;
-    }
+    #chatRoom.offline-layout .msg-row.me .msg-head{justify-content:flex-end}
     #chatRoom.offline-layout .chat-avatar{
       width:44px;height:44px;border-radius:14px;
       box-shadow:0 2px 10px rgba(54,77,130,.16);
       border:1px solid rgba(255,255,255,.7);
     }
     #chatRoom.offline-layout .bubble{
-      width:calc(100% - 12px);
-      max-width:calc(100% - 12px);
+      width:calc(100% - 12px);max-width:calc(100% - 12px);
       margin:0 6px;
       border-radius:17px;
       padding:13px 14px;
       line-height:1.66;
       font-size:15px;
-      letter-spacing:.1px;
       box-shadow:0 2px 9px rgba(60,85,140,.08);
     }
     #chatRoom.offline-layout .msg-row.me .bubble{
       margin-left:auto;
       background:linear-gradient(180deg,#4f7dff,#2f66d8);
-      color:#fff;
-      border-bottom-right-radius:10px;
+      color:#fff;border-bottom-right-radius:10px;
     }
     #chatRoom.offline-layout .msg-row:not(.me) .bubble{
-      background:#fff;
-      border:1px solid #e2e9ff;
-      color:#26324f;
-      border-bottom-left-radius:10px;
+      background:#fff;border:1px solid #e2e9ff;border-bottom-left-radius:10px;
     }
     .status-card{
       display:block;
@@ -321,39 +305,31 @@
       box-shadow:inset 0 1px 2px rgba(52,80,146,.06);
       color:#223050;
     }
-    .send-actions{
-      display:flex;gap:8px;align-items:center;align-self:flex-end;
-    }
+    .send-actions{display:flex;gap:8px;align-items:center;align-self:flex-end}
 
-    /* 风铃同系储存键（清透） */
     .store-btn{
       width:42px;height:42px;border-radius:12px;border:none;cursor:pointer;
       background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(233,244,255,.92));
       border:1px solid #cfe3ff;
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.9),
-        0 2px 8px rgba(88,126,196,.18);
-      position:relative;
-      display:grid;place-items:center;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 2px 8px rgba(88,126,196,.18);
+      position:relative;display:grid;place-items:center;
     }
     .store-btn::before{
       content:"";
       width:15px;height:15px;border-radius:999px;
-      background:radial-gradient(circle at 35% 30%, #ffffff, #d8eeff 62%, #a5cfff);
+      background:radial-gradient(circle at 35% 30%, #fff, #d8eeff 62%, #a5cfff);
       border:1px solid rgba(167,201,244,.75);
       box-shadow:0 0 8px rgba(186,224,255,.45);
     }
-    .store-btn:active{transform:translateY(1px) scale(.98)}
 
     .send-btn{
-      min-width:64px;height:42px;padding:0 14px;
-      border:none;border-radius:12px;cursor:pointer;
+      min-width:64px;height:42px;padding:0 14px;border:none;border-radius:12px;cursor:pointer;
       color:#fff;font-weight:600;font-size:14px;
       background:linear-gradient(160deg,var(--blue2),var(--blue));
       box-shadow:0 3px 10px rgba(47,102,216,.28);
       border:1px solid rgba(45,96,205,.55);
     }
-    .send-btn:active{transform:translateY(1px) scale(.98)}
+    .store-btn:active,.send-btn:active{transform:translateY(1px) scale(.98)}
 
     /* modal */
     .modal{
@@ -374,8 +350,7 @@
     .seg{
       display:flex;gap:6px;align-items:center;
       padding:4px;border-radius:12px;
-      background:#e9eefc;border:1px solid #dce4fb;
-      width:max-content;
+      background:#e9eefc;border:1px solid #dce4fb;width:max-content;
     }
     .seg button{
       border:none;background:transparent;color:#38538d;
@@ -434,12 +409,10 @@
   <section id="chatRoom" class="screen">
     <div class="header">
       <button class="btn" data-nav="wechat">‹ 返回</button>
-
       <div class="chat-head-center">
         <div id="chatTitle" class="chat-head-title">聊天</div>
         <div id="chatSubStatus" class="chat-head-sub">在线</div>
       </div>
-
       <button class="icon-btn" id="chatToolsBtn" title="聊天工具">✦</button>
     </div>
 
@@ -481,25 +454,6 @@
       <div class="card"><div class="small">Temperature</div><input id="apiTemp" class="input" type="number" min="0" max="2" step="0.1" value="0.85" /></div>
 
       <div class="card">
-        <div class="small"><b>模式默认配置</b></div>
-        <div class="small" style="margin-top:8px;">默认聊天模式</div>
-        <select id="defaultModeSelect" class="select">
-          <option value="online">线上（自由条数）</option>
-          <option value="offline">线下（长消息）</option>
-        </select>
-        <div class="row" style="margin-top:10px;">
-          <div style="flex:1">
-            <div class="small">线下最小字数</div>
-            <input id="offlineMinLenInput" class="input" type="number" min="60" max="2000" value="140">
-          </div>
-          <div style="flex:1">
-            <div class="small">线下最大字数</div>
-            <input id="offlineMaxLenInput" class="input" type="number" min="80" max="2600" value="280">
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
         <button class="btn" id="testApiBtn">测试连接</button>
         <div id="apiStatus" class="small" style="margin-top:8px;">状态：未测试</div>
       </div>
@@ -522,7 +476,7 @@
       <img id="newAvatarPreview" class="preview-img hidden" style="margin-top:8px;" />
 
       <div class="small" style="margin-top:8px;">人设</div>
-      <textarea id="newPersona" class="ta" style="min-height:220px;"></textarea>
+      <textarea id="newPersona" class="ta" style="min-height:200px;"></textarea>
 
       <div class="row" style="justify-content:flex-end;margin-top:10px;">
         <button class="btn" id="cancelCreateBtn">取消</button>
@@ -531,19 +485,17 @@
     </div>
   </div>
 
-  <!-- 聊天工具面板 -->
+  <!-- 聊天工具 -->
   <div id="chatToolsModal" class="modal">
     <div class="modal-card">
-      <h3 style="margin:0 0 10px;">聊天模式与角色设置</h3>
+      <h3 style="margin:0 0 10px;">聊天模式与人设</h3>
 
       <div class="small">模式切换（即时生效）</div>
       <div class="seg" style="margin-top:8px;">
         <button id="toolModeOnlineBtn" class="active">线上</button>
         <button id="toolModeOfflineBtn">线下</button>
       </div>
-      <div class="small" style="margin-top:8px;color:#5f6b92;">
-        线上：自由条数，多气泡短消息；线下：一条长消息（酒馆风）
-      </div>
+      <div class="small" style="margin-top:8px;color:#5f6b92;">线上：自由条数短气泡；线下：一条长消息（酒馆风）</div>
 
       <hr style="opacity:.2;margin:14px 0;">
       <div class="small"><b>线下字数区间</b></div>
@@ -560,10 +512,10 @@
 
       <hr style="opacity:.2;margin:14px 0;">
       <div class="small"><b>对方人设（当前联系人）</b></div>
-      <textarea id="toolAiPersona" class="ta" style="min-height:120px;margin-top:8px;"></textarea>
+      <textarea id="toolAiPersona" class="ta" style="min-height:110px;margin-top:8px;"></textarea>
 
       <div class="small" style="margin-top:10px;"><b>我的人设（全局）</b></div>
-      <textarea id="toolMyPersona" class="ta" style="min-height:110px;margin-top:8px;"></textarea>
+      <textarea id="toolMyPersona" class="ta" style="min-height:100px;margin-top:8px;"></textarea>
 
       <div class="row" style="justify-content:flex-end;margin-top:12px;">
         <button class="btn" id="closeToolsBtn">取消</button>
@@ -576,44 +528,65 @@
 
 <script>
 (() => {
-  const K_CONTACT='mp_fix_contacts';
-  const K_CHAT='mp_fix_chats';
-  const K_API='mp_fix_api';
-  const K_ME='mp_fix_me';
-  const K_PREF='mp_fix_chat_pref_v134';
+  // -------- storage wrapper (防止某些环境 localStorage 不稳定) --------
+  const memoryStore = {};
+  const S = {
+    get(key, fallback){
+      try{
+        const raw = localStorage.getItem(key);
+        if(raw==null) return key in memoryStore ? memoryStore[key] : fallback;
+        return JSON.parse(raw);
+      }catch{
+        return key in memoryStore ? memoryStore[key] : fallback;
+      }
+    },
+    set(key, value){
+      memoryStore[key] = value;
+      try{ localStorage.setItem(key, JSON.stringify(value)); }catch{}
+    }
+  };
 
-  let currentId=null;
-  let createAvatar='';
+  // keys
+  const K_CONTACT='mp_v135_contacts';
+  const K_CHAT='mp_v135_chats';
+  const K_API='mp_v135_api';
+  const K_ME='mp_v135_me';
+  const K_PREF='mp_v135_pref';
 
+  // states
+  let currentId = null;
+  let createAvatar = '';
+
+  // utils
   const $ = id => document.getElementById(id);
-  const getJ=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d));}catch{return d;}};
-  const setJ=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-  const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
-  const clean=s=>String(s||'').replace(/[\u0000-\u001F\u007F\uFFFD]/g,'').trim();
-  const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
-  const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
-
-  function show(id){
-    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-    const el=$(id); if(el) el.classList.add('active');
-  }
+  const clean = s => String(s||'').replace(/[\u0000-\u001F\u007F\uFFFD]/g,'').trim();
+  const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
+  const sleep = ms => new Promise(r=>setTimeout(r,ms));
+  const esc = s => String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
 
   // nav
+  function show(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    const el = $(id);
+    if(el) el.classList.add('active');
+  }
   document.querySelectorAll('[data-nav]').forEach(el=>el.onclick=()=>show(el.getAttribute('data-nav')));
 
   // time
   function tick(){
-    const n=new Date(), h=String(n.getHours()).padStart(2,'0'), m=String(n.getMinutes()).padStart(2,'0');
-    const w=['周日','周一','周二','周三','周四','周五','周六'][n.getDay()];
-    $('homeDate').textContent=`${n.getMonth()+1}月${n.getDate()}日 ${w}`;
-    $('homeTime').textContent=`${h}:${m}`;
+    const n = new Date();
+    const h = String(n.getHours()).padStart(2,'0');
+    const m = String(n.getMinutes()).padStart(2,'0');
+    const w = ['周日','周一','周二','周三','周四','周五','周六'][n.getDay()];
+    $('homeDate').textContent = `${n.getMonth()+1}月${n.getDate()}日 ${w}`;
+    $('homeTime').textContent = `${h}:${m}`;
   }
   tick(); setInterval(tick,1000);
 
-  // storage data
+  // data
   function getContacts(){
-    let arr=getJ(K_CONTACT,null);
-    if(!arr){
+    let arr = S.get(K_CONTACT, null);
+    if(!Array.isArray(arr)){
       arr=[{
         id:'c1',
         name:'沈昼白',
@@ -622,41 +595,47 @@
         time:'刚刚',
         persona:'计算机系大三，爱分享日常，表达自然，不端着。'
       }];
-      setJ(K_CONTACT,arr);
+      S.set(K_CONTACT,arr);
     }
     return arr;
   }
-  function setContacts(v){setJ(K_CONTACT,v);}
-  function getChats(){return getJ(K_CHAT,{});}
-  function setChats(v){setJ(K_CHAT,v);}
-  function getMe(){return getJ(K_ME,{name:'我',avatar:'',persona:'真实、温柔、会表达自己的边界与需求。'});}
-  function setMe(v){setJ(K_ME,v);}
+  function setContacts(v){ S.set(K_CONTACT, v); }
+
+  function getChats(){
+    const m = S.get(K_CHAT, {});
+    return (m && typeof m==='object') ? m : {};
+  }
+  function setChats(v){ S.set(K_CHAT, v); }
+
+  function getMe(){
+    const me = S.get(K_ME, {name:'我',avatar:'',persona:'真实、温柔、会表达自己的边界与需求。'});
+    return me && typeof me==='object' ? me : {name:'我',avatar:'',persona:''};
+  }
+  function setMe(v){ S.set(K_ME, v); }
+
   function getPref(){
-    const d={ mode:'online', offlineMinLen:140, offlineMaxLen:280 };
-    const p=getJ(K_PREF,d);
-    p.mode = p.mode==='offline'?'offline':'online';
+    const p = S.get(K_PREF, {mode:'online',offlineMinLen:140,offlineMaxLen:280});
+    p.mode = p.mode==='offline' ? 'offline' : 'online';
     p.offlineMinLen = clamp(Number(p.offlineMinLen||140),60,2000);
     p.offlineMaxLen = clamp(Number(p.offlineMaxLen||280),80,2600);
-    if(p.offlineMinLen>p.offlineMaxLen){const t=p.offlineMinLen;p.offlineMinLen=p.offlineMaxLen;p.offlineMaxLen=t;}
+    if(p.offlineMinLen > p.offlineMaxLen){
+      const t = p.offlineMinLen; p.offlineMinLen = p.offlineMaxLen; p.offlineMaxLen = t;
+    }
     return p;
   }
-  function setPref(v){setJ(K_PREF,v);}
+  function setPref(v){ S.set(K_PREF, v); }
 
-  // header status
-  function setChatSubStatus(text='在线'){
-    $('chatSubStatus').textContent = text;
-  }
-
-  // contacts render
-  function renderContacts(k=''){
-    k=(k||'').trim();
-    const arr=getContacts().filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
-    $('contactList').innerHTML=arr.map(c=>`
+  // contacts list
+  function renderContacts(keyword=''){
+    const k = (keyword||'').trim();
+    const arr = getContacts().filter(c => !k || c.name.includes(k) || (c.preview||'').includes(k));
+    $('contactList').innerHTML = arr.map(c=>`
       <div class="item">
-        <img class="avatar" src="${c.avatar||'https://via.placeholder.com/88x88?text=头像'}"/>
+        <img class="avatar" src="${c.avatar||'https://via.placeholder.com/88x88?text=头像'}" />
         <div class="main" onclick="openChat('${c.id}')">
           <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div class="name">${esc(c.name)}</div><div class="t">${esc(c.time||'')}</div>
+            <div class="name">${esc(c.name)}</div>
+            <div class="t">${esc(c.time||'')}</div>
           </div>
           <div class="preview">${esc(c.preview||'')}</div>
         </div>
@@ -674,123 +653,124 @@
 
   function compressImage(file,maxSide=260,quality=0.5){
     return new Promise((resolve,reject)=>{
-      const fr=new FileReader();
-      fr.onload=()=>{
-        const img=new Image();
-        img.onload=()=>{
-          let w=img.width,h=img.height;
-          const s=Math.min(1,maxSide/Math.max(w,h));
-          w=Math.round(w*s); h=Math.round(h*s);
-          const c=document.createElement('canvas');
+      const fr = new FileReader();
+      fr.onload = ()=>{
+        const img = new Image();
+        img.onload = ()=>{
+          let w = img.width, h = img.height;
+          const s = Math.min(1,maxSide/Math.max(w,h));
+          w = Math.round(w*s); h = Math.round(h*s);
+          const c = document.createElement('canvas');
           c.width=w; c.height=h;
           c.getContext('2d').drawImage(img,0,0,w,h);
           let out='';
-          try{ out=c.toDataURL('image/webp',quality);}catch(e){}
+          try{ out=c.toDataURL('image/webp',quality);}catch{}
           if(!out || out.startsWith('data:,')) out=c.toDataURL('image/jpeg',quality);
           resolve(out);
         };
-        img.onerror=reject;
-        img.src=fr.result;
+        img.onerror = reject;
+        img.src = fr.result;
       };
-      fr.onerror=reject;
+      fr.onerror = reject;
       fr.readAsDataURL(file);
     });
   }
 
   async function saveContact(){
-    const name=clean($('newName').value);
+    const name = clean($('newName').value);
     if(!name) return alert('昵称不能为空');
-    const avatarUrl=clean($('newAvatarUrl').value);
-    const persona=clean($('newPersona').value);
+    const avatarUrl = clean($('newAvatarUrl').value);
+    const persona = clean($('newPersona').value);
 
-    const arr=getContacts();
+    const arr = getContacts();
     arr.unshift({
-      id:'c'+Date.now()+'_'+Math.floor(Math.random()*9999),
+      id:'c'+Date.now()+'_'+Math.floor(Math.random()*99999),
       name,
       avatar:createAvatar||avatarUrl||'',
       preview:'新的聊天已创建',
       time:'刚刚',
       persona: persona || '自然、贴合关系地聊天，不端着。'
     });
-    try{ setContacts(arr); }
-    catch{ return alert('保存失败：存储空间不足'); }
+    setContacts(arr);
 
     renderContacts($('searchInput').value||'');
     closeCreateModal();
   }
 
-  $('addContactBtn').onclick=openCreateModal;
-  $('cancelCreateBtn').onclick=closeCreateModal;
-  $('saveCreateBtn').onclick=saveContact;
+  $('addContactBtn').onclick = openCreateModal;
+  $('cancelCreateBtn').onclick = closeCreateModal;
+  $('saveCreateBtn').onclick = saveContact;
   $('contactModal').addEventListener('click',e=>{ if(e.target.id==='contactModal') closeCreateModal(); });
-  $('searchInput').oninput=e=>renderContacts(e.target.value||'');
 
-  $('pickAvatarBtn').onclick=()=> $('newAvatarFile').click();
-  $('newAvatarFile').onchange=async e=>{
-    const f=e.target.files?.[0]; if(!f) return;
-    createAvatar=await compressImage(f,260,0.5);
-    $('newAvatarPreview').src=createAvatar;
+  $('searchInput').oninput = e => renderContacts(e.target.value||'');
+
+  $('pickAvatarBtn').onclick = ()=> $('newAvatarFile').click();
+  $('newAvatarFile').onchange = async e=>{
+    const f = e.target.files?.[0];
+    if(!f) return;
+    createAvatar = await compressImage(f,260,0.5);
+    $('newAvatarPreview').src = createAvatar;
     $('newAvatarPreview').classList.remove('hidden');
     e.target.value='';
   };
 
+  // chat header status
+  function setChatSubStatus(text='在线'){
+    $('chatSubStatus').textContent = text;
+  }
+
   // chat tools modal
   function syncToolModeButtons(){
-    const p=getPref();
-    $('toolModeOnlineBtn').classList.toggle('active',p.mode==='online');
-    $('toolModeOfflineBtn').classList.toggle('active',p.mode==='offline');
+    const p = getPref();
+    $('toolModeOnlineBtn').classList.toggle('active', p.mode==='online');
+    $('toolModeOfflineBtn').classList.toggle('active', p.mode==='offline');
   }
+
   function openChatTools(){
     if(!currentId) return;
-    const p=getPref();
-    const c=getContacts().find(x=>x.id===currentId);
-    const me=getMe();
+    const p = getPref();
+    const c = getContacts().find(x=>x.id===currentId);
+    const me = getMe();
 
-    $('toolOfflineMin').value=p.offlineMinLen;
-    $('toolOfflineMax').value=p.offlineMaxLen;
-    $('toolAiPersona').value=c?.persona||'';
-    $('toolMyPersona').value=me?.persona||'';
+    $('toolOfflineMin').value = p.offlineMinLen;
+    $('toolOfflineMax').value = p.offlineMaxLen;
+    $('toolAiPersona').value = c?.persona || '';
+    $('toolMyPersona').value = me?.persona || '';
     syncToolModeButtons();
-
     $('chatToolsModal').classList.add('active');
   }
   function closeChatTools(){ $('chatToolsModal').classList.remove('active'); }
 
-  $('chatToolsBtn').onclick=openChatTools;
-  $('closeToolsBtn').onclick=closeChatTools;
+  $('chatToolsBtn').onclick = openChatTools;
+  $('closeToolsBtn').onclick = closeChatTools;
   $('chatToolsModal').addEventListener('click',e=>{ if(e.target.id==='chatToolsModal') closeChatTools(); });
 
-  $('toolModeOnlineBtn').onclick=()=>{
+  $('toolModeOnlineBtn').onclick = ()=>{
     const p=getPref(); p.mode='online'; setPref(p);
     syncToolModeButtons(); applyModeUI();
   };
-  $('toolModeOfflineBtn').onclick=()=>{
+  $('toolModeOfflineBtn').onclick = ()=>{
     const p=getPref(); p.mode='offline'; setPref(p);
     syncToolModeButtons(); applyModeUI();
   };
 
-  $('saveToolsBtn').onclick=()=>{
-    const p=getPref();
+  $('saveToolsBtn').onclick = ()=>{
+    const p = getPref();
     p.offlineMinLen = clamp(Number($('toolOfflineMin').value||140),60,2000);
     p.offlineMaxLen = clamp(Number($('toolOfflineMax').value||280),80,2600);
-    if(p.offlineMinLen>p.offlineMaxLen){const t=p.offlineMinLen;p.offlineMinLen=p.offlineMaxLen;p.offlineMaxLen=t;}
+    if(p.offlineMinLen>p.offlineMaxLen){
+      const t=p.offlineMinLen; p.offlineMinLen=p.offlineMaxLen; p.offlineMaxLen=t;
+    }
     setPref(p);
 
-    // 同步到 API 页输入框（可见时也即时反映）
-    $('offlineMinLenInput').value=p.offlineMinLen;
-    $('offlineMaxLenInput').value=p.offlineMaxLen;
-    $('defaultModeSelect').value=p.mode;
-
-    // 保存当前联系人人设
-    const arr=getContacts();
-    const idx=arr.findIndex(x=>x.id===currentId);
+    const arr = getContacts();
+    const idx = arr.findIndex(x=>x.id===currentId);
     if(idx>=0){
-      arr[idx].persona = clean($('toolAiPersona').value) || arr[idx].persona || '自然、贴合关系地聊天。';
+      arr[idx].persona = clean($('toolAiPersona').value) || arr[idx].persona || '自然聊天';
       setContacts(arr);
     }
 
-    // 保存我的人设
-    const me=getMe();
+    const me = getMe();
     me.persona = clean($('toolMyPersona').value) || me.persona || '';
     setMe(me);
 
@@ -799,10 +779,10 @@
   };
 
   // chat open/render
-  window.openChat=function(id){
-    currentId=id;
-    const c=getContacts().find(x=>x.id===id);
-    $('chatTitle').textContent=c?c.name:'聊天';
+  window.openChat = function(id){
+    currentId = id;
+    const c = getContacts().find(x=>x.id===id);
+    $('chatTitle').textContent = c ? c.name : '聊天';
     setChatSubStatus('在线');
     applyModeUI();
     renderChat();
@@ -811,53 +791,47 @@
 
   function applyModeUI(){
     const offline = getPref().mode==='offline';
-    $('chatRoom').classList.toggle('offline-layout',offline);
+    $('chatRoom').classList.toggle('offline-layout', offline);
     renderChat();
   }
 
-  function nl2brEsc(s){
-    return esc(s).replace(/\n/g,'<br>');
-  }
-
   function formatOfflineTextHTML(text){
-    const t=String(text||'').trim();
+    const t = String(text||'').trim();
     if(!t) return '';
-    const parts=t.split(/\n{2,}/).filter(Boolean);
-
-    // 判断第一段是否像状态栏
+    const parts = t.split(/\n{2,}/).filter(Boolean);
     if(parts.length>=2){
-      const head=parts[0];
-      const looksStatus = /时间[:：]|地点[:：]|情绪[:：]|动作[:：]|关系温度[:：]|【状态】|状态[:：]/.test(head);
-      if(looksStatus){
-        return `<span class="status-card">${nl2brEsc(head)}</span>${nl2brEsc(parts.slice(1).join('\n\n'))}`;
+      const head = parts[0];
+      const ok = /时间[:：]|地点[:：]|情绪[:：]|动作[:：]|关系温度[:：]|【状态】|状态[:：]/.test(head);
+      if(ok){
+        return `<span class="status-card">${esc(head).replace(/\n/g,'<br>')}</span>${esc(parts.slice(1).join('\n\n')).replace(/\n/g,'<br>')}`;
       }
     }
-    return nl2brEsc(t);
+    return esc(t).replace(/\n/g,'<br>');
   }
 
   function renderChat(){
     if(!currentId){ $('chatMsgs').innerHTML=''; return; }
 
-    const c=getContacts().find(x=>x.id===currentId);
-    const me=getMe();
-    const roleAvatar=c?.avatar||'https://via.placeholder.com/64x64?text=TA';
-    const meAvatar=me.avatar||'https://via.placeholder.com/64x64?text=我';
-    const roleName=c?.name||'对方';
-    const meName=me?.name||'我';
+    const c = getContacts().find(x=>x.id===currentId);
+    const me = getMe();
+    const roleAvatar = c?.avatar || 'https://via.placeholder.com/64x64?text=TA';
+    const meAvatar = me.avatar || 'https://via.placeholder.com/64x64?text=我';
+    const roleName = c?.name || '对方';
+    const meName = me?.name || '我';
 
-    const map=getChats();
-    const arr=map[currentId]||[];
+    const map = getChats();
+    const arr = map[currentId] || [];
     const offline = getPref().mode==='offline';
 
     if(!offline){
-      $('chatMsgs').innerHTML=arr.map(m=>{
+      $('chatMsgs').innerHTML = arr.map(m=>{
         if(m.role==='user'){
           return `<div class="msg-row me"><div class="bubble me">${esc(m.text)}</div><img class="chat-avatar" src="${meAvatar}"></div>`;
         }
         return `<div class="msg-row"><img class="chat-avatar" src="${roleAvatar}"><div class="bubble ai">${esc(m.text)}</div></div>`;
       }).join('');
     }else{
-      $('chatMsgs').innerHTML=arr.map(m=>{
+      $('chatMsgs').innerHTML = arr.map(m=>{
         if(m.role==='user'){
           return `
             <div class="msg-row me">
@@ -873,15 +847,18 @@
       }).join('');
     }
 
-    $('chatMsgs').scrollTop=$('chatMsgs').scrollHeight;
+    $('chatMsgs').scrollTop = $('chatMsgs').scrollHeight;
   }
 
   function clearChat(){
     if(!currentId) return;
     if(!confirm('清空当前聊天？')) return;
-    const map=getChats(); map[currentId]=[]; setChats(map); renderChat();
+    const map = getChats();
+    map[currentId] = [];
+    setChats(map);
+    renderChat();
   }
-  $('clearChatBtn').onclick=clearChat;
+  $('clearChatBtn').onclick = clearChat;
 
   function resetInputH(){ $('chatInput').style.height='44px'; }
   $('chatInput').addEventListener('input', ()=>{
@@ -891,238 +868,190 @@
   });
 
   function pushUser(text){
-    const map=getChats(); map[currentId]=map[currentId]||[];
+    const map = getChats();
+    map[currentId] = map[currentId] || [];
     map[currentId].push({role:'user',text,time:Date.now(),stored:true});
     setChats(map);
   }
 
   function storeCurrentInput(){
     if(!currentId) return;
-    const t=clean($('chatInput').value);
+    const t = clean($('chatInput').value);
     if(!t) return;
     pushUser(t);
-    $('chatInput').value=''; resetInputH(); renderChat();
+    $('chatInput').value='';
+    resetInputH();
+    renderChat();
   }
-  $('storeBtn').onclick=storeCurrentInput;
+  $('storeBtn').onclick = storeCurrentInput;
 
-  // ---- Online split algorithm (语义优先拆泡，不拆词根) ----
-  function splitBySentence(text){
+  // split helpers
+  function splitSentence(text){
     const arr = text.match(/[^。！？!?；;]+[。！？!?；;]?/g);
     return (arr && arr.length) ? arr.map(s=>s.trim()).filter(Boolean) : [text];
   }
 
   function splitLongSmart(s, target=28, hardMax=36){
-  const out=[];
-  let str=s.trim();
+    const out=[];
+    let str=s.trim();
+    while(str.length>hardMax){
+      let cut=-1;
+      const nearMin=Math.max(10,target-8);
+      const nearMax=Math.min(str.length-1,target+8);
 
-  while(str.length>hardMax){
-    let cut=-1;
-    const nearMin = Math.max(10, target-8);
-    const nearMax = Math.min(str.length-1, target+8);
-
-    for(let i=nearMax;i>=nearMin;i--){
-      const ch=str[i];
-      if('，、；：,;:'.includes(ch)){ cut=i+1; break; }
-    }
-
-    if(cut<0){
       for(let i=nearMax;i>=nearMin;i--){
-        if(str[i]===' '){ cut=i+1; break; }
+        if('，、；：,;:'.includes(str[i])){ cut=i+1; break; }
       }
+      if(cut<0){
+        for(let i=nearMax;i>=nearMin;i--){
+          if(str[i]===' '){ cut=i+1; break; }
+        }
+      }
+      if(cut<0) cut=target;
+
+      out.push(str.slice(0,cut).trim());
+      str=str.slice(cut).trim();
     }
-
-    if(cut<0) cut=target;
-
-    out.push(str.slice(0,cut).trim());
-    str=str.slice(cut).trim();
+    if(str) out.push(str);
+    return out.filter(Boolean);
   }
-  if(str) out.push(str);
-  return out.filter(Boolean);
-}
 
   function splitOnlineBubbles(raw){
-    let txt=clean(raw);
+    let txt = clean(raw);
     if(!txt) return ['...'];
 
-    txt=txt.replace(/^```[\w-]*\n?/,'').replace(/```$/,'').trim();
+    txt = txt.replace(/^```[\w-]*\n?/,'').replace(/```$/,'').trim();
 
-    // 1) 优先按换行（模型输出一行一条）
+    // 先按换行
     let lines = txt.split(/\n+/).map(s=>s.trim()).filter(Boolean);
+    if(lines.length<=1) lines = splitSentence(txt);
 
-    // 2) 如果换行不足，按句子拆
-    if(lines.length<=1){
-      lines = splitBySentence(txt);
-    }
-
-    const bubbles=[];
-
+    const bubbles = [];
     for(let line of lines){
       if(!line) continue;
 
-      // 太长先按句子再组装
-      if(line.length>36){
-        const subs = splitBySentence(line);
-        let buf='';
-
-        for(const segRaw of subs){
-          const seg=segRaw.trim();
-          if(!seg) continue;
-
-          if(seg.length>36){
-            if(buf){ bubbles.push(buf); buf=''; }
-            bubbles.push(...splitLongSmart(seg,28,36));
-            continue;
-          }
-
-          if((buf+seg).length<=30){
-            buf += seg;
-          }else{
-            if(buf) bubbles.push(buf);
-            buf = seg;
-          }
-        }
-        if(buf) bubbles.push(buf);
-      }else{
+      if(line.length<=36){
         bubbles.push(line);
+        continue;
       }
+
+      // 长句先按句子分，再聚合
+      const segs = splitSentence(line);
+      let buf='';
+      for(let seg of segs){
+        seg = seg.trim();
+        if(!seg) continue;
+
+        if(seg.length>36){
+          if(buf){ bubbles.push(buf); buf=''; }
+          bubbles.push(...splitLongSmart(seg,28,36));
+          continue;
+        }
+        if((buf+seg).length<=30){
+          buf += seg;
+        }else{
+          if(buf) bubbles.push(buf);
+          buf = seg;
+        }
+      }
+      if(buf) bubbles.push(buf);
     }
 
-    // 最终清理：单条太长再温和拆
-    const finalList=[];
-    for(const b of bubbles){
-      if(b.length<=36) finalList.push(b);
-      else finalList.push(...splitLongSmart(b,28,36));
-    }
-
-    // 去掉异常超短碎片（仅当可与前条合并且不超36）
+    // 清理碎片
     const merged=[];
-    for(const s of finalList){
-      if(!merged.length){ merged.push(s); continue; }
-      if(s.length<=2 && (merged[merged.length-1].length + s.length)<=36){
-        merged[merged.length-1]+=s;
+    for(const b of bubbles){
+      if(!merged.length){ merged.push(b); continue; }
+      if(b.length<=2 && (merged[merged.length-1].length + b.length)<=36){
+        merged[merged.length-1] += b;
       }else{
-        merged.push(s);
+        merged.push(b);
       }
     }
-
     return merged.filter(Boolean).slice(0,24);
   }
 
-  async function emitAiSequential(parts,map){
+  async function emitAiSequential(parts, map){
     for(let i=0;i<parts.length;i++){
-      const t=parts[i];
+      const t = parts[i];
       map[currentId].push({role:'assistant',text:t,time:Date.now()});
       setChats(map);
       renderChat();
 
-      // 首条略快，后续按阅读时间
       let delay;
-      if(i===0){
-        delay = 760 + Math.floor(Math.random()*280);
-      }else{
-        delay = clamp(1200 + t.length*85, 1400, 4000) + Math.floor(Math.random()*220);
-      }
+      if(i===0) delay = 760 + Math.floor(Math.random()*280);
+      else delay = clamp(1200 + t.length*85, 1400, 4000) + Math.floor(Math.random()*220);
       await sleep(delay);
     }
   }
 
-  // API state
+  // API
   function getApiState(){
-    return getJ(K_API,{
-      current:'默认',
-      presets:{'默认':{base:'',key:'',model:'gpt-4o-mini',temp:0.85}}
-    });
+    let s = S.get(K_API, null);
+    if(!s || typeof s!=='object'){
+      s = {current:'默认',presets:{'默认':{base:'',key:'',model:'gpt-4o-mini',temp:0.85}}};
+      S.set(K_API,s);
+    }
+    return s;
   }
-  function setApiState(v){setJ(K_API,v);}
+  function setApiState(v){ S.set(K_API,v); }
 
-  function refreshPresetUI(){
-    const s=getApiState();
-    const names=Object.keys(s.presets);
-    $('apiPresetSelect').innerHTML=names.map(n=>`<option ${n===s.current?'selected':''}>${n}</option>`).join('');
-    loadApiFormFromState();
+  function loadApiForm(){
+    const s = getApiState();
+    const names = Object.keys(s.presets||{});
+    $('apiPresetSelect').innerHTML = names.map(n=>`<option ${n===s.current?'selected':''}>${n}</option>`).join('');
+    const c = s.presets[s.current] || {};
+    $('apiBase').value = c.base||'';
+    $('apiKey').value = c.key||'';
+    $('apiTemp').value = c.temp ?? 0.85;
+    $('apiModel').innerHTML = `<option value="${c.model||'gpt-4o-mini'}">${c.model||'gpt-4o-mini'}</option>`;
   }
 
-  function loadApiFormFromState(){
-    const s=getApiState();
-    const c=s.presets[s.current]||{};
-    $('apiBase').value=c.base||'';
-    $('apiKey').value=c.key||'';
-    $('apiTemp').value=(c.temp??0.85);
-
-    $('apiModel').innerHTML=`<option value="${c.model||'gpt-4o-mini'}">${c.model||'gpt-4o-mini'}</option>`;
-
-    // 同步偏好
-    const p=getPref();
-    $('defaultModeSelect').value=p.mode;
-    $('offlineMinLenInput').value=p.offlineMinLen;
-    $('offlineMaxLenInput').value=p.offlineMaxLen;
+  function readApiForm(){
+    return {
+      base: clean($('apiBase').value),
+      key: clean($('apiKey').value),
+      model: clean($('apiModel').value) || 'gpt-4o-mini',
+      temp: Number($('apiTemp').value||0.85)
+    };
   }
 
   function saveApiForm(){
-    const s=getApiState();
-    s.presets[s.current]={
-      base:clean($('apiBase').value),
-      key:clean($('apiKey').value),
-      model:clean($('apiModel').value)||'gpt-4o-mini',
-      temp:Number($('apiTemp').value||0.85)
-    };
+    const s = getApiState();
+    s.presets[s.current] = readApiForm();
     setApiState(s);
-
-    const p=getPref();
-    p.mode = $('defaultModeSelect').value==='offline'?'offline':'online';
-    p.offlineMinLen = clamp(Number($('offlineMinLenInput').value||140),60,2000);
-    p.offlineMaxLen = clamp(Number($('offlineMaxLenInput').value||280),80,2600);
-    if(p.offlineMinLen>p.offlineMaxLen){const t=p.offlineMinLen;p.offlineMinLen=p.offlineMaxLen;p.offlineMaxLen=t;}
-    setPref(p);
-
     $('apiStatus').textContent='状态：已保存';
-    applyModeUI();
     return s.presets[s.current];
   }
 
-  function readApiFormNoSave(){
-    return {
-      base:clean($('apiBase').value),
-      key:clean($('apiKey').value),
-      model:clean($('apiModel').value)||'gpt-4o-mini',
-      temp:Number($('apiTemp').value||0.85)
-    };
-  }
-
-  function getActiveSavedApiConfig(){
-    const s=getApiState();
-    return s.presets[s.current]||{};
-  }
-
-  $('apiPresetSelect').onchange=e=>{
-    // 切换前自动保存当前输入到当前预设
-    const s=getApiState();
-    s.presets[s.current]=readApiFormNoSave();
-    s.current=e.target.value;
+  $('apiPresetSelect').onchange = e=>{
+    const s = getApiState();
+    s.presets[s.current] = readApiForm();
+    s.current = e.target.value;
     setApiState(s);
-    loadApiFormFromState();
+    loadApiForm();
   };
 
-  $('newPresetBtn').onclick=()=>{
-    const name=(prompt('新预设名：')||'').trim();
+  $('newPresetBtn').onclick = ()=>{
+    const name = (prompt('新预设名：')||'').trim();
     if(!name) return;
-    const s=getApiState();
+    const s = getApiState();
     if(s.presets[name]) return alert('预设已存在');
-    s.presets[s.current]=readApiFormNoSave();
-    s.presets[name]={base:'',key:'',model:'gpt-4o-mini',temp:0.85};
-    s.current=name;
+    s.presets[s.current] = readApiForm();
+    s.presets[name] = {base:'',key:'',model:'gpt-4o-mini',temp:0.85};
+    s.current = name;
     setApiState(s);
-    refreshPresetUI();
+    loadApiForm();
   };
 
-  $('delPresetBtn').onclick=()=>{
-    const s=getApiState(), names=Object.keys(s.presets);
+  $('delPresetBtn').onclick = ()=>{
+    const s = getApiState();
+    const names = Object.keys(s.presets);
     if(names.length<=1) return alert('至少保留一个预设');
     if(!confirm('删除当前预设？')) return;
     delete s.presets[s.current];
-    s.current=Object.keys(s.presets)[0];
+    s.current = Object.keys(s.presets)[0];
     setApiState(s);
-    refreshPresetUI();
+    loadApiForm();
   };
 
   function buildUrl(base,path){
@@ -1132,39 +1061,40 @@
   }
 
   async function callApi(messages, cfg){
-    if(!cfg?.base || !cfg?.key) throw new Error('请先在 API 设置中配置并保存 Base URL 和 API Key');
-    const url=buildUrl(cfg.base,'/v1/chat/completions');
+    if(!cfg?.base || !cfg?.key) throw new Error('请先到 API 页配置并保存 Base URL / API Key');
+    const url = buildUrl(cfg.base,'/v1/chat/completions');
 
-    const r=await fetch(url,{
+    const r = await fetch(url,{
       method:'POST',
       headers:{
         'Content-Type':'application/json',
         'Authorization':'Bearer '+cfg.key
       },
       body:JSON.stringify({
-        model:cfg.model||'gpt-4o-mini',
+        model: cfg.model || 'gpt-4o-mini',
         temperature: Number(cfg.temp ?? 0.85),
         messages
       })
     });
-    const data=await r.json().catch(()=>({}));
+    const data = await r.json().catch(()=>({}));
     if(!r.ok) throw new Error(data?.error?.message || ('HTTP '+r.status));
     return clean(data?.choices?.[0]?.message?.content || '');
   }
 
   async function fetchModels(){
     try{
-      const c=readApiFormNoSave();
+      const c = readApiForm();
       if(!c.base||!c.key) throw new Error('请先填写 Base URL 和 API Key');
       $('apiStatus').textContent='状态：拉取模型中...';
-      const url=buildUrl(c.base,'/v1/models');
-      const r=await fetch(url,{headers:{'Authorization':'Bearer '+c.key}});
-      const data=await r.json().catch(()=>({}));
+
+      const url = buildUrl(c.base,'/v1/models');
+      const r = await fetch(url,{headers:{'Authorization':'Bearer '+c.key}});
+      const data = await r.json().catch(()=>({}));
       if(!r.ok) throw new Error(data?.error?.message || ('HTTP '+r.status));
-      const list=(data.data||[]).map(x=>x.id).filter(Boolean);
+      const list = (data.data||[]).map(x=>x.id).filter(Boolean);
       if(!list.length) throw new Error('未返回模型列表');
-      $('apiModel').innerHTML=list.map(m=>`<option value="${m}">${m}</option>`).join('');
-      if(list.includes(c.model)) $('apiModel').value=c.model;
+      $('apiModel').innerHTML = list.map(m=>`<option value="${m}">${m}</option>`).join('');
+      if(list.includes(c.model)) $('apiModel').value = c.model;
       $('apiStatus').textContent='状态：模型拉取成功（'+list.length+'）';
     }catch(e){
       $('apiStatus').textContent='状态：拉取失败 -> '+e.message;
@@ -1174,63 +1104,65 @@
   async function testApi(){
     try{
       $('apiStatus').textContent='状态：测试中...';
-      const c=readApiFormNoSave();
-      const out=await callApi([{role:'user',content:'只回复 ok'}], c);
+      const out = await callApi([{role:'user',content:'只回复 ok'}], readApiForm());
       $('apiStatus').textContent='状态：连接成功 -> '+(out||'ok');
     }catch(e){
       $('apiStatus').textContent='状态：失败 -> '+e.message;
     }
   }
 
-  $('saveApiBtn').onclick=saveApiForm;
-  $('fetchModelsBtn').onclick=fetchModels;
-  $('testApiBtn').onclick=testApi;
+  $('saveApiBtn').onclick = saveApiForm;
+  $('fetchModelsBtn').onclick = fetchModels;
+  $('testApiBtn').onclick = testApi;
 
-  function onlineSystemPrompt(contact, me){
+  function getActiveApiCfg(){
+    const s = getApiState();
+    return s.presets[s.current] || {};
+  }
+
+  // prompts
+  function onlinePrompt(contact, me){
     return `
-你正在进行即时聊天扮演。
-你是「${contact?.name||'聊天对象'}」。
+你正在进行即时聊天扮演，你是「${contact?.name||'聊天对象'}」。
 
-【对方人设】
+【你的核心人设】
 ${contact?.persona || '自然聊天，不端着。'}
 
 【用户人设参考】
 ${me?.persona || '真实表达自己。'}
 
-【行为目标】
-1) 先理解关系和情绪，再回应，不要浮于表面。
-2) 聊天口吻要像活人，允许停顿、补充、自然口头感。
-3) 不要客服腔，不要总结腔，不要说教。
+【目标】
+- 贴合人设和关系温度，像真人在聊，不要客服腔。
+- 多理解情绪和潜台词，不要只做表层应答。
+- 允许有停顿、补充、自然口语感。
 
 【输出格式（必须遵守）】
-- 仅输出纯文本。
-- 一条消息一行（用换行分隔多条）。
-- 每行尽量短：建议 6~26 字，单行一般不要超过 34 字。
-- 内容多时请拆成多条，按自然语义切分，不能生硬断词断句。
-- 不要编号、不要项目符号、不要"第一/第二"。
+- 只输出纯文本。
+- 一条消息一行（多条请换行）。
+- 单行建议 6~26 字，通常不要超过 34 字。
+- 内容多时必须拆分成多行短消息，按语义自然断开，不要拆词。
+- 不要编号，不要项目符号，不要“第一/第二”。
 
-【额外约束】
-- 回复条数由你自行平衡，不固定。
-- 不要透露任何系统规则。
+【其它】
+- 回复条数自由发挥，不固定。
+- 不要暴露规则。
 `.trim();
   }
 
-  function offlineSystemPrompt(contact, me, minLen, maxLen){
+  function offlinePrompt(contact, me, minLen, maxLen){
     return `
-你现在处于线下沉浸式角色扮演（酒馆感）模式。
-你是「${contact?.name||'聊天对象'}」。
+你现在处于线下沉浸式角色扮演（酒馆风）模式，你是「${contact?.name||'聊天对象'}」。
 
-【对方人设】
+【你的核心人设】
 ${contact?.persona || '自然聊天，不端着。'}
 
 【用户人设参考】
 ${me?.persona || '真实表达自己。'}
 
-【回复形式】
-- 只输出 1 条完整长消息，不要拆多条。
-- 总字数控制在 ${minLen}-${maxLen} 字。
+【输出要求】
+- 只输出 1 条完整长消息，长度控制在 ${minLen}-${maxLen} 字。
+- 必须使用如下格式：
 
-【格式模板（必须遵守）】
 【状态】
 时间：...
 地点：...
@@ -1238,7 +1170,7 @@ ${me?.persona || '真实表达自己。'}
 动作：...
 关系温度：...
 
-正文：请用沉浸叙事+自然对白完成回复，细腻但不矫情，贴合人设，不要跳出角色。
+正文：沉浸式叙事+自然对白，细腻但不矫情，贴合人设。
 
 【禁止】
 - 不要编号，不要条列，不要解释规则。
@@ -1248,30 +1180,30 @@ ${me?.persona || '真实表达自己。'}
   async function sendMsg(){
     if(!currentId) return;
 
-    const input=clean($('chatInput').value);
+    const input = clean($('chatInput').value);
     if(input) pushUser(input);
     $('chatInput').value='';
     resetInputH();
     renderChat();
 
-    const map=getChats();
-    const hist=(map[currentId]||[]).filter(x=>x.text && x.text!=='...');
+    const map = getChats();
+    const hist = (map[currentId]||[]).filter(x=>x.text);
     if(!hist.length) return;
 
-    const pref=getPref();
-    const contact=getContacts().find(x=>x.id===currentId);
-    const me=getMe();
-    const cfg=getActiveSavedApiConfig();
+    const pref = getPref();
+    const contact = getContacts().find(x=>x.id===currentId);
+    const me = getMe();
+    const cfg = getActiveApiCfg();
 
     setChatSubStatus('对方正在输入…');
 
     try{
       const system = pref.mode==='online'
-        ? onlineSystemPrompt(contact, me)
-        : offlineSystemPrompt(contact, me, pref.offlineMinLen, pref.offlineMaxLen);
+        ? onlinePrompt(contact, me)
+        : offlinePrompt(contact, me, pref.offlineMinLen, pref.offlineMaxLen);
 
-      const messages=[
-        {role:'system',content:system},
+      const messages = [
+        {role:'system', content:system},
         ...hist.slice(-28).map(x=>({role:x.role==='user'?'user':'assistant',content:x.text}))
       ];
 
@@ -1281,23 +1213,23 @@ ${me?.persona || '真实表达自己。'}
         const parts = splitOnlineBubbles(out);
         await emitAiSequential(parts, map);
 
-        const arr=getContacts();
-        const i=arr.findIndex(x=>x.id===currentId);
+        const arr = getContacts();
+        const i = arr.findIndex(x=>x.id===currentId);
         if(i>=0){
           arr[i].preview = parts[0] || '...';
-          arr[i].time='刚刚';
+          arr[i].time = '刚刚';
           setContacts(arr);
         }
         renderContacts($('searchInput').value||'');
       }else{
-        // 线下：如果明显过短，做一次补写请求
+        // 线下太短则补写一轮
         if(out.length < Math.floor(pref.offlineMinLen*0.75)){
-          const rescueMessages=[
+          const rescue = [
             {role:'system',content:system},
             ...hist.slice(-20).map(x=>({role:x.role==='user'?'user':'assistant',content:x.text})),
-            {role:'user',content:`请按同一情境重写，严格控制在 ${pref.offlineMinLen}-${pref.offlineMaxLen} 字，并使用"状态+正文"格式。`}
+            {role:'user',content:`请重写，严格控制在 ${pref.offlineMinLen}-${pref.offlineMaxLen} 字，且保留“状态+正文”格式。`}
           ];
-          out = await callApi(rescueMessages, cfg);
+          out = await callApi(rescue, cfg);
         }
 
         await sleep(900 + Math.floor(Math.random()*350));
@@ -1305,8 +1237,8 @@ ${me?.persona || '真实表达自己。'}
         setChats(map);
         renderChat();
 
-        const arr=getContacts();
-        const i=arr.findIndex(x=>x.id===currentId);
+        const arr = getContacts();
+        const i = arr.findIndex(x=>x.id===currentId);
         if(i>=0){
           arr[i].preview='[线下沉浸回复]';
           arr[i].time='刚刚';
@@ -1317,29 +1249,26 @@ ${me?.persona || '真实表达自己。'}
 
       setChatSubStatus('在线');
     }catch(e){
-      const err='请求失败：'+clean(e.message);
-      map[currentId].push({role:'assistant',text:err,time:Date.now()});
-      setChats(map); renderChat();
+      map[currentId].push({role:'assistant',text:'请求失败：'+clean(e.message),time:Date.now()});
+      setChats(map);
+      renderChat();
       setChatSubStatus('在线');
     }
   }
 
-  $('sendBtn').onclick=sendMsg;
+  $('sendBtn').onclick = sendMsg;
 
   // Enter=储存；Ctrl/Cmd+Enter=发送
-  $('chatInput').addEventListener('keydown',e=>{
+  $('chatInput').addEventListener('keydown', e=>{
     if(e.key==='Enter' && !e.shiftKey){
       e.preventDefault();
-      if(e.ctrlKey || e.metaKey){
-        sendMsg();
-      }else{
-        storeCurrentInput();
-      }
+      if(e.ctrlKey || e.metaKey) sendMsg();
+      else storeCurrentInput();
     }
   });
 
   // init
-  refreshPresetUI();
+  loadApiForm();
   renderContacts();
   applyModeUI();
 })();
