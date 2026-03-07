@@ -1,9 +1,10 @@
+
 <!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>小手机 v1.5.0 稳定修复</title>
+  <title>小手机 v1.5.0 稳定</title>
   <style>
     :root{
       --safe-top: env(safe-area-inset-top, 0px);
@@ -21,40 +22,58 @@
       font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
     }
     #app{
-      width:100%;max-width:430px;height:100dvh;min-height:100dvh;margin:0 auto;
-      position:relative;overflow:hidden;background:var(--bg);
+      width:100%;
+      max-width:430px;
+      height:100dvh;
+      min-height:100dvh;
+      margin:0 auto;
+      position:relative;
+      overflow:hidden;
+      background:var(--bg);
     }
+
     .screen{position:absolute;inset:0;display:none;background:var(--bg)}
     .screen.active{display:block}
-    .hidden{display:none !important}
 
     .header{
-      height:calc(52px + var(--safe-top));padding-top:var(--safe-top);
-      display:flex;align-items:center;justify-content:space-between;gap:8px;
+      height:calc(52px + var(--safe-top));
+      padding-top:var(--safe-top);
+      display:flex;align-items:center;justify-content:space-between;
       padding-left:12px;padding-right:12px;
       background:linear-gradient(180deg,#f8f9ff,#f6f8ff);
       border-bottom:1px solid var(--line);
-    }
-    .page{
-      height:calc(100% - (52px + var(--safe-top)));
-      overflow:auto;padding:12px;padding-bottom:calc(12px + var(--safe-bottom));
-      display:flex;flex-direction:column;gap:10px;background:var(--bg);
+      gap:8px;
     }
 
     .btn{
-      border:none;border-radius:10px;padding:8px 12px;font-size:13px;cursor:pointer;
-      background:#edf2ff;color:#173a7a;
+      border:none;border-radius:10px;padding:8px 12px;font-size:13px;
+      background:#edf2ff;color:#173a7a;cursor:pointer;
     }
     .btn.p{background:var(--blue);color:#fff}
     .btn.d{background:#d9534f;color:#fff}
+
+    .page{
+      height:calc(100% - (52px + var(--safe-top)));
+      overflow:auto;
+      padding:12px;
+      padding-bottom:calc(12px + var(--safe-bottom));
+      display:flex;flex-direction:column;gap:10px;
+      background:var(--bg);
+    }
+
+    .card{background:#fff;border:1px solid #ececf2;border-radius:14px;padding:12px}
     .small{font-size:12px;color:#777}
     .row{display:flex;gap:8px;align-items:center}
-    .card{background:#fff;border:1px solid #ececf2;border-radius:14px;padding:12px}
     .input,.ta,.select{
-      width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px;background:#fff;
+      width:100%;
+      padding:10px 12px;
+      border:1px solid #ddd;
+      border-radius:10px;
+      background:#fff;
       font-size:16px;
     }
     .ta{resize:none}
+    .hidden{display:none !important}
 
     /* HOME */
     #home{color:#fff}
@@ -74,49 +93,83 @@
       font-size:72px;line-height:1.02;font-weight:760;letter-spacing:-2px;
       text-shadow:0 2px 12px rgba(0,0,0,.2);
     }
+
     .windchime{
-      position:absolute;top:calc(6px + var(--safe-top));right:12px;width:72px;height:126px;
-      transform-origin:top center;animation:chimeSwing 3.2s ease-in-out infinite;
-      filter:drop-shadow(0 4px 10px rgba(0,0,0,.26));pointer-events:none;z-index:3;
+      position:absolute;
+      top:calc(6px + var(--safe-top));
+      right:12px;
+      width:72px;
+      height:126px;
+      transform-origin:top center;
+      animation:chimeSwing 3.2s ease-in-out infinite;
+      filter:drop-shadow(0 4px 10px rgba(0,0,0,.26));
+      pointer-events:none;
+      z-index:3;
     }
     .windchime .ring{
-      width:28px;height:10px;margin:0 auto;border:2px solid rgba(255,255,255,.95);
-      border-radius:999px;background:rgba(255,255,255,.18);
+      width:28px;height:10px;margin:0 auto;
+      border:2px solid rgba(255,255,255,.95);
+      border-radius:999px;
+      background:rgba(255,255,255,.18);
+      backdrop-filter:blur(1px);
     }
-    .windchime .line{position:absolute;top:10px;width:2px;background:linear-gradient(to bottom,rgba(255,255,255,.95),rgba(255,255,255,.18))}
+    .windchime .line{
+      position:absolute;top:10px;width:2px;
+      background:linear-gradient(to bottom,rgba(255,255,255,.95),rgba(255,255,255,.18));
+      transform-origin:top center;
+    }
     .windchime .line span{
-      position:absolute;left:50%;transform:translateX(-50%);border-radius:999px;
-      background:rgba(255,255,255,.92);box-shadow:0 0 10px rgba(255,255,255,.5);
+      position:absolute;left:50%;transform:translateX(-50%);
+      border-radius:999px;
+      background:rgba(255,255,255,.92);
+      box-shadow:0 0 10px rgba(255,255,255,.5);
     }
-    .windchime .l1{left:17px;height:42px}.windchime .l2{left:35px;height:55px}.windchime .l3{left:53px;height:46px}
-    .windchime .l1 span{bottom:-6px;width:8px;height:8px}.windchime .l2 span{bottom:-7px;width:10px;height:10px}.windchime .l3 span{bottom:-6px;width:8px;height:8px}
+    .windchime .l1{left:17px;height:42px;animation:lineSwingA 3.2s ease-in-out infinite}
+    .windchime .l2{left:35px;height:55px;animation:lineSwingB 3.2s ease-in-out infinite}
+    .windchime .l3{left:53px;height:46px;animation:lineSwingC 3.2s ease-in-out infinite}
+    .windchime .l1 span{bottom:-6px;width:8px;height:8px}
+    .windchime .l2 span{bottom:-7px;width:10px;height:10px}
+    .windchime .l3 span{bottom:-6px;width:8px;height:8px}
     .windchime .pendulum{
-      position:absolute;left:35px;top:66px;transform:translateX(-50%);width:2px;height:42px;
+      position:absolute;left:35px;top:66px;transform:translateX(-50%);
+      width:2px;height:42px;
       background:linear-gradient(to bottom,rgba(255,255,255,.85),rgba(255,255,255,.2));
     }
     .windchime .pendulum::after{
-      content:"";position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);
-      width:22px;height:14px;border-radius:4px 4px 8px 8px;
+      content:"";
+      position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);
+      width:22px;height:14px;
+      border-radius:4px 4px 8px 8px;
       background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(220,240,255,.72));
+      box-shadow:0 0 12px rgba(255,255,255,.5);
     }
     @keyframes chimeSwing{0%,100%{transform:rotate(8deg)}50%{transform:rotate(-8deg)}}
+    @keyframes lineSwingA{0%,100%{transform:rotate(6deg)}50%{transform:rotate(-5deg)}}
+    @keyframes lineSwingB{0%,100%{transform:rotate(3deg)}50%{transform:rotate(-3deg)}}
+    @keyframes lineSwingC{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+
     .widgets{margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .widget{
-      background:var(--glass);border:1px solid var(--glass-border);border-radius:18px;padding:10px 12px;backdrop-filter:blur(12px)
+      background:var(--glass);border:1px solid var(--glass-border);
+      border-radius:18px;padding:10px 12px;backdrop-filter:blur(12px)
     }
-    .widget .t{font-size:12px;opacity:.88}.widget .v{font-size:16px;font-weight:700;margin-top:4px}
+    .widget .t{font-size:12px;opacity:.88}
+    .widget .v{font-size:16px;font-weight:700;margin-top:4px}
+
     .grid{margin-top:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px 8px}
     .icon{text-align:center;cursor:pointer}
     .ibox{
-      width:62px;height:62px;margin:0 auto 6px;border-radius:16px;display:grid;place-items:center;font-size:27px;
-      background:rgba(255,255,255,.28);border:1px solid rgba(255,255,255,.45)
+      width:62px;height:62px;margin:0 auto 6px;border-radius:16px;display:grid;place-items:center;
+      background:rgba(255,255,255,.28);border:1px solid rgba(255,255,255,.45);font-size:27px;
+      transition:transform .12s ease;
     }
+    .icon:active .ibox{transform:scale(.88)}
     .lab{font-size:12px;text-shadow:0 1px 2px rgba(0,0,0,.25)}
 
-    /* contact list */
     .list{display:flex;flex-direction:column;gap:8px}
     .item{
-      background:#fff;border:1px solid #ececf2;border-radius:12px;padding:10px;display:flex;gap:10px;align-items:center;
+      background:#fff;border:1px solid #ececf2;border-radius:12px;padding:10px;
+      display:flex;gap:10px;align-items:center;
     }
     .avatar{width:44px;height:44px;border-radius:12px;object-fit:cover;background:#eef2ff;flex-shrink:0}
     .main{flex:1;min-width:0;cursor:pointer}
@@ -124,7 +177,92 @@
     .preview{margin-top:4px;font-size:12px;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .t{font-size:11px;color:#999}
 
-    /* chat header style (按你给的) */
+    /* Chat */
+    #chatMsgs{
+      height:calc(100% - (52px + var(--safe-top)) - (116px + var(--safe-bottom)));
+      overflow:auto;
+      padding:10px;
+      background:linear-gradient(180deg,#edf2ff,#edf1f8);
+      display:flex;flex-direction:column;gap:10px;
+    }
+
+    .msg-row{display:flex;gap:8px;align-items:flex-end;width:100%}
+    .msg-row.me{justify-content:flex-end}
+    .chat-avatar{
+      width:32px;height:32px;border-radius:10px;object-fit:cover;background:#dde6ff;flex-shrink:0;
+      align-self:flex-end;
+    }
+    .bubble-wrap{
+      display:flex;flex-direction:column;max-width:calc(100% - 48px);
+    }
+    .bubble-wrap.me{align-items:flex-end}
+    .bubble-wrap.ai{align-items:flex-start}
+    .bubble{
+      max-width:100%;
+      padding:10px 12px;
+      border-radius:14px;
+      line-height:1.45;
+      word-break:break-word;
+      white-space:pre-wrap;
+    }
+    .bubble.me{background:#2f66d8;color:#fff;border-bottom-right-radius:6px}
+    .bubble.ai{background:#fff;border:1px solid #e8e8ef;border-bottom-left-radius:6px}
+
+    .quote-chip{
+      font-size:11px;
+      line-height:1.3;
+      padding:6px 8px;
+      margin-bottom:6px;
+      border-radius:8px;
+      border:1px solid rgba(170,190,230,.5);
+      background:rgba(245,250,255,.7);
+      color:#5b6f9d;
+      max-width:100%;
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    }
+
+    .msg-time{font-size:10px;color:#96a0b9;margin-top:4px;padding:0 2px;}
+
+    .reply-bar{
+      display:none;
+      margin:0 10px 8px;
+      padding:8px 10px;
+      border:1px solid #dfe8ff;
+      background:linear-gradient(180deg,#f7faff,#edf3ff);
+      border-radius:10px;
+      font-size:12px;color:#4c5f8d;
+    }
+    .reply-bar.active{display:block}
+    .reply-bar .x{float:right;cursor:pointer;}
+
+    .chatInputBar{
+      position:absolute;left:0;right:0;bottom:0;
+      padding:10px;
+      padding-bottom:calc(10px + var(--safe-bottom));
+      background:linear-gradient(180deg,#f8f9ff,#f6f8ff);
+      border-top:1px solid #e4e8f5;
+      display:flex;gap:8px;align-items:flex-end;
+    }
+    #chatInput{
+      flex:1;height:44px;min-height:44px;max-height:96px;overflow-y:auto;resize:none;
+    }
+    .send-actions{display:flex;gap:8px;align-items:center;align-self:flex-end}
+
+    .btn.store{
+      width:40px;height:40px;padding:0;border-radius:999px;
+      border:1px solid #cfe3ff;
+      background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(233,244,255,.92));
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 2px 8px rgba(88,126,196,.18);
+      position:relative;
+    }
+    .btn.store::after{
+      content:"";position:absolute;left:50%;top:50%;
+      width:12px;height:12px;border-radius:999px;transform:translate(-50%,-50%);
+      background:radial-gradient(circle at 35% 30%, #fff, #d8eeff 62%, #a5cfff);
+      border:1px solid rgba(167,201,244,.75);
+      box-shadow:0 0 8px rgba(186,224,255,.45);
+    }
+
     .chat-head-center{
       display:flex;flex-direction:column;align-items:center;justify-content:center;
       flex:1;min-width:0;padding:0 8px;
@@ -136,105 +274,95 @@
     .chat-head-sub{
       font-size:11px;color:#7a86a8;line-height:1.2;margin-top:2px;min-height:13px;
     }
+
     .icon-btn{
       width:32px;height:32px;border-radius:10px;border:1px solid #d7e3ff;
-      background:linear-gradient(180deg,#f3f7ff,#e8f0ff);
-      color:#4a67a8;font-size:16px;cursor:pointer;display:grid;place-items:center;
-      box-shadow:0 1px 3px rgba(61,93,161,.12);
+      background:linear-gradient(180deg,#f3f7ff,#e8f0ff);color:#4a67a8;font-size:16px;
+      cursor:pointer;display:grid;place-items:center;box-shadow:0 1px 3px rgba(61,93,161,.12);
     }
     .icon-btn:active{transform:translateY(1px)}
-
-    /* chat body */
-    #chatMsgs{
-      height:calc(100% - (52px + var(--safe-top)) - (74px + var(--safe-bottom)));
-      overflow:auto;padding:10px;background:linear-gradient(180deg,#edf2ff,#edf1f8);
-      display:flex;flex-direction:column;gap:10px;
-    }
-    .msg-row{display:flex;gap:8px;align-items:flex-end;width:100%}
-    .msg-row.me{justify-content:flex-end}
-    .chat-avatar{width:32px;height:32px;border-radius:10px;object-fit:cover;background:#dde6ff;flex-shrink:0;align-self:flex-end}
-    .bubble-wrap{display:flex;flex-direction:column;max-width:calc(100% - 48px)}
-    .bubble-wrap.ai{align-items:flex-start}
-    .bubble-wrap.me{align-items:flex-end}
-    .bubble{
-      max-width:100%;padding:10px 12px;border-radius:14px;line-height:1.45;word-break:break-word;white-space:pre-wrap;
-    }
-    .bubble.me{background:#2f66d8;color:#fff;border-bottom-right-radius:6px}
-    .bubble.ai{background:#fff;border:1px solid #e8e8ef;border-bottom-left-radius:6px}
-    .msg-time{font-size:10px;color:#96a0b9;margin-top:4px;padding:0 2px}
-    .quote-chip{
-      font-size:12px;color:#5f79aa;background:#eef4ff;border:1px solid #d9e6ff;
-      border-radius:8px;padding:4px 6px;margin-bottom:6px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-    }
-
-    .chatInputBar{
-      position:absolute;left:0;right:0;bottom:0;display:flex;gap:8px;align-items:flex-end;
-      padding:10px;padding-bottom:calc(10px + var(--safe-bottom));
-      background:linear-gradient(180deg,#f8f9ff,#f6f8ff);border-top:1px solid #e4e8f5;
-    }
-    #chatInput{flex:1;height:44px;min-height:44px;max-height:96px;overflow-y:auto}
-    .send-actions{display:flex;gap:8px;align-items:center;align-self:flex-end}
-    .btn.store{
-      width:40px;height:40px;padding:0;border-radius:999px;border:1px solid #cfe3ff;
-      background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(233,244,255,.92));
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 2px 8px rgba(88,126,196,.18);position:relative;
-    }
-    .btn.store::after{
-      content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-      width:12px;height:12px;border-radius:999px;background:radial-gradient(circle at 35% 30%, #fff, #d8eeff 62%, #a5cfff);
-      border:1px solid rgba(167,201,244,.75);
-    }
-
-    .quote-bar{
-      position:absolute;left:10px;right:110px;bottom:calc(58px + var(--safe-bottom));
-      background:linear-gradient(180deg,#f7fbff,#eef5ff);border:1px solid #dce8ff;border-radius:10px;
-      padding:6px 8px;font-size:12px;color:#456;display:none;z-index:4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-    }
-    .quote-bar.active{display:block}
 
     /* offline */
     #chatRoom.offline #chatMsgs{
       background:
         radial-gradient(120% 80% at 20% 0%, rgba(255,255,255,.58), rgba(255,255,255,0) 45%),
         linear-gradient(180deg,#f8f2e9,#f2e9dc 55%,#eee3d4);
-      padding:6px;gap:10px;
+      padding:6px !important;
+      gap:10px;
     }
-    .msg-block{display:flex;flex-direction:column;gap:6px;width:100%}
-    .msg-block.ai,.msg-block.me{align-items:stretch}
-    #chatRoom.offline .chat-avatar{width:42px;height:42px;border-radius:12px;align-self:flex-start}
-    #chatRoom.offline .bubble-wrap{width:100%;max-width:100%}
-    #chatRoom.offline .bubble,#chatRoom.offline .offline-card{width:100%;max-width:100%}
-    #chatRoom.offline .bubble{line-height:1.62}
-    .offline-card{border:1px solid #e8dccb;background:linear-gradient(180deg,#fffdf9,#fbf6ef);border-radius:14px;overflow:hidden}
+    #chatRoom.offline .msg-row .chat-avatar{
+      width:42px;height:42px;border-radius:12px;
+      align-self:flex-start;
+    }
+    #chatRoom.offline .bubble-wrap{
+      width:100% !important;
+      max-width:100% !important;
+    }
+    #chatRoom.offline .bubble,
+    #chatRoom.offline .offline-card{
+      width:100% !important;
+      max-width:100% !important;
+    }
+    .offline-card{
+      border:1px solid #e8dccb;
+      background:linear-gradient(180deg,#fffdf9,#fbf6ef);
+      border-radius:14px;
+      overflow:hidden;
+      box-shadow:0 2px 8px rgba(110,78,42,.08);
+    }
     .offline-state{
-      padding:9px 10px;font-size:12px;color:#7b5f3a;border-bottom:1px solid #efe4d5;background:linear-gradient(180deg,#fff7ea,#f8efdf);
-      line-height:1.5;white-space:pre-wrap;
+      padding:9px 10px;
+      font-size:12px;
+      color:#7b5f3a;
+      border-bottom:1px solid #efe4d5;
+      background:linear-gradient(180deg,#fff7ea,#f8efdf);
+      white-space:pre-wrap;
+      line-height:1.5;
     }
-    .offline-body{padding:11px 10px 12px;color:#3b2f22;line-height:1.68;white-space:pre-wrap}
+    .offline-body{
+      padding:11px 10px 12px;
+      color:#3b2f22;
+      white-space:pre-wrap;
+      line-height:1.68;
+    }
 
-    /* long press menu */
-    .sheet-mask{position:fixed;inset:0;background:rgba(0,0,0,.28);z-index:120;display:none}
+    /* long press sheet */
+    .sheet-mask{
+      position:absolute;inset:0;background:rgba(0,0,0,.3);z-index:120;display:none;
+    }
     .sheet-mask.active{display:block}
-    .sheet{
-      position:absolute;left:10px;right:10px;bottom:10px;background:#fff;border-radius:14px;padding:8px;
-      box-shadow:0 10px 30px rgba(0,0,0,.18);max-height:70vh;overflow:auto;
+    .msg-sheet{
+      position:absolute;left:10px;right:10px;bottom:calc(10px + var(--safe-bottom));
+      background:#fff;border-radius:14px;border:1px solid #e7ebf6;z-index:121;
+      box-shadow:0 10px 30px rgba(0,0,0,.18);padding:8px;display:none;
     }
-    .sheet-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-    .sheet-btn{
-      border:1px solid #e4e8f5;background:#f7f9ff;color:#24447c;border-radius:10px;padding:10px 8px;font-size:13px;
+    .msg-sheet.active{display:block}
+    .msg-sheet .sheet-grid{
+      display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+    }
+    .msg-sheet .sbtn{
+      border:1px solid #d9e4ff;background:#f4f8ff;border-radius:10px;padding:9px 6px;
+      font-size:12px;color:#355a9e;cursor:pointer;
     }
 
-    /* multi select */
     .multi-bar{
-      position:absolute;left:0;right:0;bottom:0;z-index:8;
-      display:none;gap:8px;flex-wrap:wrap;
-      padding:8px 10px calc(8px + var(--safe-bottom));
-      background:#fff;border-top:1px solid #e5e9f5;
+      display:none;
+      position:absolute;left:0;right:0;bottom:calc(64px + var(--safe-bottom));
+      padding:8px 10px;
+      border-top:1px solid #e6ebf8;
+      background:#f7f9ff;
+      gap:8px;flex-wrap:wrap;
+      z-index:70;
     }
     .multi-bar.active{display:flex}
-    .msg-check{width:18px;height:18px;flex-shrink:0;align-self:center;margin-right:4px}
+    .multi-chip{
+      border:1px solid #d6e1ff;background:#eef4ff;color:#355a9e;
+      border-radius:999px;padding:6px 10px;font-size:12px;cursor:pointer;
+    }
+    .msg-check{
+      width:18px;height:18px;accent-color:#2f66d8;flex-shrink:0;
+    }
 
-    /* modal */
     .modal{
       position:absolute;inset:0;background:rgba(0,0,0,.35);
       display:none;place-items:center;z-index:99;padding:12px;
@@ -245,7 +373,13 @@
       background:#fff;border-radius:14px;padding:12px;
       box-shadow:0 10px 30px rgba(0,0,0,.18);
     }
-    .preview-img{width:64px;height:64px;border-radius:12px;object-fit:cover;border:1px solid #eee;background:#f3f5ff}
+    #editModal .modal-card{max-width:420px}
+    #editInput{min-height:42dvh}
+
+    .preview-img{
+      width:64px;height:64px;border-radius:12px;object-fit:cover;
+      border:1px solid #eee;background:#f3f5ff;
+    }
   </style>
 </head>
 <body>
@@ -262,12 +396,15 @@
         <div class="line l3"><span></span></div>
         <div class="pendulum"></div>
       </div>
+
       <div class="date" id="homeDate"></div>
       <div class="time" id="homeTime"></div>
+
       <div class="widgets">
         <div class="widget"><div class="t">纪念日</div><div class="v">第 233 天</div></div>
         <div class="widget"><div class="t">天气</div><div class="v">22°C 晴</div></div>
       </div>
+
       <div class="grid">
         <div class="icon" data-nav="wechat"><div class="ibox">💬</div><div class="lab">微信</div></div>
         <div class="icon" data-nav="api"><div class="ibox">🔑</div><div class="lab">API</div></div>
@@ -292,16 +429,21 @@
   <section id="chatRoom" class="screen">
     <div class="header">
       <button class="btn" data-nav="wechat">‹ 返回</button>
+
       <div class="chat-head-center">
         <div class="chat-head-title" id="chatTitle">聊天</div>
         <div class="chat-head-sub" id="chatSub"></div>
       </div>
+
       <button class="icon-btn" id="chatSettingBtn" aria-label="设置">⋯</button>
     </div>
 
     <div id="chatMsgs"></div>
 
-    <div id="quoteBar" class="quote-bar">引用：<span id="quoteText"></span> <span id="quoteCancel" style="float:right;cursor:pointer;color:#6b84b8;">取消</span></div>
+    <div id="replyBar" class="reply-bar">
+      <span id="replyText"></span>
+      <span id="clearReplyBtn" class="x">✕</span>
+    </div>
 
     <div class="chatInputBar">
       <textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
@@ -310,30 +452,9 @@
         <button class="btn p" id="sendBtn">发送</button>
       </div>
     </div>
-
-    <div id="multiBar" class="multi-bar">
-      <button class="btn" id="multiCancelBtn">取消多选</button>
-      <button class="btn" id="multiAllBtn">全选</button>
-      <button class="btn d" id="multiDelBtn">删除</button>
-      <button class="btn" id="multiFavBtn">收藏</button>
-      <button class="btn" id="multiHideBtn">隐藏</button>
-      <button class="btn" id="multiUnhideBtn">取消隐藏</button>
-    </div>
   </section>
 
-  <!-- 消息编辑页 -->
-  <section id="msgEditor" class="screen">
-    <div class="header">
-      <button class="btn" data-nav="chatRoom">‹ 返回</button>
-      <b>编辑消息</b>
-      <button class="btn p" id="saveEditBtn">保存</button>
-    </div>
-    <div class="page">
-      <textarea id="msgEditorTa" class="ta" style="min-height:52dvh;font-size:15px;line-height:1.6;" placeholder="编辑消息内容..."></textarea>
-    </div>
-  </section>
-
-  <!-- 聊天设置（全屏） -->
+  <!-- CHAT SETTING FULL SCREEN -->
   <section id="chatSetting" class="screen">
     <div class="header">
       <button class="btn" data-nav="chatRoom">‹ 返回</button>
@@ -344,16 +465,16 @@
       <div class="card">
         <div class="small">我方名称</div>
         <input id="meNameInput" class="input" />
-        <div class="small" style="margin-top:8px;">我方备注</div>
+        <div class="small" style="margin-top:8px;">我方备注（可选）</div>
         <input id="meNoteInput" class="input" />
         <div class="small" style="margin-top:8px;">我方人设</div>
         <textarea id="mePersonaInput" class="ta" style="min-height:90px;"></textarea>
       </div>
 
       <div class="card">
-        <div class="small">对方名称</div>
+        <div class="small">对方名称（当前联系人）</div>
         <input id="roleNameInput" class="input" />
-        <div class="small" style="margin-top:8px;">对方备注</div>
+        <div class="small" style="margin-top:8px;">对方备注（可选）</div>
         <input id="roleNoteInput" class="input" />
         <div class="small" style="margin-top:8px;">对方人设</div>
         <textarea id="rolePersonaInput" class="ta" style="min-height:95px;"></textarea>
@@ -373,56 +494,59 @@
           <option value="free">自由发挥</option>
           <option value="range">区间条数</option>
         </select>
-        <div id="onlineRangeBox" class="row hidden" style="margin-top:8px;">
-          <input id="onlineMinInput" class="input" type="number" min="1" max="20" value="2" />
-          <input id="onlineMaxInput" class="input" type="number" min="1" max="30" value="6" />
+        <div id="onlineRangeBox" class="row" style="margin-top:8px;display:none;">
+          <input id="onlineMinInput" class="input" type="number" min="1" max="20" value="2" placeholder="最少条数" />
+          <input id="onlineMaxInput" class="input" type="number" min="1" max="30" value="6" placeholder="最多条数" />
         </div>
       </div>
 
       <div class="card" id="offlineSettingCard">
         <div class="small">线下字数区间</div>
         <div class="row" style="margin-top:8px;">
-          <input id="offlineMinInput" class="input" type="number" min="80" max="5000" value="220" />
-          <input id="offlineMaxInput" class="input" type="number" min="100" max="8000" value="420" />
+          <input id="offlineMinInput" class="input" type="number" min="80" max="5000" value="220" placeholder="最少字数" />
+          <input id="offlineMaxInput" class="input" type="number" min="100" max="8000" value="420" placeholder="最多字数" />
         </div>
       </div>
 
       <div class="card">
-        <div class="row" style="justify-content:space-between;">
-          <span class="small">显示时间戳</span><input id="showTsSwitch" type="checkbox" />
-        </div>
-        <div class="row" style="justify-content:space-between;margin-top:8px;">
-          <span class="small">显示隐藏消息</span><input id="showHiddenSwitch" type="checkbox" />
+        <div class="small">时间戳</div>
+        <div class="row" style="margin-top:8px;justify-content:space-between;">
+          <span class="small">显示每条消息时间</span>
+          <input id="showTsSwitch" type="checkbox" />
         </div>
       </div>
 
       <div class="card">
-        <div class="small">气泡CSS专区</div>
-        <textarea id="bubbleCssInput" class="ta" style="min-height:110px;" placeholder=".bubble.ai{...}"></textarea>
+        <div class="small">气泡CSS专区（可选）</div>
+        <textarea id="bubbleCssInput" class="ta" style="min-height:130px;" placeholder=".bubble.ai{...}"></textarea>
+        <div class="small" style="margin-top:6px;">保存后立即生效，可随时清空恢复</div>
       </div>
 
       <div class="card">
         <div class="small">数据工具</div>
         <div class="row" style="margin-top:8px;flex-wrap:wrap;">
-          <button class="btn" id="favOpenBtn">收藏夹</button>
-          <button class="btn" id="exportBtn">导出</button>
-          <button class="btn" id="importBtn">导入</button>
+          <button class="btn" id="openFavBtn">收藏夹</button>
+          <button class="btn" id="exportBtn">导出数据</button>
+          <button class="btn" id="importBtn">导入数据</button>
           <input id="importFile" type="file" accept="application/json" class="hidden" />
-          <button class="btn d" id="clearChatBtn2">清空聊天</button>
-          <button class="btn d" id="deleteContactBtn">删除好友</button>
+          <button class="btn d" id="clearChatBtn2">清空当前聊天</button>
+          <button class="btn d" id="deleteContactBtn">删除当前好友</button>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 收藏夹 -->
-  <section id="favScreen" class="screen">
+  <!-- FAVORITES -->
+  <section id="favorites" class="screen">
     <div class="header">
       <button class="btn" data-nav="chatSetting">‹ 返回</button>
       <b>收藏夹</b>
-      <button class="btn" id="clearFavBtn">清空收藏</button>
+      <button class="btn d" id="clearFavBtn">清空</button>
     </div>
-    <div class="page"><div id="favList" class="list"></div></div>
+    <div class="page">
+      <input id="favSearchInput" class="input" placeholder="搜索收藏内容" />
+      <div id="favList" class="list"></div>
+    </div>
   </section>
 
   <!-- API -->
@@ -441,6 +565,7 @@
           <button class="btn d" id="delPresetBtn">删</button>
         </div>
       </div>
+
       <div class="card"><div class="small">Base URL</div><input id="apiBase" class="input" placeholder="https://api.xxx.com" /></div>
       <div class="card"><div class="small">API Key</div><input id="apiKey" class="input" type="password" /></div>
       <div class="card">
@@ -459,6 +584,7 @@
       <h3 style="margin:0 0 10px;">创建联系人</h3>
       <div class="small">昵称</div>
       <input id="newName" class="input" placeholder="例如：林闻笙" />
+
       <div class="small" style="margin-top:8px;">头像（上传 或 URL）</div>
       <div class="row">
         <button class="btn" id="pickAvatarBtn">上传</button>
@@ -466,8 +592,10 @@
       </div>
       <input id="newAvatarFile" type="file" accept="image/*" class="hidden" />
       <img id="newAvatarPreview" class="preview-img hidden" style="margin-top:8px;" />
+
       <div class="small" style="margin-top:8px;">人设</div>
       <textarea id="newPersona" class="ta" style="min-height:220px;"></textarea>
+
       <div class="row" style="justify-content:flex-end;margin-top:10px;">
         <button class="btn" id="cancelCreateBtn">取消</button>
         <button class="btn p" id="saveCreateBtn">保存</button>
@@ -475,24 +603,42 @@
     </div>
   </div>
 
-</div>
-
-<!-- 长按菜单 -->
-<div id="msgMenuMask" class="sheet-mask">
-  <div class="sheet" id="msgMenuCard">
+  <!-- long press sheet -->
+  <div id="sheetMask" class="sheet-mask"></div>
+  <div id="msgSheet" class="msg-sheet">
     <div class="sheet-grid">
-      <button class="sheet-btn" data-act="quote">引用</button>
-      <button class="sheet-btn" data-act="copy">复制</button>
-      <button class="sheet-btn" data-act="edit">编辑</button>
-      <button class="sheet-btn" data-act="recall">撤回</button>
-      <button class="sheet-btn" data-act="fav">收藏</button>
-      <button class="sheet-btn" data-act="hide">隐藏消息</button>
-      <button class="sheet-btn" data-act="unhide">取消隐藏</button>
-      <button class="sheet-btn" data-act="multi">多选</button>
-      <button class="sheet-btn" data-act="delete">删除</button>
+      <button class="sbtn" data-act="quote">引用</button>
+      <button class="sbtn" data-act="copy">复制</button>
+      <button class="sbtn" data-act="edit">编辑</button>
+      <button class="sbtn" data-act="revoke">撤回</button>
+      <button class="sbtn" data-act="hide">隐藏消息</button>
+      <button class="sbtn" data-act="unhide">取消隐藏</button>
+      <button class="sbtn" data-act="fav">收藏</button>
+      <button class="sbtn" data-act="multi">多选</button>
+      <button class="sbtn" data-act="delete">删除</button>
     </div>
-    <button class="sheet-btn" data-act="close" style="margin-top:8px;width:100%;">取消</button>
   </div>
+
+  <div id="editModal" class="modal">
+    <div class="modal-card">
+      <h3 style="margin:0 0 10px;">编辑消息</h3>
+      <textarea id="editInput" class="ta"></textarea>
+      <div class="row" style="justify-content:flex-end;margin-top:10px;">
+        <button class="btn" id="cancelEditBtn">取消</button>
+        <button class="btn p" id="saveEditBtn">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="multiBar" class="multi-bar">
+    <span class="multi-chip" id="multiAllBtn">全选</span>
+    <span class="multi-chip" id="multiDelBtn">删除</span>
+    <span class="multi-chip" id="multiHideBtn">隐藏</span>
+    <span class="multi-chip" id="multiUnhideBtn">取消隐藏</span>
+    <span class="multi-chip" id="multiFavBtn">收藏</span>
+    <span class="multi-chip" id="multiCancelBtn">取消</span>
+  </div>
+
 </div>
 
 <script>
@@ -502,6 +648,7 @@
   const K_API='mp_fix_api';
   const K_ME='mp_fix_me';
   const K_PREF='mp_fix_pref';
+  const K_FAV='mp_fix_favs';
 
   const DEFAULT_CHAT_SETTINGS = {
     mode:'online',
@@ -512,60 +659,58 @@
     offlineMax:420
   };
 
-  let currentId=null, createAvatar='', typingForId=null;
-  let quoteDraft=null, pressTimer=null, activeMsgId=null;
-  let selecting=false, selectedSet=new Set();
+  let currentId=null;
+  let createAvatar='';
+  let typingForId=null;
+
+  // long press / quote / multi
+  let msgLongPressTimer=null;
+  let longPressMid=null;
+  let quoteMsg=null;
+  let editMid=null;
+  let multiMode=false;
+  let multiSet=new Set();
 
   const $ = id => document.getElementById(id);
   const clean=s=>String(s||'').replace(/[\u0000-\u001F\u007F\uFFFD]/g,'').trim();
   const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-  const mid=()=> 'm_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
+  const uid=()=> 'm_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
 
-  function on(id,evt,fn){ const el=$(id); if(el) el.addEventListener(evt,fn); }
+  function getJ(k,d){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d));}catch{return d;}}
 
-  // ---------- storage ----------
-  function getJ(k,d){ try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d));}catch{return d;} }
   function isQuotaErr(e){
-    const n=(e&&e.name)||'', m=(e&&e.message)||'';
-    return n==='QuotaExceededError'||n==='NS_ERROR_DOM_QUOTA_REACHED'||/quota|exceeded/i.test(m);
+    const n = (e && e.name) || '';
+    const m = (e && e.message) || '';
+    return n === 'QuotaExceededError' || n === 'NS_ERROR_DOM_QUOTA_REACHED' || /quota|exceeded/i.test(m);
   }
+
+  // 不再吞聊天内容：只在超限时清理 base64 头像
   function stripDataAvatar(v){
     if(!v) return v;
     if(typeof v.avatar==='string' && v.avatar.startsWith('data:image/')) v.avatar='';
     return v;
   }
-  function pruneOldChats(targetTotal=1200){
-    const map=getJ(K_CHAT,{});
-    const bins=Object.keys(map).map(id=>({id,arr:Array.isArray(map[id])?map[id]:[]}));
-    let total=bins.reduce((a,b)=>a+b.arr.length,0);
-    if(total<=targetTotal) return map;
-    while(total>targetTotal){
-      let pick=null;
-      for(const b of bins){
-        if(!b.arr.length) continue;
-        const t=b.arr[0]?.time||0;
-        if(!pick||t<pick.t) pick={b,t};
-      }
-      if(!pick) break;
-      pick.b.arr.shift(); total--;
-    }
-    const out={}; bins.forEach(b=>out[b.id]=b.arr); return out;
-  }
+
   function setJ(k,v){
-    const write=val=>localStorage.setItem(k,JSON.stringify(val));
-    try{ write(v); return; }catch(e){ if(!isQuotaErr(e)) throw e; }
+    try{
+      localStorage.setItem(k, JSON.stringify(v));
+      return;
+    }catch(e){
+      if(!isQuotaErr(e)) throw e;
+    }
 
     try{
       const contacts=(getJ(K_CONTACT,[])||[]).map(x=>stripDataAvatar({...x}));
-      localStorage.setItem(K_CONTACT,JSON.stringify(contacts));
-      const me=stripDataAvatar({...getJ(K_ME,{name:'我',avatar:'',persona:'',note:''})});
-      localStorage.setItem(K_ME,JSON.stringify(me));
-      write(v); return;
-    }catch(e2){ if(!isQuotaErr(e2)) throw e2; }
+      localStorage.setItem(K_CONTACT, JSON.stringify(contacts));
 
-    localStorage.setItem(K_CHAT, JSON.stringify(pruneOldChats(900)));
-    write(v);
+      const me=stripDataAvatar({...getJ(K_ME,{name:'我',avatar:'',persona:'',note:''})});
+      localStorage.setItem(K_ME, JSON.stringify(me));
+
+      localStorage.setItem(k, JSON.stringify(v));
+    }catch(e2){
+      throw e2;
+    }
   }
 
   function normSettings(s={}){
@@ -579,50 +724,23 @@
     return o;
   }
 
-  function getPref(){ return getJ(K_PREF,{showTs:false,bubbleCss:'',showHidden:false}); }
+  function getPref(){ return getJ(K_PREF,{showTs:false,bubbleCss:''}); }
   function setPref(v){ setJ(K_PREF,v); }
+
+  function getFavs(){ return getJ(K_FAV,[]); }
+  function setFavs(v){ setJ(K_FAV, v||[]); }
+
   function applyBubbleCss(){
     const p=getPref();
     let el=document.getElementById('bubbleCssStyle');
-    if(!el){ el=document.createElement('style'); el.id='bubbleCssStyle'; document.head.appendChild(el); }
+    if(!el){
+      el=document.createElement('style');
+      el.id='bubbleCssStyle';
+      document.head.appendChild(el);
+    }
     el.textContent=String(p.bubbleCss||'');
   }
 
-  function getContacts(){
-    const arr=getJ(K_CONTACT,[]);
-    return Array.isArray(arr) ? arr.map(c=>({...c,settings:normSettings(c.settings)})) : [];
-  }
-  function setContacts(v){ setJ(K_CONTACT,(v||[]).map(c=>({...c,settings:normSettings(c.settings)}))); }
-
-  function sanitizeChats(raw){
-    const map = raw && typeof raw==='object' ? raw : {};
-    Object.keys(map).forEach(id=>{
-      map[id]=(Array.isArray(map[id])?map[id]:[]).map(m=>({
-        id:m.id||mid(),
-        role:m.role==='assistant'?'assistant':'user',
-        text:String(m.text||''),
-        time:m.time||Date.now(),
-        hidden:!!m.hidden,
-        favorite:!!m.favorite,
-        recalled:!!m.recalled,
-        quoteText:m.quoteText?String(m.quoteText).slice(0,120):''
-      }));
-    });
-    return map;
-  }
-  function getChats(){ return sanitizeChats(getJ(K_CHAT,{})); }
-  function setChats(v){ setJ(K_CHAT, sanitizeChats(v)); }
-
-  function getMe(){ return getJ(K_ME,{name:'我',avatar:'',persona:'',note:''}); }
-  function setMe(v){ setJ(K_ME,v); }
-
-  function getContactById(id){ return getContacts().find(x=>x.id===id); }
-  function updateContact(id,patch){
-    const arr=getContacts(), i=arr.findIndex(x=>x.id===id); if(i<0) return;
-    arr[i]={...arr[i],...patch}; if(patch.settings) arr[i].settings=normSettings(patch.settings); setContacts(arr);
-  }
-
-  // ---------- nav ----------
   function show(id){
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     const el=$(id); if(el) el.classList.add('active');
@@ -636,9 +754,43 @@
     $('homeTime').textContent=`${h}:${m}`;
   }
   tick(); setInterval(tick,1000);
-  const fmtTs=ts=>{const d=new Date(ts||Date.now()); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 
-  // ---------- contacts ----------
+  function fmtTs(ts){
+    const d=new Date(ts||Date.now());
+    return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
+
+  // data
+  function getContacts(){
+    const arr=getJ(K_CONTACT,[]);
+    return Array.isArray(arr) ? arr.map(c=>({...c,settings:normSettings(c.settings)})) : [];
+  }
+  function setContacts(v){ setJ(K_CONTACT,(v||[]).map(c=>({...c,settings:normSettings(c.settings)}))); }
+  function getChats(){return getJ(K_CHAT,{});}
+  function setChats(v){setJ(K_CHAT,v);}
+  function getMe(){return getJ(K_ME,{name:'我',avatar:'',persona:'',note:''});}
+  function setMe(v){setJ(K_ME,v);}
+  function getContactById(id){ return getContacts().find(x=>x.id===id); }
+  function updateContact(id,patch){
+    const arr=getContacts(); const i=arr.findIndex(x=>x.id===id); if(i<0) return;
+    arr[i]={...arr[i],...patch};
+    if(patch.settings) arr[i].settings=normSettings(patch.settings);
+    setContacts(arr);
+  }
+
+  function ensureMsgIds(map){
+    let changed=false;
+    Object.keys(map||{}).forEach(cid=>{
+      (map[cid]||[]).forEach(m=>{
+        if(!m.id){ m.id=uid(); changed=true; }
+        if(typeof m.hidden!=='boolean'){ m.hidden=false; changed=true; }
+        if(typeof m.recalled!=='boolean'){ m.recalled=false; changed=true; }
+      });
+    });
+    if(changed) setChats(map);
+  }
+
+  // contacts
   function renderContacts(k=''){
     k=(k||'').trim();
     const arr=getContacts().filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
@@ -659,7 +811,7 @@
   function closeCreateModal(){
     $('contactModal').classList.remove('active');
     $('newName').value=''; $('newAvatarUrl').value=''; $('newPersona').value='';
-    createAvatar=''; $('newAvatarPreview').src=''; $('newAvatarPreview').classList.add('hidden');
+    createAvatar=''; $('newAvatarPreview').classList.add('hidden'); $('newAvatarPreview').src='';
   }
 
   function compressImage(file,maxSide=180,quality=0.42){
@@ -669,11 +821,20 @@
         const img=new Image();
         img.onload=()=>{
           let w=img.width,h=img.height;
-          const s=Math.min(1,maxSide/Math.max(w,h)); w=Math.round(w*s); h=Math.round(h*s);
-          const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h);
-          let out=''; try{ out=c.toDataURL('image/webp',quality);}catch(e){}
-          if(!out||out.startsWith('data:,')) out=c.toDataURL('image/jpeg',quality);
-          if(out.length>120000) out=c.toDataURL('image/jpeg',0.32);
+          const s=Math.min(1,maxSide/Math.max(w,h));
+          w=Math.round(w*s); h=Math.round(h*s);
+
+          const c=document.createElement('canvas');
+          c.width=w; c.height=h;
+          c.getContext('2d').drawImage(img,0,0,w,h);
+
+          let out='';
+          try{ out=c.toDataURL('image/webp',quality); }catch(e){}
+          if(!out || out.startsWith('data:,')) out=c.toDataURL('image/jpeg',quality);
+
+          if(out.length > 120000){
+            out=c.toDataURL('image/jpeg',0.32);
+          }
           resolve(out);
         };
         img.onerror=reject; img.src=fr.result;
@@ -683,291 +844,496 @@
   }
 
   async function saveContact(){
-    const name=clean($('newName').value); if(!name) return alert('昵称不能为空');
-    const avatarUrl=clean($('newAvatarUrl').value), persona=clean($('newPersona').value);
+    const name=clean($('newName').value);
+    if(!name) return alert('昵称不能为空');
+    const avatarUrl=clean($('newAvatarUrl').value);
+    const persona=clean($('newPersona').value);
+
     const arr=getContacts();
     arr.unshift({
       id:'c'+Date.now()+'_'+Math.floor(Math.random()*9999),
-      name,note:'',avatar:createAvatar||avatarUrl||'',
-      preview:'新的聊天已创建',time:'刚刚',persona,settings:{...DEFAULT_CHAT_SETTINGS}
+      name, note:'',
+      avatar:createAvatar||avatarUrl||'',
+      preview:'新的聊天已创建',
+      time:'刚刚',
+      persona,
+      settings:{...DEFAULT_CHAT_SETTINGS}
     });
-    try{ setContacts(arr); }catch{ return alert('保存失败：存储空间不足');}
-    renderContacts($('searchInput').value||''); closeCreateModal();
+    try{
+      setContacts(arr);
+    }catch{
+      return alert('保存失败：存储空间不足');
+    }
+
+    renderContacts($('searchInput').value||'');
+    closeCreateModal();
   }
 
-  on('addContactBtn','click',openCreateModal);
-  on('cancelCreateBtn','click',closeCreateModal);
-  on('saveCreateBtn','click',saveContact);
-  on('contactModal','click',e=>{ if(e.target.id==='contactModal') closeCreateModal(); });
-  on('searchInput','input',e=>renderContacts(e.target.value||''));
-  on('pickAvatarBtn','click',()=> $('newAvatarFile').click());
-  on('newAvatarFile','change',async e=>{
+  $('addContactBtn').onclick=openCreateModal;
+  $('cancelCreateBtn').onclick=closeCreateModal;
+  $('saveCreateBtn').onclick=saveContact;
+  $('contactModal').addEventListener('click',e=>{ if(e.target.id==='contactModal') closeCreateModal(); });
+  $('searchInput').oninput=e=>renderContacts(e.target.value||'');
+  $('pickAvatarBtn').onclick=()=> $('newAvatarFile').click();
+  $('newAvatarFile').onchange=async e=>{
     const f=e.target.files?.[0]; if(!f) return;
     createAvatar=await compressImage(f,180,0.42);
-    $('newAvatarPreview').src=createAvatar; $('newAvatarPreview').classList.remove('hidden'); e.target.value='';
-  });
+    $('newAvatarPreview').src=createAvatar;
+    $('newAvatarPreview').classList.remove('hidden');
+    e.target.value='';
+  };
 
-  // ---------- chat ----------
-  function getCurrentMessages(){ const map=getChats(); return map[currentId]||[]; }
-  function setCurrentMessages(arr){ const map=getChats(); map[currentId]=arr; setChats(map); }
-  function findMsgById(id){
-    const arr=getCurrentMessages(), idx=arr.findIndex(x=>x.id===id);
-    return {arr,idx,msg:idx>=0?arr[idx]:null};
-  }
-
+  // chat
   function setTyping(chatId,on){
-    typingForId = on ? chatId : (typingForId===chatId?null:typingForId);
+    typingForId = on ? chatId : (typingForId===chatId ? null : typingForId);
+    updateChatSub();
+  }
+  function updateChatSub(){
     $('chatSub').textContent = (currentId && typingForId===currentId) ? '对方正在输入中…' : '';
   }
-
   function applyModeUI(){
-    const st=normSettings(getContactById(currentId)?.settings);
+    const c=getContactById(currentId); const st=normSettings(c?.settings);
     $('chatRoom').classList.toggle('offline', st.mode==='offline');
+    updateChatSub();
   }
 
-  function messageVisible(m,pref){ return pref.showHidden ? true : !m.hidden; }
-  function quoteChip(m){ return m.quoteText ? `<div class="quote-chip">引用：${esc(m.quoteText)}</div>` : ''; }
-  function checkHtml(m){ return selecting ? `<input type="checkbox" class="msg-check" data-mid="${m.id}" ${selectedSet.has(m.id)?'checked':''}>` : ''; }
+  window.openChat=function(id){
+    currentId=id;
+    const c=getContactById(id);
+    $('chatTitle').textContent=c?c.name:'聊天';
+    applyModeUI();
+    renderChat();
+    show('chatRoom');
+  };
 
-  function renderOfflineAssistant(m,pref){
-    const raw=String(m.text||'');
-    const match=raw.match(/【状态栏】\s*([\s\S]*?)\s*【正文】\s*([\s\S]*)/);
-    const ts = pref.showTs ? `<div class="msg-time">${fmtTs(m.time)}</div>` : '';
-    const marks = `${m.hidden?'（已隐藏）':''}${m.favorite?'（已收藏）':''}`;
-    if(!match){
-      return `<div class="bubble-wrap ai"><div class="bubble ai">${quoteChip(m)}${esc(raw)} ${marks}</div>${ts}</div>`;
+  function openMsgSheet(){
+    $('sheetMask').classList.add('active');
+    $('msgSheet').classList.add('active');
+  }
+  function closeMsgSheet(){
+    $('sheetMask').classList.remove('active');
+    $('msgSheet').classList.remove('active');
+  }
+  $('sheetMask').onclick=closeMsgSheet;
+
+  function setReply(msg){
+    quoteMsg=msg||null;
+    if(!quoteMsg){
+      $('replyBar').classList.remove('active');
+      $('replyText').textContent='';
+      return;
+    }
+    $('replyText').textContent='引用：'+String(quoteMsg.text||'').slice(0,80);
+    $('replyBar').classList.add('active');
+  }
+  $('clearReplyBtn').onclick=()=>setReply(null);
+
+  function renderOfflineAssistant(raw,ts,pref,m){
+    const text = m.recalled ? '对方撤回了一条消息' : (m.hidden ? '（已隐藏）' : String(raw||''));
+    const mm=text.match(/【状态栏】\s*([\s\S]*?)\s*【正文】\s*([\s\S]*)/);
+    if(!mm){
+      return `<div class="bubble-wrap ai">
+        ${m.quoteText?`<div class="quote-chip">${esc('引用：'+m.quoteText)}</div>`:''}
+        <div class="bubble ai">${esc(text)}</div>
+        ${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}
+      </div>`;
     }
     return `<div class="bubble-wrap ai">
+      ${m.quoteText?`<div class="quote-chip">${esc('引用：'+m.quoteText)}</div>`:''}
       <div class="offline-card">
-        <div class="offline-state">${esc(clean(match[1]))}</div>
-        <div class="offline-body">${quoteChip(m)}${esc(clean(match[2]))} ${marks}</div>
+        <div class="offline-state">${esc(clean(mm[1])||'状态未记录')}</div>
+        <div class="offline-body">${esc(clean(mm[2])||'')}</div>
       </div>
-      ${ts}
+      ${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}
     </div>`;
   }
 
+  function bindMsgEvents(){
+    $('chatMsgs').querySelectorAll('.msg-check').forEach(ch=>{
+      ch.onchange=(e)=>{
+        const mid=e.target.getAttribute('data-mid');
+        if(e.target.checked) multiSet.add(mid); else multiSet.delete(mid);
+      };
+    });
+
+    $('chatMsgs').querySelectorAll('[data-mid]').forEach(el=>{
+      const mid=el.getAttribute('data-mid');
+      const onDown=()=>{
+        if(multiMode) return;
+        msgLongPressTimer=setTimeout(()=>{
+          longPressMid=mid;
+          openMsgSheet();
+        },450);
+      };
+      const onUp=()=>clearTimeout(msgLongPressTimer);
+
+      el.addEventListener('touchstart',onDown,{passive:true});
+      el.addEventListener('touchend',onUp);
+      el.addEventListener('touchcancel',onUp);
+      el.addEventListener('mousedown',onDown);
+      el.addEventListener('mouseup',onUp);
+      el.addEventListener('mouseleave',onUp);
+    });
+
+    $('multiBar').classList.toggle('active', multiMode);
+  }
+
   function renderChat(){
-    const c=getContactById(currentId), st=normSettings(c?.settings), me=getMe(), pref=getPref();
+    const c=getContactById(currentId);
+    const st=normSettings(c?.settings);
+    const me=getMe();
+    const pref=getPref();
     const roleAvatar=c?.avatar||'https://via.placeholder.com/64x64?text=TA';
     const meAvatar=me.avatar||'https://via.placeholder.com/64x64?text=我';
-    const arr=getCurrentMessages().filter(m=>messageVisible(m,pref));
+    const map=getChats();
+    const arr=map[currentId]||[];
 
     if(st.mode==='offline'){
       $('chatMsgs').innerHTML=arr.map(m=>{
-        const ts = pref.showTs ? `<div class="msg-time">${fmtTs(m.time)}</div>` : '';
-        const marks = `${m.hidden?'（已隐藏）':''}${m.favorite?'（已收藏）':''}`;
+        const checked = multiSet.has(m.id)?'checked':'';
+        const check = multiMode ? `<input class="msg-check" type="checkbox" data-mid="${m.id}" ${checked}>` : '';
+
         if(m.role==='user'){
-          return `<div class="msg-block me msg-item" data-mid="${m.id}">
-            ${checkHtml(m)}
+          const text = m.recalled ? '你撤回了一条消息' : (m.hidden ? '（已隐藏）' : m.text);
+          return `<div class="msg-row me" data-mid="${m.id}">
+            ${check}
             <img class="chat-avatar" src="${meAvatar}">
             <div class="bubble-wrap me">
-              <div class="bubble me">${quoteChip(m)}${esc(m.text)} ${marks}</div>${ts}
+              ${m.quoteText?`<div class="quote-chip">${esc('引用：'+m.quoteText)}</div>`:''}
+              <div class="bubble me">${esc(text)}</div>
+              ${pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:''}
             </div>
           </div>`;
         }
-        return `<div class="msg-block ai msg-item" data-mid="${m.id}">
-          ${checkHtml(m)}
+
+        return `<div class="msg-row" data-mid="${m.id}">
+          ${check}
           <img class="chat-avatar" src="${roleAvatar}">
-          ${renderOfflineAssistant(m,pref)}
+          ${renderOfflineAssistant(m.text,m.time,pref,m)}
         </div>`;
       }).join('');
     }else{
       $('chatMsgs').innerHTML=arr.map(m=>{
-        const ts = pref.showTs ? `<div class="msg-time">${fmtTs(m.time)}</div>` : '';
-        const marks = `${m.hidden?'（已隐藏）':''}${m.favorite?'（已收藏）':''}`;
+        const checked = multiSet.has(m.id)?'checked':'';
+        const check = multiMode ? `<input class="msg-check" type="checkbox" data-mid="${m.id}" ${checked}>` : '';
+
         if(m.role==='user'){
-          return `<div class="msg-row me msg-item" data-mid="${m.id}">
-            ${checkHtml(m)}
-            <div class="bubble-wrap me"><div class="bubble me">${quoteChip(m)}${esc(m.text)} ${marks}</div>${ts}</div>
+          const text = m.recalled ? '你撤回了一条消息' : (m.hidden ? '（已隐藏）' : m.text);
+          return `<div class="msg-row me" data-mid="${m.id}">
+            ${check}
+            <div class="bubble-wrap me">
+              ${m.quoteText?`<div class="quote-chip">${esc('引用：'+m.quoteText)}</div>`:''}
+              <div class="bubble me">${esc(text)}</div>
+              ${pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:''}
+            </div>
             <img class="chat-avatar" src="${meAvatar}">
           </div>`;
         }
-        return `<div class="msg-row msg-item" data-mid="${m.id}">
-          ${checkHtml(m)}
+        const text = m.recalled ? '对方撤回了一条消息' : (m.hidden ? '（已隐藏）' : m.text);
+        return `<div class="msg-row" data-mid="${m.id}">
+          ${check}
           <img class="chat-avatar" src="${roleAvatar}">
-          <div class="bubble-wrap ai"><div class="bubble ai">${quoteChip(m)}${esc(m.text)} ${marks}</div>${ts}</div>
+          <div class="bubble-wrap ai">
+            ${m.quoteText?`<div class="quote-chip">${esc('引用：'+m.quoteText)}</div>`:''}
+            <div class="bubble ai">${esc(text)}</div>
+            ${pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:''}
+          </div>
         </div>`;
       }).join('');
     }
 
-    $('chatMsgs').scrollTop=$('chatMsgs').scrollHeight;
     bindMsgEvents();
-    renderQuoteBar();
+    $('chatMsgs').scrollTop=$('chatMsgs').scrollHeight;
   }
 
-  function renderQuoteBar(){
-    const b=$('quoteBar');
-    if(!quoteDraft){ b.classList.remove('active'); return; }
-    $('quoteText').textContent=clean(quoteDraft.text).slice(0,45);
-    b.classList.add('active');
+  function getMsgById(mid){
+    const map=getChats();
+    const arr=map[currentId]||[];
+    return arr.find(x=>x.id===mid);
   }
-  on('quoteCancel','click',()=>{ quoteDraft=null; renderQuoteBar(); });
+  function updateMsg(mid,patch){
+    const map=getChats();
+    const arr=map[currentId]||[];
+    const i=arr.findIndex(x=>x.id===mid);
+    if(i<0) return;
+    arr[i]={...arr[i],...patch};
+    setChats(map);
+  }
+  function removeMsg(mid){
+    const map=getChats();
+    map[currentId]=(map[currentId]||[]).filter(x=>x.id!==mid);
+    setChats(map);
+  }
 
-  window.openChat=function(id){
-    currentId=id; selecting=false; selectedSet.clear(); $('multiBar').classList.remove('active');
-    const c=getContactById(id); $('chatTitle').textContent=c?c.name:'聊天';
-    applyModeUI(); renderChat(); show('chatRoom');
+  function addFav(msg){
+    const c=getContactById(currentId);
+    const favs=getFavs();
+    favs.unshift({
+      id:uid(),
+      chatId:currentId,
+      chatName:c?.name||'聊天',
+      role:msg.role,
+      text:msg.text||'',
+      quoteText:msg.quoteText||'',
+      time:Date.now()
+    });
+    setFavs(favs.slice(0,1200));
+  }
+
+  function renderFavList(k=''){
+    k=(k||'').trim();
+    const arr=getFavs().filter(x=>!k || (x.text||'').includes(k) || (x.chatName||'').includes(k));
+    $('favList').innerHTML = arr.map(f=>`
+      <div class="item">
+        <div class="main">
+          <div style="display:flex;justify-content:space-between;">
+            <div class="name">${esc(f.chatName)} · ${f.role==='user'?'我':'TA'}</div>
+            <div class="t">${esc(fmtTs(f.time))}</div>
+          </div>
+          <div class="preview">${esc(f.text||'')}</div>
+          <div class="row" style="margin-top:8px;">
+            <button class="btn" onclick="jumpFav('${f.chatId}')">跳转</button>
+            <button class="btn d" onclick="delFav('${f.id}')">删除</button>
+          </div>
+        </div>
+      </div>
+    `).join('') || `<div class="card small">暂无收藏</div>`;
+  }
+
+  window.jumpFav=(chatId)=>{
+    if(!getContactById(chatId)){ alert('原会话不存在'); return; }
+    openChat(chatId);
+    show('chatRoom');
+  };
+  window.delFav=(id)=>{
+    const arr=getFavs().filter(x=>x.id!==id);
+    setFavs(arr);
+    renderFavList($('favSearchInput').value||'');
   };
 
-  function bindMsgEvents(){
-    document.querySelectorAll('.msg-item').forEach(el=>{
-      const id=el.getAttribute('data-mid'); if(!id) return;
+  document.querySelectorAll('#msgSheet [data-act]').forEach(btn=>{
+    btn.onclick=()=>{
+      const act=btn.getAttribute('data-act');
+      const msg=getMsgById(longPressMid);
+      if(!msg){ closeMsgSheet(); return; }
 
-      el.oncontextmenu=e=>{ e.preventDefault(); openMsgMenu(id); };
+      if(act==='quote'){
+        setReply(msg);
+      }else if(act==='copy'){
+        const t=msg.text||'';
+        if(navigator.clipboard?.writeText){ navigator.clipboard.writeText(t).catch(()=>{}); }
+      }else if(act==='edit'){
+        editMid=msg.id;
+        $('editInput').value=msg.text||'';
+        $('editModal').classList.add('active');
+      }else if(act==='revoke'){
+        updateMsg(msg.id,{recalled:true,text:''});
+      }else if(act==='hide'){
+        updateMsg(msg.id,{hidden:true});
+      }else if(act==='unhide'){
+        updateMsg(msg.id,{hidden:false});
+      }else if(act==='fav'){
+        addFav(msg);
+        alert('已收藏');
+      }else if(act==='multi'){
+        multiMode=true;
+        multiSet.clear();
+      }else if(act==='delete'){
+        removeMsg(msg.id);
+      }
 
-      const start=()=>{ if(selecting) return; pressTimer=setTimeout(()=>openMsgMenu(id),430); };
-      const clear=()=>{ if(pressTimer){clearTimeout(pressTimer); pressTimer=null;} };
-
-      el.addEventListener('touchstart',start,{passive:true});
-      el.addEventListener('touchend',clear);
-      el.addEventListener('touchmove',clear);
-      el.addEventListener('mousedown',start);
-      el.addEventListener('mouseup',clear);
-      el.addEventListener('mouseleave',clear);
-
-      el.addEventListener('click',e=>{
-        const ck=e.target.closest('.msg-check');
-        if(ck){
-          const m=ck.getAttribute('data-mid');
-          if(ck.checked) selectedSet.add(m); else selectedSet.delete(m);
-          return;
-        }
-        if(selecting){
-          if(selectedSet.has(id)) selectedSet.delete(id); else selectedSet.add(id);
-          renderChat();
-        }
-      });
-    });
-  }
-
-  function openMsgMenu(id){ activeMsgId=id; $('msgMenuMask').classList.add('active'); }
-  function closeMsgMenu(){ activeMsgId=null; $('msgMenuMask').classList.remove('active'); }
-
-  on('msgMenuMask','click',e=>{ if(e.target.id==='msgMenuMask') closeMsgMenu(); });
-  on('msgMenuCard','click',async e=>{
-    const btn=e.target.closest('[data-act]'); if(!btn) return;
-    const act=btn.getAttribute('data-act');
-    if(act==='close') return closeMsgMenu();
-
-    const ref=findMsgById(activeMsgId);
-    if(!ref.msg && act!=='multi'){ closeMsgMenu(); return; }
-
-    if(act==='quote'){ quoteDraft={id:ref.msg.id,text:ref.msg.text}; renderQuoteBar(); }
-    if(act==='copy'){ try{ await navigator.clipboard.writeText(ref.msg.text||''); }catch{} }
-    if(act==='delete'){ if(confirm('删除这条消息？')){ ref.arr.splice(ref.idx,1); setCurrentMessages(ref.arr); renderChat(); } }
-    if(act==='edit'){ $('msgEditor').dataset.mid=ref.msg.id; $('msgEditorTa').value=ref.msg.text||''; show('msgEditor'); }
-    if(act==='recall'){ ref.msg.text='[已撤回]'; ref.msg.recalled=true; ref.msg.hidden=true; setCurrentMessages(ref.arr); renderChat(); }
-    if(act==='fav'){ ref.msg.favorite=!ref.msg.favorite; setCurrentMessages(ref.arr); renderChat(); }
-    if(act==='hide'){ ref.msg.hidden=true; setCurrentMessages(ref.arr); renderChat(); }
-    if(act==='unhide'){ ref.msg.hidden=false; setCurrentMessages(ref.arr); renderChat(); }
-    if(act==='multi'){ selecting=true; selectedSet.clear(); $('multiBar').classList.add('active'); renderChat(); }
-    closeMsgMenu();
+      closeMsgSheet();
+      renderChat();
+    };
   });
 
-  on('multiCancelBtn','click',()=>{ selecting=false; selectedSet.clear(); $('multiBar').classList.remove('active'); renderChat(); });
-  on('multiAllBtn','click',()=>{
-    const pref=getPref();
-    const arr=getCurrentMessages().filter(m=>messageVisible(m,pref));
-    selectedSet = new Set(arr.map(m=>m.id));
+  $('cancelEditBtn').onclick=()=> $('editModal').classList.remove('active');
+  $('editModal').addEventListener('click',e=>{ if(e.target.id==='editModal') $('editModal').classList.remove('active'); });
+  $('saveEditBtn').onclick=()=>{
+    const t=clean($('editInput').value);
+    if(!editMid) return;
+    updateMsg(editMid,{text:t,recalled:false});
+    $('editModal').classList.remove('active');
     renderChat();
-  });
-  on('multiDelBtn','click',()=>{
-    if(!selectedSet.size) return;
-    if(!confirm(`删除已选 ${selectedSet.size} 条？`)) return;
-    setCurrentMessages(getCurrentMessages().filter(m=>!selectedSet.has(m.id)));
-    selectedSet.clear(); renderChat();
-  });
-  on('multiFavBtn','click',()=>{
-    if(!selectedSet.size) return;
-    const arr=getCurrentMessages(); arr.forEach(m=>{ if(selectedSet.has(m.id)) m.favorite=true; }); setCurrentMessages(arr); renderChat();
-  });
-  on('multiHideBtn','click',()=>{
-    if(!selectedSet.size) return;
-    const arr=getCurrentMessages(); arr.forEach(m=>{ if(selectedSet.has(m.id)) m.hidden=true; }); setCurrentMessages(arr); renderChat();
-  });
-  on('multiUnhideBtn','click',()=>{
-    if(!selectedSet.size) return;
-    const arr=getCurrentMessages(); arr.forEach(m=>{ if(selectedSet.has(m.id)) m.hidden=false; }); setCurrentMessages(arr); renderChat();
-  });
+  };
 
-  on('saveEditBtn','click',()=>{
-    const id=$('msgEditor').dataset.mid, txt=clean($('msgEditorTa').value);
-    const ref=findMsgById(id); if(ref.msg){ ref.msg.text=txt||ref.msg.text; setCurrentMessages(ref.arr); }
-    show('chatRoom'); renderChat();
-  });
+  $('multiAllBtn').onclick=()=>{
+    const map=getChats();
+    (map[currentId]||[]).forEach(m=>multiSet.add(m.id));
+    renderChat();
+  };
+  $('multiDelBtn').onclick=()=>{
+    const map=getChats();
+    map[currentId]=(map[currentId]||[]).filter(m=>!multiSet.has(m.id));
+    setChats(map);
+    multiMode=false; multiSet.clear();
+    renderChat();
+  };
+  $('multiHideBtn').onclick=()=>{
+    const map=getChats();
+    (map[currentId]||[]).forEach(m=>{ if(multiSet.has(m.id)) m.hidden=true; });
+    setChats(map);
+    multiMode=false; multiSet.clear();
+    renderChat();
+  };
+  $('multiUnhideBtn').onclick=()=>{
+    const map=getChats();
+    (map[currentId]||[]).forEach(m=>{ if(multiSet.has(m.id)) m.hidden=false; });
+    setChats(map);
+    multiMode=false; multiSet.clear();
+    renderChat();
+  };
+  $('multiFavBtn').onclick=()=>{
+    const map=getChats();
+    (map[currentId]||[]).forEach(m=>{ if(multiSet.has(m.id)) addFav(m); });
+    multiMode=false; multiSet.clear();
+    renderChat();
+    alert('已收藏');
+  };
+  $('multiCancelBtn').onclick=()=>{
+    multiMode=false; multiSet.clear();
+    renderChat();
+  };
 
   function clearCurrentChat(){
     if(!currentId) return;
     if(!confirm('清空当前聊天？')) return;
     const map=getChats(); map[currentId]=[]; setChats(map); renderChat();
   }
+
   function deleteCurrentContact(){
     if(!currentId) return;
     if(!confirm('删除当前好友及聊天记录？')) return;
-    setContacts(getContacts().filter(c=>c.id!==currentId));
-    const map=getChats(); delete map[currentId]; setChats(map);
-    currentId=null; renderContacts($('searchInput').value||''); show('wechat');
+    const arr=getContacts().filter(c=>c.id!==currentId);
+    setContacts(arr);
+
+    const map=getChats();
+    delete map[currentId];
+    setChats(map);
+
+    currentId=null;
+    renderContacts($('searchInput').value||'');
+    show('wechat');
   }
+
+  function resetInputH(){ $('chatInput').style.height='44px'; }
+  $('chatInput').addEventListener('input', ()=>{
+    const el=$('chatInput');
+    el.style.height='44px';
+    el.style.height=Math.min(el.scrollHeight,96)+'px';
+  });
 
   function pushUser(text){
     const map=getChats(); map[currentId]=map[currentId]||[];
     map[currentId].push({
-      id:mid(), role:'user', text, time:Date.now(), hidden:false, favorite:false, recalled:false,
-      quoteText: quoteDraft ? clean(quoteDraft.text).slice(0,120) : ''
+      id:uid(),
+      role:'user',
+      text,
+      quoteText: quoteMsg?.text ? String(quoteMsg.text).slice(0,120) : '',
+      time:Date.now(),
+      hidden:false,
+      recalled:false,
+      stored:true
     });
     setChats(map);
+    setReply(null);
   }
 
-  function resetInputH(){ $('chatInput').style.height='44px'; }
-  on('chatInput','input',()=>{
-    const el=$('chatInput'); el.style.height='44px'; el.style.height=Math.min(el.scrollHeight,96)+'px';
-  });
   function storeCurrentInput(){
     if(!currentId) return;
-    const t=clean($('chatInput').value); if(!t) return;
-    pushUser(t); quoteDraft=null; renderQuoteBar();
+    const t=clean($('chatInput').value);
+    if(!t) return;
+    pushUser(t);
     $('chatInput').value=''; resetInputH(); renderChat();
   }
-  on('storeBtn','click',storeCurrentInput);
+  $('storeBtn').onclick=storeCurrentInput;
 
-  function forceSplitByLen(text,len){ const out=[]; for(let i=0;i<text.length;i+=len) out.push(text.slice(i,i+len)); return out; }
+  function forceSplitByLen(text,len){
+    const out=[]; let i=0;
+    while(i<text.length){ out.push(text.slice(i,i+len)); i+=len; }
+    return out;
+  }
+
   function parseJsonMessages(text){
     const t=clean(text); if(!t) return null;
-    try{ const j=JSON.parse(t); if(Array.isArray(j?.messages)) return j.messages.map(x=>clean(x)).filter(Boolean);}catch{}
-    const m=t.match(/\{[\s\S]*\}/); if(m){ try{ const j=JSON.parse(m[0]); if(Array.isArray(j?.messages)) return j.messages.map(x=>clean(x)).filter(Boolean);}catch{} }
+    try{
+      const j=JSON.parse(t);
+      if(Array.isArray(j?.messages)) return j.messages.map(x=>clean(x)).filter(Boolean);
+    }catch{}
+    const m=t.match(/\{[\s\S]*\}/);
+    if(m){
+      try{
+        const j=JSON.parse(m[0]);
+        if(Array.isArray(j?.messages)) return j.messages.map(x=>clean(x)).filter(Boolean);
+      }catch{}
+    }
     return null;
   }
+
   function splitAiBubbles(raw){
     const txt=clean(raw); if(!txt) return ['...'];
-    const by=parseJsonMessages(txt);
-    if(by&&by.length){
-      const out=[]; by.forEach(s=> s.length>44 ? out.push(...forceSplitByLen(s,28)) : out.push(s));
+    const byJson=parseJsonMessages(txt);
+    if(byJson && byJson.length){
+      const out=[];
+      for(const s of byJson){
+        if(s.length>44) out.push(...forceSplitByLen(s,28));
+        else out.push(s);
+      }
       return out.filter(Boolean);
     }
-    const segs=(txt.match(/[^。！？!?；;，,\n]+[。！？!?；;，,]?/g)||[txt]).map(x=>clean(x)).filter(Boolean);
-    const out=[]; let buf='';
-    segs.forEach(s=>{
-      if(s.length>40){ if(buf){out.push(buf); buf='';} out.push(...forceSplitByLen(s,28)); return; }
-      if((buf+s).length<=34) buf+=s; else { if(buf) out.push(buf); buf=s; }
-    });
-    if(buf) out.push(buf);
-    return out.length?out:[txt];
-  }
-  function enforceCountRange(parts,min,max){
-    let arr=[...(parts||[])].filter(Boolean); min=Math.max(1,min); max=Math.max(min,max);
-    while(arr.length<min){
-      const i=arr.findIndex(x=>x.length>12); if(i<0) break;
-      const x=arr[i], p=Math.floor(x.length/2); arr.splice(i,1,clean(x.slice(0,p)),clean(x.slice(p))); arr=arr.filter(Boolean);
+
+    const normalized=txt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
+    const blocks=normalized.split(/\n{2,}/).filter(Boolean);
+    const pieces=[];
+    for(const block of blocks){
+      const segs=block.match(/[^。！？!?；;，,\n]+[。！？!?；;，,]?/g)||[block];
+      let buf='';
+      for(let seg of segs){
+        seg=seg.trim(); if(!seg) continue;
+        if(seg.length>40){
+          if(buf){ pieces.push(buf); buf=''; }
+          pieces.push(...forceSplitByLen(seg,28));
+          continue;
+        }
+        if((buf+seg).length<=34) buf+=seg;
+        else { if(buf) pieces.push(buf); buf=seg; }
+      }
+      if(buf) pieces.push(buf);
     }
-    while(arr.length>max){ const l=arr.pop(); arr[arr.length-1]=clean((arr[arr.length-1]||'')+' '+l); }
+    return pieces.filter(Boolean).length ? pieces.filter(Boolean) : [txt];
+  }
+
+  function enforceCountRange(parts,min,max){
+    let arr=[...(parts||[])].filter(Boolean);
+    min=Math.max(1,min); max=Math.max(min,max);
+    while(arr.length<min){
+      const idx=arr.findIndex(x=>x.length>12);
+      if(idx<0) break;
+      const one=arr[idx], mid=Math.floor(one.length/2);
+      const a=clean(one.slice(0,mid)), b=clean(one.slice(mid));
+      arr.splice(idx,1,...[a,b].filter(Boolean));
+    }
+    while(arr.length>max){
+      const last=arr.pop();
+      arr[arr.length-1]=clean((arr[arr.length-1]||'')+' '+last);
+    }
     return arr.filter(Boolean);
   }
 
   async function emitAiSequential(parts,map,targetId,mode){
     for(let i=0;i<parts.length;i++){
       map[targetId]=map[targetId]||[];
-      map[targetId].push({id:mid(),role:'assistant',text:parts[i],time:Date.now(),hidden:false,favorite:false,recalled:false});
-      setChats(map); if(currentId===targetId) renderChat();
+      map[targetId].push({
+        id:uid(),
+        role:'assistant',
+        text:parts[i],
+        quoteText:'',
+        time:Date.now(),
+        hidden:false,
+        recalled:false
+      });
+      setChats(map);
+      if(currentId===targetId) renderChat();
 
       const len=parts[i]?.length||10;
       const delay = mode==='offline'
@@ -977,30 +1343,29 @@
     }
   }
 
-  // ---------- API ----------
+  // API
   function getApiState(){
-    return getJ(K_API,{ current:'默认', presets:{'默认':{base:'',key:'',model:'gpt-4o-mini',temp:0.8}} });
+    return getJ(K_API,{
+      current:'默认',
+      presets:{'默认':{base:'',key:'',model:'gpt-4o-mini',temp:0.8}}
+    });
   }
-  function setApiState(v){ setJ(K_API,v); }
+  function setApiState(v){setJ(K_API,v);}
   function refreshPresetUI(){
     const s=getApiState();
-    const names=Object.keys(s.presets||{});
+    const names=Object.keys(s.presets);
     $('apiPresetSelect').innerHTML=names.map(n=>`<option ${n===s.current?'selected':''}>${n}</option>`).join('');
     loadApiForm();
   }
-
   function loadApiForm(){
-    const s=getApiState();
-    const c=s.presets[s.current]||{};
+    const s=getApiState(), c=s.presets[s.current];
     $('apiBase').value=c.base||'';
     $('apiKey').value=c.key||'';
-    $('apiTemp').value=(c.temp??0.8);
+    $('apiTemp').value=c.temp??0.8;
     $('apiModel').innerHTML=`<option value="${c.model||'gpt-4o-mini'}">${c.model||'gpt-4o-mini'}</option>`;
   }
-
   function saveApiForm(){
     const s=getApiState();
-    if(!s.presets[s.current]) s.presets[s.current]={};
     s.presets[s.current]={
       base:clean($('apiBase').value),
       key:clean($('apiKey').value),
@@ -1008,45 +1373,36 @@
       temp:Number($('apiTemp').value||0.8)
     };
     setApiState(s);
-    if($('apiStatus')) $('apiStatus').textContent='状态：已保存';
+    $('apiStatus').textContent='状态：已保存';
     return s.presets[s.current];
   }
 
-  on('apiPresetSelect','change',e=>{
+  $('apiPresetSelect').onchange=e=>{
     const s=getApiState();
-    if(!s.presets[s.current]) s.presets[s.current]={};
     s.presets[s.current]={
       base:clean($('apiBase').value),
       key:clean($('apiKey').value),
       model:clean($('apiModel').value)||'gpt-4o-mini',
       temp:Number($('apiTemp').value||0.8)
     };
-    s.current=e.target.value;
-    setApiState(s);
-    loadApiForm();
-  });
-
-  on('newPresetBtn','click',()=>{
+    s.current=e.target.value; setApiState(s); loadApiForm();
+  };
+  $('newPresetBtn').onclick=()=>{
     const name=(prompt('新预设名：')||'').trim();
     if(!name) return;
     const s=getApiState();
     if(s.presets[name]) return alert('预设已存在');
     s.presets[name]={base:'',key:'',model:'gpt-4o-mini',temp:0.8};
-    s.current=name;
-    setApiState(s);
-    refreshPresetUI();
-  });
-
-  on('delPresetBtn','click',()=>{
-    const s=getApiState();
-    const names=Object.keys(s.presets||{});
+    s.current=name; setApiState(s); refreshPresetUI();
+  };
+  $('delPresetBtn').onclick=()=>{
+    const s=getApiState(), names=Object.keys(s.presets);
     if(names.length<=1) return alert('至少保留一个预设');
     if(!confirm('删除当前预设？')) return;
     delete s.presets[s.current];
     s.current=Object.keys(s.presets)[0];
-    setApiState(s);
-    refreshPresetUI();
-  });
+    setApiState(s); refreshPresetUI();
+  };
 
   function buildUrl(base,path){
     const b=(base||'').replace(/\/+$/,'');
@@ -1061,15 +1417,8 @@
 
     const r=await fetch(url,{
       method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'Authorization':'Bearer '+cfg.key
-      },
-      body:JSON.stringify({
-        model:cfg.model,
-        temperature:cfg.temp,
-        messages
-      })
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.key},
+      body:JSON.stringify({model:cfg.model,temperature:cfg.temp,messages})
     });
 
     const ct=(r.headers.get('content-type')||'').toLowerCase();
@@ -1091,15 +1440,12 @@
       const c=saveApiForm();
       if(!c.base||!c.key) throw new Error('请先配置 Base URL 和 API Key');
       $('apiStatus').textContent='状态：拉取模型中...';
-
       const url=buildUrl(c.base,'/v1/models');
       const r=await fetch(url,{headers:{'Authorization':'Bearer '+c.key}});
       const data=await r.json().catch(()=>({}));
-
-      if(!r.ok) throw new Error(data?.error?.message||('HTTP '+r.status));
+      if(!r.ok) throw new Error(data?.error?.message || ('HTTP '+r.status));
       const list=(data.data||[]).map(x=>x.id).filter(Boolean);
       if(!list.length) throw new Error('未返回模型列表');
-
       $('apiModel').innerHTML=list.map(m=>`<option>${m}</option>`).join('');
       if(list.includes(c.model)) $('apiModel').value=c.model;
       $('apiStatus').textContent='状态：模型拉取成功（'+list.length+'）';
@@ -1107,7 +1453,6 @@
       $('apiStatus').textContent='状态：拉取失败 -> '+e.message;
     }
   }
-
   async function testApi(){
     try{
       $('apiStatus').textContent='状态：测试中...';
@@ -1117,16 +1462,14 @@
       $('apiStatus').textContent='状态：失败 -> '+e.message;
     }
   }
-
-  on('saveApiBtn','click',saveApiForm);
-  on('fetchModelsBtn','click',fetchModels);
-  on('testApiBtn','click',testApi);
+  $('saveApiBtn').onclick=saveApiForm;
+  $('fetchModelsBtn').onclick=fetchModels;
+  $('testApiBtn').onclick=testApi;
 
   function buildOnlineSystem(c,me,st){
     const rangeRule = st.onlineStyle==='range'
       ? `本次回复 ${st.onlineMin}-${st.onlineMax} 条消息。`
       : `本次条数由你根据语境自由发挥。`;
-
     return [
       `你正在扮演：${c?.name||'聊天对象'}`,
       `对方名称：${me?.name||'我'}`,
@@ -1136,6 +1479,7 @@
       `你的人设：${c?.persona||'自然聊天'}`,
       `目标：像真实聊天，贴合人设，不要客服腔。`,
       `内容多时必须拆成多条，单条不要太长。`,
+      `不要输出markdown，不要解释规则。`,
       `只输出JSON：{"messages":["...","..."]}`,
       rangeRule
     ].join('\n');
@@ -1154,7 +1498,7 @@
       `【状态栏】`,
       `时间｜地点｜天气｜氛围｜关系进度`,
       `【正文】`,
-      `（沉浸叙事 + 动作细节 + 对话）`,
+      `（沉浸叙事 + 动作细节 + 对话，不要大白话，不要总结腔）`,
       `只输出这一条，不要JSON，不要额外说明。`
     ].join('\n');
   }
@@ -1169,25 +1513,27 @@
     const t=clean($('chatInput').value);
     if(t) pushUser(t);
 
-    quoteDraft=null;
-    renderQuoteBar();
-    $('chatInput').value='';
-    resetInputH();
+    $('chatInput').value=''; resetInputH();
     if(currentId===chatId) renderChat();
 
     const map=getChats();
-    const hist=(map[chatId]||[]).filter(x=>x.text && !x.hidden && !x.recalled).slice(-40);
+    const hist=(map[chatId]||[])
+      .filter(x=>x.text && !x.hidden && !x.recalled)
+      .slice(-60);
+
     if(!hist.length) return;
 
     setTyping(chatId,true);
 
     try{
-      const system=st.mode==='offline' ? buildOfflineSystem(c,me,st) : buildOnlineSystem(c,me,st);
+      const system = st.mode==='offline' ? buildOfflineSystem(c,me,st) : buildOnlineSystem(c,me,st);
       const messages=[
         {role:'system',content:system},
-        ...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:x.text}))
+        ...hist.map(x=>{
+          const content = x.quoteText ? `（引用：${x.quoteText}）\n${x.text}` : x.text;
+          return {role:x.role==='user'?'user':'assistant',content};
+        })
       ];
-
       const out=await callApi(messages);
 
       let parts=[];
@@ -1211,8 +1557,13 @@
     }catch(e){
       map[chatId]=map[chatId]||[];
       map[chatId].push({
-        id:mid(),role:'assistant',text:'请求失败：'+clean(e.message),time:Date.now(),
-        hidden:false,favorite:false,recalled:false
+        id:uid(),
+        role:'assistant',
+        text:'请求失败：'+clean(e.message),
+        quoteText:'',
+        time:Date.now(),
+        hidden:false,
+        recalled:false
       });
       setChats(map);
       if(currentId===chatId) renderChat();
@@ -1221,21 +1572,21 @@
     }
   }
 
-  on('sendBtn','click',sendMsg);
-  on('chatInput','keydown',e=>{
+  $('sendBtn').onclick=sendMsg;
+  $('chatInput').addEventListener('keydown',e=>{
     if(e.key==='Enter' && !e.shiftKey){
       e.preventDefault();
-      if(e.ctrlKey||e.metaKey) sendMsg();
+      if(e.ctrlKey || e.metaKey) sendMsg();
       else storeCurrentInput();
     }
   });
 
-  // 设置页
+  // setting full page
   function refreshSettingUI(){
     const mode=$('replyModeSelect').value;
-    $('onlineSettingCard').classList.toggle('hidden', mode!=='online');
-    $('offlineSettingCard').classList.toggle('hidden', mode!=='offline');
-    $('onlineRangeBox').classList.toggle('hidden', !(mode==='online' && $('onlineStyleSelect').value==='range'));
+    $('onlineSettingCard').style.display = mode==='online' ? '' : 'none';
+    $('offlineSettingCard').style.display = mode==='offline' ? '' : 'none';
+    $('onlineRangeBox').style.display = (mode==='online' && $('onlineStyleSelect').value==='range') ? '' : 'none';
   }
 
   function openChatSettingPage(){
@@ -1261,27 +1612,26 @@
     $('offlineMaxInput').value=st.offlineMax;
 
     $('showTsSwitch').checked=!!p.showTs;
-    $('showHiddenSwitch').checked=!!p.showHidden;
     $('bubbleCssInput').value=p.bubbleCss||'';
 
     refreshSettingUI();
     show('chatSetting');
   }
 
-  on('chatSettingBtn','click',openChatSettingPage);
-  on('replyModeSelect','change',refreshSettingUI);
-  on('onlineStyleSelect','change',refreshSettingUI);
+  $('chatSettingBtn').onclick=openChatSettingPage;
+  $('replyModeSelect').onchange=refreshSettingUI;
+  $('onlineStyleSelect').onchange=refreshSettingUI;
 
-  on('saveChatSettingBtn','click',()=>{
+  $('saveChatSettingBtn').onclick=()=>{
     if(!currentId) return;
     try{
       const me=getMe();
-      const mode=$('replyModeSelect').value==='offline'?'offline':'online';
-      const onlineStyle=$('onlineStyleSelect').value==='range'?'range':'free';
-      const onlineMin=Math.max(1,Number($('onlineMinInput').value||2));
-      const onlineMax=Math.max(onlineMin,Number($('onlineMaxInput').value||6));
-      const offlineMin=Math.max(80,Number($('offlineMinInput').value||220));
-      const offlineMax=Math.max(offlineMin,Number($('offlineMaxInput').value||420));
+      const mode = $('replyModeSelect').value==='offline'?'offline':'online';
+      const onlineStyle = $('onlineStyleSelect').value==='range'?'range':'free';
+      const onlineMin=Math.max(1, Number($('onlineMinInput').value||2));
+      const onlineMax=Math.max(onlineMin, Number($('onlineMaxInput').value||6));
+      const offlineMin=Math.max(80, Number($('offlineMinInput').value||220));
+      const offlineMax=Math.max(offlineMin, Number($('offlineMaxInput').value||420));
 
       setMe({
         ...me,
@@ -1299,12 +1649,13 @@
 
       const p=getPref();
       p.showTs=!!$('showTsSwitch').checked;
-      p.showHidden=!!$('showHiddenSwitch').checked;
       p.bubbleCss=String($('bubbleCssInput').value||'');
       setPref(p);
       applyBubbleCss();
 
-      $('chatTitle').textContent=getContactById(currentId)?.name||'聊天';
+      const now=getContactById(currentId);
+      $('chatTitle').textContent=now?.name||'聊天';
+
       applyModeUI();
       renderChat();
       renderContacts($('searchInput').value||'');
@@ -1312,44 +1663,31 @@
     }catch{
       alert('保存失败：存储空间不足');
     }
-  });
+  };
 
-  on('clearChatBtn2','click',clearCurrentChat);
-  on('deleteContactBtn','click',deleteCurrentContact);
+  $('clearChatBtn2').onclick=clearCurrentChat;
+  $('deleteContactBtn').onclick=deleteCurrentContact;
+  $('openFavBtn').onclick=()=>{
+    renderFavList();
+    show('favorites');
+  };
+  $('favSearchInput').oninput=(e)=>renderFavList(e.target.value||'');
+  $('clearFavBtn').onclick=()=>{
+    if(!confirm('清空收藏夹？')) return;
+    setFavs([]);
+    renderFavList();
+  };
 
-  // 收藏夹
-  function renderFav(){
-    const all=[], nameMap={};
-    getContacts().forEach(c=>nameMap[c.id]=c.name);
-    const map=getChats();
-    Object.keys(map).forEach(cid=>{
-      (map[cid]||[]).forEach(m=>{ if(m.favorite) all.push({cid,name:nameMap[cid]||'聊天',...m}); });
-    });
-    all.sort((a,b)=>(b.time||0)-(a.time||0));
-    $('favList').innerHTML=all.map(x=>`
-      <div class="item" style="align-items:flex-start;">
-        <div class="main" onclick="openChat('${x.cid}')">
-          <div class="name">${esc(x.name)}</div>
-          <div class="preview" style="white-space:normal;">${esc(x.text)}</div>
-          <div class="t" style="margin-top:6px;">${fmtTs(x.time)}</div>
-        </div>
-      </div>
-    `).join('') || `<div class="card small">暂无收藏</div>`;
-  }
-
-  on('favOpenBtn','click',()=>{ renderFav(); show('favScreen'); });
-  on('clearFavBtn','click',()=>{
-    if(!confirm('清空全部收藏标记？')) return;
-    const map=getChats();
-    Object.keys(map).forEach(cid=>(map[cid]||[]).forEach(m=>m.favorite=false));
-    setChats(map);
-    renderFav();
-  });
-
-  // 导入导出
-  on('exportBtn','click',()=>{
+  // import/export
+  $('exportBtn').onclick=()=>{
     const data={
-      contacts:getContacts(), chats:getChats(), api:getApiState(), me:getMe(), pref:getPref(), ts:Date.now()
+      contacts:getContacts(),
+      chats:getChats(),
+      api:getApiState(),
+      me:getMe(),
+      pref:getPref(),
+      favs:getFavs(),
+      ts:Date.now()
     };
     const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
     const a=document.createElement('a');
@@ -1357,10 +1695,10 @@
     a.download='xiaoshouji_backup_'+Date.now()+'.json';
     a.click();
     URL.revokeObjectURL(a.href);
-  });
+  };
 
-  on('importBtn','click',()=> $('importFile').click());
-  on('importFile','change',async e=>{
+  $('importBtn').onclick=()=> $('importFile').click();
+  $('importFile').onchange=async e=>{
     const f=e.target.files?.[0]; if(!f) return;
     try{
       const txt=await f.text();
@@ -1370,6 +1708,11 @@
       if(j.api) setApiState(j.api);
       if(j.me) setMe(j.me);
       if(j.pref) setPref(j.pref);
+      if(j.favs) setFavs(j.favs);
+
+      const map=getChats();
+      ensureMsgIds(map);
+
       applyBubbleCss();
       refreshPresetUI();
       renderContacts($('searchInput').value||'');
@@ -1380,14 +1723,26 @@
     }finally{
       e.target.value='';
     }
-  });
+  };
 
-  // 初始
+  // API init events
+  function getApiState(){
+    return getJ(K_API,{
+      current:'默认',
+      presets:{'默认':{base:'',key:'',model:'gpt-4o-mini',temp:0.8}}
+    });
+  }
+
+  $('saveApiBtn').onclick=saveApiForm;
+  $('fetchModelsBtn').onclick=fetchModels;
+  $('testApiBtn').onclick=testApi;
+
+  // init
   applyBubbleCss();
   refreshPresetUI();
   renderContacts();
+  ensureMsgIds(getChats());
 })();
-
 </script>
 </body>
 </html>
