@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>小手机 v1.4.3 稳定</title>
+  <title>小手机 v1.4.4 稳定</title>
   <style>
     :root{
       --safe-top: env(safe-area-inset-top, 0px);
@@ -279,26 +279,30 @@
     }
     .icon-btn:active{transform:translateY(1px)}
 
-    /* 线下模式 */
+    /* 线下模式（更贴边） */
     #chatRoom.offline #chatMsgs{
       background:
         radial-gradient(120% 80% at 20% 0%, rgba(255,255,255,.58), rgba(255,255,255,0) 45%),
         linear-gradient(180deg,#f8f2e9,#f2e9dc 55%,#eee3d4);
-      padding:10px;
-      gap:12px;
+      padding:6px !important;
+      gap:10px;
     }
     .msg-block{
-      display:flex;flex-direction:column;gap:7px;width:100%;
+      display:flex;flex-direction:column;gap:6px;width:100%;
     }
-    .msg-block.ai{align-items:flex-start}
-    .msg-block.me{align-items:flex-end}
+    .msg-block.ai,.msg-block.me{align-items:stretch !important}
     #chatRoom.offline .chat-avatar{
       width:42px;height:42px;border-radius:12px;
+      align-self:flex-start;
+    }
+    #chatRoom.offline .bubble-wrap{
+      width:100% !important;
+      max-width:100% !important;
     }
     #chatRoom.offline .bubble,
     #chatRoom.offline .offline-card{
-      width:calc(100% - 8px);
-      max-width:calc(100% - 8px);
+      width:100% !important;
+      max-width:100% !important;
     }
     #chatRoom.offline .bubble{
       border-radius:14px;line-height:1.62;
@@ -327,7 +331,6 @@
       line-height:1.68;
     }
 
-    /* modal */
     .modal{
       position:absolute;inset:0;background:rgba(0,0,0,.35);
       display:none;place-items:center;z-index:99;padding:12px;
@@ -570,11 +573,72 @@
   let typingForId=null;
 
   const $ = id => document.getElementById(id);
-  const getJ=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d));}catch{return d;}};
-  const setJ=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-  const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
   const clean=s=>String(s||'').replace(/[\u0000-\u001F\u007F\uFFFD]/g,'').trim();
+  const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+  function getJ(k,d){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d));}catch{return d;}}
+
+  function isQuotaErr(e){
+    const n = (e && e.name) || '';
+    const m = (e && e.message) || '';
+    return n === 'QuotaExceededError' || n === 'NS_ERROR_DOM_QUOTA_REACHED' || /quota|exceeded/i.test(m);
+  }
+
+  function trimChatsForSpace(map, keepMsg=18, maxLen=260){
+    const out={};
+    Object.keys(map||{}).forEach(id=>{
+      const arr = Array.isArray(map[id]) ? map[id] : [];
+      out[id] = arr.slice(-keepMsg).map(m=>({
+        role:m.role,
+        text:String(m.text||'').slice(0,maxLen),
+        time:m.time||Date.now()
+      }));
+    });
+    return out;
+  }
+
+  function stripDataAvatar(v){
+    if(!v) return v;
+    if(typeof v.avatar==='string' && v.avatar.startsWith('data:image/')) v.avatar='';
+    return v;
+  }
+
+  function setJ(k,v){
+    const write = (val)=>localStorage.setItem(k, JSON.stringify(val));
+    try{
+      write(v);
+      return;
+    }catch(e){
+      if(!isQuotaErr(e)) throw e;
+    }
+
+    try{
+      const c1 = trimChatsForSpace(getJ(K_CHAT,{}), 16, 220);
+      localStorage.setItem(K_CHAT, JSON.stringify(c1));
+      write(v);
+      return;
+    }catch(e2){
+      if(!isQuotaErr(e2)) throw e2;
+    }
+
+    try{
+      const contacts = (getJ(K_CONTACT,[])||[]).map(x=>stripDataAvatar({...x}));
+      localStorage.setItem(K_CONTACT, JSON.stringify(contacts));
+
+      const me = stripDataAvatar({...getJ(K_ME,{name:'我',avatar:'',persona:'',note:''})});
+      localStorage.setItem(K_ME, JSON.stringify(me));
+
+      write(v);
+      return;
+    }catch(e3){
+      if(!isQuotaErr(e3)) throw e3;
+    }
+
+    const c2 = trimChatsForSpace(getJ(K_CHAT,{}), 8, 140);
+    localStorage.setItem(K_CHAT, JSON.stringify(c2));
+    write(v);
+  }
 
   function normSettings(s={}){
     const o={...DEFAULT_CHAT_SETTINGS,...(s||{})};
@@ -587,9 +651,7 @@
     return o;
   }
 
-  function getPref(){
-    return getJ(K_PREF,{showTs:false,bubbleCss:''});
-  }
+  function getPref(){ return getJ(K_PREF,{showTs:false,bubbleCss:''}); }
   function setPref(v){ setJ(K_PREF,v); }
   function applyBubbleCss(){
     const p=getPref();
@@ -663,7 +725,7 @@
     createAvatar=''; $('newAvatarPreview').classList.add('hidden'); $('newAvatarPreview').src='';
   }
 
-  function compressImage(file,maxSide=260,quality=0.5){
+  function compressImage(file,maxSide=180,quality=0.42){
     return new Promise((resolve,reject)=>{
       const fr=new FileReader();
       fr.onload=()=>{
@@ -672,12 +734,18 @@
           let w=img.width,h=img.height;
           const s=Math.min(1,maxSide/Math.max(w,h));
           w=Math.round(w*s); h=Math.round(h*s);
+
           const c=document.createElement('canvas');
           c.width=w; c.height=h;
           c.getContext('2d').drawImage(img,0,0,w,h);
+
           let out='';
-          try{ out=c.toDataURL('image/webp',quality);}catch(e){}
+          try{ out=c.toDataURL('image/webp',quality); }catch(e){}
           if(!out || out.startsWith('data:,')) out=c.toDataURL('image/jpeg',quality);
+
+          if(out.length > 120000){
+            out=c.toDataURL('image/jpeg',0.32);
+          }
           resolve(out);
         };
         img.onerror=reject; img.src=fr.result;
@@ -702,7 +770,11 @@
       persona,
       settings:{...DEFAULT_CHAT_SETTINGS}
     });
-    try{ setContacts(arr); } catch{ return alert('保存失败：存储空间不足'); }
+    try{
+      setContacts(arr);
+    }catch{
+      return alert('保存失败：存储空间不足（已自动瘦身，仍不足）');
+    }
 
     renderContacts($('searchInput').value||'');
     closeCreateModal();
@@ -716,7 +788,7 @@
   $('pickAvatarBtn').onclick=()=> $('newAvatarFile').click();
   $('newAvatarFile').onchange=async e=>{
     const f=e.target.files?.[0]; if(!f) return;
-    createAvatar=await compressImage(f,260,0.5);
+    createAvatar=await compressImage(f,180,0.42);
     $('newAvatarPreview').src=createAvatar;
     $('newAvatarPreview').classList.remove('hidden');
     e.target.value='';
@@ -1212,42 +1284,45 @@
 
   $('saveChatSettingBtn').onclick=()=>{
     if(!currentId) return;
+    try{
+      const me=getMe();
+      const mode = $('replyModeSelect').value==='offline'?'offline':'online';
+      const onlineStyle = $('onlineStyleSelect').value==='range'?'range':'free';
+      const onlineMin=Math.max(1, Number($('onlineMinInput').value||2));
+      const onlineMax=Math.max(onlineMin, Number($('onlineMaxInput').value||6));
+      const offlineMin=Math.max(80, Number($('offlineMinInput').value||220));
+      const offlineMax=Math.max(offlineMin, Number($('offlineMaxInput').value||420));
 
-    const me=getMe();
-    const mode = $('replyModeSelect').value==='offline'?'offline':'online';
-    const onlineStyle = $('onlineStyleSelect').value==='range'?'range':'free';
-    const onlineMin=Math.max(1, Number($('onlineMinInput').value||2));
-    const onlineMax=Math.max(onlineMin, Number($('onlineMaxInput').value||6));
-    const offlineMin=Math.max(80, Number($('offlineMinInput').value||220));
-    const offlineMax=Math.max(offlineMin, Number($('offlineMaxInput').value||420));
+      setMe({
+        ...me,
+        name:clean($('meNameInput').value)||'我',
+        note:clean($('meNoteInput').value),
+        persona:clean($('mePersonaInput').value)
+      });
 
-    setMe({
-      ...me,
-      name:clean($('meNameInput').value)||'我',
-      note:clean($('meNoteInput').value),
-      persona:clean($('mePersonaInput').value)
-    });
+      updateContact(currentId,{
+        name:clean($('roleNameInput').value)||'聊天对象',
+        note:clean($('roleNoteInput').value),
+        persona:clean($('rolePersonaInput').value),
+        settings:normSettings({mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax})
+      });
 
-    updateContact(currentId,{
-      name:clean($('roleNameInput').value)||'聊天对象',
-      note:clean($('roleNoteInput').value),
-      persona:clean($('rolePersonaInput').value),
-      settings:normSettings({mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax})
-    });
+      const p=getPref();
+      p.showTs=!!$('showTsSwitch').checked;
+      p.bubbleCss=String($('bubbleCssInput').value||'');
+      setPref(p);
+      applyBubbleCss();
 
-    const p=getPref();
-    p.showTs=!!$('showTsSwitch').checked;
-    p.bubbleCss=String($('bubbleCssInput').value||'');
-    setPref(p);
-    applyBubbleCss();
+      const now=getContactById(currentId);
+      $('chatTitle').textContent=now?.name||'聊天';
 
-    const now=getContactById(currentId);
-    $('chatTitle').textContent=now?.name||'聊天';
-
-    applyModeUI();
-    renderChat();
-    renderContacts($('searchInput').value||'');
-    show('chatRoom');
+      applyModeUI();
+      renderChat();
+      renderContacts($('searchInput').value||'');
+      show('chatRoom');
+    }catch{
+      alert('保存失败：存储空间不足（已自动压缩，仍不足）');
+    }
   };
 
   $('clearChatBtn2').onclick=clearCurrentChat;
@@ -1294,22 +1369,10 @@
     }
   };
 
-  // API preset
-  function getApiState(){
-    return getJ(K_API,{
-      current:'默认',
-      presets:{'默认':{base:'',key:'',model:'gpt-4o-mini',temp:0.8}}
-    });
-  }
-  function setApiState(v){setJ(K_API,v);}
-
   // init
   applyBubbleCss();
   refreshPresetUI();
   renderContacts();
-
-  // expose
-  window.openChat=window.openChat;
 })();
 </script>
 </body>
