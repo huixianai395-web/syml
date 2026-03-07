@@ -236,30 +236,24 @@
     }
 
     /* 储存键：风铃风（克制高级） */
-   /* 把你现在的 .btn.store / .btn.store::before / .btn.store::after 整段替换成这个 */
+ /* 替换你当前这段：.btn.store / .btn.store::before / .btn.store::after */
 
 .btn.store{
   width:40px;
   height:40px;
   padding:0;
+  border:none;
   border-radius:12px;
   position:relative;
   overflow:hidden;
-  border:1px solid #dbe3f3;
   background:
-    radial-gradient(120% 120% at 20% 10%, rgba(255,255,255,.96) 0%, rgba(255,255,255,.62) 36%, rgba(240,245,255,.88) 100%),
-    linear-gradient(180deg,#fafcff 0%,#eef3ff 100%);
+    linear-gradient(180deg, rgba(255,255,255,.92), rgba(238,244,255,.88));
+  border:1px solid #d9e3f4;
   box-shadow:
-    0 2px 8px rgba(53,78,133,.14),
-    inset 0 1px 0 rgba(255,255,255,.96);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  font-size:0;
-  transition:
-    transform .12s ease,
-    box-shadow .2s ease,
-    border-color .2s ease,
-    background .2s ease;
+    0 3px 10px rgba(60,88,145,.14),
+    inset 0 1px 0 rgba(255,255,255,.95);
+  transition:all .18s ease;
+  font-size:0; /* 保证无文字显示 */
 }
 
 .btn.store::before{
@@ -267,35 +261,38 @@
   position:absolute;
   inset:1px;
   border-radius:11px;
-  border:1px solid rgba(255,255,255,.55);
+  border:1px solid rgba(255,255,255,.62);
   pointer-events:none;
 }
 
 .btn.store::after{
-  content:"存";
+  content:"";
   position:absolute;
-  inset:0;
-  display:grid;
-  place-items:center;
-  font-size:12px;
-  font-weight:700;
-  letter-spacing:.5px;
-  color:#5b6f98;
-  text-shadow:0 1px 0 rgba(255,255,255,.8);
+  left:50%;
+  top:50%;
+  width:16px;
+  height:16px;
+  transform:translate(-50%,-50%);
+  border-radius:999px;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(255,255,255,.95) 0 28%, rgba(165,184,221,.7) 29% 40%, transparent 41%),
+    linear-gradient(180deg, rgba(96,121,170,.72), rgba(96,121,170,.18));
+  clip-path: polygon(46% 0,54% 0,54% 45%,70% 82%,30% 82%,46% 45%);
+  opacity:.9;
 }
 
 .btn.store:hover{
-  border-color:#cfdaf0;
+  border-color:#ccd8ef;
   box-shadow:
-    0 4px 12px rgba(53,78,133,.18),
+    0 5px 14px rgba(60,88,145,.18),
     inset 0 1px 0 rgba(255,255,255,.98);
 }
 
 .btn.store:active{
   transform:translateY(1px) scale(.98);
   box-shadow:
-    0 2px 6px rgba(53,78,133,.12),
-    inset 0 1px 0 rgba(255,255,255,.92);
+    0 2px 7px rgba(60,88,145,.12),
+    inset 0 1px 0 rgba(255,255,255,.9);
 }
     .btn.store:active{transform:translateY(1px)}
 
