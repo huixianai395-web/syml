@@ -368,10 +368,8 @@
 }
 
 #chatRoom:not(.offline) .msg-row .bubble-wrap{
-  max-width: min(76%, 304px);transform: 
+  max-width: min(76%, 304px);margin-top: -2px; /* 线上气泡微微上提 */
 }
-}
-
 #chatRoom:not(.offline) .bubble{
   padding: 9px 12px;
   border-radius: 12px;
@@ -685,7 +683,7 @@
 
   const $ = id => document.getElementById(id);
   const clean=s=>String(s||'').replace(/[\u0000-\u001F\u007F\uFFFD]/g,'').trim();
-  const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+  const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({ '&':'&','<':'<','>':'>','"':'"',"'":''' }[m]));
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
   function getJ(k,d){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d));}catch{return d;}}
@@ -1095,6 +1093,7 @@
     }
     return pieces.filter(Boolean).length ? pieces.filter(Boolean) : [txt];
   }
+
   function enforceCountRange(parts,min,max){
     let arr=[...(parts||[])].filter(Boolean);
     min=Math.max(1,min); max=Math.max(min,max);
@@ -1111,6 +1110,47 @@
       arr[arr.length-1]=clean((arr[arr.length-1]||'')+' '+last);
     }
     return arr.filter(Boolean);
+  }
+
+  // ===== 新增：线下正文自动自然分段（非固定句数）=====
+  function autoParagraphBody(text){
+    const t = clean(String(text||'').replace(/\r/g,''));
+    if(!t) return '';
+
+    // 已有换行就保留，只压缩多余空行
+    if(/\n/.test(t)) return t.replace(/\n{3,}/g, '\n\n');
+
+    // 无换行：按语义标点自然断段
+    const segs = t.match(/[^。！？!?；;：:\n]+[。！？!?；;：:]?/g) || [t];
+    const out = [];
+    let buf = '';
+    const minLen = 42;
+    const maxLen = 88;
+
+    for(let s of segs){
+      s = clean(s);
+      if(!s) continue;
+      buf += s;
+
+      const endPunc = /[。！？!?；;：:]$/.test(buf);
+      if((buf.length >= minLen && endPunc) || buf.length >= maxLen){
+        out.push(buf);
+        buf = '';
+      }
+    }
+    if(buf) out.push(buf);
+
+    return out.join('\n\n');
+  }
+
+  function beautifyOfflineReply(raw){
+    const txt = clean(raw);
+    const m = txt.match(/【状态栏】\s*([\s\S]*?)\s*【正文】\s*([\s\S]*)/);
+    if(!m) return txt;
+
+    const state = clean(m[1]);
+    const body  = autoParagraphBody(m[2]);
+    return `【状态栏】\n${state}\n【正文】\n${body}`;
   }
 
   async function emitAiSequential(parts,map,targetId,mode){
@@ -1238,6 +1278,7 @@
       $('apiStatus').textContent='状态：拉取失败 -> '+e.message;
     }
   }
+
   async function testApi(){
     try{
       $('apiStatus').textContent='状态：测试中...';
@@ -1270,6 +1311,7 @@
     ].join('\n');
   }
 
+  // ===== 已替换：线下系统提示，强调自然分段 =====
   function buildOfflineSystem(c,me,st){
     return [
       `你正在扮演：${c?.name||'聊天对象'}`,
@@ -1285,6 +1327,7 @@
       `【正文】`,
       `（沉浸叙事 + 动作细节 + 对话，不要大白话，不要总结腔）`,
       `正文请根据情绪与动作自然断句、自然分行，段落长短自由，不要固定句数分段。`,
+      `正文必须自然分段呈现，禁止整段挤在一起。`,
       `只输出这一条，不要JSON，不要额外说明。`
     ].join('\n');
   }
@@ -1318,7 +1361,8 @@
 
       let parts=[];
       if(st.mode==='offline'){
-        parts=[clean(out)||'...'];
+        const fixed = beautifyOfflineReply(out);
+        parts=[clean(fixed)||'...'];
       }else{
         parts=splitAiBubbles(out);
         if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);
