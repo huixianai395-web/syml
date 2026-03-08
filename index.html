@@ -402,6 +402,60 @@
   margin-top: 3px;
   padding: 0 2px;
 }
+    /* ===== 线下模式：不改结构，只提升观感（古风轻二次元） ===== */
+#chatRoom.offline #chatMsgs{
+  background:
+    radial-gradient(120% 85% at 15% 0%, rgba(255,255,255,.55), rgba(255,255,255,0) 46%),
+    linear-gradient(180deg,#f7f1e7 0%, #f2e8d9 56%, #ecdfcc 100%);
+  padding: 8px !important;
+  gap: 12px;
+}
+
+#chatRoom.offline .offline-card{
+  border: 1px solid #e7d8c2;
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255,253,249,.98), rgba(251,245,236,.96));
+  box-shadow:
+    0 4px 14px rgba(104,74,42,.09),
+    inset 0 1px 0 rgba(255,255,255,.78);
+  overflow: hidden;
+}
+
+#chatRoom.offline .offline-state{
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.65;
+  color: #7c6241;
+  border-bottom: 1px solid #efe3d3;
+  background: linear-gradient(180deg,#fff8ee,#f8efdf);
+  letter-spacing: .02em;
+}
+
+#chatRoom.offline .offline-body{
+  padding: 14px 13px 16px;
+  color: #3a2d21;
+  font-size: 15px;
+  line-height: 1.96;               /* 关键：舒展但不空 */
+  letter-spacing: .025em;
+  white-space: pre-wrap;           /* 保留模型自然换行，不强制分段 */
+  word-break: break-word;
+  text-align: justify;
+  text-justify: inter-ideograph;
+  -webkit-font-smoothing: antialiased;
+  text-shadow: 0 1px 0 rgba(255,255,255,.30);
+  font-family: "Noto Serif SC","Source Han Serif SC","Songti SC","STSong","PingFang SC",serif;
+}
+
+/* 我方线下气泡也稍微跟风格统一（仍是一整条） */
+#chatRoom.offline .bubble.me{
+  background: linear-gradient(180deg,#8ea8f3,#7a97ea);
+  border: 1px solid #6f8bdd;
+  color: #fff;
+  border-radius: 14px;
+  line-height: 1.85;
+  letter-spacing: .02em;
+}
   </style>
 </head>
 <body>
@@ -501,7 +555,7 @@
         <div class="small">模式</div>
         <select id="replyModeSelect" class="select" style="margin-top:8px;">
           <option value="online">线上模式（多气泡）</option>
-          <option value="offline">线下模式（酒馆RP）</option>
+          <option value="offline">线下模式（长文本）</option>
         </select>
       </div>
 
@@ -1230,6 +1284,7 @@
       `时间｜地点｜天气｜氛围｜关系进度`,
       `【正文】`,
       `（沉浸叙事 + 动作细节 + 对话，不要大白话，不要总结腔）`,
+      `正文请根据情绪与动作自然断句、自然分行，段落长短自由，不要固定句数分段。`,
       `只输出这一条，不要JSON，不要额外说明。`
     ].join('\n');
   }
