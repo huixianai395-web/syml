@@ -636,7 +636,7 @@
   const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
-  
+  
   const GlobalState = {};
   async function initAppStorage() {
     const keys = [K_CONTACT, K_CHAT, K_API, K_ME, K_PREF];
@@ -717,9 +717,9 @@
   }
 
   // contacts
- window.deleteContactFromList = function(id, e) {
-    e.preventDefault();
-    e.stopPropagation();
+window.deleteContactFromList = function(id, e) {
+    if(e) { e.preventDefault(); e.stopPropagation(); }
+    window._isDeleting = true; setTimeout(()=>window._isDeleting=false, 500);
     if(!confirm('确定要删除这个联系人及所有聊天记录吗？')) return false;
     const arr = getContacts().filter(c => c.id !== id);
     setContacts(arr);
@@ -731,13 +731,19 @@
     return false;
   };
 
-  function renderContacts(k=''){
+  function renderContacts(k='') {
     k=(k||'').trim();
     const arr=getContacts().filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
     $('contactList').innerHTML=arr.map(c=>`
-      <div class="item" oncontextmenu="return deleteContactFromList('${c.id}', event)">
+      <div class="item" 
+           style="-webkit-touch-callout:none; user-select:none;"
+           oncontextmenu="return deleteContactFromList('${c.id}', event)"
+           ontouchstart="this._t = setTimeout(()=>deleteContactFromList('${c.id}'), 600)"
+           ontouchend="clearTimeout(this._t)"
+           ontouchmove="clearTimeout(this._t)"
+      >
         <img class="avatar" src="${c.avatar||'https://via.placeholder.com/88x88?text=头像'}"/>
-        <div class="main" onclick="openChat('${c.id}')">
+        <div class="main" onclick="if(window._isDeleting)return; openChat('${c.id}')">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div class="name">${esc(c.name)}</div><div class="t">${esc(c.time||'')}</div>
           </div>
@@ -1145,7 +1151,7 @@
     return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${w} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   }
 
-  
+  
   function buildOnlineSystem(c,me,st){
     const rangeRule = st.onlineStyle==='range'
       ? `本次回复请拆分为 ${st.onlineMin} 到 ${st.onlineMax} 条消息。`
@@ -1381,7 +1387,7 @@ function buildOfflineSystem(c,me,st){
   };
 
   // init
-  
+  
   initAppStorage().then(() => {
     applyBubbleCss();
     refreshPresetUI();
