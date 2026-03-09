@@ -407,73 +407,12 @@
   margin-top: 3px;
   padding: 0 2px;
 }
-/* 强行封印长按选中 */
-.message, .bubble, .msg, .content, .chat-item span {
-  -webkit-touch-callout: none !important;
-  -webkit-user-select: none !important;
-  user-select: none !important;
-}
-/* --- 纯净高级悬浮菜单 --- */
-#super-menu {
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  background: rgba(30, 30, 30, 0.75) !important;
-  backdrop-filter: blur(15px) !important;
-  -webkit-backdrop-filter: blur(15px) !important;
-  border-radius: 16px !important;
-  padding: 16px 10px 6px 10px !important;
-  width: 260px !important;
-  display: none;
-  flex-wrap: wrap !important;
-  justify-content: space-around !important;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.3) !important;
-  z-index: 10000 !important;
-  margin: 0 !important;
-}
-.menu-item {
-  width: 44% !important;
-  text-align: center !important;
-  color: #fff !important;
-  padding: 12px 0 !important;
-  font-size: 15px !important;
-  margin-bottom: 10px !important;
-  border-radius: 12px !important;
-  background: rgba(255,255,255,0.12) !important;
-}
-.toast-msg {
-  position: fixed !important;
-  top: 40% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  background: rgba(0, 0, 0, 0.75) !important;
-  color: white !important;
-  padding: 12px 24px !important;
-  border-radius: 8px !important;
-  font-size: 15px !important;
-  z-index: 10001 !important;
-  pointer-events: none !important;
-  opacity: 0;
-  transition: opacity 0.3s ease !important;
-}
   </style>
 <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 </head>
 <body>
 <div id="app">
-<!-- 专属定制：九大功能豪华长按菜单 -->
-<div id="super-menu" class="super-menu-container" style="display: none;">
-  <div class="menu-item">复制</div>
-  <div class="menu-item">引用</div>
-  <div class="menu-item">撤回</div>
-  <div class="menu-item">删除</div>
-  <div class="menu-item">隐藏</div>
-  <div class="menu-item">取消隐藏</div>
-  <div class="menu-item">收藏</div>
-  <div class="menu-item">多选</div>
-  <div class="menu-item">全选</div>
-</div>
+
   <!-- HOME -->
   <section id="home" class="screen active">
     <div class="wall"></div>
@@ -1468,83 +1407,6 @@ function buildOfflineSystem(c,me,st){
     renderContacts();
   });
 })();
-</script>
-<script>
-// --- 暴力居中 & 无感复制最终版 ---
-let longPressTimer;
-const superMenu = document.getElementById('super-menu');
-let currentMsg = null;
-
-function showToast(text) {
-  let toast = document.createElement('div');
-  toast.className = 'toast-msg';
-  toast.innerText = text;
-  document.body.appendChild(toast);
-  setTimeout(() => { toast.style.opacity = '1'; }, 10);
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    setTimeout(() => { toast.remove(); }, 300);
-  }, 1500);
-}
-
-document.addEventListener('touchstart', function(e) {
-  let targetNode = e.target.closest('.message, .bubble, .msg, .content, .chat-item, .msg-bubble');
-  if(targetNode) {
-    longPressTimer = setTimeout(function() {
-      e.preventDefault();
-      currentMsg = targetNode;
-      if(superMenu) {
-        // 暴力清除以前残留的内联位置样式，防止它乱跑！
-        superMenu.style.left = '';
-        superMenu.style.top = '';
-        superMenu.style.transform = '';
-        superMenu.style.display = 'flex';
-      }
-    }, 600);
-  }
-}, {passive: false});
-
-document.addEventListener('touchend', function() { clearTimeout(longPressTimer); });
-document.addEventListener('touchmove', function() { clearTimeout(longPressTimer); });
-
-document.addEventListener('touchstart', function(e) {
-  if(superMenu && superMenu.style.display === 'flex') {
-    if(!e.target.closest('#super-menu')) {
-      superMenu.style.display = 'none';
-    }
-  }
-});
-
-const menuButtons = document.querySelectorAll('.menu-item');
-menuButtons.forEach(button => {
-  button.addEventListener('touchend', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    if(superMenu) superMenu.style.display = 'none';
-    
-    const action = this.innerText;
-    if(!currentMsg) return;
-
-    setTimeout(() => {
-      if(action === '复制') {
-        let text = currentMsg.innerText || currentMsg.textContent;
-        let textArea = document.createElement("textarea");
-        textArea.value = text;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand("Copy");
-        textArea.remove();
-        showToast('已复制');
-      } 
-      else if(action === '删除') {
-        currentMsg.remove();
-      }
-      else {
-        showToast(action + ' 功能开发中');
-      }
-    }, 50);
-  });
-});
 </script>
 </body>
 </html>
