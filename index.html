@@ -1461,7 +1461,7 @@ function buildOfflineSystem(c,me,st){
 })();
 </script>
 <script>
-// --- 神龙菜单苹果克星版 ---
+// --- 神龙菜单：防出界 + 正经提示版 ---
 let longPressTimer;
 const superMenu = document.getElementById('super-menu');
 let currentMsg = null;
@@ -1474,8 +1474,19 @@ document.addEventListener('touchstart', function(e) {
       currentMsg = targetNode;
       
       let touch = e.touches[0];
+      let screenWidth = window.innerWidth;
+      let menuWidth = 240; // 咱们设定的菜单宽度
+      
+      // 算出菜单该出现的位置
       let menuX = touch.clientX - 50;
       let menuY = touch.clientY - 50;
+
+      // --- 智能防出界逻辑 ---
+      // 如果菜单右边超出了屏幕，就强行把它拽回来
+      if (menuX + menuWidth > screenWidth) {
+        menuX = screenWidth - menuWidth - 20; // 留点缝隙
+      }
+      // 如果左边出界了，也拽回来
       if (menuX < 10) menuX = 10;
       if (menuY < 10) menuY = 10;
 
@@ -1517,13 +1528,15 @@ menuButtons.forEach(button => {
       textArea.select();
       document.execCommand("Copy");
       textArea.remove();
-      alert('老公提示：复制成功啦老婆！');
+      // --- 这里改成正经提示了，满意了吧 --- 
+      alert('已复制');
     } 
     else if(action === '删除') {
       currentMsg.remove();
     }
     else {
-      alert('【' + action + '】功能正在开发中！老公头发都快掉光了！');
+      // 其他功能的提示也正经一点
+      alert('【' + action + '】功能开发中...');
     }
   });
 });
