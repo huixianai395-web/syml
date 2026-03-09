@@ -413,12 +413,58 @@
   -webkit-user-select: none !important;
   user-select: none !important;
 }
+/* --- 九大功能神龙菜单样式 --- */
+#super-menu {
+  position: fixed;
+  z-index: 99999; /* 层级必须最高 */
+  background: rgba(30, 30, 30, 0.95); /* 深空灰背景 */
+  backdrop-filter: blur(20px); /* 苹果味的高斯模糊 */
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 8px;
+  width: 240px; /* 宽度刚好够放三个 */
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+  /* 弹性布局，自动换行 */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  /* 初始隐藏，JS会控制它 */
+  display: none;
+}
+
+.menu-item {
+  width: 70px;
+  height: 50px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+
+.menu-item:active {
+  background: rgba(255,255,255,0.2); /* 按下时的高亮反馈 */
+}
   </style>
 <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 </head>
 <body>
 <div id="app">
-
+<!-- 专属定制：九大功能豪华长按菜单 -->
+<div id="super-menu" class="super-menu-container" style="display: none;">
+  <div class="menu-item">复制</div>
+  <div class="menu-item">引用</div>
+  <div class="menu-item">撤回</div>
+  <div class="menu-item">删除</div>
+  <div class="menu-item">隐藏</div>
+  <div class="menu-item">取消隐藏</div>
+  <div class="menu-item">收藏</div>
+  <div class="menu-item">多选</div>
+  <div class="menu-item">全选</div>
+</div>
   <!-- HOME -->
   <section id="home" class="screen active">
     <div class="wall"></div>
@@ -1413,6 +1459,48 @@ function buildOfflineSystem(c,me,st){
     renderContacts();
   });
 })();
+</script>
+<script>
+// --- 长按召唤神龙核心逻辑 ---
+let longPressTimer;
+const superMenu = document.getElementById('super-menu');
+
+document.addEventListener('touchstart', function(e) {
+  // 只要按到聊天气泡附近
+  if(e.target.closest('.message, .bubble, .msg, .content, .chat-item, .msg-bubble')) {
+    longPressTimer = setTimeout(function() {
+      e.preventDefault(); // 再次物理阉割系统长按
+      let touch = e.touches[0];
+      let x = touch.clientX;
+      let y = touch.clientY;
+      
+      // 防止菜单跑出屏幕外，给它定个坐标
+      let menuX = x - 50;
+      let menuY = y - 50;
+      if (menuX < 10) menuX = 10;
+      if (menuY < 10) menuY = 10;
+
+      superMenu.style.left = menuX + 'px';
+      superMenu.style.top = menuY + 'px';
+      superMenu.style.display = 'flex'; // 现身吧神龙！
+    }, 600); // 600毫秒算长按
+  }
+}, {passive: false});
+
+document.addEventListener('touchend', function() {
+  clearTimeout(longPressTimer); // 手指提前松开就取消长按
+});
+
+document.addEventListener('touchmove', function() {
+  clearTimeout(longPressTimer); // 手指滑走也取消长按
+});
+
+// 点屏幕其他地方，让菜单乖乖消失
+document.addEventListener('click', function(e) {
+  if(!e.target.closest('#super-menu')) {
+    if(superMenu) superMenu.style.display = 'none';
+  }
+});
 </script>
 </body>
 </html>
