@@ -1503,17 +1503,17 @@ document.addEventListener('click', function(e) {
 });
 
 <script>
-// --- 神龙菜单终极进化版 ---
+// --- 神龙菜单苹果克星版 ---
 let longPressTimer;
 const superMenu = document.getElementById('super-menu');
-let currentMsg = null; // 记住当前按的是哪条消息的脑子
+let currentMsg = null;
 
 document.addEventListener('touchstart', function(e) {
   let targetNode = e.target.closest('.message, .bubble, .msg, .content, .chat-item, .msg-bubble');
   if(targetNode) {
     longPressTimer = setTimeout(function() {
       e.preventDefault();
-      currentMsg = targetNode; // 狠狠记下这条消息！
+      currentMsg = targetNode;
       
       let touch = e.touches[0];
       let menuX = touch.clientX - 50;
@@ -1521,9 +1521,11 @@ document.addEventListener('touchstart', function(e) {
       if (menuX < 10) menuX = 10;
       if (menuY < 10) menuY = 10;
 
-      superMenu.style.left = menuX + 'px';
-      superMenu.style.top = menuY + 'px';
-      superMenu.style.display = 'flex';
+      if(superMenu) {
+        superMenu.style.left = menuX + 'px';
+        superMenu.style.top = menuY + 'px';
+        superMenu.style.display = 'flex';
+      }
     }, 600);
   }
 }, {passive: false});
@@ -1531,37 +1533,41 @@ document.addEventListener('touchstart', function(e) {
 document.addEventListener('touchend', function() { clearTimeout(longPressTimer); });
 document.addEventListener('touchmove', function() { clearTimeout(longPressTimer); });
 
-document.addEventListener('click', function(e) {
-  if(!e.target.closest('#super-menu') && superMenu) superMenu.style.display = 'none';
+// 点别的地方隐藏菜单也换成 touchstart，更灵敏
+document.addEventListener('touchstart', function(e) {
+  if(superMenu && superMenu.style.display === 'flex') {
+    if(!e.target.closest('#super-menu')) {
+      superMenu.style.display = 'none';
+    }
+  }
 });
 
-// --- 分配真实技能 ---
 const menuButtons = document.querySelectorAll('.menu-item');
 menuButtons.forEach(button => {
-  button.addEventListener('click', function(e) {
+  // 绝杀：把 click 换成 touchend，苹果绝对拦不住！
+  button.addEventListener('touchend', function(e) {
+    e.preventDefault();
     e.stopPropagation();
     const action = this.innerText;
-    superMenu.style.display = 'none'; // 点完藏起来
+    if(superMenu) superMenu.style.display = 'none';
     
     if(!currentMsg) return;
 
     if(action === '复制') {
-      // 提取文字
       let text = currentMsg.innerText || currentMsg.textContent;
-      // 兼容苹果的超级复制术
       let textArea = document.createElement("textarea");
       textArea.value = text;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand("Copy");
       textArea.remove();
-      alert('老公提示：复制成功啦老婆！快去粘贴试试！');
+      alert('老公提示：复制成功啦老婆！');
     } 
     else if(action === '删除') {
-      currentMsg.remove(); // 物理超度，当场灰飞烟灭
+      currentMsg.remove();
     }
     else {
-      alert('【' + action + '】功能太复杂，你老公正在疯狂掉头发开发中！先玩玩复制和删除！');
+      alert('【' + action + '】功能正在开发中！老公头发都快掉光了！');
     }
   });
 });
