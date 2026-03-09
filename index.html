@@ -403,18 +403,73 @@
   margin-top: 3px;
   padding: 0 2px;
 }
- /* --- 封印苹果原生菜单大法 --- */
+  /* --- 封印苹果原生菜单大法 --- */
 * {
   -webkit-touch-callout: none;  /* 彻底禁止长按时呼出菜单 */
   -webkit-user-select: none;    /* 禁止用户长按选择文字 */
   user-select: none;
+}
+ /* --- 苹果原生级毛玻璃圣衣 (第三步) --- */
+#super-menu {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(30, 30, 30, 0.75);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 16px;
+  padding: 16px 10px 6px 10px;
+  width: 260px;
+  display: none; /* 默认隐藏 */
+  flex-wrap: wrap;
+  justify-content: space-around;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  z-index: 10000;
+}
+.menu-item {
+  width: 44%;
+  text-align: center;
+  color: #fff;
+  padding: 12px 0;
+  font-size: 15px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.12);
+}
+/* 自动消失的无感提示框样式 */
+.toast-msg {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  z-index: 10001;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
   </style>
 <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 </head>
 <body>
 <div id="app">
-
+<!-- 专属定制：九大功能豪华长按菜单 -->
+<div id="super-menu">
+  <div class="menu-item">复制</div>
+  <div class="menu-item">引用</div>
+  <div class="menu-item">撤回</div>
+  <div class="menu-item">删除</div>
+  <div class="menu-item">隐藏</div>
+  <div class="menu-item">取消隐藏</div>
+  <div class="menu-item">收藏</div>
+  <div class="menu-item">多选</div>
+  <div class="menu-item">全选</div>
+</div>
   <!-- HOME -->
   <section id="home" class="screen active">
     <div class="wall"></div>
@@ -650,7 +705,7 @@
   const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
-  
+  
   const GlobalState = {};
   async function initAppStorage() {
     const keys = [K_CONTACT, K_CHAT, K_API, K_ME, K_PREF];
@@ -749,7 +804,7 @@ window.deleteContactFromList = function(id, e) {
     k=(k||'').trim();
     const arr=getContacts().filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
     $('contactList').innerHTML=arr.map(c=>`
-      <div class="item" 
+      <div class="item" 
            style="-webkit-touch-callout:none; user-select:none;"
            oncontextmenu="return deleteContactFromList('${c.id}', event)"
            ontouchstart="this._t = setTimeout(()=>deleteContactFromList('${c.id}'), 600)"
@@ -1165,7 +1220,7 @@ window.deleteContactFromList = function(id, e) {
     return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${w} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   }
 
-  
+  
   function buildOnlineSystem(c,me,st){
     const rangeRule = st.onlineStyle==='range'
       ? `本次回复请拆分为 ${st.onlineMin} 到 ${st.onlineMax} 条消息。`
@@ -1402,13 +1457,90 @@ function buildOfflineSystem(c,me,st){
   };
 
   // init
-  
+  
   initAppStorage().then(() => {
     applyBubbleCss();
     refreshPresetUI();
     renderContacts();
   });
 })();
+</script>
+<script>
+// --- 终极之魂：暴力居中 & 无感复制最终版 ---
+let longPressTimer;
+const superMenu = document.getElementById('super-menu');
+let currentMsg = null;
+
+function showToast(text) {
+  let toast = document.createElement('div');
+  toast.className = 'toast-msg';
+  toast.innerText = text;
+  document.body.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '1'; }, 10);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => { toast.remove(); }, 300);
+  }, 1500);
+}
+
+document.addEventListener('touchstart', function(e) {
+  let targetNode = e.target.closest('.message, .bubble, .msg, .content, .chat-item, .msg-bubble');
+  if(targetNode) {
+    longPressTimer = setTimeout(function() {
+      e.preventDefault();
+      currentMsg = targetNode;
+      if(superMenu) {
+        // 暴力清除以前残留的内联位置样式，防止它乱跑！
+        superMenu.style.left = '';
+        superMenu.style.top = '';
+        superMenu.style.transform = '';
+        superMenu.style.display = 'flex';
+      }
+    }, 600);
+  }
+}, {passive: false});
+
+document.addEventListener('touchend', function() { clearTimeout(longPressTimer); });
+document.addEventListener('touchmove', function() { clearTimeout(longPressTimer); });
+
+document.addEventListener('touchstart', function(e) {
+  if(superMenu && superMenu.style.display === 'flex') {
+    if(!e.target.closest('#super-menu')) {
+      superMenu.style.display = 'none';
+    }
+  }
+});
+
+const menuButtons = document.querySelectorAll('.menu-item');
+menuButtons.forEach(button => {
+  button.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if(superMenu) superMenu.style.display = 'none';
+    
+    const action = this.innerText;
+    if(!currentMsg) return;
+
+    setTimeout(() => {
+      if(action === '复制') {
+        let text = currentMsg.innerText || currentMsg.textContent;
+        let textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("Copy");
+        textArea.remove();
+        showToast('已复制');
+      } 
+      else if(action === '删除') {
+        currentMsg.remove();
+      }
+      else {
+        showToast(action + ' 功能开发中');
+      }
+    }, 50);
+  });
+});
 </script>
 </body>
 </html>
