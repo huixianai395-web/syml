@@ -1,10 +1,8 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <link rel="manifest" href='data:application/json,{"name":"小手机","short_name":"小手机","display":"standalone","start_url":".","background_color":"#000000"}'>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>小手机 v1.4.4 稳定</title>
   <style>
     :root{
@@ -79,9 +77,7 @@
     /* HOME */
     #home{color:#fff}
     .wall{
-      position:fixed;
-      top:-80px; left:0; right:0; bottom:0;
-      z-index:0;
+      position:absolute;inset:0;z-index:0;
       background:
         linear-gradient(160deg, rgba(40,96,255,.34), rgba(125,221,255,.18)),
         url('https://picsum.photos/900/1800?blur=1') center/cover no-repeat;
@@ -373,9 +369,9 @@
 }
 
 #chatRoom:not(.offline) .msg-row .bubble-wrap{
-  max-width: min(76%, 304px);
+  max-width: min(76%, 304px);transform: 
 }
-
+}
 
 #chatRoom:not(.offline) .bubble{
   padding: 9px 12px;
@@ -648,7 +644,7 @@
   const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
-  
+  
   const GlobalState = {};
   async function initAppStorage() {
     const keys = [K_CONTACT, K_CHAT, K_API, K_ME, K_PREF];
@@ -747,7 +743,7 @@ window.deleteContactFromList = function(id, e) {
     k=(k||'').trim();
     const arr=getContacts().filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
     $('contactList').innerHTML=arr.map(c=>`
-      <div class="item" 
+      <div class="item" 
            style="-webkit-touch-callout:none; user-select:none;"
            oncontextmenu="return deleteContactFromList('${c.id}', event)"
            ontouchstart="this._t = setTimeout(()=>deleteContactFromList('${c.id}'), 600)"
@@ -1163,7 +1159,7 @@ window.deleteContactFromList = function(id, e) {
     return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${w} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   }
 
-  
+  
   function buildOnlineSystem(c,me,st){
     const rangeRule = st.onlineStyle==='range'
       ? `本次回复请拆分为 ${st.onlineMin} 到 ${st.onlineMax} 条消息。`
@@ -1400,7 +1396,7 @@ function buildOfflineSystem(c,me,st){
   };
 
   // init
-  
+  
   initAppStorage().then(() => {
     applyBubbleCss();
     refreshPresetUI();
