@@ -369,7 +369,7 @@
 }
 
 #chatRoom:not(.offline) .msg-row .bubble-wrap{
-  max-width: min(76%, 304px);transform: translateY(0);
+  max-width: min(76%, 304px);transform: 
 }
 }
 
@@ -403,115 +403,12 @@
   margin-top: 3px;
   padding: 0 2px;
 }
-  /* --- 封印苹果原生菜单大法 --- */
-* {
-  -webkit-touch-callout: none;  /* 彻底禁止长按时呼出菜单 */
-  -webkit-user-select: none;    /* 禁止用户长按选择文字 */
-  user-select: none;
-}
- /* --- 苹果原生级毛玻璃圣衣 (第三步) --- */
-#super-menu {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(30, 30, 30, 0.75);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border-radius: 16px;
-  padding: 16px 10px 6px 10px;
-  width: 260px;
-  display: none; /* 默认隐藏 */
-  flex-wrap: wrap;
-  justify-content: space-around;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-  z-index: 10000;
-}
-.menu-item {
-  width: 44%;
-  text-align: center;
-  color: #fff;
-  padding: 12px 0;
-  font-size: 15px;
-  margin-bottom: 10px;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.12);
-}
-/* 自动消失的无感提示框样式 */
-.toast-msg {
-  position: fixed;
-  top: 40%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.75);
-  color: white;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 15px;
-  z-index: 10001;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
- /* --- 微信风格引用预览框 (第二步) --- */
-#quote-preview {
-  padding: 8px 30px 8px 12px; /* 右边留出关闭按钮的位置 */
-  background-color: #f2f2f2;
-  border-radius: 8px;
-  margin: 0 10px 8px 10px;
-  font-size: 14px;
-  color: #888;
-  position: relative;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-#quote-preview .close-quote {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  background-color: #ccc;
-  border-radius: 50%;
-  color: white;
-  text-align: center;
-  line-height: 16px;
-  font-size: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-/* --- 新消息气泡内的引用样式 (图二效果) --- */
-.message .quote-in-bubble {
-  background-color: rgba(0,0,0,0.05);
-  padding: 6px 10px;
-  margin: -5px 0 8px 0; /* 调整和消息内容的间距 */
-  border-radius: 8px;
-  font-size: 14px;
-  color: #555;
-  white-space: pre-wrap;
-  word-break: break-all;
-}
   </style>
 <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 </head>
 <body>
 <div id="app">
-<!-- 专属定制：九大功能豪华长按菜单 -->
-<div id="super-menu">
-  <div class="menu-item">复制</div>
-  <div class="menu-item">引用</div>
-  <div class="menu-item">撤回</div>
-  <div class="menu-item">删除</div>
-  <div class="menu-item">隐藏</div>
-  <div class="menu-item">取消隐藏</div>
-  <div class="menu-item">收藏</div>
-  <div class="menu-item">多选</div>
-  <div class="menu-item">全选</div>
-</div>
+
   <!-- HOME -->
   <section id="home" class="screen active">
     <div class="wall"></div>
@@ -566,7 +463,7 @@
     </div>
 
     <div id="chatMsgs"></div>
-<div id="quote-preview" style="display: none;"></div>
+
     <div class="chatInputBar">
       <textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
       <div class="send-actions">
@@ -747,7 +644,7 @@
   const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
-  
+  
   const GlobalState = {};
   async function initAppStorage() {
     const keys = [K_CONTACT, K_CHAT, K_API, K_ME, K_PREF];
@@ -846,7 +743,7 @@ window.deleteContactFromList = function(id, e) {
     k=(k||'').trim();
     const arr=getContacts().filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
     $('contactList').innerHTML=arr.map(c=>`
-      <div class="item" 
+      <div class="item" 
            style="-webkit-touch-callout:none; user-select:none;"
            oncontextmenu="return deleteContactFromList('${c.id}', event)"
            ontouchstart="this._t = setTimeout(()=>deleteContactFromList('${c.id}'), 600)"
@@ -968,7 +865,8 @@ window.deleteContactFromList = function(id, e) {
     const m=raw.match(/【状态栏】\s*([\s\S]*?)\s*【正文】\s*([\s\S]*)/);
     if(!m){
       return `<div class="bubble-wrap ai"><div class="bubble ai">${esc(raw)}</div>${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}</div>`;
-    }const state=clean(m[1]);
+    }
+    const state=clean(m[1]);
     const body=clean(m[2]);
     return `
       <div class="bubble-wrap ai">
@@ -1261,7 +1159,7 @@ window.deleteContactFromList = function(id, e) {
     return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${w} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   }
 
-  
+  
   function buildOnlineSystem(c,me,st){
     const rangeRule = st.onlineStyle==='range'
       ? `本次回复请拆分为 ${st.onlineMin} 到 ${st.onlineMax} 条消息。`
@@ -1498,180 +1396,13 @@ function buildOfflineSystem(c,me,st){
   };
 
   // init
-  
+  
   initAppStorage().then(() => {
     applyBubbleCss();
     refreshPresetUI();
     renderContacts();
   });
 })();
-</script>
-<script
-  src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"
-  integrity="sha256-R2isMo5S1bIBfD9tIqIKP3wTj99P4vsCifd+kE2M2IM="
-  crossorigin="anonymous"
-></script>
-<script>
-// --- 全局变量和核心DOM元素 ---
-const messageContainer = document.getElementById('chatMsgs');
-const inputField = document.getElementById('chatInput');
-const sendButton = document.getElementById('sendBtn');
-const superMenu = document.getElementById('super-menu');
-const quotePreview = document.getElementById('quote-preview');
-
-let longPressTimer;
-let currentMsg = null; // 用于长按菜单操作的目标消息
-let quoteContent = null; // 全局变量，存储待引用的内容
-
-// --- 实用工具函数 ---
-function showToast(text) {
-  let toast = document.createElement('div');
-  toast.className = 'toast-msg';
-  toast.innerText = text;
-  document.body.appendChild(toast);
-  setTimeout(() => { toast.style.opacity = '1'; }, 10);
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    setTimeout(() => { toast.remove(); }, 300);
-  }, 1500);
-}
-
-// --- 引用功能核心逻辑 ---
-function updateQuotePreview(text) {
-  if (text) {
-    quoteContent = text;
-    // 使用 pre-wrap 来保留换行符
-    quotePreview.innerHTML = `<span style="white-space: pre-wrap;">${text}</span><div class="close-quote">×</div>`;
-    quotePreview.style.display = 'block';
-  } else {
-    quoteContent = null;
-    quotePreview.style.display = 'none';
-  }
-}
-
-// 为预览框的关闭按钮添加事件监听
-quotePreview.addEventListener('click', function(e) {
-  if (e.target.classList.contains('close-quote')) {
-    e.stopPropagation();
-    updateQuotePreview(null);
-  }
-});
-
-// --- 消息发送逻辑 ---
-function handleRealSend() {
-  const textToSend = inputField.value.trim();
-  if (!textToSend && !quoteContent) return; // 如果既没输入也无引用，则不发送
-
-  // 创建新的消息气泡
-  const newMsgDiv = document.createElement('div');
-  newMsgDiv.className = 'message self'; // 假设发送者是自己
-
-  let innerHTML = '';
-  // 如果有引用内容，先加上引用部分
-  if (quoteContent) {
-    // 注意：这里我们直接用 quoteContent，因为它已经是纯文本了
-    innerHTML += `<div class="quote-in-bubble">${quoteContent.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>`;
-  }
-  // 再加上本次发送的文本内容
-  if (textToSend) {
-    // 使用 marked.parse() 来处理 Markdown
-    innerHTML += `<div class="text-content">${marked.parse(textToSend)}</div>`;
-  }
-
-  newMsgDiv.innerHTML = innerHTML;
-  messageContainer.appendChild(newMsgDiv);
-
-  // 清空输入框和引用
-  inputField.value = '';
-  updateQuotePreview(null);
-
-  // 滚动到底部
-  messageContainer.scrollTop = messageContainer.scrollHeight;
-}
-
-// 绑定发送事件 (按钮点击和回车)
-sendButton.addEventListener('click', handleRealSend);
-inputField.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        handleRealSend();
-    }
-});
-
-
-// --- 长按菜单逻辑 ---
-// 启动长按检测
-messageContainer.addEventListener('touchstart', function(e) {
-  let targetNode = e.target.closest('.message');
-  if(targetNode) {
-    longPressTimer = setTimeout(function() {
-      // 阻止默认行为，如滚动或文字选择
-      e.preventDefault();
-      currentMsg = targetNode;
-      if(superMenu) {
-        superMenu.style.display = 'flex';
-        // 你可以在这里添加更复杂的菜单定位逻辑
-      }
-    }, 600);
-  }
-}, {passive: false});
-
-// 取消长按
-messageContainer.addEventListener('touchend', function() { clearTimeout(longPressTimer); });
-messageContainer.addEventListener('touchmove', function() { clearTimeout(longPressTimer); });
-
-// 点击菜单外部关闭菜单
-document.addEventListener('touchstart', function(e) {
-  if(superMenu && superMenu.style.display === 'flex' && !e.target.closest('#super-menu') && !e.target.closest('.message')) {
-    superMenu.style.display = 'none';
-  }
-});
-
-// --- 菜单按钮行为逻辑 ---
-const menuButtons = document.querySelectorAll('.menu-item');
-menuButtons.forEach(button => {
-  button.addEventListener('touchend', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    if(superMenu) superMenu.style.display = 'none';
-
-    const action = this.innerText;
-    if(!currentMsg) return;
-
-    setTimeout(() => {
-      // 优先获取 .text-content, 如果没有则获取整个消息的文本
-      let text = currentMsg.querySelector('.text-content')?.innerText || currentMsg.innerText;
-
-      if (action === '复制') {
-        let textArea = document.createElement("textarea");
-        textArea.value = text;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand("Copy");
-        textArea.remove();
-        showToast('已复制');
-      }
-      else if (action === '引用') {
-        updateQuotePreview(text);
-        inputField.focus();
-      }
-      else if (action === '删除') {
-        currentMsg.remove();
-      }
-      else {
-        showToast(action + ' 功能开发中');
-      }
-    }, 50);
-  });
-});
-
-// --- 初始加载和模拟消息 ---
-// (保留或替换成你自己的初始加载逻辑)
-document.addEventListener('DOMContentLoaded', () => {
-    // 可以在这里添加一些初始化的代码，比如加载历史消息等
-    console.log("页面和所有脚本加载完毕，系统已准备就绪。");
-});
-
 </script>
 </body>
 </html>
