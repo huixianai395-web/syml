@@ -644,7 +644,7 @@
   const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
-  
+  
   const GlobalState = {};
   async function initAppStorage() {
     const keys = [K_CONTACT, K_CHAT, K_API, K_ME, K_PREF];
@@ -743,7 +743,7 @@ window.deleteContactFromList = function(id, e) {
     k=(k||'').trim();
     const arr=getContacts().filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
     $('contactList').innerHTML=arr.map(c=>`
-      <div class="item" 
+      <div class="item" 
            style="-webkit-touch-callout:none; user-select:none;"
            oncontextmenu="return deleteContactFromList('${c.id}', event)"
            ontouchstart="this._t = setTimeout(()=>deleteContactFromList('${c.id}'), 600)"
@@ -1159,7 +1159,7 @@ window.deleteContactFromList = function(id, e) {
     return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${w} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   }
 
-  
+  
   function buildOnlineSystem(c,me,st){
     const rangeRule = st.onlineStyle==='range'
       ? `本次回复请拆分为 ${st.onlineMin} 到 ${st.onlineMax} 条消息。`
@@ -1396,7 +1396,7 @@ function buildOfflineSystem(c,me,st){
   };
 
   // init
-  
+  
   initAppStorage().then(() => {
     applyBubbleCss();
     refreshPresetUI();
@@ -1404,5 +1404,47 @@ function buildOfflineSystem(c,me,st){
   });
 })();
 </script>
+<!-- 长按消息弹出的操作菜单 -->
+<div id="message-menu" style="display: none; position: absolute; background-color: white; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 1000;">
+  <div class="menu-item" onclick="quoteMessage()">引用</div>
+  <div class="menu-item" onclick="deleteMessage()" style="color: red;">删除</div>
+</div>
+const menu = document.getElementById('message-menu');
+let currentTargetMessage = null;
+
+// 监听整个文档的右键或长按事件
+document.addEventListener('contextmenu', function(event) {
+  // [重点修改!] 找到被长按的、class为'Bubble'的消息气泡
+  const bubble = event.target.closest('.Bubble'); 
+  if (bubble) {
+    event.preventDefault();
+    currentTargetMessage = bubble;
+    
+    menu.style.left = `${event.pageX}px`;
+    menu.style.top = `${event.pageY}px`;
+    menu.style.display = 'block';
+  }
+});
+
+// 点击页面其他任何地方，隐藏菜单
+document.addEventListener('click', function(event) {
+  if (!menu.contains(event.target)) {
+    menu.style.display = 'none';
+  }
+});
+
+// --- 下面是菜单按钮的功能，现在是占位符 ---
+function quoteMessage() {
+  if (!currentTargetMessage) return;
+  const textToQuote = currentTargetMessage.innerText;
+  alert(`你引用了: "${textToQuote}"`);
+  menu.style.display = 'none';
+}
+
+function deleteMessage() {
+  if (!currentTargetMessage) return;
+  currentTargetMessage.remove(); 
+  menu.style.display = 'none';
+}
 </body>
 </html>
