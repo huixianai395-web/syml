@@ -448,19 +448,50 @@
 .menu-item:active {
   background: rgba(255,255,255,0.2); /* 按下时的高亮反馈 */
 }
-/* --- 专治苹果底部留白 & 页面乱晃 --- */
-html, body {
-  height: 100%;
-  height: 100dvh; /* 只有新版手机懂的“真实全屏高度” */
-  background-color: #f2f3f5; /* 强行补色，防止露白 */
-  overflow: hidden; /* 钉死页面，不许瞎晃 */
-  position: fixed; /* 更是钉死 */
-  width: 100%;
+ 
+/* --- 删掉之前的伪装，换成高级悬浮菜单样式 --- */
+#super-menu {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* 绝对居中大法，永远不会出界！ */
+  background: rgba(30, 30, 30, 0.75);
+  backdrop-filter: blur(15px); /* 苹果灵魂毛玻璃特效 */
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 16px;
+  padding: 16px 10px 6px 10px;
+  width: 260px;
+  display: none;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  z-index: 10000;
 }
-#app {
-  height: 100%;
-  height: 100dvh;
-  overflow: hidden;
+.menu-item {
+  width: 44%;
+  text-align: center;
+  color: #fff;
+  padding: 12px 0;
+  font-size: 15px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.12);
+}
+/* 自动消失的无感提示框 */
+.toast-msg {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  z-index: 10001;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
   </style>
 <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
@@ -1475,45 +1506,43 @@ function buildOfflineSystem(c,me,st){
 })();
 </script>
 <script>
-// --- 神龙菜单：点击即焚 & 完美适配版 ---
+// --- 极简居中无感复制版 ---
 let longPressTimer;
 const superMenu = document.getElementById('super-menu');
 let currentMsg = null;
 
-// 触摸开始
+// 高级无感提示
+function showToast(text) {
+  let toast = document.createElement('div');
+  toast.className = 'toast-msg';
+  toast.innerText = text;
+  document.body.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '1'; }, 10);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => { toast.remove(); }, 300);
+  }, 1500);
+}
+
+// 触摸长按召唤
 document.addEventListener('touchstart', function(e) {
   let targetNode = e.target.closest('.message, .bubble, .msg, .content, .chat-item, .msg-bubble');
   if(targetNode) {
     longPressTimer = setTimeout(function() {
       e.preventDefault();
       currentMsg = targetNode;
-      
-      let touch = e.touches[0];
-      let screenWidth = window.innerWidth;
-      let menuWidth = 240;
-      
-      let menuX = touch.clientX - 50;
-      let menuY = touch.clientY - 50;
-
-      // 智能防出界
-      if (menuX + menuWidth > screenWidth) menuX = screenWidth - menuWidth - 20;
-      if (menuX < 10) menuX = 10;
-      if (menuY < 10) menuY = 10;
-
+      // 不用算位置了！直接召唤，CSS会自动把它拉到屏幕正中间！
       if(superMenu) {
-        superMenu.style.left = menuX + 'px';
-        superMenu.style.top = menuY + 'px';
         superMenu.style.display = 'flex';
       }
     }, 600);
   }
 }, {passive: false});
 
-// 各种取消情况
 document.addEventListener('touchend', function() { clearTimeout(longPressTimer); });
 document.addEventListener('touchmove', function() { clearTimeout(longPressTimer); });
 
-// 点别的地方立刻隐藏
+// 点击旁边取消
 document.addEventListener('touchstart', function(e) {
   if(superMenu && superMenu.style.display === 'flex') {
     if(!e.target.closest('#super-menu')) {
@@ -1522,19 +1551,18 @@ document.addEventListener('touchstart', function(e) {
   }
 });
 
+// 执行功能
 const menuButtons = document.querySelectorAll('.menu-item');
 menuButtons.forEach(button => {
   button.addEventListener('touchend', function(e) {
     e.preventDefault();
     e.stopPropagation();
-    
-    // --- 关键修改：一点按钮，菜单必须立刻原地消失！ ---
+    
     if(superMenu) superMenu.style.display = 'none';
-    
+    
     const action = this.innerText;
     if(!currentMsg) return;
 
-    // 用个极短的延时，让菜单先消失，再执行功能，视觉更流畅
     setTimeout(() => {
       if(action === '复制') {
         let text = currentMsg.innerText || currentMsg.textContent;
@@ -1544,16 +1572,16 @@ menuButtons.forEach(button => {
         textArea.select();
         document.execCommand("Copy");
         textArea.remove();
-        // 既然朋友要看，那就不骚了，正经提示
-        alert('已复制');
-      } 
+        
+        showToast('已复制');
+      } 
       else if(action === '删除') {
         currentMsg.remove();
       }
       else {
-        alert('【' + action + '】功能正在开发中...');
+        showToast(action + ' 功能开发中');
       }
-    }, 10);
+    }, 50);
   });
 });
 </script>
