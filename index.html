@@ -9,31 +9,31 @@
  <title>小手机 v1.4.4 稳定</title>
   <style>
     :root{
-      --safe-top: env(safe-area-inset-top, 0px);
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
-      --line:#e6e9f5;
-      --bg:#f6f8ff;
-      --blue:#2f66d8;
-      --glass: rgba(255,255,255,.30);
-      --glass-border: rgba(255,255,255,.48);
-    }
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html,body{
-      margin:0;height:100%;
-      background:linear-gradient(160deg,#2c57c8,#5ba9ff);
-      font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
-    }
-    #app{
-      width:100%;
-      max-width:430px;
-      height:100dvh;
-      min-height:100dvh;
-      margin:0 auto;
-      position:relative;
-      overflow:hidden;
-      background:var(--bg);
-    }
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --app-h: 100dvh; /* 兜底，JS会覆盖成精确像素 */
+}
 
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  min-height:100%;
+  overflow:hidden; /* 防止外层滚动导致视口二次变化 */
+  background:linear-gradient(160deg,#2c57c8,#5ba9ff);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+}
+
+#app{
+  width:100%;
+  max-width:430px;
+  height:var(--app-h);
+  min-height:var(--app-h);
+  margin:0 auto;
+  position:relative;
+  overflow:hidden;
+  background:var(--bg);
+}
     .screen{position:absolute;inset:0;display:none;background:var(--bg)}
     .screen.active{display:block}
 
@@ -648,7 +648,10 @@
   const clean=s=>String(s||'').trim();
   const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-
+function setAppHeight(){
+  const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  document.documentElement.style.setProperty('--app-h', `${Math.round(h)}px`);
+}
   
   const GlobalState = {};
   async function initAppStorage() {
@@ -1402,21 +1405,24 @@ function buildOfflineSystem(c,me,st){
 
   // init
   
-  initAppStorage().then(() => {
-    applyBubbleCss();
-    refreshPresetUI();
-    renderContacts();
-  1409    });
-1410
-1411    function fixAppH(){
-1412      var h = window.innerHeight;
-1413      document.getElementById('app').style.height = h + 'px';
-1414      document.getElementById('app').style.minHeight = h + 'px';
-1415    }
-1416    window.addEventListener('load', function(){ setTimeout(fixAppH, 80); });
-1417    window.addEventListener('resize', fixAppH);
-1418
-1419  })();
-1420  </script>
+initAppStorage().then(() => {
+  setAppHeight();
+  setTimeout(setAppHeight, 60);
+  setTimeout(setAppHeight, 260);
+
+  applyBubbleCss();
+  refreshPresetUI();
+  renderContacts();
+});
+window.addEventListener('resize', setAppHeight);
+window.addEventListener('orientationchange', setAppHeight);
+window.addEventListener('pageshow', setAppHeight);
+
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', setAppHeight);
+  window.visualViewport.addEventListener('scroll', setAppHeight);
+}
+})();
+</script>
 </body>
 </html>
