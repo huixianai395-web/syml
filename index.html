@@ -1357,7 +1357,9 @@ $('openOfflinePaletteBtn').onclick=()=>{
   },60);
 };
 
-$('offlinePalettePanel').addEventListener('input',e=>{
+const offPanel = $('offlinePalettePanel');
+
+function applyOfflineColor(e){
   const key=e.target.dataset.key;
   if(!key||!currentId) return;
   const c=getContactById(currentId);
@@ -1366,11 +1368,14 @@ $('offlinePalettePanel').addEventListener('input',e=>{
   st.offlineColors[key]=e.target.value;
   updateContact(currentId,{settings:st});
   renderChat();
-});
+}
+
+offPanel.addEventListener('click',e=>e.stopPropagation()); // 防止点颜色时被关闭
+offPanel.addEventListener('input',applyOfflineColor);
+offPanel.addEventListener('change',applyOfflineColor); // 手机端更稳
 
 document.addEventListener('click',e=>{
-  const panel=$('offlinePalettePanel');
-  if(panel && !panel.contains(e.target)) panel.classList.remove('show');
+  if(offPanel && !offPanel.contains(e.target)) offPanel.classList.remove('show');
 });
 
   initAppStorage().then(()=>{
