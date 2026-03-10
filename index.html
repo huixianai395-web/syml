@@ -10,16 +10,6 @@
       --safe-bottom: env(safe-area-inset-bottom, 0px);
       --line:#e6e9f5;--bg:#f6f8ff;--blue:#2f66d8;
       --glass: rgba(255,255,255,.30);--glass-border: rgba(255,255,255,.48);
-
-      --offline-state-color:#7b5f3a;
-      --offline-body-color:#3b2f22;
-      --offline-symbol-color:#b07a3b;
-      --offline-state-bg:#fff7ea;
-      --offline-body-bg:#fbf6ef;
-      --offline-border:#e8dccb;
-      --offline-quote-color:#2f3443;
-      --offline-quote-bg:#f2f3f6;
-      --offline-quote-border:#e5e7ee;
     }
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     html,body{margin:0;height:100%;background:linear-gradient(160deg,#2c57c8,#5ba9ff);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;}
@@ -95,18 +85,9 @@
     #chatRoom.offline .chat-avatar{width:42px;height:42px;border-radius:12px;align-self:flex-start}
     #chatRoom.offline .bubble-wrap,#chatRoom.offline .bubble,#chatRoom.offline .offline-card{width:100%!important;max-width:100%!important}
     #chatRoom.offline .bubble{border-radius:14px;line-height:1.62}
-    .offline-card{border:1px solid var(--offline-border);background:transparent;border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(110,78,42,.08);}
-    .offline-state{padding:9px 36px 9px 10px;font-size:12px;color:var(--offline-state-color);border-bottom:1px solid #efe4d5;background:var(--offline-state-bg);white-space:pre-wrap;line-height:1.5;position:relative;}
-    .offline-body{padding:12px 14px 14px;color:var(--offline-body-color);background:var(--offline-body-bg);white-space:pre-wrap;line-height:1.62;text-align:justify;}
-    .sym{color:var(--offline-symbol-color);}
-    .palette-btn{
-      position:absolute;right:8px;top:7px;
-      width:22px;height:22px;border-radius:8px;border:1px solid rgba(120,140,190,.25);
-      background:rgba(255,255,255,.7);backdrop-filter:blur(10px);
-      font-size:14px;display:grid;place-items:center;cursor:pointer;color:#496090;
-      box-shadow:0 1px 4px rgba(55,85,130,.15);
-    }
-    .palette-btn:active{transform:scale(.96)}
+    .offline-card{border:1px solid #e8dccb;background:linear-gradient(180deg,#fffdf9,#fbf6ef);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(110,78,42,.08);}
+    .offline-state{padding:9px 10px;font-size:12px;color:#7b5f3a;border-bottom:1px solid #efe4d5;background:linear-gradient(180deg,#fff7ea,#f8efdf);white-space:pre-wrap;line-height:1.5;}
+    .offline-body{padding:12px 14px 14px;color:#3b2f22;white-space:pre-wrap;line-height:1.62;text-align:justify;}
 
     .modal{position:absolute;inset:0;background:rgba(0,0,0,.35);display:none;place-items:center;z-index:99;padding:12px;}
     .modal.active{display:grid}
@@ -131,7 +112,7 @@
     .quote-close{border:none;background:transparent;color:#6678a8;font-size:18px;line-height:1;cursor:pointer}
 
     .msg-extra{margin-top:4px;font-size:10px;opacity:.8}
-    .msg-quote{background:var(--offline-quote-bg,#f2f3f6);border:1px solid var(--offline-quote-border,#e5e7ee);color:var(--offline-quote-color,#2f3443);border-radius:8px;padding:6px 8px;margin-bottom:6px;max-width:100%}
+    .msg-quote{background:#f2f3f6;border:1px solid #e5e7ee;color:#2f3443;border-radius:8px;padding:6px 8px;margin-bottom:6px;max-width:100%}
     .msg-quote .q-content{font-size:12px;line-height:1.36;word-break:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
     .ai-hidden{filter:saturate(.35) brightness(.98) contrast(.96)}
 
@@ -183,24 +164,6 @@
       line-height:1.6;
       color:#1f2430;
     }
-
-    .color-panel{
-      position:absolute;z-index:92;
-      min-width:260px;max-width:calc(100% - 18px);
-      background:rgba(255,255,255,.9);
-      border:1px solid #e7ecfb;
-      border-radius:14px;
-      padding:10px;
-      backdrop-filter:blur(16px);
-      box-shadow:0 12px 28px rgba(45,69,120,.18);
-    }
-    .color-panel.hidden{display:none}
-    .cp-head{display:flex;justify-content:space-between;align-items:center;font-weight:600;color:#2b3a60;margin-bottom:8px;}
-    .cp-close{border:none;background:transparent;font-size:18px;cursor:pointer;color:#6b7a9b;}
-    .cp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-    .cp-item{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:12px;color:#51608a;border:1px dashed #e1e6f6;border-radius:10px;padding:6px 8px;background:#f7f9ff;}
-    .cp-item input[type="color"]{border:none;background:transparent;width:34px;height:22px;padding:0;}
-    .cp-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px;}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 </head>
@@ -274,18 +237,6 @@
         <input id="roleAvatarFile" type="file" accept="image/*" class="hidden" />
         <img id="roleAvatarPreview" class="preview-img hidden" style="margin-top:8px;" />
         <div class="small" style="margin-top:8px;">对方人设</div><textarea id="rolePersonaInput" class="ta" style="min-height:95px;"></textarea>
-
-        <div class="small" style="margin-top:8px;">线下开场白（可多条）</div>
-        <textarea id="openerInput" class="ta" style="min-height:80px;" placeholder="例如：*她推门而入，轻声* ……"></textarea>
-        <div class="row" style="margin-top:8px;flex-wrap:wrap;">
-          <button class="btn" id="addOpenerBtn">添加开场白</button>
-          <select id="openerSelect" class="select" style="min-width:140px;flex:1;"></select>
-          <button class="btn d" id="delOpenerBtn">删除</button>
-        </div>
-        <div class="row" style="margin-top:6px;gap:6px;align-items:center;flex-wrap:wrap;">
-          <button class="btn" id="useOpenerBtn">发送到线下聊天</button>
-          <span class="small">仅线下模式，可手动选择</span>
-        </div>
       </div>
 
       <div class="card">
@@ -321,16 +272,19 @@
         <div class="row" style="margin-top:8px;justify-content:space-between;"><span class="small">显示每条消息时间</span><input id="showTsSwitch" type="checkbox" /></div>
       </div>
 
-      <div class="card">
-        <div class="small">气泡CSS专区（可选）</div>
-        <div class="row" style="margin-top:8px;">
-          <select id="bubblePresetSelect" class="select"></select>
-          <button class="btn" id="newBubblePresetBtn">新建</button>
-          <button class="btn d" id="delBubblePresetBtn">删</button>
-        </div>
-        <textarea id="bubbleCssInput" class="ta" style="min-height:130px;margin-top:8px;" placeholder=".bubble.ai{...}"></textarea>
-        <div class="small" style="margin-top:6px;">保存后立即生效，可随时清空恢复</div>
-      </div>
+     <div class="card">
+  <div class="small">气泡CSS专区（可选）</div>
+
+  <div class="row" style="margin-top:8px;">
+    <select id="bubblePresetSelect" class="select"></select>
+    <button class="btn" id="newBubblePresetBtn">新建</button>
+    <button class="btn d" id="delBubblePresetBtn">删</button>
+    <button class="btn p" id="applyBubblePresetBtn">应用</button>
+  </div>
+
+  <textarea id="bubbleCssInput" class="ta" style="min-height:130px;margin-top:8px;" placeholder=".bubble.ai{...}"></textarea>
+  <div class="small" style="margin-top:6px;">保存后立即生效，可随时清空恢复</div>
+</div>
 
       <div class="card">
         <div class="small">数据工具</div>
@@ -453,45 +407,17 @@
     </div>
   </div>
 
-  <div id="colorPanelMask" class="float-layer hidden"></div>
-  <div id="colorPanel" class="color-panel hidden">
-    <div class="cp-head"><span>线下配色</span><button class="cp-close" id="cpCloseBtn">×</button></div>
-    <div class="cp-grid">
-      <div class="cp-item"><span>状态栏文字</span><input type="color" id="cpStateText"></div>
-      <div class="cp-item"><span>正文文字</span><input type="color" id="cpBodyText"></div>
-      <div class="cp-item"><span>引号/符号</span><input type="color" id="cpSymbolText"></div>
-      <div class="cp-item"><span>状态栏背景</span><input type="color" id="cpStateBg"></div>
-      <div class="cp-item"><span>正文背景</span><input type="color" id="cpBodyBg"></div>
-      <div class="cp-item"><span>边框颜色</span><input type="color" id="cpBorder"></div>
-      <div class="cp-item"><span>引用文字</span><input type="color" id="cpQuoteText"></div>
-    </div>
-    <div class="cp-actions">
-      <button class="btn" id="cpResetBtn">恢复默认</button>
-      <button class="btn p" id="cpSaveBtn">保存</button>
-    </div>
-  </div>
-
 </div>
 
 <script>
 (() => {
-  const K_CONTACT='mp_fix_contacts',K_CHAT='mp_fix_chats',K_API='mp_fix_api',K_ME='mp_fix_me',K_PREF='mp_fix_pref',K_FONT='mp_fix_font';
-  const DEFAULT_OFFLINE_COLORS={
-    stateText:'#7b5f3a',
-    bodyText:'#3b2f22',
-    symbol:'#b07a3b',
-    stateBg:'#fff7ea',
-    bodyBg:'#fbf6ef',
-    border:'#e8dccb',
-    quoteText:'#2f3443'
-  };
-  const DEFAULT_CHAT_SETTINGS={mode:'online',onlineStyle:'free',onlineMin:2,onlineMax:6,offlineMin:220,offlineMax:420,offlineColors:{...DEFAULT_OFFLINE_COLORS}};
+  const K_CONTACT='mp_fix_contacts',K_CHAT='mp_fix_chats',K_API='mp_fix_api',K_ME='mp_fix_me',K_PREF='mp_fix_pref',K_FONT='mp_fix_font',K_BUBBLE_PRESET='mp_fix_bubble_preset';
+  const DEFAULT_CHAT_SETTINGS={mode:'online',onlineStyle:'free',onlineMin:2,onlineMax:6,offlineMin:220,offlineMax:420};
 
   let currentId=null,createAvatar='',typingForId=null,composeQuote=null,activeActionMsgId=null,selectMode=false,selectedIds=new Set(),editMsgId=null;
   let lpTimer=null,lpStartX=0,lpStartY=0;
   let meAvatarDraft='',roleAvatarDraft='';
   let favSelectMode=false,favSelected=new Set(),favNowTimer=null;
-  let colorDraft=null;
 
   const $=id=>document.getElementById(id);
   const clean=s=>String(s||'').trim();
@@ -523,20 +449,14 @@
     o.offlineMin=Math.max(80,Number(o.offlineMin||220));
     o.offlineMax=Math.max(o.offlineMin,Number(o.offlineMax||420));
     o.contextLen=Math.max(5,Number(o.contextLen||30));
-    o.offlineColors={...DEFAULT_OFFLINE_COLORS,...(o.offlineColors||{})};
     return o;
   }
 
   function getPref(){
-    const p=getJ(K_PREF,{showTs:false,bubbleCss:'',bubblePresets:null,bubbleCurrent:'默认',fontData:'',fontFamily:'',fontUrl:''});
-    const presets=(p.bubblePresets&&typeof p.bubblePresets==='object')?p.bubblePresets:{'默认':String(p.bubbleCss||'')};
-    let current=p.bubbleCurrent||'默认';
-    if(!presets[current]) current=Object.keys(presets)[0]||'默认';
+    const p=getJ(K_PREF,{showTs:false,bubbleCss:'',fontData:'',fontFamily:'',fontUrl:''});
     return {
       showTs:!!p.showTs,
-      bubbleCss:String(p.bubbleCss||presets[current]||''),
-      bubblePresets:presets,
-      bubbleCurrent:current,
+      bubbleCss:String(p.bubbleCss||''),
       fontData:String(p.fontData||''),
       fontFamily:String(p.fontFamily||''),
       fontUrl:String(p.fontUrl||'')
@@ -546,8 +466,7 @@
   function applyBubbleCss(){
     const p=getPref(); let el=document.getElementById('bubbleCssStyle');
     if(!el){el=document.createElement('style');el.id='bubbleCssStyle';document.head.appendChild(el);}
-    const css=String((p.bubblePresets && p.bubblePresets[p.bubbleCurrent]) ?? p.bubbleCss || '');
-    el.textContent=css;
+    el.textContent=String(p.bubbleCss||'');
   }
   function applyCustomFont(){
     const p=getPref();
@@ -604,16 +523,8 @@
     return {id:m?.id||uid(),role:m?.role==='assistant'?'assistant':'user',text:String(m?.text||''),time:Number(m?.time||Date.now()),stored:m?.stored!==false,hiddenForAi:!!m?.hiddenForAi,favorite:!!m?.favorite,edited:!!m?.edited,quote:q};
   }
 
-  function normContact(c){
-    return {
-      ...c,
-      openers:Array.isArray(c?.openers)?c.openers:[],
-      openerSel:(c?.openerSel!==undefined && c?.openerSel!==null)?String(c.openerSel):'',
-      settings:normSettings(c?.settings)
-    };
-  }
-  function getContacts(){const arr=getJ(K_CONTACT,[]);return Array.isArray(arr)?arr.map(normContact):[];}
-  function setContacts(v){setJ(K_CONTACT,(v||[]).map(normContact));}
+  function getContacts(){const arr=getJ(K_CONTACT,[]);return Array.isArray(arr)?arr.map(c=>({...c,settings:normSettings(c.settings)})):[];}
+  function setContacts(v){setJ(K_CONTACT,(v||[]).map(c=>({...c,settings:normSettings(c.settings)})));}
   function getChats(){return getJ(K_CHAT,{});} function setChats(v){setJ(K_CHAT,v);}
   function getMe(){return getJ(K_ME,{name:'我',avatar:'',persona:'',note:''});} function setMe(v){setJ(K_ME,v);}
   function getContactById(id){return getContacts().find(x=>x.id===id);}
@@ -692,7 +603,7 @@
     const name=clean($('newName').value); if(!name) return alert('昵称不能为空');
     const avatarUrl=clean($('newAvatarUrl').value),persona=clean($('newPersona').value);
     const arr=getContacts();
-    arr.unshift({id:'c'+Date.now()+'_'+Math.floor(Math.random()*9999),name,note:'',avatar:createAvatar||avatarUrl||'',preview:'',time:'',persona,openers:[],openerSel:'',settings:{...DEFAULT_CHAT_SETTINGS}});
+    arr.unshift({id:'c'+Date.now()+'_'+Math.floor(Math.random()*9999),name,note:'',avatar:createAvatar||avatarUrl||'',preview:'',time:'',persona,settings:{...DEFAULT_CHAT_SETTINGS}});
     try{setContacts(arr);}catch{return alert('保存失败：存储空间不足（已自动瘦身，仍不足）');}
     renderContacts($('searchInput').value||''); closeCreateModal();
   }
@@ -710,23 +621,7 @@
 
   function setTyping(chatId,on){typingForId=on?chatId:(typingForId===chatId?null:typingForId);updateChatSub();}
   function updateChatSub(){$('chatSub').textContent=(currentId&&typingForId===currentId)?'对方正在输入中…':'';}
-  function applyOfflineColors(colors){
-    const el=$('chatRoom'); if(!el) return;
-    const c=colors||getOfflineColorsForCurrent();
-    el.style.setProperty('--offline-state-color',c.stateText||DEFAULT_OFFLINE_COLORS.stateText);
-    el.style.setProperty('--offline-body-color',c.bodyText||DEFAULT_OFFLINE_COLORS.bodyText);
-    el.style.setProperty('--offline-symbol-color',c.symbol||DEFAULT_OFFLINE_COLORS.symbol);
-    el.style.setProperty('--offline-state-bg',c.stateBg||DEFAULT_OFFLINE_COLORS.stateBg);
-    el.style.setProperty('--offline-body-bg',c.bodyBg||DEFAULT_OFFLINE_COLORS.bodyBg);
-    el.style.setProperty('--offline-border',c.border||DEFAULT_OFFLINE_COLORS.border);
-    el.style.setProperty('--offline-quote-color',c.quoteText||DEFAULT_OFFLINE_COLORS.quoteText);
-  }
-  function applyModeUI(){
-    const c=getContactById(currentId),st=normSettings(c?.settings);
-    $('chatRoom').classList.toggle('offline',st.mode==='offline');
-    updateChatSub();
-    if(st.mode==='offline') applyOfflineColors(st.offlineColors);
-  }
+  function applyModeUI(){const c=getContactById(currentId),st=normSettings(c?.settings);$('chatRoom').classList.toggle('offline',st.mode==='offline');updateChatSub();}
 
   window.openChat=function(id){
     currentId=id;selectMode=false;selectedIds.clear();closeFloatMenu();composeQuote=null;updateQuoteBar();
@@ -735,17 +630,11 @@
 
   function renderQuote(q){ if(!q||!q.text) return ''; return `<div class="msg-quote"><div class="q-content">${esc(q.text)}</div></div>`; }
 
-  function formatSymbols(htmlEsc){
-    return String(htmlEsc||'').replace(/(&quot;|“|”|「|」|『|』|《|》)/g,'<span class="sym">$1</span>');
-  }
-
   function renderOfflineAssistant(text,ts,pref,msg){
     const raw=String(text||''),m=raw.match(/【状态栏】\s*([\s\S]*?)\s*【正文】\s*([\s\S]*)/);
     if(!m) return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}<div class="bubble ai ${msg.hiddenForAi?'ai-hidden':''}">${esc(raw)}</div>${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}</div>`;
     const state=clean(m[1]),body=clean(m[2]);
-    const stateHtml=formatSymbols(esc(state||'状态未记录'));
-    const bodyHtml=formatSymbols(esc(body||''));
-    return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}<div class="offline-card ${msg.hiddenForAi?'ai-hidden':''}"><div class="offline-state">${stateHtml}<button class="palette-btn" title="线下配色">🎨</button></div><div class="offline-body">${bodyHtml}</div></div>${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}</div>`;
+    return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}<div class="offline-card ${msg.hiddenForAi?'ai-hidden':''}"><div class="offline-state">${esc(state||'状态未记录')}</div><div class="offline-body">${esc(body||'')}</div></div>${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}</div>`;
   }
 
   function renderBubbleContent(m,isMe,pref){
@@ -794,11 +683,6 @@
     arr.push(toMsg({role:'user',text,time:Date.now(),stored:true,quote:composeQuote?{...composeQuote}:null}));
     setChatArr(currentId,arr);composeQuote=null;updateQuoteBar();updateContactPreview(currentId);
   }
-  function pushAssistant(text){
-    const arr=getChatArr(currentId);
-    arr.push(toMsg({role:'assistant',text,time:Date.now()}));
-    setChatArr(currentId,arr);updateContactPreview(currentId);
-  }
   function storeCurrentInput(){if(!currentId) return;const t=clean($('chatInput').value);if(!t) return;pushUser(t);$('chatInput').value='';resetInputH();renderChat();}
   $('storeBtn').onclick=storeCurrentInput;
 
@@ -842,6 +726,53 @@
   async function fetchModels(){try{const c=saveApiForm();if(!c.base||!c.key) throw new Error('请先配置 Base URL 和 API Key');$('apiStatus').textContent='状态：拉取模型中...';const r=await fetch(buildUrl(c.base,'/v1/models'),{headers:{'Authorization':'Bearer '+c.key}});const data=await r.json().catch(()=>({}));if(!r.ok) throw new Error(data?.error?.message||('HTTP '+r.status));const list=(data.data||[]).map(x=>x.id).filter(Boolean);if(!list.length) throw new Error('未返回模型列表');$('apiModel').innerHTML=list.map(m=>`<option>${m}</option>`).join('');if(list.includes(c.model)) $('apiModel').value=c.model;$('apiStatus').textContent='状态：模型拉取成功（'+list.length+'）';}catch(e){$('apiStatus').textContent='状态：拉取失败 -> '+e.message;}}
   async function testApi(){try{$('apiStatus').textContent='状态：测试中...';const out=await callApi([{role:'user',content:'只回复ok'}]);$('apiStatus').textContent='状态：连接成功 -> '+(out||'ok');}catch(e){$('apiStatus').textContent='状态：失败 -> '+e.message;}}
   $('saveApiBtn').onclick=saveApiForm;$('fetchModelsBtn').onclick=fetchModels;$('testApiBtn').onclick=testApi;
+  // 气泡CSS预设
+function getBubblePresetState(){
+  return getJ(K_BUBBLE_PRESET,{current:'默认',presets:{'默认':{css:''}}});
+}
+function setBubblePresetState(v){setJ(K_BUBBLE_PRESET,v);}
+
+function refreshBubblePresetUI(){
+  const s=getBubblePresetState(),names=Object.keys(s.presets);
+  $('bubblePresetSelect').innerHTML=names.map(n=>`<option ${n===s.current?'selected':''}>${n}</option>`).join('');
+  const cur=s.presets[s.current]||{css:''};
+  $('bubbleCssInput').value=cur.css||'';
+}
+
+function saveBubblePresetForm(){
+  const s=getBubblePresetState();
+  s.presets[s.current]={css:String($('bubbleCssInput').value||'')};
+  setBubblePresetState(s);
+  const p=getPref(); p.bubbleCss=s.presets[s.current].css||''; setPref(p); applyBubbleCss();
+}
+
+$('bubblePresetSelect').onchange=e=>{
+  const s=getBubblePresetState();
+  s.presets[s.current]={css:String($('bubbleCssInput').value||'')};
+  s.current=e.target.value; setBubblePresetState(s);
+  refreshBubblePresetUI();
+};
+
+$('newBubblePresetBtn').onclick=()=>{
+  const defaultName='气泡样式-'+fmtFullTs(Date.now()).replace(/[: ]/g,'');
+  const name=(prompt('新气泡预设名：',defaultName)||'').trim();
+  if(!name) return;
+  const s=getBubblePresetState();
+  if(s.presets[name]) return alert('预设已存在');
+  s.presets[name]={css:String($('bubbleCssInput').value||'')};
+  s.current=name; setBubblePresetState(s);
+  refreshBubblePresetUI();
+};
+
+$('delBubblePresetBtn').onclick=()=>{
+  const s=getBubblePresetState(),names=Object.keys(s.presets);
+  if(names.length<=1) return alert('至少保留一个预设');
+  if(!confirm('删除当前气泡预设？')) return;
+  delete s.presets[s.current]; s.current=Object.keys(s.presets)[0];
+  setBubblePresetState(s); refreshBubblePresetUI();
+};
+
+$('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 
   function getFontState(){
     return getJ(K_FONT,{current:'默认',presets:{'默认':{url:''}}});
@@ -928,111 +859,6 @@
     if(!s.presets['默认']) s.presets['默认']={url:''};
     s.current='默认'; setFontState(s); refreshFontUI(); applyFontByUrl('', '系统默认');
   };
-
-  function refreshBubblePresetUI(){
-    const p=getPref();
-    const names=Object.keys(p.bubblePresets||{'默认':''});
-    if(!names.includes(p.bubbleCurrent)) p.bubbleCurrent=names[0];
-    $('bubblePresetSelect').innerHTML=names.map(n=>`<option ${n===p.bubbleCurrent?'selected':''}>${n}</option>`).join('');
-    $('bubbleCssInput').value=p.bubblePresets[p.bubbleCurrent]||'';
-    setPref(p);
-  }
-  function saveBubblePreset(){
-    const p=getPref();
-    if(!p.bubblePresets) p.bubblePresets={'默认':''};
-    const cur=p.bubbleCurrent||'默认';
-    p.bubblePresets[cur]=String($('bubbleCssInput').value||'');
-    p.bubbleCss=p.bubblePresets[cur]||'';
-    setPref(p); applyBubbleCss();
-  }
-
-  $('bubblePresetSelect').onchange=e=>{
-    const p=getPref();
-    p.bubblePresets[p.bubbleCurrent]=String($('bubbleCssInput').value||'');
-    p.bubbleCurrent=e.target.value;
-    p.bubbleCss=p.bubblePresets[p.bubbleCurrent]||'';
-    setPref(p);
-    $('bubbleCssInput').value=p.bubbleCss;
-    applyBubbleCss();
-  };
-  $('newBubblePresetBtn').onclick=()=>{
-    const name=(prompt('新气泡预设名：')||'').trim(); if(!name) return;
-    const p=getPref(); if(p.bubblePresets[name]) return alert('预设已存在');
-    p.bubblePresets[name]=''; p.bubbleCurrent=name; setPref(p); refreshBubblePresetUI(); applyBubbleCss();
-  };
-  $('delBubblePresetBtn').onclick=()=>{
-    const p=getPref(),names=Object.keys(p.bubblePresets); if(names.length<=1) return alert('至少保留一个预设');
-    if(!confirm('删除当前气泡预设？')) return;
-    delete p.bubblePresets[p.bubbleCurrent];
-    p.bubbleCurrent=Object.keys(p.bubblePresets)[0];
-    p.bubbleCss=p.bubblePresets[p.bubbleCurrent]||'';
-    setPref(p); refreshBubblePresetUI(); applyBubbleCss();
-  };
-
-  function getOfflineColorsForCurrent(){
-    const c=getContactById(currentId),st=normSettings(c?.settings);
-    return {...DEFAULT_OFFLINE_COLORS,...(st.offlineColors||{})};
-  }
-  function saveOfflineColors(colors){
-    if(!currentId) return;
-    const c=getContactById(currentId),st=normSettings(c?.settings);
-    st.offlineColors={...DEFAULT_OFFLINE_COLORS,...(colors||{})};
-    updateContact(currentId,{settings:st});
-    applyOfflineColors(st.offlineColors);
-  }
-  function openColorPanel(clientX,clientY){
-    if(!currentId) return;
-    const c=getContactById(currentId),st=normSettings(c?.settings);
-    if(st.mode!=='offline') return;
-    colorDraft=getOfflineColorsForCurrent();
-    $('cpStateText').value=colorDraft.stateText;
-    $('cpBodyText').value=colorDraft.bodyText;
-    $('cpSymbolText').value=colorDraft.symbol;
-    $('cpStateBg').value=colorDraft.stateBg;
-    $('cpBodyBg').value=colorDraft.bodyBg;
-    $('cpBorder').value=colorDraft.border;
-    $('cpQuoteText').value=colorDraft.quoteText;
-
-    $('colorPanelMask').classList.remove('hidden');
-    const panel=$('colorPanel'); panel.classList.remove('hidden');
-    const appRect=$('app').getBoundingClientRect(),x=clientX-appRect.left,y=clientY-appRect.top;
-    requestAnimationFrame(()=>{
-      const w=panel.offsetWidth||260,h=panel.offsetHeight||220;
-      let left=Math.max(8,Math.min(x-w/2,appRect.width-w-8));
-      let top=y-h-10; if(top<8) top=Math.min(y+12,appRect.height-h-8);
-      panel.style.left=left+'px'; panel.style.top=top+'px';
-    });
-  }
-  function closeColorPanel(){ $('colorPanel').classList.add('hidden'); $('colorPanelMask').classList.add('hidden'); colorDraft=null; }
-
-  ['cpStateText','cpBodyText','cpSymbolText','cpStateBg','cpBodyBg','cpBorder','cpQuoteText'].forEach(id=>{
-    const el=$(id); if(!el) return;
-    el.oninput=()=>{
-      if(!colorDraft) colorDraft=getOfflineColorsForCurrent();
-      if(id==='cpStateText') colorDraft.stateText=el.value;
-      if(id==='cpBodyText') colorDraft.bodyText=el.value;
-      if(id==='cpSymbolText') colorDraft.symbol=el.value;
-      if(id==='cpStateBg') colorDraft.stateBg=el.value;
-      if(id==='cpBodyBg') colorDraft.bodyBg=el.value;
-      if(id==='cpBorder') colorDraft.border=el.value;
-      if(id==='cpQuoteText') colorDraft.quoteText=el.value;
-      saveOfflineColors(colorDraft);
-    };
-  });
-  $('cpResetBtn').onclick=()=>{
-    colorDraft={...DEFAULT_OFFLINE_COLORS};
-    $('cpStateText').value=colorDraft.stateText;
-    $('cpBodyText').value=colorDraft.bodyText;
-    $('cpSymbolText').value=colorDraft.symbol;
-    $('cpStateBg').value=colorDraft.stateBg;
-    $('cpBodyBg').value=colorDraft.bodyBg;
-    $('cpBorder').value=colorDraft.border;
-    $('cpQuoteText').value=colorDraft.quoteText;
-    saveOfflineColors(colorDraft);
-  };
-  $('cpSaveBtn').onclick=closeColorPanel;
-  $('cpCloseBtn').onclick=closeColorPanel;
-  $('colorPanelMask').onclick=closeColorPanel;
 
   function getSysTimeStr(){const d=new Date(),w=['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${w} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 
@@ -1123,18 +949,6 @@
     if(clean(src)){el.src=src;el.classList.remove('hidden');}else{el.src='';el.classList.add('hidden');}
   }
 
-  function renderOpenerUI(){
-    const c=getContactById(currentId);
-    const arr=Array.isArray(c?.openers)?c.openers:[];
-    const sel=$('openerSelect');
-    if(!sel) return;
-    if(!arr.length){ sel.innerHTML='<option value="">暂无开场白</option>'; sel.value=''; return; }
-    sel.innerHTML=arr.map((t,i)=>`<option value="${i}">${esc(t.length>28? t.slice(0,28)+'...' : t)}</option>`).join('');
-    let idx=Number(c?.openerSel||0);
-    if(!Number.isInteger(idx)||idx<0||idx>=arr.length) idx=0;
-    sel.value=String(idx);
-  }
-
   function openChatSettingPage(){
     if(!currentId) return;
     const c=getContactById(currentId),st=normSettings(c?.settings),me=getMe(),p=getPref();
@@ -1149,10 +963,8 @@
     $('onlineMinInput').value=st.onlineMin;$('onlineMaxInput').value=st.onlineMax;
     $('offlineMinInput').value=st.offlineMin;$('offlineMaxInput').value=st.offlineMax;
     $('contextLenInput').value=st.contextLen||30;
-    $('showTsSwitch').checked=!!p.showTs;
+    $('showTsSwitch').checked=!!p.showTs;$('bubbleCssInput').value=p.bubbleCss||'';
 
-    refreshBubblePresetUI();
-    renderOpenerUI();
     refreshSettingUI(); show('chatSetting');
   }
 
@@ -1166,40 +978,6 @@
 
   $('meAvatarInput').addEventListener('input',e=>showPreview('meAvatarPreview',e.target.value));
   $('roleAvatarInput').addEventListener('input',e=>showPreview('roleAvatarPreview',e.target.value));
-
-  $('addOpenerBtn').onclick=()=>{
-    if(!currentId) return;
-    const t=clean($('openerInput').value); if(!t) return;
-    const c=getContactById(currentId),arr=[...(c.openers||[])];
-    arr.push(t);
-    updateContact(currentId,{openers:arr,openerSel:String(arr.length-1)});
-    $('openerInput').value=''; renderOpenerUI();
-  };
-  $('delOpenerBtn').onclick=()=>{
-    if(!currentId) return;
-    const c=getContactById(currentId),arr=[...(c.openers||[])];
-    const idx=Number($('openerSelect').value);
-    if(!arr.length || Number.isNaN(idx)) return;
-    arr.splice(idx,1);
-    updateContact(currentId,{openers:arr,openerSel:String(Math.max(0,idx-1))});
-    renderOpenerUI();
-  };
-  $('openerSelect').onchange=e=>{
-    if(!currentId) return;
-    updateContact(currentId,{openerSel:String(e.target.value||'0')});
-  };
-  $('useOpenerBtn').onclick=()=>{
-    if(!currentId) return;
-    const c=getContactById(currentId),st=normSettings(c?.settings);
-    if(st.mode!=='offline') return alert('当前不是线下模式');
-    const arr=[...(c.openers||[])];
-    const idx=Number($('openerSelect').value);
-    const text=arr[idx];
-    if(!text) return alert('请先选择开场白');
-    pushAssistant(text);
-    renderChat();
-    show('chatRoom');
-  };
 
   $('saveChatSettingBtn').onclick=()=>{
     if(!currentId) return;
@@ -1222,12 +1000,10 @@
         note:clean($('roleNoteInput').value),
         persona:clean($('rolePersonaInput').value),
         avatar:roleAvatar,
-        openerSel:String($('openerSelect').value||'0'),
-        settings:normSettings({mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen,offlineColors:getOfflineColorsForCurrent()})
+        settings:normSettings({mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen})
       });
 
-      const p=getPref(); p.showTs=!!$('showTsSwitch').checked; setPref(p);
-      saveBubblePreset();
+      const p=getPref(); p.showTs=!!$('showTsSwitch').checked; p.bubbleCss=String($('bubbleCssInput').value||''); setPref(p); applyBubbleCss();
 
       const now=getContactById(currentId); $('chatTitle').textContent=now?.name||'聊天';
       applyModeUI(); renderChat(); renderContacts($('searchInput').value||''); show('chatRoom');
@@ -1248,7 +1024,7 @@
     try{
       const j=JSON.parse(await f.text());
       if(j.contacts) setContacts(j.contacts); if(j.chats) setChats(j.chats); if(j.api) setApiState(j.api); if(j.me) setMe(j.me); if(j.pref) setPref(j.pref); if(j.font) setFontState(j.font);
-      applyBubbleCss();applyCustomFont();refreshPresetUI();refreshFontUI();refreshBubblePresetUI();renderContacts($('searchInput').value||'');if(currentId) renderChat();alert('导入成功');
+      applyBubbleCss();applyCustomFont();refreshPresetUI();refreshFontUI();renderContacts($('searchInput').value||'');if(currentId) renderChat();alert('导入成功');
     }catch{alert('导入失败：文件格式不正确');}
     finally{e.target.value='';}
   };
@@ -1290,11 +1066,7 @@
     box.addEventListener('touchstart',e=>{const item=e.target.closest('.msg-item');if(!item||!currentId||selectMode) return;const t=e.touches[0];lpStartX=t.clientX;lpStartY=t.clientY;clearTimeout(lpTimer);lpTimer=setTimeout(()=>openFloatMenu(item.dataset.mid,t.clientX,t.clientY),420);},{passive:true});
     box.addEventListener('touchmove',e=>{if(!lpTimer) return;const t=e.touches[0];if(Math.abs(t.clientX-lpStartX)>8||Math.abs(t.clientY-lpStartY)>8){clearTimeout(lpTimer);lpTimer=null;}},{passive:true});
     ['touchend','touchcancel'].forEach(ev=>box.addEventListener(ev,()=>{clearTimeout(lpTimer);lpTimer=null;},{passive:true}));
-    box.addEventListener('click',e=>{
-      const pal=e.target.closest('.palette-btn');
-      if(pal){e.preventDefault();e.stopPropagation();openColorPanel(e.clientX,e.clientY);return;}
-      const item=e.target.closest('.msg-item');if(!item) return;if(selectMode){e.preventDefault();toggleSelect(item.dataset.mid);}
-    });
+    box.addEventListener('click',e=>{const item=e.target.closest('.msg-item');if(!item) return;if(selectMode){e.preventDefault();toggleSelect(item.dataset.mid);}});
   }
 
   $('msgFloatLayer').addEventListener('click',e=>{if(e.target.id==='msgFloatLayer') closeFloatMenu();});
