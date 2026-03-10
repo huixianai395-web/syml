@@ -327,6 +327,13 @@
         <div class="small">时间戳</div>
         <div class="row" style="margin-top:8px;justify-content:space-between;"><span class="small">显示每条消息时间</span><input id="showTsSwitch" type="checkbox" /></div>
       </div>
+      <div class="card">
+  <div class="small">聊天字号</div>
+  <div class="row" style="margin-top:8px;align-items:center;">
+    <input id="fontSizeRange" type="range" min="12" max="22" step="1" />
+    <span id="fontSizeVal" class="small" style="min-width:42px;text-align:right;"></span>
+  </div>
+</div>
 <div class="card">
   <div class="small">线下调色板</div>
   <div class="row" style="margin-top:8px;">
@@ -536,7 +543,22 @@
     const p=getPref(); let el=document.getElementById('bubbleCssStyle');
     if(!el){el=document.createElement('style');el.id='bubbleCssStyle';document.head.appendChild(el);}
     el.textContent=String(p.bubbleCss||'');
-  }
+  }function applyFontSize(){
+  const p=getPref();
+  let el=document.getElementById('fontSizeStyle');
+  if(!el){el=document.createElement('style');el.id='fontSizeStyle';document.head.appendChild(el);}
+  const fs=Number(p.fontSize||16);
+  el.textContent=`
+#chatRoom .bubble, #chatRoom .offline-body { font-size:${fs}px !important; }
+`;
+}
+
+function refreshFontSizeUI(){
+  const p=getPref();
+  const fs=Number(p.fontSize||16);
+  $('fontSizeRange').value=fs;
+  $('fontSizeVal').textContent=fs+'px';
+}
   function applyCustomFont(){
     const p=getPref();
     let el=document.getElementById('customFontStyle');
@@ -1064,13 +1086,13 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
     $('offlineMinInput').value=st.offlineMin;$('offlineMaxInput').value=st.offlineMax;
     $('contextLenInput').value=st.contextLen||30;
     $('showTsSwitch').checked=!!p.showTs;$('bubbleCssInput').value=p.bubbleCss||'';
-
+refreshFontSizeUI();
     refreshSettingUI(); show('chatSetting');
   }
 
   $('chatSettingBtn').onclick=openChatSettingPage;
   $('replyModeSelect').onchange=refreshSettingUI; $('onlineStyleSelect').onchange=refreshSettingUI;
-
+$('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';};
   $('meAvatarPickBtn').onclick=()=> $('meAvatarFile').click();
   $('roleAvatarPickBtn').onclick=()=> $('roleAvatarFile').click();
   $('meAvatarFile').onchange=async e=>{const f=e.target.files?.[0];if(!f) return;meAvatarDraft=await compressImage(f,180,0.42);$('meAvatarInput').value=meAvatarDraft;showPreview('meAvatarPreview',meAvatarDraft);e.target.value='';};
@@ -1103,8 +1125,11 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
         settings:normSettings({mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen})
       });
 
-      const p=getPref(); p.showTs=!!$('showTsSwitch').checked; p.bubbleCss=String($('bubbleCssInput').value||''); setPref(p); applyBubbleCss();
-
+      const p=getPref();
+p.showTs=!!$('showTsSwitch').checked;
+p.bubbleCss=String($('bubbleCssInput').value||'');
+p.fontSize=Number($('fontSizeRange').value||16);
+setPref(p); applyBubbleCss(); applyFontSize();
       const now=getContactById(currentId); $('chatTitle').textContent=now?.name||'聊天';
       applyModeUI(); renderChat(); renderContacts($('searchInput').value||''); show('chatRoom');
     }catch{alert('保存失败：存储空间不足（已自动压缩，仍不足）');}
@@ -1364,8 +1389,9 @@ document.addEventListener('click',e=>{
     renderContacts();
     bindChatMsgEvents();
     updateQuoteBar();
+    applyFontSize();
   });
 })();
 </script>
 </body>
-</html>
+  </html>
