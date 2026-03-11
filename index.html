@@ -58,13 +58,8 @@
     .t{font-size:11px;color:#999}
 
     #chatMsgs{height:calc(100% - (52px + var(--safe-top)) - (74px + var(--safe-bottom)));overflow:auto;padding:10px;background:linear-gradient(180deg,#edf2ff,#edf1f8);display:flex;flex-direction:column;gap:10px;}
-    .msg-row{display:flex;gap:8px;align-items:flex-end;width:100%}.msg-row.me{justify-content:flex-.chat-avatar{
-  width:32px;height:32px;border-radius:10px;
-  object-fit:contain;
-  background:#eef2ff;
-  flex-shrink:0;
-  display:block;
-    }
+    .msg-row{display:flex;gap:8px;align-items:flex-end;width:100%}.msg-row.me{justify-content:flex-end}
+  .chat-avatar{width:32px;height:32px;border-radius:10px;object-fit:contain;background:#eef2ff;flex-shrink:0;}
     .bubble-wrap{display:flex;flex-direction:column;max-width:calc(100% - 48px)}
     .bubble-wrap.me{align-items:flex-end}.bubble-wrap.ai{align-items:flex-start}
     .bubble{max-width:100%;padding:10px 12px;border-radius:14px;line-height:1.45;word-break:break-word;white-space:pre-wrap;}
@@ -286,13 +281,6 @@
     <input id="avatarHQSwitch" type="checkbox" />
   </div>
 </div>
-      <div class="card">
-  <div class="small">头像裁剪为正方形</div>
-  <div class="row" style="margin-top:8px;justify-content:space-between;">
-    <span class="small">开启后头像更满框（可能裁掉边缘）</span>
-    <input id="avatarCropSwitch" type="checkbox" />
-  </div>
-      </div>
       <div class="card">
         <div class="small">我方名称</div><input id="meNameInput" class="input" />
         <div class="small" style="margin-top:8px;">我方备注（可选）</div><input id="meNoteInput" class="input" />
@@ -547,7 +535,7 @@
   }
 
   function getPref(){
-  const p=getJ(K_PREF,{showTs:false,bubbleCss:'',fontData:'',fontFamily:'',fontUrl:'',fontSize:16,avatarHQ:false,avatarCrop:false});
+  const p=getJ(K_PREF,{showTs:false,bubbleCss:'',fontData:'',fontFamily:'',fontUrl:'',fontSize:16,avatarHQ:false});
   return {
     showTs:!!p.showTs,
     bubbleCss:String(p.bubbleCss||''),
@@ -555,10 +543,9 @@
     fontFamily:String(p.fontFamily||''),
     fontUrl:String(p.fontUrl||''),
     fontSize:Number(p.fontSize||16),
-    avatarHQ:!!p.avatarHQ,
-    avatarCrop:!!p.avatarCrop
+    avatarHQ:!!p.avatarHQ
   };
-  }
+}
   function setPref(v){setJ(K_PREF,v);}
   function applyBubbleCss(){
     const p=getPref(); let el=document.getElementById('bubbleCssStyle');
@@ -701,38 +688,20 @@ function refreshFontSizeUI(){
     fr.onload=()=>{
       const img=new Image();
       img.onload=()=>{
-        const c=document.createElement('canvas');
-        c.width=maxSide; c.height=maxSide;
-        const ctx=c.getContext('2d');
-        ctx.fillStyle='#fff';
-        ctx.fillRect(0,0,maxSide,maxSide);
-
-        if(p.avatarCrop){
-          // ✅ 裁正方形
-          const side=Math.min(img.width,img.height);
-          const sx=(img.width-side)/2;
-          const sy=(img.height-side)/2;
-          ctx.drawImage(img,sx,sy,side,side,0,0,maxSide,maxSide);
-        }else{
-          // ✅ 不裁剪，等比缩放居中
-          const scale=Math.min(maxSide/img.width, maxSide/img.height);
-          const w=Math.round(img.width*scale);
-          const h=Math.round(img.height*scale);
-          const dx=Math.round((maxSide-w)/2);
-          const dy=Math.round((maxSide-h)/2);
-          ctx.drawImage(img,0,0,img.width,img.height,dx,dy,w,h);
-        }
-
-        let out='';
-        try{out=c.toDataURL('image/webp',quality)}catch{}
+        let w=img.width,h=img.height,s=Math.min(1,maxSide/Math.max(w,h));
+        w=Math.round(w*s);h=Math.round(h*s);
+        const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+        let out='';try{out=c.toDataURL('image/webp',quality)}catch{}
         if(!out||out.startsWith('data:,')) out=c.toDataURL('image/jpeg',quality);
+        if(out.length>280000 && !p.avatarHQ) out=c.toDataURL('image/jpeg',0.72);
         resolve(out);
       };
       img.onerror=reject; img.src=fr.result;
     };
     fr.onerror=reject; fr.readAsDataURL(file);
   });
-  }
+}
+
   async function saveContact(){
     const name=clean($('newName').value); if(!name) return alert('昵称不能为空');
     const avatarUrl=clean($('newAvatarUrl').value),persona=clean($('newPersona').value);
@@ -1117,7 +1086,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
   function openChatSettingPage(){
     if(!currentId) return;
     const c=getContactById(currentId),st=normSettings(c?.settings),me=getMe(),p=getPref();
-$('avatarCropSwitch').checked=!!p.avatarCrop;
+
     $('meNameInput').value=me.name||'';$('meNoteInput').value=me.note||'';$('mePersonaInput').value=me.persona||'';
     $('meAvatarInput').value=me.avatar||'';meAvatarDraft='';showPreview('meAvatarPreview',me.avatar||'');
 
@@ -1180,8 +1149,6 @@ p.showTs=!!$('showTsSwitch').checked;
 p.bubbleCss=String($('bubbleCssInput').value||'');
 p.fontSize=Number($('fontSizeRange').value||16);
 p.avatarHQ=!!$('avatarHQSwitch').checked;
-     
-p.avatarCrop=!!$('avatarCropSwitch').checked;
 setPref(p); applyBubbleCss(); applyFontSize();
       const now=getContactById(currentId); $('chatTitle').textContent=now?.name||'聊天';
       applyModeUI(); renderChat(); renderContacts($('searchInput').value||''); show('chatRoom');
