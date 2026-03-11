@@ -289,6 +289,13 @@
   </div>
 </div>
       <div class="card">
+  <div class="small">头像裁剪为正方形</div>
+  <div class="row" style="margin-top:8px;justify-content:space-between;">
+    <span class="small">开启后头像更满框（可能裁掉边缘）</span>
+    <input id="avatarCropSwitch" type="checkbox" />
+  </div>
+      </div>
+      <div class="card">
         <div class="small">我方名称</div><input id="meNameInput" class="input" />
         <div class="small" style="margin-top:8px;">我方备注（可选）</div><input id="meNoteInput" class="input" />
         <div class="small" style="margin-top:8px;">我方头像（上传 或 URL）</div>
@@ -542,7 +549,7 @@
   }
 
   function getPref(){
-  const p=getJ(K_PREF,{showTs:false,bubbleCss:'',fontData:'',fontFamily:'',fontUrl:'',fontSize:16,avatarHQ:false});
+  const p=getJ(K_PREF,{showTs:false,bubbleCss:'',fontData:'',fontFamily:'',fontUrl:'',fontSize:16,avatarHQ:false,avatarCrop:false});
   return {
     showTs:!!p.showTs,
     bubbleCss:String(p.bubbleCss||''),
@@ -550,9 +557,10 @@
     fontFamily:String(p.fontFamily||''),
     fontUrl:String(p.fontUrl||''),
     fontSize:Number(p.fontSize||16),
-    avatarHQ:!!p.avatarHQ
+    avatarHQ:!!p.avatarHQ,
+    avatarCrop:!!p.avatarCrop
   };
-}
+  }
   function setPref(v){setJ(K_PREF,v);}
   function applyBubbleCss(){
     const p=getPref(); let el=document.getElementById('bubbleCssStyle');
@@ -695,18 +703,27 @@ function refreshFontSizeUI(){
     fr.onload=()=>{
       const img=new Image();
       img.onload=()=>{
-        const scale=Math.min(maxSide/img.width, maxSide/img.height);
-        const w=Math.round(img.width*scale);
-        const h=Math.round(img.height*scale);
-        const dx=Math.round((maxSide-w)/2);
-        const dy=Math.round((maxSide-h)/2);
-
         const c=document.createElement('canvas');
         c.width=maxSide; c.height=maxSide;
         const ctx=c.getContext('2d');
-        ctx.fillStyle='#fff'; // 背景填充
+        ctx.fillStyle='#fff';
         ctx.fillRect(0,0,maxSide,maxSide);
-        ctx.drawImage(img,0,0,img.width,img.height,dx,dy,w,h);
+
+        if(p.avatarCrop){
+          // ✅ 裁正方形
+          const side=Math.min(img.width,img.height);
+          const sx=(img.width-side)/2;
+          const sy=(img.height-side)/2;
+          ctx.drawImage(img,sx,sy,side,side,0,0,maxSide,maxSide);
+        }else{
+          // ✅ 不裁剪，等比缩放居中
+          const scale=Math.min(maxSide/img.width, maxSide/img.height);
+          const w=Math.round(img.width*scale);
+          const h=Math.round(img.height*scale);
+          const dx=Math.round((maxSide-w)/2);
+          const dy=Math.round((maxSide-h)/2);
+          ctx.drawImage(img,0,0,img.width,img.height,dx,dy,w,h);
+        }
 
         let out='';
         try{out=c.toDataURL('image/webp',quality)}catch{}
@@ -1102,7 +1119,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
   function openChatSettingPage(){
     if(!currentId) return;
     const c=getContactById(currentId),st=normSettings(c?.settings),me=getMe(),p=getPref();
-
+$('avatarCropSwitch').checked=!!p.avatarCrop;
     $('meNameInput').value=me.name||'';$('meNoteInput').value=me.note||'';$('mePersonaInput').value=me.persona||'';
     $('meAvatarInput').value=me.avatar||'';meAvatarDraft='';showPreview('meAvatarPreview',me.avatar||'');
 
@@ -1165,6 +1182,8 @@ p.showTs=!!$('showTsSwitch').checked;
 p.bubbleCss=String($('bubbleCssInput').value||'');
 p.fontSize=Number($('fontSizeRange').value||16);
 p.avatarHQ=!!$('avatarHQSwitch').checked;
+      p.avatarHQ=!!$('avatarHQSwitch').checked;
+p.avatarCrop=!!$('avatarCropSwitch').checked;
 setPref(p); applyBubbleCss(); applyFontSize();
       const now=getContactById(currentId); $('chatTitle').textContent=now?.name||'聊天';
       applyModeUI(); renderChat(); renderContacts($('searchInput').value||''); show('chatRoom');
