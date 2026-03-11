@@ -274,7 +274,13 @@
         <div class="small">收藏夹（单独入口，避免误触）</div>
         <div class="row" style="margin-top:8px;"><button class="btn" id="openFavBtn">打开收藏夹</button></div>
       </div>
-
+<div class="card">
+  <div class="small">头像高清模式</div>
+  <div class="row" style="margin-top:8px;justify-content:space-between;">
+    <span class="small">开启后头像更清晰，但占用更多空间</span>
+    <input id="avatarHQSwitch" type="checkbox" />
+  </div>
+</div>
       <div class="card">
         <div class="small">我方名称</div><input id="meNameInput" class="input" />
         <div class="small" style="margin-top:8px;">我方备注（可选）</div><input id="meNoteInput" class="input" />
@@ -529,14 +535,15 @@
   }
 
   function getPref(){
-  const p=getJ(K_PREF,{showTs:false,bubbleCss:'',fontData:'',fontFamily:'',fontUrl:'',fontSize:16});
+  const p=getJ(K_PREF,{showTs:false,bubbleCss:'',fontData:'',fontFamily:'',fontUrl:'',fontSize:16,avatarHQ:false});
   return {
     showTs:!!p.showTs,
     bubbleCss:String(p.bubbleCss||''),
     fontData:String(p.fontData||''),
     fontFamily:String(p.fontFamily||''),
     fontUrl:String(p.fontUrl||''),
-    fontSize:Number(p.fontSize||16)
+    fontSize:Number(p.fontSize||16),
+    avatarHQ:!!p.avatarHQ
   };
 }
   function setPref(v){setJ(K_PREF,v);}
@@ -671,25 +678,29 @@ function refreshFontSizeUI(){
     createAvatar='';$('newAvatarPreview').classList.add('hidden');$('newAvatarPreview').src='';
   }
 
-  function compressImage(file,maxSide=320,quality=0.8){
-    return new Promise((resolve,reject)=>{
-      const fr=new FileReader();
-      fr.onload=()=>{
-        const img=new Image();
-        img.onload=()=>{
-          let w=img.width,h=img.height,s=Math.min(1,maxSide/Math.max(w,h));
-          w=Math.round(w*s);h=Math.round(h*s);
-          const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
-          let out='';try{out=c.toDataURL('image/webp',quality)}catch{}
-          if(!out||out.startsWith('data:,')) out=c.toDataURL('image/jpeg',quality);
-          if(out.length>120000) out=c.toDataURL('image/jpeg',0.32);
-          resolve(out);
-        };
-        img.onerror=reject; img.src=fr.result;
+  function compressImage(file){
+  const p=getPref();
+  const maxSide=p.avatarHQ?640:320;
+  const quality=p.avatarHQ?0.92:0.8;
+
+  return new Promise((resolve,reject)=>{
+    const fr=new FileReader();
+    fr.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        let w=img.width,h=img.height,s=Math.min(1,maxSide/Math.max(w,h));
+        w=Math.round(w*s);h=Math.round(h*s);
+        const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+        let out='';try{out=c.toDataURL('image/webp',quality)}catch{}
+        if(!out||out.startsWith('data:,')) out=c.toDataURL('image/jpeg',quality);
+        if(out.length>280000 && !p.avatarHQ) out=c.toDataURL('image/jpeg',0.72);
+        resolve(out);
       };
-      fr.onerror=reject; fr.readAsDataURL(file);
-    });
-  }
+      img.onerror=reject; img.src=fr.result;
+    };
+    fr.onerror=reject; fr.readAsDataURL(file);
+  });
+}
 
   async function saveContact(){
     const name=clean($('newName').value); if(!name) return alert('昵称不能为空');
@@ -708,7 +719,7 @@ function refreshFontSizeUI(){
   $('pickAvatarBtn').onclick=()=> $('newAvatarFile').click();
   $('newAvatarFile').onchange=async e=>{
     const f=e.target.files?.[0]; if(!f) return;
-    createAvatar=await compressImage(f,320,0.8); $('newAvatarPreview').src=createAvatar;$('newAvatarPreview').classList.remove('hidden'); e.target.value='';
+    createAvatar=await compressImage(f); $('newAvatarPreview').src=createAvatar;$('newAvatarPreview').classList.remove('hidden'); e.target.value='';
   };
 
   function setTyping(chatId,on){typingForId=on?chatId:(typingForId===chatId?null:typingForId);updateChatSub();}
@@ -1082,13 +1093,20 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
     $('roleNameInput').value=c?.name||'';$('roleNoteInput').value=c?.note||'';$('rolePersonaInput').value=c?.persona||'';
     $('roleAvatarInput').value=c?.avatar||'';roleAvatarDraft='';showPreview('roleAvatarPreview',c?.avatar||'');
 
-    $('replyModeSelect').value=st.mode;$('onlineStyleSelect').value=st.onlineStyle;
-    $('onlineMinInput').value=st.onlineMin;$('onlineMaxInput').value=st.onlineMax;
-    $('offlineMinInput').value=st.offlineMin;$('offlineMaxInput').value=st.offlineMax;
-    $('contextLenInput').value=st.contextLen||30;
-    $('showTsSwitch').checked=!!p.showTs;$('bubbleCssInput').value=p.bubbleCss||'';
+  $('replyModeSelect').value=st.mode;
+$('onlineStyleSelect').value=st.onlineStyle;
+$('onlineMinInput').value=st.onlineMin;
+$('onlineMaxInput').value=st.onlineMax;
+$('offlineMinInput').value=st.offlineMin;
+$('offlineMaxInput').value=st.offlineMax;
+$('contextLenInput').value=st.contextLen||30;
+
+$('showTsSwitch').checked=!!p.showTs;
+$('bubbleCssInput').value=p.bubbleCss||'';
+$('avatarHQSwitch').checked=!!p.avatarHQ;
+
 refreshFontSizeUI();
-    refreshSettingUI(); show('chatSetting');
+refreshSettingUI(); show('chatSetting');
   }
 
   $('chatSettingBtn').onclick=openChatSettingPage;
@@ -1096,8 +1114,8 @@ refreshFontSizeUI();
 $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';};
   $('meAvatarPickBtn').onclick=()=> $('meAvatarFile').click();
   $('roleAvatarPickBtn').onclick=()=> $('roleAvatarFile').click();
-  $('meAvatarFile').onchange=async e=>{const f=e.target.files?.[0];if(!f) return;meAvatarDraft=await compressImage(f,320,0.8);$('meAvatarInput').value=meAvatarDraft;showPreview('meAvatarPreview',meAvatarDraft);e.target.value='';};
-  $('roleAvatarFile').onchange=async e=>{const f=e.target.files?.[0];if(!f) return;roleAvatarDraft=await compressImage(f,320,0.8);$('roleAvatarInput').value=roleAvatarDraft;showPreview('roleAvatarPreview',roleAvatarDraft);e.target.value='';};
+  $('meAvatarFile').onchange=async e=>{const f=e.target.files?.[0];if(!f) return;meAvatarDraft=await compressImage(f);$('meAvatarInput').value=meAvatarDraft;showPreview('meAvatarPreview',meAvatarDraft);e.target.value='';};
+  $('roleAvatarFile').onchange=async e=>{const f=e.target.files?.[0];if(!f) return;roleAvatarDraft=await compressImage(f);$('roleAvatarInput').value=roleAvatarDraft;showPreview('roleAvatarPreview',roleAvatarDraft);e.target.value='';};
 
   $('meAvatarInput').addEventListener('input',e=>showPreview('meAvatarPreview',e.target.value));
   $('roleAvatarInput').addEventListener('input',e=>showPreview('roleAvatarPreview',e.target.value));
@@ -1130,6 +1148,7 @@ $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';
 p.showTs=!!$('showTsSwitch').checked;
 p.bubbleCss=String($('bubbleCssInput').value||'');
 p.fontSize=Number($('fontSizeRange').value||16);
+p.avatarHQ=!!$('avatarHQSwitch').checked;
 setPref(p); applyBubbleCss(); applyFontSize();
       const now=getContactById(currentId); $('chatTitle').textContent=now?.name||'聊天';
       applyModeUI(); renderChat(); renderContacts($('searchInput').value||''); show('chatRoom');
