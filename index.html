@@ -695,18 +695,18 @@ function refreshFontSizeUI(){
     fr.onload=()=>{
       const img=new Image();
       img.onload=()=>{
-        const side=Math.min(img.width,img.height);
-        const sx=(img.width-side)/2;
-        const sy=(img.height-side)/2;
+        const scale=Math.min(maxSide/img.width, maxSide/img.height);
+        const w=Math.round(img.width*scale);
+        const h=Math.round(img.height*scale);
+        const dx=Math.round((maxSide-w)/2);
+        const dy=Math.round((maxSide-h)/2);
 
         const c=document.createElement('canvas');
-        c.width=maxSide;
-        c.height=maxSide;
-
+        c.width=maxSide; c.height=maxSide;
         const ctx=c.getContext('2d');
-        ctx.fillStyle='#fff';   // 防透明边
+        ctx.fillStyle='#fff'; // 背景填充
         ctx.fillRect(0,0,maxSide,maxSide);
-        ctx.drawImage(img,sx,sy,side,side,0,0,maxSide,maxSide);
+        ctx.drawImage(img,0,0,img.width,img.height,dx,dy,w,h);
 
         let out='';
         try{out=c.toDataURL('image/webp',quality)}catch{}
