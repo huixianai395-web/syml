@@ -247,7 +247,7 @@
   </section>
 
   <section id="wechat" class="screen">
-    <div class="header"><button class="btn" data-nav="home">‹ 返回</button><b>微信</b><button class="btn" id="addContactBtn">+联系人</button></div>
+    <div class="header"><button class="btn" data-nav="home">‹ 返回</button><b>微信</b><button class="btn" id="addContactBtn">+联系人</button><button class="btn" id="importCardBtn">导入角色卡</button><input id="importCardFile" type="file" accept=".png,.json" class="hidden" /></div>
     <div class="page"><input id="searchInput" class="input" placeholder="搜索联系人" /><div id="contactList" class="list"></div></div>
   </section>
 
@@ -1458,6 +1458,121 @@ offPanel.addEventListener('change',applyOfflineColor); // 手机端更稳
 document.addEventListener('click',e=>{
   if(offPanel && !offPanel.contains(e.target)) offPanel.classList.remove('show');
 });
+// ========== 角色卡导入（PNG / JSON） ==========
+function parsePngChara(arrayBuffer){
+const bytes=new Uint8Array(arrayBuffer);
+// PNG签名8字节后开始读chunk
+let offset=8;
+while(offset<bytes.length){
+const len=(bytes[offset]<<24|bytes[offset+1]<<16|bytes[offset+2]<<8|bytes[offset+3])>>>0;
+const type=String.fromCharCode(bytes[offset+4],bytes[offset+5],bytes[offset+6],bytes[offset+7]);
+if(type===‘tEXt’){
+// tEXt格式: keyword\0value
+const data=bytes.slice(offset+8,offset+8+len);
+let nullIdx=-1;
+for(let i=0;i<data.length;i++){if(data[i]===0){nullIdx=i;break;}}
+if(nullIdx>0){
+const keyword=new TextDecoder().decode(data.slice(0,nullIdx));
+if(keyword===‘chara’){
+const val=new TextDecoder().decode(data.slice(nullIdx+1));
+try{return JSON.parse(atob(val));}catch{return null;}
+}
+}
+}
+if(type===‘IEND’) break;
+offset+=12+len; // 4len+4type+data+4crc
+}
+return null;
+}
+
+function extractCardFields(card){
+// 兼容V1和V2格式
+const d=card.data||card;
+const name=d.name||card.name||‘未命名角色’;
+const parts=[];
+if(d.description) parts.push(d.description);
+if(d.personality) parts.push(’【性格】\n’+d.personality);
+if(d.scenario) parts.push(’【场景】\n’+d.scenario);
+if(d.system_prompt) parts.push(’【系统提示】\n’+d.system_prompt);
+if(d.mes_example) parts.push(’【对话示例】\n’+d.mes_example);
+// V1兼容
+if(!d.description && card.description) parts.push(card.description);
+if(!d.personality && card.personality) parts.push(’【性格】\n’+card.personality);
+if(!d.scenario && card.scenario) parts.push(’【场景】\n’+card.scenario);
+if(!d.mes_example && card.mes_example) parts.push(’【对话示例】\n’+card.mes_example);
+
+const persona=parts.join(’\n\n’);
+const greeting=d.first_mes||card.first_mes||’’;
+return {name,persona,greeting};
+}
+
+$(‘importCardBtn’).onclick=()=>$(‘importCardFile’).click();
+$(‘importCardFile’).onchange=async e=>{
+const file=e.target.files?.[0];
+if(!file){e.target.value=’’;return;}
+
+try{
+let card=null;
+let avatarData=’’;
+
+```
+if(file.name.toLowerCase().endsWith('.png')){
+  const buf=await file.arrayBuffer();
+  card=parsePngChara(buf);
+  if(!card) throw new Error('PNG中未找到角色卡数据（chara tEXt chunk）');
+  // 用PNG本身作为头像
+  avatarData=await new Promise((resolve,reject)=>{
+    const fr=new FileReader();
+    fr.onload=()=>resolve(fr.result);
+    fr.onerror=reject;
+    fr.readAsDataURL(file);
+  });
+}else{
+  const text=await file.text();
+  card=JSON.parse(text);
+}
+
+const info=extractCardFields(card);
+if(!info.name) throw new Error('角色卡数据缺少名称');
+
+// 如果JSON卡里有avatar字段（base64）
+if(!avatarData && (card.data?.avatar || card.avatar)){
+  const av=card.data?.avatar||card.avatar;
+  if(av.startsWith('data:')) avatarData=av;
+}
+
+const arr=getContacts();
+const newContact={
+  id:'c'+Date.now()+'_'+Math.floor(Math.random()*9999),
+  name:info.name,
+  note:info.greeting?'开场白：'+info.greeting.slice(0,80):'',
+  avatar:avatarData||'',
+  preview:'',
+  time:'',
+  persona:info.persona,
+  settings:{...DEFAULT_CHAT_SETTINGS}
+};
+arr.unshift(newContact);
+setContacts(arr);
+
+// 如果有开场白，自动写入第一条消息
+if(info.greeting){
+  const chatMap=getChats();
+  chatMap[newContact.id]=[toMsg({role:'assistant',text:info.greeting,time:Date.now()})];
+  setChats(chatMap);
+  updateContact(newContact.id,{preview:info.greeting.slice(0,44),time:fmtTs(Date.now())});
+}
+
+renderContacts($('searchInput').value||'');
+alert('导入成功：'+info.name);
+```
+
+}catch(err){
+alert(‘导入失败：’+err.message);
+}finally{
+e.target.value=’’;
+}
+};
 
   initAppStorage().then(()=>{
     applyBubbleCss();
