@@ -581,6 +581,10 @@
     em:(s.offlineColors&&s.offlineColors.em)||DEFAULT_CHAT_SETTINGS.offlineColors.em,
     dialogue:(s.offlineColors&&s.offlineColors.dialogue)||DEFAULT_CHAT_SETTINGS.offlineColors.dialogue
   };
+   o.meName = s?.meName;
+    o.meAvatar = s?.meAvatar;
+    o.mePersona = s?.mePersona;
+    o.meNote = s?.meNote; 
     return o;
   }
 
@@ -860,7 +864,13 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
   }
 
   function renderChat(){
-    const c=getContactById(currentId),st=normSettings(c?.settings),me=getMe(),pref=getPref();
+    const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),pref=getPref();
+    const me = {
+      name: st.meName || globalMe.name || '我',
+      avatar: st.meAvatar || globalMe.avatar || '',
+      persona: st.mePersona || globalMe.persona || '',
+      note: st.meNote || globalMe.note || ''
+    };
     const roleAvatar=c?.avatar||'https://via.placeholder.com/64x64?text=TA',meAvatar=me.avatar||'https://via.placeholder.com/64x64?text=我';
     const arr=getChatArr(currentId);
 
@@ -1126,7 +1136,13 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 
   async function sendMsg(){
     if(!currentId) return;
-    const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),me=getMe();
+const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),globalMe=getMe();
+    const me = {
+      name: st.meName !== undefined ? st.meName : globalMe.name,
+      avatar: st.meAvatar !== undefined ? st.meAvatar : globalMe.avatar,
+      persona: st.mePersona !== undefined ? st.mePersona : globalMe.persona,
+      note: st.meNote !== undefined ? st.meNote : globalMe.note
+    };
     const t=clean($('chatInput').value); if(t) pushUser(t);
     $('chatInput').value='';resetInputH(); if(currentId===chatId) renderChat();
 
@@ -1168,8 +1184,14 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 
   function openChatSettingPage(){
   if(!currentId) return;
-  const c=getContactById(currentId),st=normSettings(c?.settings),me=getMe(),p=getPref();
-
+const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),p=getPref();
+  // 👇优先读专属，没有再读全局
+  const me = {
+    name: st.meName !== undefined ? st.meName : globalMe.name,
+    avatar: st.meAvatar !== undefined ? st.meAvatar : globalMe.avatar,
+    persona: st.mePersona !== undefined ? st.mePersona : globalMe.persona,
+    note: st.meNote !== undefined ? st.meNote : globalMe.note
+  };
   $('avatarCropSwitch').checked=!!p.avatarCrop;
 
   $('meNameInput').value=me.name||'';
@@ -1226,14 +1248,20 @@ $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';
 
       const meAvatar=clean($('meAvatarInput').value)||'';
       const roleAvatar=clean($('roleAvatarInput').value)||'';
-
-      setMe({...me,name:clean($('meNameInput').value)||'我',note:clean($('meNoteInput').value),persona:clean($('mePersonaInput').value),avatar:meAvatar});
-      updateContact(currentId,{
+updateContact(currentId,{
         name:clean($('roleNameInput').value)||'聊天对象',
         note:clean($('roleNoteInput').value),
         persona:clean($('rolePersonaInput').value),
         avatar:roleAvatar,
-        settings:normSettings({mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen, offlineColors: getContactById(currentId)?.settings?.offlineColors})
+        settings:normSettings({
+          mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen, 
+          offlineColors: getContactById(currentId)?.settings?.offlineColors,
+          // 专属设定存这里啦！
+          meName: clean($('meNameInput').value)||'我',
+          meNote: clean($('meNoteInput').value),
+          mePersona: clean($('mePersonaInput').value),
+          meAvatar: meAvatar
+        })
       });
 
       const p=getPref();
