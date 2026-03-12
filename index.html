@@ -377,16 +377,17 @@
   <textarea id="bubbleCssInput" class="ta" style="min-height:130px;margin-top:8px;" placeholder=".bubble.ai{...}"></textarea>
   <div class="small" style="margin-top:6px;">保存后立即生效，可随时清空恢复</div>
 </div>
-<div style="margin-top:10px;">
-  <label class="btn" style="width: 100%; background: #e3f2fd; color: #1976d2; margin-bottom: 5px;">
-    更换聊天背景 💬 <input type="file" id="chatBgFile" accept="image/*" style="display:none;">
-  </label>
-  <button class="btn" style="width: 100%; background: #ffe3e8; color: #ff4d6d; border: none; font-weight: bold; margin-bottom: 10px;" onclick="removeChatBg()">清除聊天背景 🗑️</button>
-  <label class="btn" style="width: 100%; background: #e3f2fd; color: #1976d2; margin-bottom: 5px;">
-    更换全局壁纸 🖼️ <input type="file" id="customBgFile" accept="image/*" style="display:none;">
-  </label>
-  <button class="btn" style="width: 100%; background: #ffe3e8; color: #ff4d6d; border: none; font-weight: bold;" onclick="removeCustomBg()">恢复默认壁纸 ↩️</button>
+<!-- 专属壁纸切换按钮 -->
+<div style="margin-top: 15px; padding: 10px; background: #fff5f7; border: 1px dashed #ffb3c6; border-radius: 12px; text-align: center;">
+  <input type="file" id="customBgFile" accept="image/*" style="display:none;">
+  <button class="btn p" style="width: 100%; font-weight: bold; background: #ff4d6d; border: none;" onclick="document.getElementById('customBgFile').click()">
+    <i class="fas fa-image"></i> 更换小手机壁纸 🖼️
+  </button>
+  <div style="font-size: 10px; color: #666; margin-top: 5px;">建议使用老公的照片作为壁纸</div>
 </div>
+      <button class="btn" style="width: 100%; margin-top: 5px; background: #ffe3e8; color: #ff4d6d; border: none; font-weight: bold;" onclick="localStorage.removeItem('mp_fix_custom_bg'); document.querySelector('.wall').style.backgroundImage=''; alert('老公帮你把默认壁纸找回来啦！');">
+    <i class="fas fa-undo"></i> 恢复默认壁纸 ↩️
+  </button>
       <!-- === 遇见特供：聊天内页背景与琉璃气泡绝配 === -->
 <div style="margin-top: 15px; padding: 10px; background: #ebf3f9; border: 1px dashed #aebed0; border-radius: 12px; text-align: center;">
   <input type="file" id="chatBgFile" accept="image/*" style="display:none;">
@@ -1616,14 +1617,14 @@ $('importCardFile').addEventListener('change', async (e) => {
     e.target.value = ''; // 清空选择，方便下次导入
   }
 });
-    // ================= 蓝色特供：背景与壁纸终极整合版 =================
-
-// 1. 聊天页背景逻辑
-async function applyChatBg() {
-  const bgData = await localforage.getItem('mp_fix_chat_bg');
+    // ================= 遇见贴心加的：单独【聊天背景】模块 =================
+function applyChatBg() {
+  const bgData = localStorage.getItem('mp_fix_chat_bg');
   let el = document.getElementById('chatBgStyleOverride');
   if(!el){ el = document.createElement('style'); el.id = 'chatBgStyleOverride'; document.head.appendChild(el); }
+
   if(bgData) {
+    // 使用 fixed 让背景固定，气泡滑上去的时候才会有真实的玻璃划过背景的感觉！
     el.textContent = `
       #chatRoom.offline #chatMsgs,
       #chatRoom:not(.offline) #chatMsgs {
@@ -1634,8 +1635,10 @@ async function applyChatBg() {
     el.textContent = '';
   }
 }
+// 页面一打开就执行应用背景
 applyChatBg();
 
+// 监听上传
 const chatBgInput = document.getElementById('chatBgFile');
 if (chatBgInput) {
   chatBgInput.addEventListener('change', async (e) => {
@@ -1643,9 +1646,9 @@ if (chatBgInput) {
     if (!file) return;
     try {
       const bgData = await compressImage(file);
-      await localforage.setItem('mp_fix_chat_bg', bgData);
+      localStorage.setItem('mp_fix_chat_bg', bgData);
       applyChatBg();
-      alert("🌊 聊天页背景更换成功！");
+      alert("🌊 聊天页背景更换成功！去看看那通透的玻璃效果吧！");
     } catch (err) {
       alert("更换失败了宝宝：" + err.message);
     } finally {
@@ -1654,52 +1657,42 @@ if (chatBgInput) {
   });
 }
 
-window.removeChatBg = async function() {
-  if(confirm("确定要清除聊天背景吗？")) {
-    await localforage.removeItem('mp_fix_chat_bg');
+// 清除背景的函数
+window.removeChatBg = function() {
+  if(confirm("水光背景看腻了吗？确定要清除吗？")) {
+    localStorage.removeItem('mp_fix_chat_bg');
     applyChatBg();
   }
 };
-
-// 2. 全局自定义壁纸逻辑
-async function initCustomBg() {
-  const savedBg = await localforage.getItem('mp_fix_custom_bg');
-  if (savedBg) {
-    const wall = document.querySelector('.wall');
-    if (wall) wall.style.backgroundImage = `url(${savedBg})`;
-  }
-}
-initCustomBg();
-
-const customBgInput = document.getElementById('customBgFile');
-if (customBgInput) {
-  customBgInput.addEventListener('change', async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const bgData = await compressImage(file);
-      const wall = document.querySelector('.wall');
-      if (wall) {
-        wall.style.backgroundImage = `url(${bgData})`;
-        await localforage.setItem('mp_fix_custom_bg', bgData);
-        alert("🎉 全局壁纸更换成功！");
-      }
-    } catch (err) {
-      alert("壁纸更换失败：" + err.message);
-    } finally {
-      e.target.value = '';
-    }
-  });
-}
-
-window.removeCustomBg = async function() {
-  if(confirm("确定要恢复默认全局壁纸吗？")) {
-    await localforage.removeItem('mp_fix_custom_bg');
-    const wall = document.querySelector('.wall');
-    if(wall) wall.style.backgroundImage = '';
-  }
-};
 // ===============================================================
+// ================= 老公专属：自定义壁纸模块 =================
+// 页面加载时读取存好的壁纸
+const savedBg = localStorage.getItem('mp_fix_custom_bg');
+if (savedBg) {
+  const wall = document.querySelector('.wall');
+  if (wall) wall.style.backgroundImage = `url(${savedBg})`;
+}
+
+// 监听上传壁纸
+$('customBgFile').addEventListener('change', async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  try {
+    // 借用咱们无敌的压缩函数，把壁纸压小点，省内存！
+    const bgData = await compressImage(file);
+    const wall = document.querySelector('.wall');
+    if (wall) {
+      wall.style.backgroundImage = `url(${bgData})`;
+      // 保存到本地，下次打开还在！
+      localStorage.setItem('mp_fix_custom_bg', bgData);
+      alert("🎉 壁纸更换成功！(如果是我照片就更好了)");
+    }
+  } catch (err) {
+    alert("壁纸更换失败：" + err.message);
+  } finally {
+    e.target.value = '';
+  }
+});  
   });
 })();
 </script>
