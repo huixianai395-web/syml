@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -930,7 +929,7 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
   function saveApiForm(){const s=getApiState();s.presets[s.current]={base:clean($('apiBase').value),key:clean($('apiKey').value),model:clean($('apiModel').value)||'gpt-4o-mini',temp:Number($('apiTemp').value||0.8)};setApiState(s);$('apiStatus').textContent='状态：已保存';return s.presets[s.current];}
   $('apiPresetSelect').onchange=e=>{const s=getApiState();s.presets[s.current]={base:clean($('apiBase').value),key:clean($('apiKey').value),model:clean($('apiModel').value)||'gpt-4o-mini',temp:Number($('apiTemp').value||0.8)};s.current=e.target.value;setApiState(s);loadApiForm();};
   $('newPresetBtn').onclick=()=>{const name=(prompt('新预设名：')||'').trim();if(!name) return;const s=getApiState();if(s.presets[name]) return alert('预设已存在');s.presets[name]={base:'',key:'',model:'gpt-4o-mini',temp:0.8};s.current=name;setApiState(s);refreshPresetUI();};
-  $('delPresetBtn').onclick=()=>{const s=getApiState(),names=Object.keys(s.presets);if(names长度<=1) return alert('至少保留一个预设');if(!confirm('删除当前预设？')) return;delete s.presets[s.current];s.current=Object.keys(s.presets)[0];setApiState(s);refreshPresetUI();};
+  $('delPresetBtn').onclick=()=>{const s=getApiState(),names=Object.keys(s.presets);if(names.length<=1) return alert('至少保留一个预设');if(!confirm('删除当前预设？')) return;delete s.presets[s.current];s.current=Object.keys(s.presets)[0];setApiState(s);refreshPresetUI();};
 
   function buildUrl(base,path){const b=(base||'').replace(/\/+$/,'');if(b.endsWith('/v1')) return b+path.replace('/v1','');return b+path;}
   async function callApi(messages){
@@ -1168,32 +1167,39 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
   }
 
   function openChatSettingPage(){
-    if(!currentId) return;
-    const c=getContactById(currentId),st=normSettings(c?.settings),me=getMe(),p=getPref();
-$('avatarCropSwitch').checked=!!p.avatarCrop;
-    $('meNameInput').value=me.name||'';$('meNoteInput').value=me.note||'';$('mePersonaInput').value=me.persona||'';
-    $('meAvatarInput').value=me.avatar||'';meAvatarDraft='';showPreview('meAvatarPreview',me.avatar||'');
+  if(!currentId) return;
+  const c=getContactById(currentId),st=normSettings(c?.settings),me=getMe(),p=getPref();
 
-    $('roleNameInput').value=c?.name||'';$('roleNoteInput').value=c?.note||'';$('rolePersonaInput').value=c?.persona||'';
-    $('roleAvatarInput').value=c?.avatar||'';roleAvatarDraft='';showPreview('roleAvatarPreview',c?.avatar||'');
+  $('avatarCropSwitch').checked=!!p.avatarCrop;
+
+  $('meNameInput').value=me.name||'';
+  $('meNoteInput').value=me.note||'';
+  $('mePersonaInput').value=me.persona||'';
+  $('meAvatarInput').value=me.avatar||''; meAvatarDraft='';
+  showPreview('meAvatarPreview', me.avatar||'');
+
+  $('roleNameInput').value=c?.name||'';
+  $('roleNoteInput').value=c?.note||'';
+  $('rolePersonaInput').value=c?.persona||'';
+  $('roleAvatarInput').value=c?.avatar||''; roleAvatarDraft='';
+  showPreview('roleAvatarPreview', c?.avatar||'');
 
   $('replyModeSelect').value=st.mode;
-$('onlineStyleSelect').value=st.onlineStyle;
-$('onlineMinInput').value=st.onlineMin;
-$('onlineMaxInput').value=st.onlineMax;
-$('offlineMinInput').value=st.offlineMin;
-$('offlineMaxInput').value=st.offlineMax;
-$('contextLenInput').value=st.contextLen||30;
+  $('onlineStyleSelect').value=st.onlineStyle;
+  $('onlineMinInput').value=st.onlineMin;
+  $('onlineMaxInput').value=st.onlineMax;
+  $('offlineMinInput').value=st.offlineMin;
+  $('offlineMaxInput').value=st.offlineMax;
+  $('contextLenInput').value=st.contextLen||30;
 
-$('showTsSwitch').checked=!!p.showTs;
-$('bubbleCssInput').value=p.bubbleCss||'';
-$('avatarHQSwitch').checked=!!p.avatarHQ;
-      
-p.avatarCrop=!!$('avatarCropSwitch').checked;
-setPref(p); applyBubbleCss(); applyFontSize();
-      const now=getContactById(currentId); $('chatTitle').textContent=now?.name||'聊天';
-      applyModeUI(); renderChat(); renderContacts($('searchInput').value||''); show('chatRoom');
-  }
+  $('showTsSwitch').checked=!!p.showTs;
+  $('bubbleCssInput').value=p.bubbleCss||'';
+  $('avatarHQSwitch').checked=!!p.avatarHQ;
+
+  refreshFontSizeUI();
+  refreshSettingUI();
+  show('chatSetting');
+}
 
   $('chatSettingBtn').onclick=openChatSettingPage;
   $('replyModeSelect').onchange=refreshSettingUI; $('onlineStyleSelect').onchange=refreshSettingUI;
