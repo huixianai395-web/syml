@@ -1835,20 +1835,28 @@ let currentFakeCover = '';
     if(!desc) return alert('描述不能为空哦！');
     if(!currentFakeCover) return alert('请先上传一张封面图！');
     
-    // 🌟 160x160 极其精致！固定大小！图片铺满！文字滑动！完美切换！
-    const fakeImgHtml = `<div class="fake-img-bubble" style="position:relative; width:160px; height:160px; border-radius:12px; overflow:hidden; cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,0.1); font-size:0; background:#f8f9ff;" onclick="const img=this.children[0]; const txt=this.children[1]; if(img.style.display==='none'){img.style.display='flex'; txt.style.display='none';}else{img.style.display='none'; txt.style.display='block';}">
+  // 🌟 终极魔法 HTML：140x140 迷你可爱！右上角一键返回！滑动无冲突！🌟
+    const fakeImgHtml = `<div class="fake-img-bubble" style="position:relative; width:140px; height:140px; border-radius:12px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.1); font-size:0; background:#f8f9ff;">
       
-      <div style="position:relative; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+      <!-- 图片层：点击它变成文字 -->
+      <div style="position:relative; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer;" onclick="this.style.display='none'; this.nextElementSibling.style.display='block';">
         <img src="${currentFakeCover}" style="width:100%; height:100%; display:block; object-fit:cover;">
         <div style="position:absolute; inset:0; background:rgba(0,0,0,0.3); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; font-weight:bold; font-size:12px; z-index:2; text-shadow:0 1px 4px rgba(0,0,0,0.8); pointer-events:none;">
-          <div style="font-size:22px; margin-bottom:2px;">🙈</div>
+          <div style="font-size:20px; margin-bottom:2px;">🙈</div>
           点击查看
         </div>
       </div>
       
-      <div style="display:none; width:100%; height:100%; background:#f8f9ff; color:#333; font-size:13px; padding:12px; text-align:left; word-break:break-all; line-height:1.5; overflow-y:auto;">
-        <!-- 阻止滑动时误触切换 -->
-        <div onclick="event.stopPropagation();" style="min-height:100%;">${desc}</div>
+      <!-- 文字层：右上角带返回按钮，内部随便滑动！ -->
+      <div style="display:none; position:relative; width:100%; height:100%; background:#f8f9ff; color:#333; font-size:12px;">
+        <!-- 右上角的返回按钮 ✖️ -->
+        <div style="position:absolute; top:4px; right:4px; width:20px; height:20px; background:rgba(0,0,0,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; color:#666;" onclick="this.parentElement.style.display='none'; this.parentElement.previousElementSibling.style.display='flex';">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </div>
+        <!-- 文字滑动区 -->
+        <div style="width:100%; height:100%; padding:15px 12px; text-align:left; word-break:break-all; line-height:1.5; overflow-y:auto; box-sizing:border-box;">
+          ${desc}
+        </div>
       </div>
       
     </div>`;
