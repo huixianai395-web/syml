@@ -271,24 +271,87 @@
   <div class="off-palette-row"><span>引用/特殊</span><input type="color" data-key="quote"></div>
   <div class="off-palette-row"><span>强调</span><input type="color" data-key="em"></div>
 </div>
-    <div class="chatInputBar" id="chatInputWrap">
-      <div id="quoteBar" class="quote-bar hidden"><div id="quoteText" class="quote-text"></div><button id="clearQuoteBtn" class="quote-close">×</button></div>
-      <textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
-      <div class="send-actions">
-  <button class="btn store" id="storeBtn" aria-label="储存"></button>
+    <div class="chatInputBar" id="chatInputWrap" style="flex-wrap: wrap;">
   
-  <input type="file" id="audioUploadFile" accept="audio/*,video/*" style="display:none;">
-  <button class="btn" style="padding: 0 8px; background: transparent; display: flex; align-items: center; justify-content: center; box-shadow: none;" onclick="document.getElementById('audioUploadFile').click()">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2f66d8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
-      <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-      <line x1="12" y1="19" x2="12" y2="22"></line>
-      <line x1="8" y1="22" x2="16" y2="22"></line>
-    </svg>
-  </button>
+  <div id="quoteBar" class="quote-bar hidden">
+    <div id="quoteText" class="quote-text"></div>
+    <button id="clearQuoteBtn" class="quote-close">×</button>
+  </div>
   
-  <button class="btn p" id="sendBtn">发送</button>
+  <!-- 输入行 -->
+  <div style="display: flex; width: 100%; gap: 8px; align-items: flex-end;">
+    <!-- 🌟 左侧 ➕ 按钮 -->
+    <button class="btn" style="padding: 0 4px; font-size: 26px; color: #7a86a8; background: transparent; box-shadow: none;" onclick="document.getElementById('extraPanel').classList.toggle('hidden')">
+      <i class="fas fa-plus-circle"></i>
+    </button>
+    
+    <textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
+    
+    <!-- 右侧操作区 -->
+    <div class="send-actions">
+      <button class="btn store" id="storeBtn" aria-label="储存"></button>
+      
+      <!-- 隐藏的音频上传和高级 SVG 麦克风图标 -->
+      <input type="file" id="audioUploadFile" accept="audio/*,video/*" style="display:none;">
+      <button class="btn" style="padding: 0 8px; background: transparent; display: flex; align-items: center; justify-content: center; box-shadow: none;" onclick="document.getElementById('audioUploadFile').click()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2f66d8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <line x1="12" y1="19" x2="12" y2="22"></line>
+          <line x1="8" y1="22" x2="16" y2="22"></line>
+        </svg>
+      </button>
+      
+      <button class="btn p" id="sendBtn">发送</button>
+    </div>
+  </div>
+
+  <!-- 🌟🌟 隐藏的多功能面板 🌟🌟 -->
+  <div id="extraPanel" class="hidden" style="width: 100%; padding-top: 15px; border-top: 1px solid #e4e8f5; margin-top: 10px;">
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px 10px; text-align: center;">
+      
+      <div onclick="alert('准备调用压缩函数上传真实图片！')" style="cursor: pointer;">
+        <div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; font-size: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><i class="fas fa-image" style="color: #4a90e2;"></i></div>
+        <div style="font-size: 11px; color: #666; margin-top: 5px;">发图片</div>
       </div>
+
+      <div onclick="alert('准备发送伪造的语音条！')" style="cursor: pointer;">
+        <div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; font-size: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><i class="fas fa-wifi" style="color: #67c23a; transform: rotate(45deg);"></i></div>
+        <div style="font-size: 11px; color: #666; margin-top: 5px;">发语音</div>
+      </div>
+      
+      <div onclick="alert('准备弹出红包输入框！')" style="cursor: pointer;">
+        <div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; font-size: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><i class="fas fa-envelope" style="color: #f56c6c;"></i></div>
+        <div style="font-size: 11px; color: #666; margin-top: 5px;">发红包</div>
+      </div>
+
+      <div onclick="alert('准备弹出转账输入框！')" style="cursor: pointer;">
+        <div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; font-size: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><i class="fas fa-exchange-alt" style="color: #f5a623;"></i></div>
+        <div style="font-size: 11px; color: #666; margin-top: 5px;">转账</div>
+      </div>
+
+      <div onclick="alert('准备弹出礼物选择框！')" style="cursor: pointer;">
+        <div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; font-size: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><i class="fas fa-gift" style="color: #ff4d6d;"></i></div>
+        <div style="font-size: 11px; color: #666; margin-top: 5px;">送礼物</div>
+      </div>
+
+      <div onclick="alert('准备弹出外卖订单框！')" style="cursor: pointer;">
+        <div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; font-size: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><i class="fas fa-hamburger" style="color: #e6a23c;"></i></div>
+        <div style="font-size: 11px; color: #666; margin-top: 5px;">点外卖</div>
+      </div>
+
+      <div onclick="alert('准备弹出语音通话模拟界面！')" style="cursor: pointer;">
+        <div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; font-size: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><i class="fas fa-phone-alt" style="color: #67c23a;"></i></div>
+        <div style="font-size: 11px; color: #666; margin-top: 5px;">语音通话</div>
+      </div>
+
+      <div onclick="alert('准备弹出视频通话模拟界面！')" style="cursor: pointer;">
+        <div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; font-size: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><i class="fas fa-video" style="color: #4a90e2;"></i></div>
+        <div style="font-size: 11px; color: #666; margin-top: 5px;">视频通话</div>
+      </div>
+
+    </div>
+  </div>
     </div>
   </section>
 
