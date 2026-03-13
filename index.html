@@ -1293,13 +1293,7 @@ const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),glo
   }
 
   $('sendBtn').onclick=sendMsg;
-$('chatInput').addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&!e.shiftKey){
-    e.preventDefault();
-    if(e.ctrlKey||e.metaKey) sendMsg();
-    else sendMsg();
-  }
-});
+  $('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(e.ctrlKey||e.metaKey) sendMsg(); else storeCurrentInput();}});
 
   function refreshSettingUI(){
     const mode=$('replyModeSelect').value;
