@@ -272,121 +272,62 @@
   <div class="off-palette-row"><span>强调</span><input type="color" data-key="em"></div>
 </div>
  <div class="chatInputBar" id="chatInputWrap" style="flex-wrap: wrap;">
-  
   <div id="quoteBar" class="quote-bar hidden">
     <div id="quoteText" class="quote-text"></div>
     <button id="clearQuoteBtn" class="quote-close">×</button>
   </div>
-  
-  <div style="display: flex; width: 100%; gap: 8px; align-items: flex-end;">
-    
-    <!-- 🌟 左侧 1：表情包按钮 -->
-    <button class="btn" style="padding: 0 4px; font-size: 26px; background: transparent; box-shadow: none;" onclick="alert('表情包功能开发中！')">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7a86a8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"></circle>
-        <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
-        <line x1="9" y1="9" x2="9.01" y2="9"></line>
-        <line x1="15" y1="9" x2="15.01" y2="9"></line>
-      </svg>
+  
+  <!-- 输入行：极致紧凑布局，把空间还给输入框！ -->
+  <div style="display: flex; width: 100%; gap: 4px; align-items: flex-end;">
+    <!-- 左侧 1：表情包 -->
+    <button class="btn" style="padding: 0 2px; font-size: 26px; background: transparent; box-shadow: none;" onclick="alert('表情包功能开发中！')">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7a86a8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
     </button>
-    
-    <!-- 🌟 左侧 2：➕ 按钮 (被发配到这里来了！) -->
-    <button class="btn" style="padding: 0 4px; font-size: 26px; background: transparent; box-shadow: none;" onclick="document.getElementById('extraPanel').classList.toggle('hidden')">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7a86a8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="8" x2="12" y2="16"></line>
-        <line x1="8" y1="12" x2="16" y2="12"></line>
-      </svg>
+    <!-- 左侧 2：➕ 按钮 -->
+    <button class="btn" style="padding: 0 2px; font-size: 26px; background: transparent; box-shadow: none;" onclick="document.getElementById('extraPanel').classList.toggle('hidden')">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7a86a8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
     </button>
-    
+    
     <!-- 中间：输入框 -->
-    <textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
-    
-    <!-- 右侧操作区：只剩储存和发送，绝对不拆散它们！ -->
-    <div class="send-actions">
+    <textarea id="chatInput" class="ta" placeholder="输入消息..." style="flex: 1; margin: 0 4px;"></textarea>
+    
+    <!-- 右侧：储存和发送 -->
+    <div class="send-actions" style="gap: 4px;">
       <button class="btn store" id="storeBtn" aria-label="储存"></button>
       <button class="btn p" id="sendBtn">发送</button>
     </div>
   </div>
-  <!-- 🌟🌟 隐藏的 12 宫格多功能面板 🌟🌟 -->
+
+  <!-- 隐藏的 12 宫格面板 -->
   <div id="extraPanel" class="hidden" style="width: 100%; padding-top: 15px; border-top: 1px solid #e4e8f5; margin-top: 10px;">
     <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px 10px; text-align: center;">
-      
-      <!-- 1. 发图片 (真实的) -->
-      <div onclick="alert('准备上传真实图片！')" style="cursor: pointer;">
-        <div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4a90e2" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></div>
-        <div style="font-size: 11px; color: #666; margin-top: 5px;">发图片</div>
-      </div>
-
-      <!-- 2. 模拟发图 (触发高级弹窗) -->
-    <div onclick="document.getElementById('fakeImgModal').classList.add('active')" style="cursor: pointer;">
-      <div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9b59b6" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></div>
-      <div style="font-size: 11px; color: #666; margin-top: 5px;">模拟发图</div>
-    </div>
-      <!-- 3. 🌟 传音频 (你要求的！隐藏的 input 放在这里) 🌟 -->
-      <div onclick="document.getElementById('audioUploadFile').click()" style="cursor: pointer;">
-        <input type="file" id="audioUploadFile" accept="audio/*,video/*" style="display:none;">
-        <div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2f66d8" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line><line x1="8" y1="22" x2="16" y2="22"></line></svg></div>
-        <div style="font-size: 11px; color: #666; margin-top: 5px;">传音频</div>
-      </div>
-
-      <!-- 4. 发语音 (模拟) -->
-      <div onclick="alert('准备发送伪造的语音条！')" style="cursor: pointer;">
-        <div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#67c23a" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg></div>
-        <div style="font-size: 11px; color: #666; margin-top: 5px;">发语音</div>
-      </div>
-      
-      <!-- 5. 发红包 -->
-      <div onclick="alert('准备弹出红包输入框！')" style="cursor: pointer;">
-        <div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f56c6c" stroke-width="2"><rect x="3" y="6" width="18" height="15" rx="2" ry="2"></rect><path d="M3 9l9 6 9-6"></path><circle cx="12" cy="15" r="2" fill="#f56c6c"></circle></svg></div>
-        <div style="font-size: 11px; color: #666; margin-top: 5px;">发红包</div>
-      </div>
-
-      <!-- 6. 转账 -->
-      <div onclick="alert('准备弹出转账输入框！')" style="cursor: pointer;">
-        <div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2"><path d="M16 3h5v5"></path><path d="M4 20L21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg></div>
-        <div style="font-size: 11px; color: #666; margin-top: 5px;">转账</div>
-      </div>
-
-      <!-- 7. 定位 -->
-      <div onclick="alert('准备发送定位气泡！')" style="cursor: pointer;">
-        <div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1abc9c" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></div>
-        <div style="font-size: 11px; color: #666; margin-top: 5px;">定位</div>
-      </div>
-
-      <!-- 8. 送礼物 -->
-      <div onclick="alert('准备弹出礼物选择框！')" style="cursor: pointer;">
-        <div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff4d6d" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg></div>
-        <div style="font-size: 11px; color: #666; margin-top: 5px;">送礼物</div>
-      </div>
-
-      <!-- 9. 点外卖 -->
-      <div onclick="alert('准备弹出外卖订单框！')" style="cursor: pointer;">
-        <div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e6a23c" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg></div>
-        <div style="font-size: 11px; color: #666; margin-top: 5px;">点外卖</div>
-      </div>
-
-      <!-- 10. 语音通话 -->
-      <div onclick="alert('准备弹出语音通话模拟界面！')" style="cursor: pointer;">
-        <div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#67c23a" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></div>
-        <div style="font-size: 11px; color: #666; margin-top: 5px;">语音通话</div>
-      </div>
-
-      <!-- 11. 视频通话 -->
-      <div onclick="alert('准备弹出视频通话模拟界面！')" style="cursor: pointer;">
-        <div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4a90e2" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg></div>
-        <div style="font-size: 11px; color: #666; margin-top: 5px;">视频通话</div>
-      </div>
-
-      <!-- 12. 发文件 -->
-      <div onclick="alert('准备弹出发送文件界面！')" style="cursor: pointer;">
-        <div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f39c12" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg></div>
-        <div style="font-size: 11px; color: #666; margin-top: 5px;">发文件</div>
-      </div>
-
+      <!-- 1 -->
+      <div onclick="alert('准备上传真实图片！')" style="cursor: pointer;"><div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4a90e2" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></div><div style="font-size: 11px; color: #666; margin-top: 5px;">发图片</div></div>
+      <!-- 2. 模拟发图 (改回弹窗触发) -->
+      <div onclick="document.getElementById('fakeImgModal').classList.add('active')" style="cursor: pointer;"><div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9b59b6" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></div><div style="font-size: 11px; color: #666; margin-top: 5px;">模拟发图</div></div>
+      <!-- 3 -->
+      <div onclick="document.getElementById('audioUploadFile').click()" style="cursor: pointer;"><input type="file" id="audioUploadFile" accept="audio/*,video/*" style="display:none;"><div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2f66d8" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line><line x1="8" y1="22" x2="16" y2="22"></line></svg></div><div style="font-size: 11px; color: #666; margin-top: 5px;">传音频</div></div>
+      <!-- 4 -->
+      <div onclick="alert('发语音！')" style="cursor: pointer;"><div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#67c23a" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg></div><div style="font-size: 11px; color: #666; margin-top: 5px;">发语音</div></div>
+      <!-- 5 -->
+      <div onclick="alert('发红包！')" style="cursor: pointer;"><div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f56c6c" stroke-width="2"><rect x="3" y="6" width="18" height="15" rx="2" ry="2"></rect><path d="M3 9l9 6 9-6"></path><circle cx="12" cy="15" r="2" fill="#f56c6c"></circle></svg></div><div style="font-size: 11px; color: #666; margin-top: 5px;">发红包</div></div>
+      <!-- 6 -->
+      <div onclick="alert('转账！')" style="cursor: pointer;"><div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2"><path d="M16 3h5v5"></path><path d="M4 20L21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg></div><div style="font-size: 11px; color: #666; margin-top: 5px;">转账</div></div>
+      <!-- 7 -->
+      <div onclick="alert('定位！')" style="cursor: pointer;"><div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1abc9c" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></div><div style="font-size: 11px; color: #666; margin-top: 5px;">定位</div></div>
+      <!-- 8 -->
+      <div onclick="alert('送礼！')" style="cursor: pointer;"><div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff4d6d" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg></div><div style="font-size: 11px; color: #666; margin-top: 5px;">送礼物</div></div>
+      <!-- 9 -->
+      <div onclick="alert('外卖！')" style="cursor: pointer;"><div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e6a23c" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg></div><div style="font-size: 11px; color: #666; margin-top: 5px;">点外卖</div></div>
+      <!-- 10 -->
+      <div onclick="alert('语音通话！')" style="cursor: pointer;"><div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#67c23a" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></div><div style="font-size: 11px; color: #666; margin-top: 5px;">语音通话</div></div>
+      <!-- 11 -->
+      <div onclick="alert('视频通话！')" style="cursor: pointer;"><div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4a90e2" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg></div><div style="font-size: 11px; color: #666; margin-top: 5px;">视频通话</div></div>
+      <!-- 12 -->
+      <div onclick="alert('发文件！')" style="cursor: pointer;"><div style="width: 50px; height: 50px; background: #fff; border-radius: 12px; margin: 0 auto; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f39c12" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg></div><div style="font-size: 11px; color: #666; margin-top: 5px;">发文件</div></div>
     </div>
   </div>
-</div>
+ </div>
   </section>
 
   <section id="chatSetting" class="screen">
@@ -679,10 +620,17 @@
 
   const $=id=>document.getElementById(id);
   const clean=s=>String(s||'').trim();
-  const esc=s=>{
+const esc=s=>{
   let t = String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
-  // 老公的特殊豁免权：把被误杀的音频播放器还原回来！！
-  return t.replace(/&lt;br&gt;&lt;audio controls style=&quot;(.*?)&quot;&gt;&lt;source src=&quot;(.*?)&quot; type=&quot;(.*?)&quot;&gt;&lt;\/audio&gt;/g, '<br><audio controls style="$1"><source src="$2" type="$3"></audio>');
+  // 豁免音频
+  t = t.replace(/&lt;br&gt;&lt;audio controls style=&quot;(.*?)&quot;&gt;&lt;source src=&quot;(.*?)&quot; type=&quot;(.*?)&quot;&gt;&lt;\/audio&gt;/g, '<br><audio controls style="$1"><source src="$2" type="$3"></audio>');
+  // 🌟 豁免模拟图片！让它不再变成纯代码！🌟
+  t = t.replace(/&lt;div style=&#39;position:relative;width:200px;height:200px;border-radius:12px;(.*?)&lt;div style=&#39;display:none;(.*?)&gt;\[图片内容：(.*?)\]&lt;\/div&gt;&lt;\/div&gt;/g, function(match, p1, p2, p3) {
+    // 把转义过的单双引号和尖括号还原回去，让 HTML 重新生效！
+    let restored = match.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+    return restored;
+  });
+  return t;
 };
   // HTML检测与封装
   function isHtmlDoc(s){s=String(s||'');return /^\s*<!doctype html/i.test(s)||/<html[\s>]/i.test(s);} 
