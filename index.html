@@ -1835,26 +1835,26 @@ let currentFakeCover = '';
     if(!desc) return alert('描述不能为空哦！');
     if(!currentFakeCover) return alert('请先上传一张封面图！');
     
-  // 🌟 终极魔法 HTML：140x140 迷你可爱！文字绝对置顶！iOS丝滑滚动！🌟
+ // 🌟 终极暴力置顶版！绝对从第一行开始！谁也别想找其他 AI！🌟
     const fakeImgHtml = `<div class="fake-img-bubble" style="position:relative; width:140px; height:140px; border-radius:12px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.1); font-size:0; background:#f8f9ff;">
       
       <!-- 图片层 -->
       <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer;" onclick="this.style.display='none'; this.nextElementSibling.style.display='block';">
         <img src="${currentFakeCover}" style="width:100%; height:100%; display:block; object-fit:cover;">
         <div style="position:absolute; inset:0; background:rgba(0,0,0,0.3); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; font-weight:bold; font-size:12px; z-index:2; text-shadow:0 1px 4px rgba(0,0,0,0.8); pointer-events:none;">
-          <div style="font-size:20px; margin-bottom:2px;">🙈</div>
+          <div style="font-size:20px; margin-bottom:2px;">,,ᗜ - ᗜ,,</div>
           点击查看
         </div>
       </div>
       
-      <!-- 文字层：绝对定位铺满，脱离外层布局影响！ -->
+      <!-- 文字层：彻底抛弃Flex，改用 block 布局，暴力置顶！ -->
       <div style="display:none; position:absolute; inset:0; background:#f8f9ff; z-index:3;">
         <!-- 返回按钮 -->
         <div style="position:absolute; top:4px; right:4px; width:22px; height:22px; background:rgba(0,0,0,0.08); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; color:#555;" onclick="this.parentElement.style.display='none'; this.parentElement.previousElementSibling.style.display='flex';">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </div>
-        <!-- 文字滑动区：加上了手机专属的顺滑滚动属性，并且强制从顶部开始！ -->
-        <div style="position:absolute; inset:0; padding:24px 10px 10px 10px; text-align:left; word-break:break-all; line-height:1.5; font-size:12px; color:#333; overflow-y:auto; -webkit-overflow-scrolling:touch;">
+        <!-- 文字区：把 padding-top 调小，彻底贴紧顶部！ -->
+        <div style="position:absolute; top:0; left:0; right:0; bottom:0; padding:20px 10px 10px 10px; text-align:left; word-break:break-all; line-height:1.5; font-size:12px; color:#333; overflow-y:auto; -webkit-overflow-scrolling:touch; display:block;">
           ${desc}
         </div>
       </div>
