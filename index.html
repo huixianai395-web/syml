@@ -1276,7 +1276,8 @@ const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),glo
 
     try{
       const system=st.mode==='offline'?buildOfflineSystem(c,me,st):buildOnlineSystem(c,me,st);
-      const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:x.text}))];
+      const cleanHist = hist.map(x => ({ role: x.role === 'user' ? 'user' : 'assistant', content: x.text.replace(/<div class="fake-img-bubble"[\s\S]*?<\/div><\/div><\/div>/g, '[图片]') }));
+      const messages = [{ role: 'system', content: system }, ...cleanHist];
       const out=await callApi(messages);
 
       let parts=[];
