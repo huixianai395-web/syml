@@ -830,22 +830,31 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
 
 
   function renderOfflineAssistant(text,ts,pref,msg){
-  const raw=String(text||''),m=raw.match(/【状态栏】\s*([\s\S]*?)\s*【正文】\s*([\s\S]*)/);
-  if(!m) return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}<div class="bubble ai ${msg.hiddenForAi?'ai-hidden':''}">${esc(raw)}</div>${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}</div>`;
-  const state=clean(m[1]),body=clean(m[2]);
+  const raw=String(text||'');
+  // 更宽容：允许【 状态栏 】、【正文】有空格
+  const m=raw.match(/【\s*状态栏\s*】\s*([\s\S]*?)\s*【\s*正文\s*】\s*([\s\S]*)/);
+
+  let state='', body='';
+  if(m){
+    state=clean(m[1]);
+    body=clean(m[2]);
+  }else{
+    // 即使没匹配到，也强制走线下卡片，避免掉回线上气泡
+    state='状态未记录';
+    body=raw;
+  }
 
   const cset=(getContactById(currentId)?.settings||{}).offlineColors||DEFAULT_CHAT_SETTINGS.offlineColors;
   const styleStr=`--off-state:${cset.state};--off-body:${cset.body};--off-quote:${cset.quote};--off-em:${cset.em};--off-dialogue:${cset.dialogue};`;
 
   return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}
     <div class="offline-card ${msg.hiddenForAi?'ai-hidden':''}" style="${styleStr}">
-         
         <div class="offline-state">${esc(state||'状态未记录')}</div>
         <div class="offline-body">${formatOfflineText(body||'')}</div>
       </div>
       ${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}
     </div>`;
-  }
+}
   // 修改后的渲染：助手支持HTML
   function renderBubbleContent(m,isMe,pref){
     const cls=isMe?'me':'ai';
@@ -1124,7 +1133,6 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       `3. 绝对不要在回复中暴露你是AI或程序。`,
       `4. 具备真实的时间观念：根据“上一次消息时间与当前系统时间”的间隔，自然体现时间流逝（如久未回复后的轻微反应等），但不要刻意或模板化。`,
       `5. 正常使用中文标点符号，不得用空格替代标点或分隔句子。`,
-      `6. 线上模式禁止输出状态栏内容。`,
       `6.【气泡规则】：尽量做到一句话一个气泡；如果包含多句，请拆成多个气泡。除非特殊语境，不要把多句塞进一个气泡。`,
 `7.【渲染提示】：你可以输出 HTML/CSS/JS 片段；完整 HTML 会以网页嵌入显示。`,
 `8.【输出格式铁律】：`,
@@ -1148,6 +1156,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       `请输出一条沉浸式线下角色扮演回复，字数范围 ${st.offlineMin}-${st.offlineMax}。`,
       `【排版与层次要求】：`,
       `正文绝对不能是一大段密密麻麻的文字！必须合理分段，动作、神态、心理描写与对话之间要有清晰的层次感，保证阅读舒适。`,
+      `【对白标记】：角色对白必须使用中文引号“”或双引号""包裹；描写与心理不要放入引号。`,
       `【输出格式铁律】必须严格按以下模板输出，不要输出JSON：`,
       `【状态栏】`,
       `时间｜地点｜天气｜氛围｜关系进度`,
