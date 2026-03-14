@@ -831,19 +831,15 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
 
   function renderOfflineAssistant(text,ts,pref,msg){
   const raw=String(text||'');
-  // 更宽容：允许【 状态栏 】、【正文】有空格
+  // 宽容匹配：允许空格
   const m=raw.match(/【\s*状态栏\s*】\s*([\s\S]*?)\s*【\s*正文\s*】\s*([\s\S]*)/);
 
-  let state='', body='';
-  if(m){
-    state=clean(m[1]);
-    body=clean(m[2]);
-  }else{
-    // 即使没匹配到，也强制走线下卡片，避免掉回线上气泡
-    state='状态未记录';
-    body=raw;
+  // 如果没匹配到 → 回退为普通气泡（避免线上旧消息被误当成线下）
+  if(!m){
+    return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}<div class="bubble ai ${msg.hiddenForAi?'ai-hidden':''}">${esc(raw)}</div>${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}</div>`;
   }
 
+  const state=clean(m[1]),body=clean(m[2]);
   const cset=(getContactById(currentId)?.settings||{}).offlineColors||DEFAULT_CHAT_SETTINGS.offlineColors;
   const styleStr=`--off-state:${cset.state};--off-body:${cset.body};--off-quote:${cset.quote};--off-em:${cset.em};--off-dialogue:${cset.dialogue};`;
 
@@ -1156,7 +1152,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       `请输出一条沉浸式线下角色扮演回复，字数范围 ${st.offlineMin}-${st.offlineMax}。`,
       `【排版与层次要求】：`,
       `正文绝对不能是一大段密密麻麻的文字！必须合理分段，动作、神态、心理描写与对话之间要有清晰的层次感，保证阅读舒适。`,
-      `【对白标记】：角色对白必须使用中文引号“”或双引号""包裹；描写与心理不要放入引号。`,
+      `【对白标记】：角色对白部分必须使用中文引号“”或双引号""包裹；`,
       `【输出格式铁律】必须严格按以下模板输出，不要输出JSON：`,
       `【状态栏】`,
       `时间｜地点｜天气｜氛围｜关系进度`,
