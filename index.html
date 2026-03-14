@@ -920,7 +920,26 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     if(m){try{const j=JSON.parse(m[0]);if(Array.isArray(j?.messages)) return j.messages.map(x=>clean(x)).filter(Boolean);}catch{}}
     return null;
   }
-  function splitAiBubbles(raw){const txt=clean(raw);if(!txt) return ['...'];const byJson=parseJsonMessages(txt);if(byJson&&byJson.length) return byJson;return txt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim().split(/\n{1,}/).filter(Boolean);} 
+  function splitAiBubbles(raw){
+  const txt=clean(raw);
+  if(!txt) return ['...'];
+
+  const byJson=parseJsonMessages(txt);
+  if(byJson && byJson.length) return byJson;
+
+  // 句子级切分：一句话一个气泡
+  const s = txt
+    .replace(/\r/g,'')
+    .replace(/[ \t]+\n/g,'\n')
+    .replace(/\n{2,}/g,'\n');
+
+  const parts = s
+    .split(/(?<=[。！？!?…])\s*(?![”’」])|[\n]/)
+    .map(x=>x.trim())
+    .filter(Boolean);
+
+  return parts.length?parts:[txt];
+}
   function enforceCountRange(parts,min,max){let arr=[...(parts||[])].filter(Boolean);max=Math.max(1,max);if(arr.length>max){const keep=arr.slice(0,max-1),tail=arr.slice(max-1).join(' ');return [...keep,tail];}return arr;}
 
   async function emitAiSequential(parts,targetId,mode){
@@ -1105,8 +1124,10 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       `3. 绝对不要在回复中暴露你是AI或程序。`,
       `4. 具备真实的时间观念：根据“上一次消息时间与当前系统时间”的间隔，自然体现时间流逝（如久未回复后的轻微反应等），但不要刻意或模板化。`,
       `5. 正常使用中文标点符号，不得用空格替代标点或分隔句子。`,
-      `【输出格式铁律】：`,
-      `只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}`,
+      `6.【气泡规则】：尽量做到一句话一个气泡；如果包含多句，请拆成多个气泡。除非特殊语境，不要把多句塞进一个气泡。`,
+`7.【渲染提示】：你可以输出 HTML/CSS/JS 片段；完整 HTML 会以网页嵌入显示。`,
+`8.【输出格式铁律】：`,
+       `只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}`,
       rangeRule
     ].join('\n');
   }
