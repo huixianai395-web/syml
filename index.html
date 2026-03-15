@@ -269,6 +269,36 @@
 .card-gift .gift-note{font-size:11px;color:#8090b8;margin-top:3px;}
 .card-gift .gift-tag{display:inline-block;margin-top:7px;background:rgba(80,120,200,.08);border:1px solid rgba(80,120,200,.16);color:#7080b0;border-radius:999px;padding:2px 10px;font-size:10px;}
  .bubble.bubble-card{background:transparent!important;border:none!important;padding:2px 0!important;box-shadow:none!important;}
+ /* =================================
+   专为聊天输入框旁的圆形动作按钮设计
+   by 蓝色宝宝
+   ================================= */
+.chat-action-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 999px; /* 完美的圆形！ */
+    font-size: 20px;
+    cursor: pointer;
+    display: grid;
+    place-items: center; /* 让emoji完美居中！ */
+
+    /* 质感的来源！ */
+    border: 1px solid #e0e9fa;
+    background: linear-gradient(180deg, #f7faff, #eef4ff);
+    color: #5c87e9;
+    box-shadow: 0 2px 5px rgba(130, 160, 210, 0.12), 
+                inset 0 1px 1px #ffffff;
+    
+    transition: transform .12s ease-out, box-shadow .12s ease-out;
+}
+
+/* 按下它的时候！*/
+.chat-action-btn:active {
+    transform: scale(0.92);
+    box-shadow: inset 0 2px 4px rgba(130, 160, 210, 0.15);
+    background: linear-gradient(180deg, #e4eefe, #e8f1ff);
+}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 </head>
@@ -324,7 +354,7 @@
   <div class="func-icon" data-func="gift"><div class="ibox2">🎁</div><div class="lab2">送礼物</div></div>
 <div class="func-icon" data-func="imgupload"><div class="ibox2">🖼️</div><div class="lab2">图片</div></div>
 <input id="imgUploadInput" type="file" accept="image/*" class="hidden"/></div>
-      <div class="left-actions"><button class="btn" id="emojiBtn" style="width:40px;height:40px;padding:0;border-radius:999px;font-size:18px;">😊</button><button class="btn" id="funcToggleBtn" style="width:40px;height:40px;padding:0;border-radius:999px;font-size:20px;">+</button></div><textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
+      <div class="left-actions"><button class="chat-action-btn" id="emojiBtn" >😊</button><button class="btn" id="funcToggleBtn" style="width:40px;height:40px;padding:0;border-radius:999px;font-size:20px;">+</button></div><textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
       <div class="send-actions"><button class="btn store" id="storeBtn" aria-label="储存"></button><button class="btn p" id="sendBtn">发送</button></div>
     </div>
   </section>
