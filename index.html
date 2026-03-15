@@ -1439,9 +1439,12 @@ setPref(p); applyBubbleCss(); applyFontSize();
     box.addEventListener('touchmove',e=>{if(!lpTimer) return;const t=e.touches[0];if(Math.abs(t.clientX-lpStartX)>8||Math.abs(t.clientY-lpStartY)>8){clearTimeout(lpTimer);lpTimer=null;}},{passive:true});
     ['touchend','touchcancel'].forEach(ev=>box.addEventListener(ev,()=>{clearTimeout(lpTimer);lpTimer=null;},{passive:true}));
     box.addEventListener('click',e=>{const item=e.target.closest('.msg-item');if(!item) return;if(selectMode){e.preventDefault();toggleSelect(item.dataset.mid);}});
- box.addEventListener('click',e=>{
-  const rpBtn=e.target.closest('.card-redpacket:not(.received):not(.rejected) .rp-btn');
+box.addEventListener('click',e=>{const item=e.target.closest('.msg-item');if(!item) return;if(selectMode){e.preventDefault();toggleSelect(item.dataset.mid);}});
+box.addEventListener('click',e=>{
+  const rpBtn=e.target.closest('.rp-btn');
   if(rpBtn&&currentId){
+    const rpCard=rpBtn.closest('.card-redpacket');
+    if(!rpCard||rpCard.classList.contains('received')||rpCard.classList.contains('rejected')) return;
     e.stopPropagation();
     const msgItem=rpBtn.closest('.msg-item');
     if(!msgItem) return;
@@ -1471,8 +1474,10 @@ setPref(p); applyBubbleCss(); applyFontSize();
     overlay.onclick=e=>{if(e.target===overlay) overlay.remove();};
     return;
   }
-  const ctBtn=e.target.closest('.card-transfer:not(.received):not(.rejected) .ct-btn');
+  const ctBtn=e.target.closest('.ct-btn');
   if(ctBtn&&currentId){
+    const ctCard=ctBtn.closest('.card-transfer');
+    if(!ctCard||ctCard.classList.contains('received')||ctCard.classList.contains('rejected')) return;
     e.stopPropagation();
     const msgItem=ctBtn.closest('.msg-item');
     if(!msgItem) return;
@@ -1485,7 +1490,7 @@ setPref(p); applyBubbleCss(); applyFontSize();
     arr.push(toMsg({role:'user',text:receiptHtml,time:Date.now()}));
     setChatArr(currentId,arr);renderChat();
   }
-});   
+});
   }
 
   $('msgFloatLayer').addEventListener('click',e=>{if(e.target.id==='msgFloatLayer') closeFloatMenu();});
