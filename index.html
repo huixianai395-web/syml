@@ -1992,6 +1992,100 @@ if(!cfg) return;
   };
 });
 })();
+// =======================================================
+// 蓝色宝宝的专属表情包系统核心逻辑 v1.0
+// =======================================================
+const K_EMOJIS = 'mp_fix_emojis'; // 这是我们储存表情包的钥匙！
+
+// 从仓库里读取表情包
+async function getEmojis() {
+    return await localforage.getItem(K_EMOJIS) || [];
+}
+
+// 把新表情包存进仓库
+async function setEmojis(emojis) {
+    await localforage.setItem(K_EMOJIS, emojis);
+}
+
+// 渲染“表情商店”里的列表
+async function renderEmojiStore() {
+    const emojis = await getEmojis();
+    const listEl = $('emojiList');
+    if (!listEl) return;
+    listEl.innerHTML = emojis.map(emoji => `
+        <div style="text-align: center; position: relative;">
+            <img src="${emoji.url}" style="width: 56px; height: 56px; object-fit: contain; background: #f0f2f5; border-radius: 8px;">
+            <span style="font-size: 10px; color: #666; display: block; margin-top: 2px;">${esc(emoji.keyword)}</span>
+            <button onclick="deleteEmoji('${emoji.keyword}')" style="position: absolute; top: -4px; right: -4px; width: 18px; height: 18px; border-radius: 999px; background: #ff4d4f; color: white; border: none; font-size: 12px; line-height: 18px; cursor: pointer;">×</button>
+        </div>
+    `).join('') || '<div class="small">还没有表情包，快去添加吧！</div>';
+}
+
+// 删除一个表情包
+async function deleteEmoji(keyword) {
+    if (!confirm(`确定要删除关键词为 "${keyword}" 的表情包吗？`)) return;
+    let emojis = await getEmojis();
+    emojis = emojis.filter(e => e.keyword !== keyword);
+    await setEmojis(emojis);
+    await renderEmojiStore(); // 重新渲染列表
+}
+window.deleteEmoji = deleteEmoji; // 把它挂到全局，这样按钮才能调用
+
+// --- 绑定事件 ---
+// 导入按钮
+$('importEmojisBtn').onclick = async () => {
+    const inputEl = $('emojiImportInput');
+    const text = inputEl.value.trim();
+    if (!text) return alert('请输入内容！');
+
+    const lines = text.split('\n');
+    const newEmojis = [];
+    for (const line of lines) {
+        const parts = line.trim().split(/\s+/, 2); // 用空格分开，最多2部分
+        if (parts.length === 2 && parts[0] && parts[1]) {
+            newEmojis.push({ keyword: parts[0], url: parts[1] });
+        }
+    }
+
+    if (newEmojis.length === 0) return alert('没有解析到有效的表情包格式！');
+
+    const oldEmojis = await getEmojis();
+    // 去重：如果关键词已存在，就更新URL
+    const emojiMap = new Map(oldEmojis.map(e => [e.keyword, e.url]));
+    newEmojis.forEach(e => emojiMap.set(e.keyword, e.url));
+    const finalEmojis = Array.from(emojiMap, ([keyword, url]) => ({ keyword, url }));
+
+    await setEmojis(finalEmojis);
+    await renderEmojiStore();
+    inputEl.value = ''; // 清空输入框
+    alert(`成功导入/更新了 ${newEmojis.length} 个表情包！`);
+};
+
+// 把“打开商店”的命令，绑定给我们真正的笑脸按钮！
+$('emojiBtn').onclick = async () => {
+    await renderEmojiStore();
+    show('emojiStore');
+};
 </script>
-</body>
+<!-- ================== 表情商店页面 ================== -->
+    <section id="emojiStore" class="screen">
+        <div class="header">
+            <button class="btn" data-nav="chatRoom">‹ 返回</button>
+            <b>我的表情商店</b>
+            <button class="btn p" id="importEmojisBtn">导入</button>
+        </div>
+        <div class="page">
+            <div class="card">
+                <div class="small">批量添加表情（每行一个）</div>
+                <textarea id="emojiImportInput" class="ta" style="min-height: 120px; margin-top: 8px;" placeholder="格式：关键词 图片URL&#10;例如：&#10;开心 https://.../happy.gif&#10;哭哭 https://.../cry.png"></textarea>
+            </div>
+            <div class="card">
+                <div class="small">我的表情库</div>
+                <div id="emojiList" style="margin-top: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 10px;">
+                    <!-- 这里会用JS自动填充我们的表情包 -->
+                </div>
+            </div>
+        </div>
+    </section>
+</body> 
 </html>
