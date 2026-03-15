@@ -971,9 +971,17 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
 
   function parseJsonMessages(text){
     const t=clean(text); if(!t) return null;
-    try{const j=JSON.parse(t);if(Array.isArray(j?.messages)) return j.messages.map(x=>typeof x==='string'?clean(x):(x&&typeof x==='object'?(x.html||x.content||x.text||x.message||''):String(x||''))).filter(Boolean);}catch{}
+    try{const j=JSON.parse(t);if(Array.isArray(j?.messages)) j.messages.flatMap(x=>{
+  if(typeof x==='string') return [clean(x)];
+  if(x&&typeof x==='object'&&Array.isArray(x.messages)) return x.messages.map(m=>typeof m==='string'?clean(m):String(m||''));
+  return [x&&typeof x==='object'?(x.html||x.content||x.text||x.message||''):String(x||'')];
+}).filter(Boolean)catch{}
     const m=t.match(/\{[\s\S]*\}/);
-    if(m){try{const j=JSON.parse(m[0]);if(Array.isArray(j?.messages)) return j.messages.map(x=>typeof x==='string'?clean(x):(x&&typeof x==='object'?(x.html||x.content||x.text||x.message||''):String(x||''))).filter(Boolean);}catch{}}
+    if(m){try{const j=JSON.parse(m[0]);if(Array.isArray(j?.messages)) j.messages.flatMap(x=>{
+  if(typeof x==='string') return [clean(x)];
+  if(x&&typeof x==='object'&&Array.isArray(x.messages)) return x.messages.map(m=>typeof m==='string'?clean(m):String(m||''));
+  return [x&&typeof x==='object'?(x.html||x.content||x.text||x.message||''):String(x||'')];
+}).filter(Boolean)catch{}}
     return null;
   }
   function splitAiBubbles(raw){
@@ -1479,7 +1487,7 @@ box.addEventListener('click',e=>{
     const ctCard=ctBtn.closest('.card-transfer');
     if(!ctCard||ctCard.classList.contains('received')||ctCard.classList.contains('rejected')) return;
     e.stopPropagation();
-    const msgItem=ctBtn.closest('.msg-item');
+    const msgItem=ctBtn.closest('[data-mid]')||ctBtn.closest('.msg-item');
     if(!msgItem) return;
     const mid=msgItem.dataset.mid;
     const arr=getChatArr(currentId);
