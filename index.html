@@ -947,7 +947,23 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     $('chatMsgs').scrollTop=$('chatMsgs').scrollHeight;
     $('multiCount').textContent=`已选 ${selectedIds.size} 项`;
   }
-
+document.querySelectorAll('.card-redpacket:not(.received):not(.rejected) .rp-btn, .card-transfer:not(.received):not(.rejected) .ct-btn').forEach(btn=>{
+  btn.onclick=function(){
+    if(!currentId) return;
+    const msgItem=this.closest('.msg-item');
+    if(!msgItem) return;
+    const mid=msgItem.dataset.mid;
+    const arr=getChatArr(currentId);
+    const idx=arr.findIndex(x=>x.id===mid);
+    if(idx<0) return;
+    if(this.classList.contains('rp-btn')){
+      arr[idx].text=arr[idx].text.replace(/<button[^>]*class="rp-btn"[^>]*>点击领取<\/button>/,'<div class="rp-opened">已领取</div>');
+    }else{
+      arr[idx].text=arr[idx].text.replace(/<button[^>]*class="ct-btn"[^>]*>确认收款<\/button>/,'<div class="ct-received">✓ 已收款</div>');
+    }
+    setChatArr(currentId,arr);renderChat();
+  };
+});
   function clearCurrentChat(){if(!currentId) return;if(!confirm('清空当前聊天？')) return;setChatArr(currentId,[]);updateContact(currentId,{preview:'',time:''});selectMode=false;selectedIds.clear();renderChat();renderContacts($('searchInput').value||'');}
   function deleteCurrentContact(){if(!currentId) return;if(!confirm('删除当前好友及聊天记录？')) return;setContacts(getContacts().filter(c=>c.id!==currentId));const map=getChats();delete map[currentId];setChats(map);currentId=null;renderContacts($('searchInput').value||'');show('wechat');}
 
@@ -1184,7 +1200,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       `4. 具备真实的时间观念：根据“上一次消息时间与当前系统时间”的间隔，自然体现时间流逝（如久未回复后的轻微反应等），但不要刻意或模板化。`,
       `5. 正常使用中文标点符号，不得用空格替代标点或分隔句子。`,
       `6.【气泡规则】：尽量做到一句话一个气泡；如果包含多句，请拆成多个气泡。除非特殊语境，不要把多句塞进一个气泡。`,
-`7.【渲染提示】：收到对方红包时，根据你的人设和当前剧情，选择以下其中一种输出——【领取】输出：<div class="card-redpacket received"><div style="width:100%"><div style="display:flex;gap:12px;align-items:center;"><div class="rp-icon">🧧</div><div class="rp-info"><div class="rp-title">已领取</div><div class="rp-note"></div></div></div><div class="rp-open">微信红包</div></div></div>；【拒绝】输出：<div class="card-redpacket rejected"><div style="width:100%"><div style="display:flex;gap:12px;align-items:center;"><div class="rp-icon">🧧</div><div class="rp-info"><div class="rp-title">已退回</div><div class="rp-note"></div></div></div><div class="rp-open">微信红包</div></div></div>。收到转账同理，领取class加received，拒绝用rejected，已收款/已拒收。卡片只输出HTML，不加任何额外文字说明在卡片里。AI主动发卡片时，卡片HTML必须完整放进messages数组的一个元素里，绝对不能在卡片外额外输出任何文字说明。红包模板：<div class="card-redpacket"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">祝福语</div><div class="rp-sub">¥金额 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn" onclick="this.parentNode.innerHTML='<div class=rp-opened>已领取</div>'">点击领取</button></div></div>。礼物模板：<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">礼物名</div><div class="gift-note">留言</div></div>。按实际内容填写，不要照抄示例文字。`,
+`7.【渲染提示】：收到对方红包时，根据你的人设和当前剧情，选择以下其中一种输出——【领取】输出：<div class="card-redpacket received"><div style="width:100%"><div style="display:flex;gap:12px;align-items:center;"><div class="rp-icon">🧧</div><div class="rp-info"><div class="rp-title">已领取</div><div class="rp-note"></div></div></div><div class="rp-open">微信红包</div></div></div>；【拒绝】输出：<div class="card-redpacket rejected"><div style="width:100%"><div style="display:flex;gap:12px;align-items:center;"><div class="rp-icon">🧧</div><div class="rp-info"><div class="rp-title">已退回</div><div class="rp-note"></div></div></div><div class="rp-open">微信红包</div></div></div>。收到转账同理，领取class加received，拒绝用rejected，已收款/已拒收。卡片只输出HTML，不加任何额外文字说明在卡片里。AI主动发卡片时，卡片HTML必须完整放进messages数组的一个元素里，绝对不能在卡片外额外输出任何文字说明。红包模板：<div class="card-redpacket"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">祝福语</div><div class="rp-sub">¥金额 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn" onclick="this.parentNode.innerHTML='<div class=rp-opened>已领取</div>'">点击领取</button></div></div>。礼物模板：<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">礼物名</div><div class="gift-note">留言</div></div>。按实际内容填写，不要照抄示例文字。发礼物或红包卡片时，卡片本身作为单独一条气泡输出，不要在同一条或紧邻的气泡里加"我发了一个xx给你"之类的说明文字。`,
 `8.【输出格式铁律】：`,
        `只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}`,
       rangeRule
