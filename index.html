@@ -1239,8 +1239,7 @@ const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),glo
       let parts=[];
       if(st.mode==='offline') parts=[clean(out)||'...'];
       else{parts=splitAiBubbles(out); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);} 
-      await emitAiSequential(parts.length?parts:['...'],chatId,st.mode);
-(function syncCardFromAi(parts,chatId){
+      (function syncCardFromAi(parts,chatId){
   const txt=parts.join('');
   const gotReceived=/card-(redpacket|transfer)\s+received/.test(txt);
   const gotRejected=/card-(redpacket|transfer)\s+rejected/.test(txt);
@@ -1264,6 +1263,7 @@ const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),glo
     break;
   }
 })(parts,chatId);
+        await emitAiSequential(parts.length?parts:['...'],chatId,st.mode);
       updateContactPreview(chatId); if(currentId===chatId) renderChat();
     }catch(e){
       const arr2=getChatArr(chatId);arr2.push(toMsg({role:'assistant',text:'请求失败：'+clean(e.message),time:Date.now()}));setChatArr(chatId,arr2);
