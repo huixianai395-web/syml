@@ -970,9 +970,9 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
 
   function parseJsonMessages(text){
     const t=clean(text); if(!t) return null;
-    try{const if(Array.isArray(j?.messages)) return j.messages.map(x=>typeof x==='string'?clean(x):String(x||'')).filter(Boolean);catch{}
+    try{const j=JSON.parse(t);if(Array.isArray(j?.messages)) return j.messages.map(x=>typeof x==='string'?clean(x):String(x||'')).filter(Boolean);}catch{}
     const m=t.match(/\{[\s\S]*\}/);
-    if(m){try{const if(Array.isArray(j?.messages)) return j.messages.map(x=>typeof x==='string'?clean(x):String(x||'')).filter(Boolean);catch{}}
+    if(m){try{const j=JSON.parse(m[0]);if(Array.isArray(j?.messages)) return j.messages.map(x=>typeof x==='string'?clean(x):String(x||'')).filter(Boolean);}catch{}}
     return null;
   }
   function splitAiBubbles(raw){
