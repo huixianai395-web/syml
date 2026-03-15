@@ -947,8 +947,41 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     $('chatMsgs').scrollTop=$('chatMsgs').scrollHeight;
     $('multiCount').textContent=`已选 ${selectedIds.size} 项`;
   }
-document.querySelectorAll('.card-redpacket:not(.received):not(.rejected) .rp-btn, .card-transfer:not(.received):not(.rejected) .ct-btn').forEach(btn=>{
-  btn.onclick=function(){
+document.querySelectorAll('.card-redpacket:not(.received):not(.rejected) .rp-btn').forEach(btn=>{
+  btn.onclick=function(e){
+    e.stopPropagation();
+    if(!currentId) return;
+    const msgItem=this.closest('.msg-item');
+    if(!msgItem) return;
+    const mid=msgItem.dataset.mid;
+    const overlay=document.createElement('div');
+    overlay.style.cssText='position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.3);display:grid;place-items:center;';
+    overlay.innerHTML=`<div style="background:#fff;border-radius:14px;padding:16px;min-width:220px;text-align:center;"><div style="font-size:14px;color:#333;margin-bottom:14px;">领取这个红包？</div><div style="display:flex;gap:10px;justify-content:center;"><button id="_rpAccept" style="flex:1;padding:10px;border:none;border-radius:10px;background:#e8f0ff;color:#2f66d8;font-size:14px;">领取</button><button id="_rpReject" style="flex:1;padding:10px;border:none;border-radius:10px;background:#fff0ee;color:#c04030;font-size:14px;">退回</button></div></div>`;
+    document.body.appendChild(overlay);
+    function doAction(isReceive){
+      overlay.remove();
+      const arr=getChatArr(currentId);
+      const idx=arr.findIndex(x=>x.id===mid);
+      if(idx<0) return;
+      if(isReceive){
+        arr[idx].text=arr[idx].text.replace(/class="card-redpacket"/,'class="card-redpacket received"').replace(/<button[^>]*class="rp-btn"[^>]*>[\s\S]*?<\/button>/,'<div class="rp-opened">已领取</div>');
+      }else{
+        arr[idx].text=arr[idx].text.replace(/class="card-redpacket"/,'class="card-redpacket rejected"').replace(/<button[^>]*class="rp-btn"[^>]*>[\s\S]*?<\/button>/,'<div class="rp-opened">已退回</div>');
+      }
+      const receiptHtml=isReceive
+        ?`<div class="card-redpacket received"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">已领取</div><div class="rp-sub">微信红包</div></div></div></div>`
+        :`<div class="card-redpacket rejected"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">已退回</div><div class="rp-sub">微信红包</div></div></div></div>`;
+      arr.push(toMsg({role:'user',text:receiptHtml,time:Date.now()}));
+      setChatArr(currentId,arr);renderChat();
+    }
+    overlay.querySelector('#_rpAccept').onclick=()=>doAction(true);
+    overlay.querySelector('#_rpReject').onclick=()=>doAction(false);
+    overlay.onclick=e=>{if(e.target===overlay) overlay.remove();};
+  };
+});
+document.querySelectorAll('.card-transfer:not(.received):not(.rejected) .ct-btn').forEach(btn=>{
+  btn.onclick=function(e){
+    e.stopPropagation();
     if(!currentId) return;
     const msgItem=this.closest('.msg-item');
     if(!msgItem) return;
@@ -956,11 +989,9 @@ document.querySelectorAll('.card-redpacket:not(.received):not(.rejected) .rp-btn
     const arr=getChatArr(currentId);
     const idx=arr.findIndex(x=>x.id===mid);
     if(idx<0) return;
-    if(this.classList.contains('rp-btn')){
-      arr[idx].text=arr[idx].text.replace(/<button[^>]*class="rp-btn"[^>]*>点击领取<\/button>/,'<div class="rp-opened">已领取</div>');
-    }else{
-      arr[idx].text=arr[idx].text.replace(/<button[^>]*class="ct-btn"[^>]*>确认收款<\/button>/,'<div class="ct-received">✓ 已收款</div>');
-    }
+    arr[idx].text=arr[idx].text.replace(/class="card-transfer"/,'class="card-transfer received"').replace(/<button[^>]*class="ct-btn"[^>]*>[\s\S]*?<\/button>/,'<div class="ct-received">✓ 已收款</div>');
+    const receiptHtml=`<div class="card-transfer received"><div class="ct-amount">✓ 已收款</div><div class="ct-note">微信安全转账</div></div>`;
+    arr.push(toMsg({role:'user',text:receiptHtml,time:Date.now()}));
     setChatArr(currentId,arr);renderChat();
   };
 });
