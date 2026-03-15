@@ -259,6 +259,9 @@
 .card-gift .gift-name{font-weight:700;font-size:13px;color:#b5006e;}
 .card-gift .gift-note{font-size:11px;color:#c06090;margin-top:4px;}
  .bubble.bubble-card{background:transparent!important;border:none!important;padding:0!important;box-shadow:none!important;}
+    .card-transfer.received,.card-redpacket.received{filter:saturate(.4) brightness(.85);pointer-events:none;}
+.card-transfer.rejected,.card-redpacket.rejected{filter:saturate(.2) brightness(.75);opacity:.7;pointer-events:none;}
+.card-rejected-tip{font-size:11px;color:#999;margin-top:6px;text-align:center;}
  .card-transfer{background:linear-gradient(135deg,#b71c1c,#e53935);color:#fff;border-radius:16px;padding:14px 16px;min-width:180px;box-shadow:0 4px 16px rgba(183,28,28,.35);}
 .card-transfer .ct-amount{font-size:26px;font-weight:800;margin:6px 0 4px;letter-spacing:1px;}
 .card-transfer .ct-note{font-size:12px;opacity:.85;}
@@ -1202,7 +1205,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       `4. 具备真实的时间观念：根据“上一次消息时间与当前系统时间”的间隔，自然体现时间流逝（如久未回复后的轻微反应等），但不要刻意或模板化。`,
       `5. 正常使用中文标点符号，不得用空格替代标点或分隔句子。`,
       `6.【气泡规则】：尽量做到一句话一个气泡；如果包含多句，请拆成多个气泡。除非特殊语境，不要把多句塞进一个气泡。`,
-`7.【渲染提示】：你可以输出 HTML/CSS/JS 片段；完整 HTML 会以网页嵌入显示。`,
+`7.【渲染提示】：收到对方红包时，根据你的人设和当前剧情，选择以下其中一种输出——【领取】输出：<div class="card-redpacket received"><div style="width:100%"><div style="display:flex;gap:12px;align-items:center;"><div class="rp-icon">🧧</div><div class="rp-info"><div class="rp-title">已领取</div><div class="rp-note"></div></div></div><div class="rp-open">微信红包</div></div></div>；【拒绝】输出：<div class="card-redpacket rejected"><div style="width:100%"><div style="display:flex;gap:12px;align-items:center;"><div class="rp-icon">🧧</div><div class="rp-info"><div class="rp-title">已退回</div><div class="rp-note"></div></div></div><div class="rp-open">微信红包</div></div></div>。收到转账同理，领取class加received，拒绝用rejected，已收款/已拒收。卡片只输出HTML，不加任何额外文字说明在卡片里。`,`
 `8.【输出格式铁律】：`,
        `只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}`,
       rangeRule
