@@ -971,13 +971,13 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
 
   function parseJsonMessages(text){
     const t=clean(text); if(!t) return null;
-    try{const j=JSON.parse(t);if(Array.isArray(j?.messages)) j.messages.flatMap(x=>{
+    try{const j=JSON.parse(t);if(Array.isArray(j?.messages)) return j.messages.flatMap(x=>{
   if(typeof x==='string') return [clean(x)];
   if(x&&typeof x==='object'&&Array.isArray(x.messages)) return x.messages.map(m=>typeof m==='string'?clean(m):String(m||''));
   return [x&&typeof x==='object'?(x.html||x.content||x.text||x.message||''):String(x||'')];
 }).filter(Boolean)catch{}
     const m=t.match(/\{[\s\S]*\}/);
-    if(m){try{const j=JSON.parse(m[0]);if(Array.isArray(j?.messages)) j.messages.flatMap(x=>{
+    if(m){if(Array.isArray(j?.messages)) return j.messages.flatMap(x=>{
   if(typeof x==='string') return [clean(x)];
   if(x&&typeof x==='object'&&Array.isArray(x.messages)) return x.messages.map(m=>typeof m==='string'?clean(m):String(m||''));
   return [x&&typeof x==='object'?(x.html||x.content||x.text||x.message||''):String(x||'')];
