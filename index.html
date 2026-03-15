@@ -1677,22 +1677,7 @@ offPanel.addEventListener('change',applyOfflineColor); // 手机端更稳
 document.addEventListener('click',e=>{
   if(offPanel && !offPanel.contains(e.target)) offPanel.classList.remove('show');
 });
-window._cardAction=function(cardId,type,action){
-  if(!currentId) return;
-  const arr=getChatArr(currentId);let changed=false;
-  arr.forEach(m=>{
-    if(!m.text||!m.text.includes(cardId)) return;
-    if(type==='transfer'){
-      m.text=m.text.replace(/class="card-transfer"/,`class="card-transfer received"`);
-      m.text=m.text.replace(/<button[^>]*onclick="[^"]*"[^>]*>确认收款<\/button>/,'<div class="ct-received">✓ 已收款</div>');
-    }else if(type==='redpacket'){
-      m.text=m.text.replace(/class="card-redpacket"/,`class="card-redpacket received"`);
-      m.text=m.text.replace(/<button[^>]*onclick="[^"]*"[^>]*>点击领取<\/button>/,'<div class="rp-opened">已领取</div>');
-    }
-    changed=true;
-  });
-  if(changed){setChatArr(currentId,arr);renderChat();}
-};
+
   initAppStorage().then(()=>{
     applyBubbleCss();
     applyCustomFont();
@@ -1877,8 +1862,8 @@ const FUNC_DIALOGS={
 };
 function buildFuncCard(type,data){
   const cardId='cid_'+Date.now()+'_'+Math.floor(Math.random()*99999);
-  if(type==='transfer') return `<div class="card-transfer" data-card-id="${cardId}"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">¥${esc(data.amount||'0.00')}</div><div class="ct-note">${esc(data.note||'')}</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><button class="ct-btn" onclick="window._cardAction('${cardId}','transfer','receive')">确认收款</button></div></div>`;
-  if(type==='redpacket') return `<div class="card-redpacket" data-card-id="${cardId}"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">${esc(data.note||'恭喜发财，大吉大利')}</div><div class="rp-sub">¥${esc(data.amount||'0.00')} 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn" onclick="window._cardAction('${cardId}','redpacket','receive')">点击领取</button></div></div>`;
+  if(type==='transfer') return `<div class="card-transfer" data-card-id="${cardId}"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">¥${esc(data.amount||'0.00')}</div><div class="ct-note">${esc(data.note||'')}</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><button class="ct-btn" >确认收款</button></div></div>`;
+  if(type==='redpacket') return `<div class="card-redpacket" data-card-id="${cardId}"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">${esc(data.note||'恭喜发财，大吉大利')}</div><div class="rp-sub">¥${esc(data.amount||'0.00')} 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>`;
   if(type==='location') return `<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">${esc(data.name||'位置')}</div><div class="loc-addr">${esc(data.addr||'')}</div></div></div>`;
   if(type==='gift') return `<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">${esc(data.name||'礼物')}</div><div class="gift-note">${esc(data.note||'')}</div><div class="gift-tag">♥ 来自对方</div></div>`;
   return '';
