@@ -1240,7 +1240,30 @@ const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),glo
       if(st.mode==='offline') parts=[clean(out)||'...'];
       else{parts=splitAiBubbles(out); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);} 
       await emitAiSequential(parts.length?parts:['...'],chatId,st.mode);
-
+(function syncCardFromAi(parts,chatId){
+  const txt=parts.join('');
+  const gotReceived=/card-(redpacket|transfer)\s+received/.test(txt);
+  const gotRejected=/card-(redpacket|transfer)\s+rejected/.test(txt);
+  if(!gotReceived&&!gotRejected) return;
+  const arr=getChatArr(chatId);
+  for(let i=arr.length-1;i>=0;i--){
+    const m=arr[i];
+    if(m.role!=='user') continue;
+    if(!/card-(redpacket|transfer)/.test(m.text||'')) continue;
+    if(/rp-opened|ct-received/.test(m.text||'')) continue;
+    if(gotReceived){
+      arr[i].text=arr[i].text
+        .replace(/<button[^>]*class="rp-btn"[^>]*>点击领取<\/button>/,'<div class="rp-opened">已领取</div>')
+        .replace(/<button[^>]*class="ct-btn"[^>]*>确认收款<\/button>/,'<div class="ct-received">✓ 已收款</div>');
+    }else{
+      arr[i].text=arr[i].text
+        .replace(/<button[^>]*class="rp-btn"[^>]*>点击领取<\/button>/,'<div class="rp-opened">已退回</div>')
+        .replace(/<button[^>]*class="ct-btn"[^>]*>确认收款<\/button>/,'<div class="ct-received">已拒收</div>');
+    }
+    setChatArr(chatId,arr);
+    break;
+  }
+})(parts,chatId);
       updateContactPreview(chatId); if(currentId===chatId) renderChat();
     }catch(e){
       const arr2=getChatArr(chatId);arr2.push(toMsg({role:'assistant',text:'请求失败：'+clean(e.message),time:Date.now()}));setChatArr(chatId,arr2);
