@@ -785,9 +785,8 @@ function refreshFontSizeUI(){
     createAvatar='';$('newAvatarPreview').classList.add('hidden');$('newAvatarPreview').src='';
   }
 
-function compressImage(file, isWallpaper = false) {
-  const p=getPref();
-  const maxSide = isWallpaper ? 1920 : (p.avatarHQ ? 640 : 320);
+function compressImage(file, isWallpaper = false, isChat = false) {
+ const maxSide = isWallpaper ? 1920 : isChat ? 800 : (p.avatarHQ ? 640 : 320);
   const quality=p.avatarHQ?0.92:0.8;
 
   return new Promise((resolve, reject) => {
@@ -1883,7 +1882,7 @@ $("customBgFile").addEventListener("change", async (e) => {
 });
   });$('imgUploadInput').onchange=async e=>{
   const f=e.target.files?.[0]; if(!f||!currentId) return;
-  const compressed=await compressImage(f);
+  const compressed=await compressImage(f,false,true);
   const arr=getChatArr(currentId);
   arr.push(toMsg({role:'user',text:'__IMG__'+compressed,time:Date.now()}));
   setChatArr(currentId,arr);updateContactPreview(currentId);renderChat();
