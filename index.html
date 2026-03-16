@@ -941,43 +941,42 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
   const t = clean(text);
   if (!t) return null;
 
+  let jsonData = null;
   try {
-    const j = JSON.parse(t);
-    if (Array.isArray(j?.messages)) {
-      return j.messages.map(item => {
-        if (typeof item === 'string') {
-          return clean(item);
-        }
-        if (typeof item === 'object' && item !== null) {
-          const codeContent = item.code || item.content || item.text;
-          if (typeof codeContent === 'string') {
-            const lang = item.language || '';
-            return '```' + lang + '\n' + codeContent + '\n```';
-          }
-        }
-        return '[一个无法解析的复杂内容]';
-      }).filter(Boolean);
-    }
-  } catch {}
-
-  const m = t.match(/\{[\s\S]*\}/);
-  if (m) {
-    try {
-      const j = JSON.parse(m[0]);
-      if (Array.isArray(j?.messages)) {
-        return j.messages.map(item => {
-          if (typeof item === 'string') return clean(item);
-          if (typeof item === 'object' && item !== null) {
-            const codeContent = item.code || item.content || item.text;
-            if (typeof codeContent === 'string') {
-              const lang = item.language || '';
-              return '```' + lang + '\n' + codeContent + '\n```';
-            }
-          }
-          return '[一个无法解析的复杂内容]';
-        }).filter(Boolean);
+    jsonData = JSON.parse(t);
+  } catch {
+    const m = t.match(/\{[\s\S]*\}/);
+    if (m) {
+      try {
+        jsonData = JSON.parse(m[0]);
+      } catch {
+        return null;
       }
-    } catch {}
+    } else {
+      return null;
+    }
+  }
+
+  if (jsonData && Array.isArray(jsonData.messages)) {
+    return jsonData.messages.map(item => {
+      if (typeof item === 'string') {
+        return clean(item);
+      }
+      
+      if (typeof item === 'object' && item !== null) {
+        const codeContent = item.code || item.content || item.text;
+        if (typeof codeContent === 'string') {
+          const lang = item.language || '';
+          return '```' + lang + '\n' + codeContent + '\n```';
+        } else {
+          // ↓↓↓↓↓↓ 关键的侦测代码在这里！↓↓↓↓↓↓
+          // 如果找不到认识的标签，就把整个神秘包裹变成文字显示出来！
+          return `【侦测到神秘包裹，结构如下：】\n\n${JSON.stringify(item, null, 2)}`;
+          // ↑↑↑↑↑↑ 侦测代码结束！↑↑↑↑↑↑
+        }
+      }
+      return '[一个无法解析的复杂内容]';
+    }).filter(Boolean);
   }
 
   return null;
