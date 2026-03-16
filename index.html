@@ -1019,57 +1019,56 @@
     });
   }
 
-  // ===== 多气泡拆分（升级：保护 HTML/JS 微应用） =====
   function splitAiBubbles(raw){
-    const txt=clean(raw);
-    if(!txt) return ['...'];
+const txt = clean(raw);
+if(!txt) return ['…'];
 
-    // 优先：JSON 格式
-    const byJson=parseJsonMessages(txt);
-    if(byJson && byJson.length){
-      // JSON 模式下，逐条做必要的围栏解封与文档包装
-      const normalized = byJson.map(s=>{
-        // 将 ```html 围栏或脚本片段升级
-        if(/^```/m.test(s) || /^~~~/m.test(s)){
-          const { blocks, text } = extractProtectedBlocks(s);
-          // 保护后的 text 只剩占位，直接还原成 blocks
-          const justBlocks = reinsertBlocksToSentences([text], blocks);
-          return justBlocks.join('\n'); // 一般只有一个块，保持原样
-        }
-        if(isHtmlDoc(s)) return s;
-        if(/<script\b/i.test(s)) return wrapAsDoc(s);
-        return s;
-      });
-      return normalized;
-    }
+// 1) 优先处理严格 JSON 输出
+const byJson = parseJsonMessages(txt);
+if (byJson && byJson.length) {
+const out = [];
+for (const s0 of byJson) {
+const s = String(s0 || '');
+// 单独一条就是完整 HTML 文档 → 直接作为一个气泡
+if (isHtmlDoc(s)) { out.push(s); continue; }// 抽取<q>“受保护块”</q>（```html / ```html:app / NOSPLIT / <script>…</script>）
+  const { text, blocks } = extractProtectedBlocks(s);
+  // 把受保护块与普通文本拆成多段，还原顺序
+  const parts = reinsertBlocksToSentences([text], blocks);
 
-    // 整段就是完整 HTML 文档 → 直接一条
-    if(isHtmlDoc(txt)) return [txt];
-
-    // 抽取保护块
-    const { text: body, blocks } = extractProtectedBlocks(txt);
-
-    // 常规句子拆分
-    const s=body.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{2,}/g,'\n');
-
-    const lines=[];
-    let buf='';
-    for(let i=0;i<s.length;i++){
-      const ch=s[i];
-      buf+=ch;
-      if('。！？!?…'.includes(ch) || ch==='\n'){
-        const t=buf.trim();
-        if(t) lines.push(t);
-        buf='';
-      }
-    }
-    const last=buf.trim();
-    if(last) lines.push(last);
-
-    // 归位保护块，块单独成条
-    const out = reinsertBlocksToSentences(lines, blocks);
-    return out.length?out:[txt];
+  for (let p of parts) {
+    p = String(p || '');
+    // 片段里含脚本但不是完整文档 → 包成完整文档给 iframe 跑
+    if (/<script\b/i.test(p) && !isHtmlDoc(p)) p = wrapAsDoc(p);
+    out.push(p);
   }
+}
+return out;}
+
+// 2) 整段就是完整 HTML 文档 → 一条返回
+if (isHtmlDoc(txt)) return [txt];
+
+// 3) 常规文本：先抽保护块，再按句号/换行拆
+const { text: body, blocks } = extractProtectedBlocks(txt);
+const s = body.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{2,}/g,'\n');
+
+const lines = [];
+let buf = '';
+for (let i=0; i<s.length; i++) {
+const ch = s[i];
+buf += ch;
+if ('。！？!?…'.includes(ch) || ch === '\n') {
+const t = buf.trim();
+if (t) lines.push(t);
+buf = '';
+}
+}
+const last = buf.trim();
+if (last) lines.push(last);
+
+// 4) 把受保护块放回，块独立成条
+const out = reinsertBlocksToSentences(lines, blocks);
+return out.length ? out : [txt];
+}
 
   // 当限定条数时，不要合并/切割任何受保护的块
   function enforceCountRange(parts,min,max){
