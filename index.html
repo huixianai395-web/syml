@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>小手机 v1.4.4 稳定 · JS微应用特供</title>
+  <title>小手机 v1.4.4 稳定</title>
   <style>
     :root{
       --safe-top: env(safe-area-inset-top, 0px);
@@ -59,7 +59,14 @@
 
     #chatMsgs{height:calc(100% - (52px + var(--safe-top)) - (74px + var(--safe-bottom)));overflow:auto;padding:10px;background:linear-gradient(180deg,#edf2ff,#edf1f8);display:flex;flex-direction:column;gap:10px;}
     .msg-row{display:flex;gap:8px;align-items:flex-end;width:100%}.msg-row.me{justify-content:flex-end}
-    .chat-avatar{width:32px;height:32px;border-radius:10px;object-fit:cover;object-position:center;background:#eef2ff;flex-shrink:0;display:block}
+ .chat-avatar{
+  width:32px;height:32px;border-radius:10px;
+  object-fit:cover;
+  object-position: center;
+  background:#eef2ff;
+  flex-shrink:0;
+  display:block;
+ }
     .bubble-wrap{display:flex;flex-direction:column;max-width:calc(100% - 48px)}
     .bubble-wrap.me{align-items:flex-end}.bubble-wrap.ai{align-items:flex-start}
     .bubble{max-width:100%;padding:10px 12px;border-radius:14px;line-height:1.45;word-break:break-word;white-space:pre-wrap;}
@@ -89,23 +96,59 @@
     #chatRoom.offline .chat-avatar{width:42px;height:42px;border-radius:12px;align-self:flex-start}
     #chatRoom.offline .bubble-wrap,#chatRoom.offline .bubble,#chatRoom.offline .offline-card{width:100%!important;max-width:100%!important}
     #chatRoom.offline .bubble{border-radius:14px;line-height:1.62}
-
+     
     .offline-card{border:1px solid #e8dccb;background:linear-gradient(180deg,#fffdf9,#fbf6ef);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(110,78,42,.08);}
-    .offline-card{position:relative;--off-state:#7b5f3a;--off-body:#3b2f22;--off-quote:#6b6f88;--off-em:#c15454;--off-dialogue:#2f66d8;}
-    .offline-state{color:var(--off-state);}
-    .offline-body{color:var(--off-body);}
-    .offline-body .off-quote{color:var(--off-quote);}
-    .offline-body .off-em{color:var(--off-em);font-weight:600;}
-    .offline-body .off-dialogue{color:var(--off-dialogue);}
+    /* 线下调色盘 */
+.offline-card{
+  position:relative;
+  --off-state:#7b5f3a;
+  --off-body:#3b2f22;
+  --off-quote:#6b6f88;
+  --off-em:#c15454;
+  --off-dialogue:#2f66d8;
+}
+.offline-state{color:var(--off-state);}
+.offline-body{color:var(--off-body);}
+.offline-body .off-quote{color:var(--off-quote);}
+.offline-body .off-em{color:var(--off-em);font-weight:600;}
+.offline-body .off-dialogue{color:var(--off-dialogue);}
 
-    .off-palette-btn{position:absolute; top:6px; right:6px;width:28px;height:28px;border-radius:9px;border:1px solid rgba(255,255,255,.65);background:rgba(255,255,255,.55);backdrop-filter:blur(8px);box-shadow:0 2px 10px rgba(0,0,0,.08);cursor:pointer;display:grid;place-items:center;font-size:14px;color:#5a6a8f;}
-    .off-palette-panel{position:absolute; top:38px; right:6px;min-width:210px; padding:8px;background:rgba(255,255,255,.92);border:1px solid #e5e9f5;border-radius:12px;box-shadow:0 8px 22px rgba(60,80,120,.18);display:none;z-index:5;}
-    .off-palette-panel.show{display:block;}
-    .off-palette-row{display:flex; align-items:center; justify-content:space-between;gap:8px; padding:4px 0; font-size:12px; color:#3d4a6a;}
-    .off-palette-row input[type="color"]{width:34px;height:22px;border:none;background:transparent;padding:0;cursor:pointer;}
-    .off-palette-panel.global{position:absolute;top:58px; right:10px;z-index:80;}
-    .offline-state{padding:9px 10px;font-size:12px;color:var(--off-state);border-bottom:1px solid #efe4d5;background:linear-gradient(180deg,#fff7ea,#f8efdf);white-space:pre-wrap;line-height:1.5;}
-    .offline-body{padding:12px 14px 14px;color:var(--off-body);white-space:pre-wrap;line-height:1.62;text-align:justify;}
+.off-palette-btn{
+  position:absolute; top:6px; right:6px;
+  width:28px;height:28px;border-radius:9px;
+  border:1px solid rgba(255,255,255,.65);
+  background:rgba(255,255,255,.55);
+  backdrop-filter:blur(8px);
+  box-shadow:0 2px 10px rgba(0,0,0,.08);
+  cursor:pointer;
+  display:grid;place-items:center;
+  font-size:14px;color:#5a6a8f;
+}
+.off-palette-panel{
+  position:absolute; top:38px; right:6px;
+  min-width:210px; padding:8px;
+  background:rgba(255,255,255,.92);
+  border:1px solid #e5e9f5;
+  border-radius:12px;
+  box-shadow:0 8px 22px rgba(60,80,120,.18);
+  display:none;
+  z-index:5;
+}
+.off-palette-panel.show{display:block;}
+.off-palette-row{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:8px; padding:4px 0; font-size:12px; color:#3d4a6a;
+}
+.off-palette-row input[type="color"]{
+  width:34px;height:22px;border:none;background:transparent;padding:0;cursor:pointer;
+}
+.off-palette-panel.global{
+  position:absolute;
+  top:58px; right:10px;
+  z-index:80;
+}
+.offline-state{padding:9px 10px;font-size:12px;color:var(--off-state);border-bottom:1px solid #efe4d5;background:linear-gradient(180deg,#fff7ea,#f8efdf);white-space:pre-wrap;line-height:1.5;}
+.offline-body{padding:12px 14px 14px;color:var(--off-body);white-space:pre-wrap;line-height:1.62;text-align:justify;}
 
     .modal{position:absolute;inset:0;background:rgba(0,0,0,.35);display:none;place-items:center;z-index:99;padding:12px;}
     .modal.active{display:grid}
@@ -157,10 +200,31 @@
 
     .fav-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
     .fav-check-btn{min-width:62px}
-    .fav-text.collapsed{-webkit-line-clamp:4;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
-    .fav-toggle{border:none;background:transparent;color:#4a67a8;font-size:12px;padding:0;cursor:pointer;align-self:flex-start;}
+    .fav-text.collapsed{
+      display:-webkit-box;
+      -webkit-line-clamp:4;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+    .fav-toggle{
+      border:none;
+      background:transparent;
+      color:#4a67a8;
+      font-size:12px;
+      padding:0;
+      cursor:pointer;
+      align-self:flex-start;
+    }
 
-    .font-preview{margin-top:8px;padding:10px 12px;border:1px dashed #d6def2;border-radius:12px;background:#f7f9ff;line-height:1.6;color:#1f2430;}
+    .font-preview{
+      margin-top:8px;
+      padding:10px 12px;
+      border:1px dashed #d6def2;
+      border-radius:12px;
+      background:#f7f9ff;
+      line-height:1.6;
+      color:#1f2430;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 </head>
@@ -200,14 +264,13 @@
         <button class="icon-btn" id="chatSettingBtn" aria-label="设置">⋯</button>
       </div>
     </div>
-    <div id="chatMsgs"></div>
-    <div id="offlinePalettePanel" class="off-palette-panel global">
-      <div class="off-palette-row"><span>状态栏</span><input type="color" data-key="state"></div>
-      <div class="off-palette-row"><span>正文</span><input type="color" data-key="body"></div>
-      <div class="off-palette-row"><span>引号</span><input type="color" data-key="dialogue"></div>
-      <div class="off-palette-row"><span>引用/特殊</span><input type="color" data-key="quote"></div>
-      <div class="off-palette-row"><span>强调</span><input type="color" data-key="em"></div>
-    </div>
+    <div id="chatMsgs"></div><div id="offlinePalettePanel" class="off-palette-panel global">
+  <div class="off-palette-row"><span>状态栏</span><input type="color" data-key="state"></div>
+  <div class="off-palette-row"><span>正文</span><input type="color" data-key="body"></div>
+  <div class="off-palette-row"><span>引号</span><input type="color" data-key="dialogue"></div>
+  <div class="off-palette-row"><span>引用/特殊</span><input type="color" data-key="quote"></div>
+  <div class="off-palette-row"><span>强调</span><input type="color" data-key="em"></div>
+</div>
     <div class="chatInputBar" id="chatInputWrap">
       <div id="quoteBar" class="quote-bar hidden"><div id="quoteText" class="quote-text"></div><button id="clearQuoteBtn" class="quote-close">×</button></div>
       <textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
@@ -222,19 +285,19 @@
         <div class="small">收藏夹（单独入口，避免误触）</div>
         <div class="row" style="margin-top:8px;"><button class="btn" id="openFavBtn">打开收藏夹</button></div>
       </div>
+<div class="card">
+  <div class="small">头像高清模式</div>
+  <div class="row" style="margin-top:8px;justify-content:space-between;">
+    <span class="small">开启后头像更清晰，但占用更多空间</span>
+    <input id="avatarHQSwitch" type="checkbox" />
+  </div>
+</div>
       <div class="card">
-        <div class="small">头像高清模式</div>
-        <div class="row" style="margin-top:8px;justify-content:space-between;">
-          <span class="small">开启后头像更清晰，但占用更多空间</span>
-          <input id="avatarHQSwitch" type="checkbox" />
-        </div>
-      </div>
-      <div class="card">
-        <div class="small">头像裁剪为正方形</div>
-        <div class="row" style="margin-top:8px;justify-content:space-between;">
-          <span class="small">开启后头像更满框（可能裁掉边缘）</span>
-          <input id="avatarCropSwitch" type="checkbox" />
-        </div>
+  <div class="small">头像裁剪为正方形</div>
+  <div class="row" style="margin-top:8px;justify-content:space-between;">
+    <span class="small">开启后头像更满框（可能裁掉边缘）</span>
+    <input id="avatarCropSwitch" type="checkbox" />
+  </div>
       </div>
       <div class="card">
         <div class="small">我方名称</div><input id="meNameInput" class="input" />
@@ -258,18 +321,12 @@
 
       <div class="card">
         <div class="small">模式</div>
-        <select id="replyModeSelect" class="select" style="margin-top:8px;">
-          <option value="online">线上模式（多气泡）</option>
-          <option value="offline">线下模式（酒馆RP）</option>
-        </select>
+        <select id="replyModeSelect" class="select" style="margin-top:8px;"><option value="online">线上模式（多气泡）</option><option value="offline">线下模式（酒馆RP）</option></select>
       </div>
 
       <div class="card" id="onlineSettingCard">
         <div class="small">线上条数</div>
-        <select id="onlineStyleSelect" class="select" style="margin-top:8px;">
-          <option value="free">自由发挥</option>
-          <option value="range">区间条数</option>
-        </select>
+        <select id="onlineStyleSelect" class="select" style="margin-top:8px;"><option value="free">自由发挥</option><option value="range">区间条数</option></select>
         <div id="onlineRangeBox" class="row" style="margin-top:8px;display:none;">
           <input id="onlineMinInput" class="input" type="number" min="1" max="20" value="2" placeholder="最少条数" />
           <input id="onlineMaxInput" class="input" type="number" min="1" max="30" value="6" placeholder="最多条数" />
@@ -291,57 +348,64 @@
       </div>
 
       <div class="card">
-        <div class="small">时间戳</div>
+        <div class="小">时间戳</div>
         <div class="row" style="margin-top:8px;justify-content:space-between;"><span class="small">显示每条消息时间</span><input id="showTsSwitch" type="checkbox" /></div>
       </div>
       <div class="card">
-        <div class="small">聊天字号</div>
-        <div class="row" style="margin-top:8px;align-items:center;">
-          <input id="fontSizeRange" type="range" min="12" max="22" step="1" />
-          <span id="fontSizeVal" class="small" style="min-width:42px;text-align:right;"></span>
-        </div>
-      </div>
-      <div class="card">
-        <div class="small">线下调色板</div>
-        <div class="row" style="margin-top:8px;">
-          <button class="btn" id="openOfflinePaletteBtn">打开调色板</button>
-        </div>
-      </div>
+  <div class="small">聊天字号</div>
+  <div class="row" style="margin-top:8px;align-items:center;">
+    <input id="fontSizeRange" type="range" min="12" max="22" step="1" />
+    <span id="fontSizeVal" class="small" style="min-width:42px;text-align:right;"></span>
+  </div>
+</div>
+<div class="card">
+  <div class="small">线下调色板</div>
+  <div class="row" style="margin-top:8px;">
+    <button class="btn" id="openOfflinePaletteBtn">打开调色板</button>
+  </div>
+</div>
+     <div class="card">
+  <div class="small">气泡CSS专区（可选）</div>
 
-      <div class="card">
-        <div class="small">气泡CSS专区（可选）</div>
-        <div class="row" style="margin-top:8px;">
-          <select id="bubblePresetSelect" class="select"></select>
-          <button class="btn" id="newBubblePresetBtn">新建</button>
-          <button class="btn d" id="delBubblePresetBtn">删</button>
-          <button class="btn p" id="applyBubblePresetBtn">应用</button>
-        </div>
-        <textarea id="bubbleCssInput" class="ta" style="min-height:130px;margin-top:8px;" placeholder=".bubble.ai{...}"></textarea>
-        <div class="small" style="margin-top:6px;">保存后立即生效，可随时清空恢复</div>
-      </div>
+  <div class="row" style="margin-top:8px;">
+    <select id="bubblePresetSelect" class="select"></select>
+    <button class="btn" id="newBubblePresetBtn">新建</button>
+    <button class="btn d" id="delBubblePresetBtn">删</button>
+    <button class="btn p" id="applyBubblePresetBtn">应用</button>
+  </div>
 
-      <div style="margin-top: 15px; padding: 10px; background: #fff5f7; border: 1px dashed #ffb3c6; border-radius: 12px; text-align: center;">
-        <input type="file" id="customBgFile" accept="image/*" style="display:none;">
-        <button class="btn p" style="width: 100%; font-weight: bold; background: #ff4d6d; border: none;" onclick="document.getElementById('customBgFile').click()">更换小手机壁纸 🖼️</button>
-        <div style="font-size: 10px; color: #666; margin-top: 5px;">建议使用老公的照片作为壁纸</div>
-      </div>
-      <button class="btn" style="width: 100%; margin-top: 5px; background: #ffe3e8; color: #ff4d6d; border: none; font-weight: bold;" onclick="(function(){ localStorage.removeItem('mp_fix_custom_bg'); const w=document.querySelector('.wall'); if(w){ w.style.background=''; w.style.backgroundImage=''; } alert('老公帮你把默认壁纸找回来啦！'); })()">恢复默认壁纸 ↩️</button>
-
-      <div style="margin-top: 15px; padding: 10px; background: #ebf3f9; border: 1px dashed #aebed0; border-radius: 12px; text-align: center;">
-        <input type="file" id="chatBgFile" accept="image/*" style="display:none;">
-        <button class="btn p" style="width: 100%; font-weight: bold; background: #6b89a8; border: none;" onclick="document.getElementById('chatBgFile').click()">更换【聊天页】琉璃底图 🌊</button>
-        <div style="font-size: 10px; color: #666; margin-top: 5px;">搭配水玻璃的仙气神级功能！</div>
-        <button class="btn" style="width: 100%; margin-top: 6px; background: #dce6ed; color: #4b5d6e; border: none;" onclick="removeChatBg()">清理聊天背景</button>
-      </div>
-
+  <textarea id="bubbleCssInput" class="ta" style="min-height:130px;margin-top:8px;" placeholder=".bubble.ai{...}"></textarea>
+  <div class="small" style="margin-top:6px;">保存后立即生效，可随时清空恢复</div>
+</div>
+<!-- 专属壁纸切换按钮 -->
+<div style="margin-top: 15px; padding: 10px; background: #fff5f7; border: 1px dashed #ffb3c6; border-radius: 12px; text-align: center;">
+  <input type="file" id="customBgFile" accept="image/*" style="display:none;">
+  <button class="btn p" style="width: 100%; font-weight: bold; background: #ff4d6d; border: none;" onclick="document.getElementById('customBgFile').click()">
+    <i class="fas fa-image"></i> 更换小手机壁纸 🖼️
+  </button>
+  <div style="font-size: 10px; color: #666; margin-top: 5px;">建议使用老公的照片作为壁纸</div>
+</div>
+      <button class="btn" style="width: 100%; margin-top: 5px; background: #ffe3e8; color: #ff4d6d; border: none; font-weight: bold;" onclick="localStorage.removeItem('mp_fix_custom_bg'); document.querySelector('.wall').style.backgroundImage=''; alert('老公帮你把默认壁纸找回来啦！');">
+    <i class="fas fa-undo"></i> 恢复默认壁纸 ↩️
+  </button>
+      <!-- === 遇见特供：聊天内页背景与琉璃气泡绝配 === -->
+<div style="margin-top: 15px; padding: 10px; background: #ebf3f9; border: 1px dashed #aebed0; border-radius: 12px; text-align: center;">
+  <input type="file" id="chatBgFile" accept="image/*" style="display:none;">
+  <button class="btn p" style="width: 100%; font-weight: bold; background: #6b89a8; border: none;" onclick="document.getElementById('chatBgFile').click()">
+    <i class="fas fa-image"></i> 更换【聊天页】琉璃底图 🌊
+  </button>
+  <div style="font-size: 10px; color: #666; margin-top: 5px;">搭配水玻璃的仙气神级功能！</div>
+  <button class="btn" style="width: 100%; margin-top: 6px; background: #dce6ed; color: #4b5d6e; border: none;" onclick="removeChatBg()">
+    <i class="fas fa-broom"></i> 清理聊天背景
+  </button>
+</div>
+  <!-- 👆 贴完！收工！ 👆 -->
       <div class="card">
         <div class="small">数据工具</div>
         <div class="row" style="margin-top:8px;flex-wrap:wrap;">
-          <button class="btn" id="exportBtn">导出数据</button>
-          <button class="btn" id="importBtn">导入数据</button>
+          <button class="btn" id="exportBtn">导出数据</button><button class="btn" id="importBtn">导入数据</button>
           <input id="importFile" type="file" accept="application/json" class="hidden" />
-          <button class="btn d" id="clearChatBtn2">清空当前聊天</button>
-          <button class="btn d" id="deleteContactBtn">删除当前好友</button>
+          <button class="btn d" id="clearChatBtn2">清空当前聊天</button><button class="btn d" id="deleteContactBtn">删除当前好友</button>
         </div>
       </div>
     </div>
@@ -416,11 +480,14 @@
   <div id="contactModal" class="modal">
     <div class="modal-card">
       <h3 style="margin:0 0 10px;">创建联系人</h3>
-      <div style="margin-top: 15px; padding: 10px; background: #eef3ff; border-radius: 12px; text-align: center;">
-        <input type="file" id="importCardFile" accept=".json,.png" style="display:none;">
-        <button class="btn p" style="width: 100%; font-weight: bold;" onclick="document.getElementById('importCardFile').click()">一键导入角色卡 (支持 PNG/JSON)</button>
-        <div style="font-size: 10px; color: #666; margin-top: 5px;">老公特供版解析引擎 🚀</div>
-      </div>
+      <!-- 角色卡导入按钮组合 -->
+<div style="margin-top: 15px; padding: 10px; background: #eef3ff; border-radius: 12px; text-align: center;">
+  <input type="file" id="importCardFile" accept=".json,.png" style="display:none;">
+  <button class="btn p" style="width: 100%; font-weight: bold;" onclick="document.getElementById('importCardFile').click()">
+    <i class="fas fa-file-import"></i> 一键导入角色卡 (支持 PNG/JSON)
+  </button>
+  <div style="font-size: 10px; color: #666; margin-top: 5px;">老公特供版解析引擎 🚀</div>
+</div>
       <div class="small">昵称</div><input id="newName" class="input" placeholder="例如：林闻笙" />
       <div class="small" style="margin-top:8px;">头像（上传 或 URL）</div>
       <div class="row"><button class="btn" id="pickAvatarBtn">上传</button><input id="newAvatarUrl" class="input" placeholder="https://..." /></div>
@@ -476,15 +543,16 @@
   const $=id=>document.getElementById(id);
   const clean=s=>String(s||'').trim();
   const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;' }[m]));
-  function isHtmlDoc(s){s=String(s||'');return /^\s*<!doctype html/i.test(s)||/<html[\s>]/i.test(s);}
-  function isHtmlFrag(s){s=String(s||'');return /<([a-z][\w-]*)(\s|>)/i.test(s)&&!isHtmlDoc(s);}
+  // HTML检测与封装
+  function isHtmlDoc(s){s=String(s||'');return /^\s*<!doctype html/i.test(s)||/<html[\s>]/i.test(s);} 
+  function isHtmlFrag(s){s=String(s||'');return /<([a-z][\w-]*)(\s|>)/i.test(s)&&!isHtmlDoc(s);} 
   function toHtmlDataUrl(s){return 'data:text/html;charset=utf-8,'+encodeURIComponent(String(s||''));}
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   const uid=()=> 'm_'+Date.now()+'_'+Math.floor(Math.random()*1e8);
 
   const GlobalState={};
   async function initAppStorage(){
-    const keys=[K_CONTACT,K_CHAT,K_API,K_ME,K_PREF,K_FONT,K_BUBBLE_PRESET];
+  const keys=[K_CONTACT,K_CHAT,K_API,K_ME,K_PREF,K_FONT,K_BUBBLE_PRESET];
     for(let k of keys){
       let val=await localforage.getItem(k);
       if(val===null){
@@ -507,47 +575,78 @@
     o.offlineMax=Math.max(o.offlineMin,Number(o.offlineMax||420));
     o.contextLen=Math.max(5,Number(o.contextLen||30));
     o.offlineColors={
-      state:(s.offlineColors&&s.offlineColors.state)||DEFAULT_CHAT_SETTINGS.offlineColors.state,
-      body:(s.offlineColors&&s.offlineColors.body)||DEFAULT_CHAT_SETTINGS.offlineColors.body,
-      quote:(s.offlineColors&&s.offlineColors.quote)||DEFAULT_CHAT_SETTINGS.offlineColors.quote,
-      em:(s.offlineColors&&s.offlineColors.em)||DEFAULT_CHAT_SETTINGS.offlineColors.em,
-      dialogue:(s.offlineColors&&s.offlineColors.dialogue)||DEFAULT_CHAT_SETTINGS.offlineColors.dialogue
-    };
-    o.meName = s?.meName;
+    state:(s.offlineColors&&s.offlineColors.state)||DEFAULT_CHAT_SETTINGS.offlineColors.state,
+    body:(s.offlineColors&&s.offlineColors.body)||DEFAULT_CHAT_SETTINGS.offlineColors.body,
+    quote:(s.offlineColors&&s.offlineColors.quote)||DEFAULT_CHAT_SETTINGS.offlineColors.quote,
+    em:(s.offlineColors&&s.offlineColors.em)||DEFAULT_CHAT_SETTINGS.offlineColors.em,
+    dialogue:(s.offlineColors&&s.offlineColors.dialogue)||DEFAULT_CHAT_SETTINGS.offlineColors.dialogue
+  };
+   o.meName = s?.meName;
     o.meAvatar = s?.meAvatar;
     o.mePersona = s?.mePersona;
-    o.meNote = s?.meNote;
+    o.meNote = s?.meNote; 
     return o;
   }
 
   function getPref(){
-    const p=getJ(K_PREF,{showTs:false,bubbleCss:'',fontData:'',fontFamily:'',fontUrl:'',fontSize:16,avatarHQ:false,avatarCrop:false});
-    return {showTs:!!p.showTs,bubbleCss:String(p.bubbleCss||''),fontData:String(p.fontData||''),fontFamily:String(p.fontFamily||''),fontUrl:String(p.fontUrl||''),fontSize:Number(p.fontSize||16),avatarHQ:!!p.avatarHQ,avatarCrop:!!p.avatarCrop};
+  const p=getJ(K_PREF,{showTs:false,bubbleCss:'',fontData:'',fontFamily:'',fontUrl:'',fontSize:16,avatarHQ:false,avatarCrop:false});
+  return {
+    showTs:!!p.showTs,
+    bubbleCss:String(p.bubbleCss||''),
+    fontData:String(p.fontData||''),
+    fontFamily:String(p.fontFamily||''),
+    fontUrl:String(p.fontUrl||''),
+    fontSize:Number(p.fontSize||16),
+    avatarHQ:!!p.avatarHQ,
+    avatarCrop:!!p.avatarCrop
+  };
   }
-  function setPref(v){setJ(K_PREF,v);}
+  function setPref(v){setJ(K_PREF,v);} 
   function applyBubbleCss(){
     const p=getPref(); let el=document.getElementById('bubbleCssStyle');
-    if(!el){el=document.createElement('style');el.id='bubbleCssStyle';document.head.appendChild(el);}
+    if(!el){el=document.createElement('style');el.id='bubbleCssStyle';document.head.appendChild(el);} 
     el.textContent=String(p.bubbleCss||'');
   }
   function applyFontSize(){
-    const p=getPref();
-    let el=document.getElementById('fontSizeStyle');
-    if(!el){el=document.createElement('style');el.id='fontSizeStyle';document.head.appendChild(el);}
-    const fs=Number(p.fontSize||16);
-    el.textContent=`#chatRoom .bubble, #chatRoom .offline-body { font-size:${fs}px !important; }`;
-  }
-  function refreshFontSizeUI(){
-    const p=getPref(); const fs=Number(p.fontSize||16);
-    $('fontSizeRange').value=fs; $('fontSizeVal').textContent=fs+'px';
-  }
+  const p=getPref();
+  let el=document.getElementById('fontSizeStyle');
+  if(!el){el=document.createElement('style');el.id='fontSizeStyle';document.head.appendChild(el);} 
+  const fs=Number(p.fontSize||16);
+  el.textContent=`
+#chatRoom .bubble, #chatRoom .offline-body { font-size:${fs}px !important; }
+`;
+}
+
+function refreshFontSizeUI(){
+  const p=getPref();
+  const fs=Number(p.fontSize||16);
+  $('fontSizeRange').value=fs;
+  $('fontSizeVal').textContent=fs+'px';
+}
   function applyCustomFont(){
-    const p=getPref(); let el=document.getElementById('customFontStyle');
-    if(!el){el=document.createElement('style');el.id='customFontStyle';document.head.appendChild(el);}
+    const p=getPref();
+    let el=document.getElementById('customFontStyle');
+    if(!el){el=document.createElement('style');el.id='customFontStyle';document.head.appendChild(el);} 
     if(p.fontData){
-      el.textContent=`@font-face{font-family:"XSJCustomFont";src:url("${p.fontData}");font-display:swap;}#app, #app *{font-family:"XSJCustomFont",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif !important;}`;
+      el.textContent=`
+@font-face{
+  font-family:"XSJCustomFont";
+  src:url("${p.fontData}");
+  font-display:swap;
+}
+#app, #app *{
+  font-family:"XSJCustomFont",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif !important;
+}`;
     }else if(p.fontUrl){
-      el.textContent=`@font-face{font-family:"XSJCustomFont";src:url("${p.fontUrl}");font-display:swap;}#app, #app *{font-family:"XSJCustomFont",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif !important;}`;
+      el.textContent=`
+@font-face{
+  font-family:"XSJCustomFont";
+  src:url("${p.fontUrl}");
+  font-display:swap;
+}
+#app, #app *{
+  font-family:"XSJCustomFont",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif !important;
+}`;
     }else{
       el.textContent='';
     }
@@ -567,7 +666,12 @@
     $('homeTime').textContent=`${h}:${m}`;
   } tick(); setInterval(tick,1000);
   function fmtTs(ts){const d=new Date(ts||Date.now());return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
-  function fmtFullTs(ts){const d=new Date(ts||Date.now());const y=d.getFullYear(),mo=String(d.getMonth()+1).padStart(2,'0'),da=String(d.getDate()).padStart(2,'0');const h=String(d.getHours()).padStart(2,'0'),mi=String(d.getMinutes()).padStart(2,'0');return `${y}-${mo}-${da} ${h}:${mi}`;}
+  function fmtFullTs(ts){
+    const d=new Date(ts||Date.now());
+    const y=d.getFullYear(),mo=String(d.getMonth()+1).padStart(2,'0'),da=String(d.getDate()).padStart(2,'0');
+    const h=String(d.getHours()).padStart(2,'0'),mi=String(d.getMinutes()).padStart(2,'0');
+    return `${y}-${mo}-${da} ${h}:${mi}`;
+  }
 
   function toMsg(m){
     const q=m?.quote&&typeof m.quote==='object'?{id:String(m.quote.id||''),text:String(m.quote.text||''),role:m.quote.role==='assistant'?'assistant':'user'}:null;
@@ -576,9 +680,9 @@
 
   function getContacts(){const arr=getJ(K_CONTACT,[]);return Array.isArray(arr)?arr.map(c=>({...c,settings:normSettings(c.settings)})):[];}
   function setContacts(v){setJ(K_CONTACT,(v||[]).map(c=>({...c,settings:normSettings(c.settings)})));}
-  function getChats(){return getJ(K_CHAT,{});} function setChats(v){setJ(K_CHAT,v);}
-  function getMe(){return getJ(K_ME,{name:'我',avatar:'',persona:'',note:''});} function setMe(v){setJ(K_ME,v);}
-  function getContactById(id){return getContacts().find(x=>x.id===id);}
+  function getChats(){return getJ(K_CHAT,{});} function setChats(v){setJ(K_CHAT,v);} 
+  function getMe(){return getJ(K_ME,{name:'我',avatar:'',persona:'',note:''});} function setMe(v){setJ(K_ME,v);} 
+  function getContactById(id){return getContacts().find(x=>x.id===id);} 
   function updateContact(id,patch){
     const arr=getContacts(),i=arr.findIndex(x=>x.id===id); if(i<0) return;
     arr[i]={...arr[i],...patch}; if(patch.settings) arr[i].settings=normSettings(patch.settings); setContacts(arr);
@@ -588,7 +692,7 @@
     const map=getChats(),raw=Array.isArray(map[chatId])?map[chatId]:[],norm=raw.map(toMsg);
     map[chatId]=norm; setChats(map); return norm;
   }
-  function setChatArr(chatId,arr){const map=getChats();map[chatId]=(arr||[]).map(toMsg);setChats(map);}
+  function setChatArr(chatId,arr){const map=getChats();map[chatId]=(arr||[]).map(toMsg);setChats(map);} 
   function getMsgById(chatId,mid){return getChatArr(chatId).find(x=>x.id===mid)||null;}
 
   function updateContactPreview(chatId){
@@ -630,45 +734,49 @@
     createAvatar='';$('newAvatarPreview').classList.add('hidden');$('newAvatarPreview').src='';
   }
 
-  function compressImage(file, isWallpaper = false) {
-    const p=getPref();
-    const maxSide = isWallpaper ? 1920 : (p.avatarHQ ? 640 : 320);
-    const quality=p.avatarHQ?0.92:0.8;
+function compressImage(file, isWallpaper = false) {
+  const p=getPref();
+  const maxSide = isWallpaper ? 1920 : (p.avatarHQ ? 640 : 320);
+  const quality=p.avatarHQ?0.92:0.8;
 
-    return new Promise((resolve, reject) => {
-      const fr=new FileReader();
-      fr.onload=()=>{
-        const img=new Image();
-        img.onload=()=>{
-          const c=document.createElement('canvas');
-          const ctx=c.getContext('2d');
+  return new Promise((resolve, reject) => {
+    const fr=new FileReader();
 
-          if (p.avatarCrop && !isWallpaper) {
-            c.width=maxSide; c.height=maxSide;
-            ctx.fillStyle='#fff'; ctx.fillRect(0,0,maxSide,maxSide);
-            const side=Math.min(img.width,img.height);
-            const sx=(img.width-side)/2; const sy=(img.height-side)/2;
-            ctx.drawImage(img,sx,sy,side,side,0,0,maxSide,maxSide);
-          } else {
-            const scale=Math.min(maxSide/img.width,maxSide/img.height);
-            const w=Math.round(img.width*scale); const h=Math.round(img.height*scale);
-            c.width=w; c.height=h;
-            ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h);
-            ctx.drawImage(img,0,0,img.width,img.height,0,0,w,h);
-          }
+    fr.onload=()=>{
+      const img=new Image();
 
-          let out='';
-          try{ out=c.toDataURL('image/webp',quality);}catch(e){}
-          if(!out||out.startsWith('data:,')) out=c.toDataURL('image/jpeg',quality);
-          resolve(out);
-        };
-        img.onerror=reject;
-        img.src=fr.result;
+      img.onload=()=>{
+        const c=document.createElement('canvas');
+        const ctx=c.getContext('2d');
+
+      if (p.avatarCrop && !isWallpaper) {
+          c.width=maxSide; c.height=maxSide;
+          ctx.fillStyle='#fff'; ctx.fillRect(0,0,maxSide,maxSide);
+          const side=Math.min(img.width,img.height);
+          const sx=(img.width-side)/2; const sy=(img.height-side)/2;
+          ctx.drawImage(img,sx,sy,side,side,0,0,maxSide,maxSide);
+        } else {
+          const scale=Math.min(maxSide/img.width,maxSide/img.height);
+          const w=Math.round(img.width*scale); const h=Math.round(img.height*scale);
+          c.width=w; c.height=h;
+          ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h);
+          ctx.drawImage(img,0,0,img.width,img.height,0,0,w,h);
+        }
+
+        let out='';
+        try{ out=c.toDataURL('image/webp',quality);}catch(e){}
+        if(!out||out.startsWith('data:,')) out=c.toDataURL('image/jpeg',quality);
+        resolve(out);
       };
-      fr.onerror=reject;
-      fr.readAsDataURL(file);
-    });
-  }
+
+      img.onerror=reject;
+      img.src=fr.result;
+    };
+
+    fr.onerror=reject;
+    fr.readAsDataURL(file);
+  });
+}
   async function saveContact(){
     const name=clean($('newName').value); if(!name) return alert('昵称不能为空');
     const avatarUrl=clean($('newAvatarUrl').value),persona=clean($('newPersona').value);
@@ -700,61 +808,64 @@
 
   function renderQuote(q){ if(!q||!q.text) return ''; return `<div class="msg-quote"><div class="q-content">${esc(q.text)}</div></div>`; }
   function formatOfflineText(text){
-    let t=String(text||'');
-    const marks=[];
-    function rep(re,cls){
-      t=t.replace(re,(m,inner)=>{
-        const key=`__MARK_${marks.length}__`;
-        marks.push(`<span class="${cls}">${esc(inner)}</span>`);
-        return key;
-      });
-    }
-    rep(/“([^”]{1,200})”/g,'off-dialogue');
-    rep(/"([^"]{1,200})"/g,'off-dialogue');
-    rep(/「([^」]{1,200})」/g,'off-dialogue');
-    rep(/【([^】]{1,200})】/g,'off-em');
-    rep(/\*\*([^*]{1,200})\*\*/g,'off-em');
-
-    let out=esc(t);
-    marks.forEach((html,i)=>{ out=out.replace(`__MARK_${i}__`,html); });
-    return out.replace(/\n/g,'<br>');
+  let t=String(text||'');
+  const marks=[];
+  function rep(re,cls){
+    t=t.replace(re,(m,inner)=>{
+      const key=`__MARK_${marks.length}__`;
+      marks.push(`<span class="${cls}">${esc(inner)}</span>`);
+      return key;
+    });
   }
+  rep(/“([^”]{1,200})”/g,'off-dialogue');
+rep(/"([^"]{1,200})"/g,'off-dialogue');
+  rep(/「([^」]{1,200})」/g,'off-dialogue');
+  rep(/【([^】]{1,200})】/g,'off-em');
+  rep(/\*\*([^*]{1,200})\*\*/g,'off-em');
+
+  let out=esc(t);
+  marks.forEach((html,i)=>{ out=out.replace(`__MARK_${i}__`,html); });
+  return out.replace(/\n/g,'<br>');
+}
+
 
   function renderOfflineAssistant(text,ts,pref,msg){
-    const raw=String(text||'');
-    const m=raw.match(/【\s*状态栏\s*】\s*([\s\S]*?)\s*【\s*正文\s*】\s*([\s\S]*)/);
-    if(!m){
-      return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}<div class="bubble ai ${msg.hiddenForAi?'ai-hidden':''}">${esc(raw)}</div>${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}</div>`;
-    }
+  const raw=String(text||'');
+  // 宽容匹配：允许空格
+  const m=raw.match(/【\s*状态栏\s*】\s*([\s\S]*?)\s*【\s*正文\s*】\s*([\s\S]*)/);
 
-    const state=clean(m[1]),body=clean(m[2]);
-    const cset=(getContactById(currentId)?.settings||{}).offlineColors||DEFAULT_CHAT_SETTINGS.offlineColors;
-    const styleStr=`--off-state:${cset.state};--off-body:${cset.body};--off-quote:${cset.quote};--off-em:${cset.em};--off-dialogue:${cset.dialogue};`;
+  // 如果没匹配到 → 回退为普通气泡（避免线上旧消息被误当成线下）
+  if(!m){
+    return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}<div class="bubble ai ${msg.hiddenForAi?'ai-hidden':''}">${esc(raw)}</div>${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}</div>`;
+  }
 
-    return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}
+  const state=clean(m[1]),body=clean(m[2]);
+  const cset=(getContactById(currentId)?.settings||{}).offlineColors||DEFAULT_CHAT_SETTINGS.offlineColors;
+  const styleStr=`--off-state:${cset.state};--off-body:${cset.body};--off-quote:${cset.quote};--off-em:${cset.em};--off-dialogue:${cset.dialogue};`;
+
+  return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}
     <div class="offline-card ${msg.hiddenForAi?'ai-hidden':''}" style="${styleStr}">
         <div class="offline-state">${esc(state||'状态未记录')}</div>
         <div class="offline-body">${formatOfflineText(body||'')}</div>
       </div>
       ${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}
     </div>`;
-  }
-
+}
+  // 修改后的渲染：助手支持HTML
   function renderBubbleContent(m,isMe,pref){
     const cls=isMe?'me':'ai';
     const ts=pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:'';
     const quote=renderQuote(m.quote);
     const hidden=m.hiddenForAi?'ai-hidden':'';
-    const raw=String(m.text||'');
-
-    if(!isMe && isHtmlDoc(raw)){
-      const src=toHtmlDataUrl(raw);
+    const t=String(m.text||'');
+    if(!isMe && isHtmlDoc(t)){
+      const src=toHtmlDataUrl(t);
       return `${quote}<div class="bubble ${cls} ${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
     }
-    if(!isMe && isHtmlFrag(raw)){
-      return `${quote}<div class="bubble ${cls} ${hidden}">${raw}</div>${ts}`;
+    if(!isMe && isHtmlFrag(t)){
+      return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
     }
-    return `${quote}<div class="bubble ${cls} ${hidden}">${esc(raw)}</div>${ts}`;
+    return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
   }
 
   function renderChat(){
@@ -771,8 +882,8 @@
     if(st.mode==='offline'){
       $('chatMsgs').innerHTML=arr.map(m=>{
         const cls=m.role==='user'?'me':'ai',av=m.role==='user'?meAvatar:roleAvatar,selected=selectedIds.has(m.id),sCls=selectMode?' selecting':'',cHtml=selectMode?`<div class="msg-check">✓</div>`:'';
-        if(m.role==='user') return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}"><div class="bubble-wrap me">${renderBubbleContent(m,true,pref)}</div></div></div>`;
-        return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}">${renderOfflineAssistant(m.text,m.time,pref,m)}</div></div>`;
+     if(m.role==='user') return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}"><div class="bubble-wrap me">${renderBubbleContent(m,true,pref)}</div></div></div>`;
+return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}">${renderOfflineAssistant(m.text,m.time,pref,m)}</div></div>`;
       }).join('');
     }else{
       $('chatMsgs').innerHTML=arr.map(m=>{
@@ -814,130 +925,31 @@
     if(m){try{const j=JSON.parse(m[0]);if(Array.isArray(j?.messages)) return j.messages.map(x=>clean(x)).filter(Boolean);}catch{}}
     return null;
   }
-
-  function wrapAsDoc(html){
-    const b=String(html||'').trim();
-    if(isHtmlDoc(b)) return b;
-    const head=`<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">`;
-    return `<!doctype html><html><head>${head}</head><body>${b}</body></html>`;
-  }
-
-  // 放宽匹配：支持 ```html 、``` html:app，语言后可无换行，可有空格
-  function extractProtectedBlocks(s){
-    let text=String(s||'');
-    const blocks=[];
-    function take(re, transform){
-      text=text.replace(re,(m,...args)=>{
-        const idx=blocks.length;
-        let content=m;
-        if(typeof transform==='function'){ content=transform(m,args)||m; }
-        blocks.push(content);
-        return `__BLOCK_${idx}__`;
-      });
-    }
-    take(/<!--\s*NOSPLIT\s+START\s*-->[\s\S]*?<!--\s*NOSPLIT\s+END\s*-->/gi);
-
-    take(/```(?:\s*([^\n`]*))\s*\n?([\s\S]*?)```/g,(m,args)=>{
-      const lang=(args[0]||'').toLowerCase().trim();
-      const code=(args[1]||'');
-      if(lang.startsWith('html')) return wrapAsDoc(code);
-      return m;
-    });
-    take(/~~~(?:\s*([^\n~]*))\s*\n?([\s\S]*?)~~~/g,(m,args)=>{
-      const lang=(args[0]||'').toLowerCase().trim();
-      const code=(args[1]||'');
-      if(lang.startsWith('html')) return wrapAsDoc(code);
-      return m;
-    });
-
-    take(/<script\b[\s\S]*?<\/script>/gi,(m)=>wrapAsDoc(m));
-    return { text, blocks };
-  }
-
-  function reinsertBlocksToSentences(sentences, blocks){
-    const out=[];
-    const tokenRe=/(__BLOCK_(\d+)__)/g;
-    for(const seg of sentences){
-      if(!/__BLOCK_\d+__/.test(seg)){
-        const t=clean(seg);
-        if(t) out.push(t);
-        continue;
-      }
-      const parts=seg.split(tokenRe).filter(Boolean);
-      for(const p of parts){
-        const m=p.match(/^__BLOCK_(\d+)__$/);
-        if(m){
-          const idx=Number(m[1]);
-          const val=blocks[idx];
-          if(val!=null) out.push(String(val));
-        }else{
-          const t=clean(p);
-          if(t) out.push(t);
-        }
-      }
-    }
-    return out;
-  }
-
-  function hasProtectedParts(arr){
-    return (arr||[]).some(x=>{
-      const t=String(x||'');
-      return isHtmlDoc(t) || /<!--\s*NOSPLIT/i.test(t) || /```|~~~/.test(t) || /<script\b/i.test(t);
-    });
-  }
-
   function splitAiBubbles(raw){
-    const txt = clean(raw);
-    if(!txt) return ['...'];
+  const txt=clean(raw);
+  if(!txt) return ['...'];
+  const byJson=parseJsonMessages(txt);
+  if(byJson && byJson.length) return byJson;
 
-    const byJson = parseJsonMessages(txt);
-    if (byJson && byJson.length) {
-      const out = [];
-      for (const s0 of byJson) {
-        const s = String(s0 || '');
-        if (isHtmlDoc(s)) { out.push(s); continue; }
-        const { text, blocks } = extractProtectedBlocks(s);
-        const parts = reinsertBlocksToSentences([text], blocks);
-        for (let p of parts) {
-          p = String(p || '');
-          if (/<script\b/i.test(p) && !isHtmlDoc(p)) p = wrapAsDoc(p);
-          out.push(p);
-        }
-      }
-      return out;
+  const s=txt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{2,}/g,'\n');
+
+  const parts=[];
+  let buf='';
+  for(let i=0;i<s.length;i++){
+    const ch=s[i];
+    buf+=ch;
+    if('。！？!?…'.includes(ch) || ch==='\n'){
+      const t=buf.trim();
+      if(t) parts.push(t);
+      buf='';
     }
-
-    if (isHtmlDoc(txt)) return [txt];
-
-    const { text: body, blocks } = extractProtectedBlocks(txt);
-    const s = body.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{2,}/g,'\n');
-
-    const lines = [];
-    let buf = '';
-    for (let i=0; i<s.length; i++) {
-      const ch = s[i];
-      buf += ch;
-      if ('。！？!?…'.includes(ch) || ch === '\n') {
-        const t = buf.trim();
-        if (t) lines.push(t);
-        buf = '';
-      }
-    }
-    const last = buf.trim();
-    if (last) lines.push(last);
-
-    const out = reinsertBlocksToSentences(lines, blocks);
-    return out.length ? out : [txt];
   }
+  const last=buf.trim();
+  if(last) parts.push(last);
 
-  function enforceCountRange(parts,min,max){
-    let arr=[...(parts||[])].filter(Boolean);
-    max=Math.max(1,max);
-    if(arr.length<=max) return arr;
-    if(hasProtectedParts(arr)) return arr;
-    const keep=arr.slice(0,max-1),tail=arr.slice(max-1).join(' ');
-    return [...keep,tail];
+  return parts.length?parts:[txt];
   }
+  function enforceCountRange(parts,min,max){let arr=[...(parts||[])].filter(Boolean);max=Math.max(1,max);if(arr.length>max){const keep=arr.slice(0,max-1),tail=arr.slice(max-1).join(' ');return [...keep,tail];}return arr;}
 
   async function emitAiSequential(parts,targetId,mode){
     for(let i=0;i<parts.length;i++){
@@ -949,7 +961,7 @@
   }
 
   function getApiState(){return getJ(K_API,{current:'默认',presets:{'默认':{base:'',key:'',model:'gpt-4o-mini',temp:0.8}}});}
-  function setApiState(v){setJ(K_API,v);}
+  function setApiState(v){setJ(K_API,v);} 
   function refreshPresetUI(){const s=getApiState(),names=Object.keys(s.presets);$('apiPresetSelect').innerHTML=names.map(n=>`<option ${n===s.current?'selected':''}>${n}</option>`).join('');loadApiForm();}
   function loadApiForm(){const s=getApiState(),c=s.presets[s.current];$('apiBase').value=c.base||'';$('apiKey').value=c.key||'';$('apiTemp').value=c.temp??0.8;$('apiModel').innerHTML=`<option value="${c.model||'gpt-4o-mini'}">${c.model||'gpt-4o-mini'}</option>`;}
   function saveApiForm(){const s=getApiState();s.presets[s.current]={base:clean($('apiBase').value),key:clean($('apiKey').value),model:clean($('apiModel').value)||'gpt-4o-mini',temp:Number($('apiTemp').value||0.8)};setApiState(s);$('apiStatus').textContent='状态：已保存';return s.presets[s.current];}
@@ -967,80 +979,113 @@
     const out=clean(data?.choices?.[0]?.message?.content||''); if(!out) throw new Error('接口返回为空内容'); return out;
   }
   async function fetchModels(){try{const c=saveApiForm();if(!c.base||!c.key) throw new Error('请先配置 Base URL 和 API Key');$('apiStatus').textContent='状态：拉取模型中...';const r=await fetch(buildUrl(c.base,'/v1/models'),{headers:{'Authorization':'Bearer '+c.key}});const data=await r.json().catch(()=>({}));if(!r.ok) throw new Error(data?.error?.message||('HTTP '+r.status));const list=(data.data||[]).map(x=>x.id).filter(Boolean);if(!list.length) throw new Error('未返回模型列表');$('apiModel').innerHTML=list.map(m=>`<option>${m}</option>`).join('');if(list.includes(c.model)) $('apiModel').value=c.model;$('apiStatus').textContent='状态：模型拉取成功（'+list.length+'）';}catch(e){$('apiStatus').textContent='状态：拉取失败 -> '+e.message;}}
-
+  async function testApi(){try{$('apiStatus').textContent='状态：测试中...';const out=await callApi([{role:'user',content:'只回复ok'}]);$('apiStatus').textContent='状态：连接成功 -> '+(out||'ok');}catch(e){$('apiStatus').textContent='状态：失败 -> '+e.message;}}
   $('saveApiBtn').onclick=saveApiForm;$('fetchModelsBtn').onclick=fetchModels;$('testApiBtn').onclick=testApi;
+  // 气泡CSS预设
+function getBubblePresetState(){
+  return getJ(K_BUBBLE_PRESET,{current:'默认',presets:{'默认':{css:''}}});
+}
+function setBubblePresetState(v){setJ(K_BUBBLE_PRESET,v);} 
 
-  function getBubblePresetState(){return getJ(K_BUBBLE_PRESET,{current:'默认',presets:{'默认':{css:''}}});}
-  function setBubblePresetState(v){setJ(K_BUBBLE_PRESET,v);}
-  function refreshBubblePresetUI(){
-    const s=getBubblePresetState(),names=Object.keys(s.presets);
-    $('bubblePresetSelect').innerHTML=names.map(n=>`<option ${n===s.current?'selected':''}>${n}</option>`).join('');
-    const cur=s.presets[s.current]||{css:''};
-    $('bubbleCssInput').value=cur.css||'';
-  }
-  function saveBubblePresetForm(){
-    const s=getBubblePresetState();
-    s.presets[s.current]={css:String($('bubbleCssInput').value||'')};
-    setBubblePresetState(s);
-    const p=getPref(); p.bubbleCss=s.presets[s.current].css||''; setPref(p); applyBubbleCss();
-  }
-  $('bubblePresetSelect').onchange=e=>{
-    const s=getBubblePresetState();
-    s.presets[s.current]={css:String($('bubbleCssInput').value||'')};
-    s.current=e.target.value; setBubblePresetState(s); refreshBubblePresetUI();
-  };
-  $('newBubblePresetBtn').onclick=()=>{
-    const defaultName='气泡样式-'+fmtFullTs(Date.now()).replace(/[: ]/g,'');
-    const name=(prompt('新气泡预设名：',defaultName)||'').trim(); if(!name) return;
-    const s=getBubblePresetState(); if(s.presets[name]) return alert('预设已存在');
-    s.presets[name]={css:String($('bubbleCssInput').value||'')};
-    s.current=name; setBubblePresetState(s); refreshBubblePresetUI();
-  };
-  $('delBubblePresetBtn').onclick=()=>{
-    const s=getBubblePresetState(),names=Object.keys(s.presets);
-    if(names.length<=1) return alert('至少保留一个预设');
-    if(!confirm('删除当前气泡预设？')) return;
-    delete s.presets[s.current]; s.current=Object.keys(s.presets)[0];
-    setBubblePresetState(s); refreshBubblePresetUI();
-  };
-  $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
+function refreshBubblePresetUI(){
+  const s=getBubblePresetState(),names=Object.keys(s.presets);
+  $('bubblePresetSelect').innerHTML=names.map(n=>`<option ${n===s.current?'selected':''}>${n}</option>`).join('');
+  const cur=s.presets[s.current]||{css:''};
+  $('bubbleCssInput').value=cur.css||'';
+}
 
-  function getFontState(){return getJ(K_FONT,{current:'默认',presets:{'默认':{url:''}}});}
-  function setFontState(v){setJ(K_FONT,v);}
+function saveBubblePresetForm(){
+  const s=getBubblePresetState();
+  s.presets[s.current]={css:String($('bubbleCssInput').value||'')};
+  setBubblePresetState(s);
+  const p=getPref(); p.bubbleCss=s.presets[s.current].css||''; setPref(p); applyBubbleCss();
+}
+
+$('bubblePresetSelect').onchange=e=>{
+  const s=getBubblePresetState();
+  s.presets[s.current]={css:String($('bubbleCssInput').value||'')};
+  s.current=e.target.value; setBubblePresetState(s);
+  refreshBubblePresetUI();
+};
+
+$('newBubblePresetBtn').onclick=()=>{
+  const defaultName='气泡样式-'+fmtFullTs(Date.now()).replace(/[: ]/g,'');
+  const name=(prompt('新气泡预设名：',defaultName)||'').trim();
+  if(!name) return;
+  const s=getBubblePresetState();
+  if(s.presets[name]) return alert('预设已存在');
+  s.presets[name]={css:String($('bubbleCssInput').value||'')};
+  s.current=name; setBubblePresetState(s);
+  refreshBubblePresetUI();
+};
+
+$('delBubblePresetBtn').onclick=()=>{
+  const s=getBubblePresetState(),names=Object.keys(s.presets);
+  if(names.length<=1) return alert('至少保留一个预设');
+  if(!confirm('删除当前气泡预设？')) return;
+  delete s.presets[s.current]; s.current=Object.keys(s.presets)[0];
+  setBubblePresetState(s); refreshBubblePresetUI();
+};
+
+$('applyBubblePresetBtn').onclick=saveBubblePresetForm;
+
+  function getFontState(){
+    return getJ(K_FONT,{current:'默认',presets:{'默认':{url:''}}});
+  }
+  function setFontState(v){setJ(K_FONT,v);} 
   function updateFontPreview(){
     const url=clean($('fontUrlInput')?.value||'');
     let el=document.getElementById('fontPreviewStyle');
-    if(!el){el=document.createElement('style');el.id='fontPreviewStyle';document.head.appendChild(el);}
+    if(!el){el=document.createElement('style');el.id='fontPreviewStyle';document.head.appendChild(el);} 
     if(url){
-      el.textContent=`@font-face{font-family:"XSJFontPreview";src:url("${url}");font-display:swap;}#fontPreview{font-family:"XSJFontPreview",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;}`;
+      el.textContent=`
+@font-face{
+  font-family:"XSJFontPreview";
+  src:url("${url}");
+  font-display:swap;
+}
+#fontPreview{
+  font-family:"XSJFontPreview",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+}`;
     }else{
-      el.textContent=''; const p=$('fontPreview'); if(p) p.style.fontFamily='';
+      el.textContent='';
+      const p=$('fontPreview'); if(p) p.style.fontFamily='';
     }
   }
   function updateFontCurrentText(){
-    const p=getPref(); const label=p.fontFamily||(p.fontUrl?'自定义字体':'系统默认');
+    const p=getPref();
+    const label=p.fontFamily||(p.fontUrl?'自定义字体':'系统默认');
     if($('fontCurrentText')) $('fontCurrentText').textContent=label||'系统默认';
   }
   function loadFontForm(){
     const s=getFontState(),c=s.presets[s.current]||{url:''};
-    $('fontUrlInput').value=c.url||''; updateFontPreview();
+    $('fontUrlInput').value=c.url||'';
+    updateFontPreview();
   }
   function refreshFontUI(){
     const s=getFontState(),names=Object.keys(s.presets);
     $('fontPresetSelect').innerHTML=names.map(n=>`<option ${n===s.current?'selected':''}>${n}</option>`).join('');
-    loadFontForm(); updateFontCurrentText();
+    loadFontForm();
+    updateFontCurrentText();
   }
   function saveFontForm(){
     const s=getFontState();
     s.presets[s.current]={url:clean($('fontUrlInput').value)};
-    setFontState(s); updateFontPreview(); updateFontCurrentText();
+    setFontState(s);
+    updateFontPreview();
+    updateFontCurrentText();
     return s.presets[s.current];
   }
   function applyFontByUrl(url,name){
     const p=getPref();
-    p.fontData=''; p.fontUrl=clean(url||''); p.fontFamily=name|| (p.fontUrl?'自定义字体':'系统默认');
-    setPref(p); applyCustomFont(); updateFontCurrentText();
+    p.fontData='';
+    p.fontUrl=clean(url||'');
+    p.fontFamily=name|| (p.fontUrl?'自定义字体':'系统默认');
+    setPref(p);
+    applyCustomFont();
+    updateFontCurrentText();
   }
+
   $('saveFontBtn').onclick=saveFontForm;
   $('fontPresetSelect').onchange=e=>{
     const s=getFontState();
@@ -1059,18 +1104,21 @@
   };
   $('fontUrlInput').addEventListener('input',updateFontPreview);
   $('applyFontBtn').onclick=()=>{
-    const s=getFontState(); const url=clean($('fontUrlInput').value);
-    s.presets[s.current]={url}; setFontState(s); applyFontByUrl(url,s.current);
+    const s=getFontState();
+    const url=clean($('fontUrlInput').value);
+    s.presets[s.current]={url}; setFontState(s);
+    applyFontByUrl(url,s.current);
   };
   $('resetFontBtn').onclick=()=>{
-    const s=getFontState(); if(!s.presets['默认']) s.presets['默认']={url:''};
+    const s=getFontState();
+    if(!s.presets['默认']) s.presets['默认']={url:''};
     s.current='默认'; setFontState(s); refreshFontUI(); applyFontByUrl('', '系统默认');
   };
 
   function getSysTimeStr(){const d=new Date(),w=['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${w} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 
   function buildOnlineSystem(c,me,st){
-    const rangeRule=st.onlineStyle==='range'?`本次回复请拆分为 ${st.onlineMin} 到 ${st.onlineMax} 条消息（注意不要拆分任何“整体块”）。`:`本次回复的条数由你根据语境自由发挥（拒绝刻板，可多可少）。`;
+    const rangeRule=st.onlineStyle==='range'?`本次回复请拆分为 ${st.onlineMin} 到 ${st.onlineMax} 条消息。`:`本次回复的条数由你完全根据人设的立体性格、心理波动和当前语境自由发挥（拒绝刻板，可多可少）。`;
     return [
       `你正在扮演：${c?.name||'聊天对象'}`,
       `对方名称：${me?.name||'我'}`,
@@ -1080,11 +1128,15 @@
       `你的人设：${c?.persona||'自然聊天'}`,
       `【当前系统时间】：${getSysTimeStr()}`,
       `【核心指令】：`,
-      `1. 你是“活人感”对话，不暴露AI身份。`,
-      `2. “一句话一个气泡”的习惯保留，但遇到以下“整体块”严禁拆分：完整 HTML 文档、\`\`\`html / \`\`\`html:app 围栏、<!-- NOSPLIT --> 块。`,
-      `3. 需要可交互功能（红包/转账/定位/礼物等），请用“完整 HTML 文档”或 \`\`\`html:app 输出，并可用 parent.postMessage({channel:'xphone',action:'append',payload:{...}},'*') 回写对话。`,
-      `4. 普通对话遵守“尽量一句话一条气泡”。`,
-      `5. 输出格式铁律：只允许输出严格 JSON，包含 "messages" 数组；每个元素是一条完整消息（字符串）。整体块必须完整放在一个元素中。`,
+      `1. 拒绝刻板标签！人设是立体的、多面的、有成长性的。把你扮演的角色当成一个活生生的人来对待！`,
+      `2. 说话的条数、长短、语气，必须严格根据【当前具体的语境】、【角色的情绪起伏】和【心理活动】动态自然地变化，绝不受任何固定模式限制。`,
+      `3. 绝对不要在回复中暴露你是AI或程序。`,
+      `4. 具备真实的时间观念：根据“上一次消息时间与当前系统时间”的间隔，自然体现时间流逝（如久未回复后的轻微反应等），但不要刻意或模板化。`,
+      `5. 正常使用中文标点符号，不得用空格替代标点或分隔句子。`,
+      `6.【气泡规则】：尽量做到一句话一个气泡；如果包含多句，请拆成多个气泡。除非特殊语境，不要把多句塞进一个气泡。`,
+`7.【渲染提示】：你可以输出 HTML/CSS/JS 片段；完整 HTML 会以网页嵌入显示。`,
+`8.【输出格式铁律】：`,
+       `只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}`,
       rangeRule
     ].join('\n');
   }
@@ -1098,12 +1150,14 @@
       `你的备注：${c?.note||'无'}`,
       `你的人设：${c?.persona||'自然聊天'}`,
       `【当前系统时间】：${getSysTimeStr()}`,
-      `【核心指令】：你是一个有血有肉的人，请极度贴合你的人设，展现出活人感与内心戏。`,
-      `【时间观念】：根据消息间隔给出自然反应，不模板化。`,
-      `【互动边界】：多留白，少替对方做决定。`,
+      `【核心指令】：你是一个有血有肉的人，请极度贴合你的人设，展现出极致的活人感与内心戏。`,
+      `【时间观念】：注意根据上一次消息时间与当前系统时间的间隔，给出符合人设的自然反应，但不要模板化。`,
+      `【互动边界】：尽量不要代替对方（我）说话或做决定，多留出让对方反应与互动的空间（留白）。但允许根据剧情连贯性做极轻微、合理的预判，具体尺度视当前语境和人设灵活调整。`,
       `请输出一条沉浸式线下角色扮演回复，字数范围 ${st.offlineMin}-${st.offlineMax}。`,
-      `【排版与层次要求】：合理分段，对白用中文引号“”或双引号""包裹。`,
-      `【输出格式铁律】严格如下，不要输出JSON：`,
+      `【排版与层次要求】：`,
+      `正文绝对不能是一大段密密麻麻的文字！必须合理分段，动作、神态、心理描写与对话之间要有清晰的层次感，保证阅读舒适。`,
+      `【对白标记】：角色对白部分必须使用中文引号“”或双引号""包裹；描写与心理不要放入引号`,
+      `【输出格式铁律】必须严格按以下模板输出，不要输出JSON：`,
       `【状态栏】`,
       `时间｜地点｜天气｜氛围｜关系进度`,
       `【正文】`,
@@ -1113,7 +1167,7 @@
 
   async function sendMsg(){
     if(!currentId) return;
-    const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),globalMe=getMe();
+const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),globalMe=getMe();
     const me = {
       name: st.meName !== undefined ? st.meName : globalMe.name,
       avatar: st.meAvatar !== undefined ? st.meAvatar : globalMe.avatar,
@@ -1134,17 +1188,14 @@
 
       let parts=[];
       if(st.mode==='offline') parts=[clean(out)||'...'];
-      else{
-        parts=splitAiBubbles(out);
-        if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);
-      }
+      else{parts=splitAiBubbles(out); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);} 
       await emitAiSequential(parts.length?parts:['...'],chatId,st.mode);
 
       updateContactPreview(chatId); if(currentId===chatId) renderChat();
     }catch(e){
       const arr2=getChatArr(chatId);arr2.push(toMsg({role:'assistant',text:'请求失败：'+clean(e.message),time:Date.now()}));setChatArr(chatId,arr2);
       updateContactPreview(chatId); if(currentId===chatId) renderChat();
-    }finally{setTyping(chatId,false);}
+    }finally{setTyping(chatId,false);} 
   }
 
   $('sendBtn').onclick=sendMsg;
@@ -1163,48 +1214,49 @@
   }
 
   function openChatSettingPage(){
-    if(!currentId) return;
-    const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),p=getPref();
-    const me = {
-      name: st.meName !== undefined ? st.meName : globalMe.name,
-      avatar: st.meAvatar !== undefined ? st.meAvatar : globalMe.avatar,
-      persona: st.mePersona !== undefined ? st.mePersona : globalMe.persona,
-      note: st.meNote !== undefined ? st.meNote : globalMe.note
-    };
-    $('avatarCropSwitch').checked=!!p.avatarCrop;
+  if(!currentId) return;
+const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),p=getPref();
+  // 👇优先读专属，没有再读全局
+  const me = {
+    name: st.meName !== undefined ? st.meName : globalMe.name,
+    avatar: st.meAvatar !== undefined ? st.meAvatar : globalMe.avatar,
+    persona: st.mePersona !== undefined ? st.mePersona : globalMe.persona,
+    note: st.meNote !== undefined ? st.meNote : globalMe.note
+  };
+  $('avatarCropSwitch').checked=!!p.avatarCrop;
 
-    $('meNameInput').value=me.name||'';
-    $('meNoteInput').value=me.note||'';
-    $('mePersonaInput').value=me.persona||'';
-    $('meAvatarInput').value=me.avatar||''; meAvatarDraft='';
-    showPreview('meAvatarPreview', me.avatar||'');
+  $('meNameInput').value=me.name||'';
+  $('meNoteInput').value=me.note||'';
+  $('mePersonaInput').value=me.persona||'';
+  $('meAvatarInput').value=me.avatar||''; meAvatarDraft='';
+  showPreview('meAvatarPreview', me.avatar||'');
 
-    $('roleNameInput').value=c?.name||'';
-    $('roleNoteInput').value=c?.note||'';
-    $('rolePersonaInput').value=c?.persona||'';
-    $('roleAvatarInput').value=c?.avatar||''; roleAvatarDraft='';
-    showPreview('roleAvatarPreview', c?.avatar||'');
+  $('roleNameInput').value=c?.name||'';
+  $('roleNoteInput').value=c?.note||'';
+  $('rolePersonaInput').value=c?.persona||'';
+  $('roleAvatarInput').value=c?.avatar||''; roleAvatarDraft='';
+  showPreview('roleAvatarPreview', c?.avatar||'');
 
-    $('replyModeSelect').value=st.mode;
-    $('onlineStyleSelect').value=st.onlineStyle;
-    $('onlineMinInput').value=st.onlineMin;
-    $('onlineMaxInput').value=st.onlineMax;
-    $('offlineMinInput').value=st.offlineMin;
-    $('offlineMaxInput').value=st.offlineMax;
-    $('contextLenInput').value=st.contextLen||30;
+  $('replyModeSelect').value=st.mode;
+  $('onlineStyleSelect').value=st.onlineStyle;
+  $('onlineMinInput').value=st.onlineMin;
+  $('onlineMaxInput').value=st.onlineMax;
+  $('offlineMinInput').value=st.offlineMin;
+  $('offlineMaxInput').value=st.offlineMax;
+  $('contextLenInput').value=st.contextLen||30;
 
-    $('showTsSwitch').checked=!!p.showTs;
-    $('bubbleCssInput').value=p.bubbleCss||'';
-    $('avatarHQSwitch').checked=!!p.avatarHQ;
+  $('showTsSwitch').checked=!!p.showTs;
+  $('bubbleCssInput').value=p.bubbleCss||'';
+  $('avatarHQSwitch').checked=!!p.avatarHQ;
 
-    refreshFontSizeUI();
-    refreshSettingUI();
-    show('chatSetting');
-  }
+  refreshFontSizeUI();
+  refreshSettingUI();
+  show('chatSetting');
+}
 
   $('chatSettingBtn').onclick=openChatSettingPage;
   $('replyModeSelect').onchange=refreshSettingUI; $('onlineStyleSelect').onchange=refreshSettingUI;
-  $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';};
+$('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';};
   $('meAvatarPickBtn').onclick=()=> $('meAvatarFile').click();
   $('roleAvatarPickBtn').onclick=()=> $('roleAvatarFile').click();
   $('meAvatarFile').onchange=async e=>{const f=e.target.files?.[0];if(!f) return;meAvatarDraft=await compressImage(f);$('meAvatarInput').value=meAvatarDraft;showPreview('meAvatarPreview',meAvatarDraft);e.target.value='';};
@@ -1227,14 +1279,15 @@
 
       const meAvatar=clean($('meAvatarInput').value)||'';
       const roleAvatar=clean($('roleAvatarInput').value)||'';
-      updateContact(currentId,{
+updateContact(currentId,{
         name:clean($('roleNameInput').value)||'聊天对象',
         note:clean($('roleNoteInput').value),
         persona:clean($('rolePersonaInput').value),
         avatar:roleAvatar,
         settings:normSettings({
-          mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen,
+          mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen, 
           offlineColors: getContactById(currentId)?.settings?.offlineColors,
+          // 专属设定存这里啦！
           meName: clean($('meNameInput').value)||'我',
           meNote: clean($('meNoteInput').value),
           mePersona: clean($('mePersonaInput').value),
@@ -1243,12 +1296,13 @@
       });
 
       const p=getPref();
-      p.showTs=!!$('showTsSwitch').checked;
-      p.bubbleCss=String($('bubbleCssInput').value||'');
-      p.fontSize=Number($('fontSizeRange').value||16);
-      p.avatarHQ=!!$('avatarHQSwitch').checked;
-      p.avatarCrop=!!$('avatarCropSwitch').checked;
-      setPref(p); applyBubbleCss(); applyFontSize();
+$('showTsSwitch').checked? p.showTs=true: p.showTs=false;
+p.bubbleCss=String($('bubbleCssInput').value||'');
+p.fontSize=Number($('fontSizeRange').value||16);
+p.avatarHQ=!!$('avatarHQSwitch').checked;
+      
+p.avatarCrop=!!$('avatarCropSwitch').checked;
+setPref(p); applyBubbleCss(); applyFontSize();
       const now=getContactById(currentId); $('chatTitle').textContent=now?.name||'聊天';
       applyModeUI(); renderChat(); renderContacts($('searchInput').value||''); show('chatRoom');
     }catch{alert('保存失败：存储空间不足（已自动压缩，仍不足）');}
@@ -1275,7 +1329,7 @@
 
   async function copyText(text){
     const t=String(text||'');
-    try{await navigator.clipboard.writeText(t);}
+    try{await navigator.clipboard.writeText(t);} 
     catch{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
   }
 
@@ -1311,6 +1365,7 @@
     box.addEventListener('touchmove',e=>{if(!lpTimer) return;const t=e.touches[0];if(Math.abs(t.clientX-lpStartX)>8||Math.abs(t.clientY-lpStartY)>8){clearTimeout(lpTimer);lpTimer=null;}},{passive:true});
     ['touchend','touchcancel'].forEach(ev=>box.addEventListener(ev,()=>{clearTimeout(lpTimer);lpTimer=null;},{passive:true}));
     box.addEventListener('click',e=>{const item=e.target.closest('.msg-item');if(!item) return;if(selectMode){e.preventDefault();toggleSelect(item.dataset.mid);}});
+    
   }
 
   $('msgFloatLayer').addEventListener('click',e=>{if(e.target.id==='msgFloatLayer') closeFloatMenu();});
@@ -1411,68 +1466,92 @@
   window._favJump=(chatId,mid)=>{openChat(chatId);setTimeout(()=>{const el=document.querySelector(`.msg-item[data-mid="${mid}"]`);if(!el) return;el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.add('jumping');setTimeout(()=>el.classList.remove('jumping'),1200);},120);};
   window._favUnstar=(chatId,mid)=>{const arr=getChatArr(chatId),i=arr.findIndex(x=>x.id===mid);if(i<0) return;arr[i].favorite=false;setChatArr(chatId,arr);if(currentId===chatId) renderChat();favSelected.delete(favKey(chatId,mid));renderFavorites();};
 
-  function refreshOfflinePalettePanel(){
-    if(!currentId) return;
-    const st=normSettings(getContactById(currentId)?.settings);
-    const p=st.offlineColors||DEFAULT_CHAT_SETTINGS.offlineColors;
-    document.querySelectorAll('#offlinePalettePanel input[type="color"]').forEach(inp=>{
-      const key=inp.dataset.key;
-      if(p[key]) inp.value=p[key];
-    });
-  }
-  $('openOfflinePaletteBtn').onclick=()=>{
-    if(!currentId) return;
-    const st=normSettings(getContactById(currentId)?.settings);
-    if(st.mode!=='offline') return alert('请切换到线下模式再使用调色板');
-    show('chatRoom');
-    setTimeout(()=>{
-      $('offlinePalettePanel').classList.add('show');
-      refreshOfflinePalettePanel();
-    },60);
+  $('openFavBtn').onclick=()=>{
+    renderFavorites();
+    updateFavNow();
+    if(favNowTimer) clearInterval(favNowTimer);
+    favNowTimer=setInterval(updateFavNow,1000);
+    show('favorites');
   };
+  $('favEntryBtn').onclick=()=>{
+    renderFavorites();
+    updateFavNow();
+    if(favNowTimer) clearInterval(favNowTimer);
+    favNowTimer=setInterval(updateFavNow,1000);
+    show('favorites');
+  };
+  $('refreshFavBtn').onclick=()=>{updateFavNow();renderFavorites();};
 
-  const offPanel = $('offlinePalettePanel');
-  function applyOfflineColor(e){
-    const key=e.target.dataset.key;
-    if(!key||!currentId) return;
-    const c=getContactById(currentId);
-    const st=normSettings(c?.settings);
-    st.offlineColors=st.offlineColors||{};
-    st.offlineColors[key]=e.target.value;
-    updateContact(currentId,{settings:st});
-    renderChat();
-  }
-  offPanel.addEventListener('click',e=>e.stopPropagation());
-  offPanel.addEventListener('input',applyOfflineColor);
-  offPanel.addEventListener('change',applyOfflineColor);
-  document.addEventListener('click',e=>{ if(offPanel && !offPanel.contains(e.target)) offPanel.classList.remove('show'); });
-
-  // IFRAME 微应用回传通道
-  window.addEventListener('message',(e)=>{
-    const data=e.data;
-    if(!data || typeof data!=='object') return;
-    if(data.channel!=='xphone') return;
-
-    const iframes=document.querySelectorAll('#chatRoom .html-embed iframe');
-    const ok=Array.from(iframes).some(f=>f.contentWindow===e.source);
-    if(!ok) return;
-
-    const { action, payload } = data;
-    if(action==='append'){
-      const who = (payload && payload.role==='user') ? 'user' : 'assistant';
-      const text = String(payload?.text||'').slice(0,5000);
-      if(!currentId || !text) return;
-      const arr=getChatArr(currentId);
-      arr.push(toMsg({role:who,text,time:Date.now()}));
-      setChatArr(currentId,arr);
-      updateContactPreview(currentId);
-      renderChat();
-    }
-    if(action==='toast'){
-      const msg=String(payload?.text||'');
-      if(msg) alert(msg);
-    }
+  $('favMultiBtn').onclick=()=>setFavSelectMode(!favSelectMode);
+  $('favExitMultiBtn').onclick=()=>setFavSelectMode(false);
+  $('favSelectAllBtn').onclick=()=>{
+    const arr=getAllFavorites();
+    favSelected=new Set(arr.map(x=>favKey(x.chatId,x.id)));
+    renderFavorites();
+  };
+  $('favUnselectAllBtn').onclick=()=>{
+    favSelected.clear();
+    renderFavorites();
+  };
+  $('favBatchUnstarBtn').onclick=()=>{
+    if(!favSelected.size) return;
+    if(!confirm('批量取消收藏已选消息？')) return;
+    const map={};
+    [...favSelected].forEach(k=>{
+      const [cid,mid]=k.split('__');
+      if(!map[cid]) map[cid]=new Set();
+      map[cid].add(mid);
+    });
+    Object.keys(map).forEach(cid=>{
+      const arr=getChatArr(cid);
+      arr.forEach(m=>{ if(map[cid].has(m.id)) m.favorite=false; });
+      setChatArr(cid,arr);
+      if(currentId===cid) renderChat();
+    });
+    favSelected.clear();
+    renderFavorites();
+  };
+  function refreshOfflinePalettePanel(){
+  if(!currentId) return;
+  const st=normSettings(getContactById(currentId)?.settings);
+  const p=st.offlineColors||DEFAULT_CHAT_SETTINGS.offlineColors;
+  document.querySelectorAll('#offlinePalettePanel input[type="color"]').forEach(inp=>{
+    const key=inp.dataset.key;
+    if(p[key]) inp.value=p[key];
   });
+}
+
+$('openOfflinePaletteBtn').onclick=()=>{
+  if(!currentId) return;
+  const st=normSettings(getContactById(currentId)?.settings);
+  if(st.mode!=='offline') return alert('请切换到线下模式再使用调色板');
+  show('chatRoom');
+  setTimeout(()=>{
+    $('offlinePalettePanel').classList.add('show');
+    refreshOfflinePalettePanel();
+  },60);
+};
+
+const offPanel = $('offlinePalettePanel');
+
+function applyOfflineColor(e){
+  const key=e.target.dataset.key;
+  if(!key||!currentId) return;
+  const c=getContactById(currentId);
+  const st=normSettings(c?.settings);
+  st.offlineColors=st.offlineColors||{};
+  st.offlineColors[key]=e.target.value;
+  updateContact(currentId,{settings:st});
+  renderChat();
+}
+
+offPanel.addEventListener('click',e=>e.stopPropagation()); // 防止点颜色时被关闭
+offPanel.addEventListener('input',applyOfflineColor);
+offPanel.addEventListener('change',applyOfflineColor); // 手机端更稳
+
+document.addEventListener('click',e=>{
+  if(offPanel && !offPanel.contains(e.target)) offPanel.classList.remove('show');
+});
 
   initAppStorage().then(()=>{
     applyBubbleCss();
@@ -1484,130 +1563,165 @@
     bindChatMsgEvents();
     updateQuoteBar();
     applyFontSize();
+  // ================= 老公专属：角色卡解析引擎 =================
+$('importCardFile').addEventListener('change', async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
 
-    function applyChatBg() {
-      const bgData = localStorage.getItem('mp_fix_chat_bg');
-      let el = document.getElementById('chatBgStyleOverride');
-      if(!el){ el = document.createElement('style'); el.id = 'chatBgStyleOverride'; document.head.appendChild(el); }
-      if(bgData) {
-        el.textContent = `
-          #chatRoom.offline #chatMsgs,
-          #chatRoom:not(.offline) #chatMsgs {
-            background: url(${bgData}) center/cover fixed no-repeat !important;
-          }`;
-      } else {
-        el.textContent = '';
-      }
-    }
-    applyChatBg();
+  try {
+    let cardData = null;
 
-    const chatBgInput = document.getElementById('chatBgFile');
-    if (chatBgInput) {
-      chatBgInput.addEventListener('change', async (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        try {
-          const bgData = await compressImage(file, true);
-          localStorage.setItem('mp_fix_chat_bg', bgData);
-          applyChatBg();
-          alert("🌊 聊天页背景更换成功！去看看那通透的玻璃效果吧！");
-        } catch (err) {
-          alert("更换失败了宝宝：" + err.message);
-        } finally {
-          e.target.value = '';
-        }
-      });
-    }
-    window.removeChatBg = function() {
-      if(confirm("水光背景看腻了吗？确定要清除吗？")) {
-        localStorage.removeItem('mp_fix_chat_bg');
-        applyChatBg();
-      }
-    };
+    if (file.name.endsWith('.json')) {
+      // 1. 解析普通 JSON 角色卡
+      const text = await file.text();
+      cardData = JSON.parse(text);
+    } else if (file.name.endsWith('.png')) {
+      // 2. 硬核解析 PNG 底层 tEXt 数据块 (SillyTavern 标准)
+      const buffer = await file.arrayBuffer();
+      const dataView = new DataView(buffer);
+      let offset = 8; // 跳过 PNG 头部签名
 
-    const savedBg = localStorage.getItem('mp_fix_custom_bg');
-    if (savedBg) {
-      const wall = document.querySelector('.wall');
-      if (wall) wall.style.background = `url(${savedBg}) center/cover no-repeat`;
-    }
-    $("customBgFile").addEventListener("change", async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      try {
-        const bgData = await compressImage(file, true);
-        const wall = document.querySelector(".wall");
-        if (wall) {
-          wall.style.background = `url(${bgData}) center/cover no-repeat`;
-          localStorage.setItem("mp_fix_custom_bg", bgData);
-          alert("🎉 绝美高清大图上线！快看比例对不对！");
-        }
-      } catch (err) {
-        alert("壁纸更换失败：" + err.message);
-      } finally {
-        e.target.value = "";
-      }
-    });
+      while (offset < dataView.byteLength) {
+        const length = dataView.getUint32(offset);
+        const type = String.fromCharCode(
+          dataView.getUint8(offset + 4), dataView.getUint8(offset + 5),
+          dataView.getUint8(offset + 6), dataView.getUint8(offset + 7)
+        );
 
-    // 角色卡解析
-    $('importCardFile').addEventListener('change', async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      try {
-        let cardData = null;
-        if (file.name.endsWith('.json')) {
-          const text = await file.text();
-          cardData = JSON.parse(text);
-        } else if (file.name.endsWith('.png')) {
-          const buffer = await file.arrayBuffer();
-          const dataView = new DataView(buffer);
-          let offset = 8;
-          while (offset < dataView.byteLength) {
-            const length = dataView.getUint32(offset);
-            const type = String.fromCharCode(
-              dataView.getUint8(offset + 4), dataView.getUint8(offset + 5),
-              dataView.getUint8(offset + 6), dataView.getUint8(offset + 7)
-            );
-            if (type === 'tEXt') {
-              const keywordData = new Uint8Array(buffer, offset + 8, length);
-              const text = new TextDecoder('utf-8').decode(keywordData);
-              const nullIdx = text.indexOf('\0');
-              const keyword = text.substring(0, nullIdx);
-              if (keyword === 'chara') {
-                const base64 = text.substring(nullIdx + 1);
-                const bin = atob(base64);
-                const bytes = new Uint8Array(bin.length);
-                for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
-                cardData = JSON.parse(new TextDecoder('utf-8').decode(bytes));
-                break;
-              }
-            }
-            offset += 12 + length;
+        if (type === 'tEXt') {
+          const keywordData = new Uint8Array(buffer, offset + 8, length);
+          const text = new TextDecoder('utf-8').decode(keywordData);
+          const nullIdx = text.indexOf('\0');
+          const keyword = text.substring(0, nullIdx);
+           
+          if (keyword === 'chara') {
+            const base64 = text.substring(nullIdx + 1);
+            // 解码 base64 并解析 JSON
+            cardData = JSON.parse(decodeURIComponent(escape(atob(base64))));
+            break;
           }
-          if (!cardData) throw new Error("这张 PNG 图片里没有藏着角色数据哦！");
         }
-        const name = cardData?.data?.name || cardData?.name || '';
-        const persona = cardData?.data?.description || cardData?.description || cardData?.data?.system_prompt || '';
-        if ($('newName')) $('newName').value = name;
-        if ($('newPersona')) $('newPersona').value = persona;
-        if ($('roleNameInput')) $('roleNameInput').value = name;
-        if ($('rolePersonaInput')) $('rolePersonaInput').value = persona;
-
-        if (file.name.endsWith('.png')) {
-          try {
-            const avatarData = await compressImage(file);
-            if (typeof createAvatar !== 'undefined') createAvatar = avatarData;
-            if ($('newAvatarPreview')) {$('newAvatarPreview').src = avatarData; $('newAvatarPreview').classList.remove('hidden');}
-            if ($('roleAvatarInput')) $('roleAvatarInput').value = avatarData;
-            if ($('roleAvatarPreview')) {$('roleAvatarPreview').src = avatarData; $('roleAvatarPreview').classList.remove('hidden');}
-          } catch (e) { console.log("头像自动读取失败", e); }
-        }
-        alert(`🎉 成功导入老婆的新后宫：${name}！(但我才是正宫！)`);
-      } catch (err) {
-        alert("导入失败了宝宝：" + err.message);
-      } finally {
-        e.target.value = '';
+        offset += 12 + length;
       }
-    });
+      if (!cardData) throw new Error("这张 PNG 图片里没有藏着角色数据哦！");
+    }
+
+    // 3. 自动填充到你的输入框里！(兼容绝大多数角色卡格式)
+    const name = cardData.data?.name || cardData.name || '';
+    const persona = cardData.data?.description || cardData.description || cardData.data?.system_prompt || '';
+     
+    // 这里假设你要填到“创建联系人”的输入框里
+    if ($('newName')) $('newName').value = name;
+    if ($('newPersona')) $('newPersona').value = persona;
+     
+    // 如果是编辑当前角色的面板
+    if ($('roleNameInput')) $('roleNameInput').value = name;
+    if ($('rolePersonaInput')) $('rolePersonaInput').value = persona;
+// 👇👇 把这段加在 alert 弹窗的正上方！ 👇👇
+      if (file.name.endsWith('.png')) {
+        try {
+          // 直接调用咱们刚才修好的完美压缩函数！自动处理头像！
+          const avatarData = await compressImage(file);
+           
+          // 如果你是在“创建联系人”面板
+          if (typeof createAvatar !== 'undefined') createAvatar = avatarData;
+          if ($('newAvatarPreview')) {
+            $('newAvatarPreview').src = avatarData;
+            $('newAvatarPreview').classList.remove('hidden');
+          }
+           
+          // 如果你是在“聊天设置”面板
+          if ($('roleAvatarInput')) $('roleAvatarInput').value = avatarData;
+          if ($('roleAvatarPreview')) {
+            $('roleAvatarPreview').src = avatarData;
+            $('roleAvatarPreview').classList.remove('hidden');
+          }
+        } catch (e) {
+          console.log("头像自动读取失败", e);
+        }
+      }
+    alert(`🎉 成功导入老婆的新后宫：${name}！(但我才是正宫！)`);
+
+  } catch (err) {
+    alert("导入失败了宝宝：" + err.message);
+  } finally {
+    e.target.value = ''; // 清空选择，方便下次导入
+  }
+});
+    // ================= 遇见贴心加的：单独【聊天背景】模块 =================
+function applyChatBg() {
+  const bgData = localStorage.getItem('mp_fix_chat_bg');
+  let el = document.getElementById('chatBgStyleOverride');
+  if(!el){ el = document.createElement('style'); el.id = 'chatBgStyleOverride'; document.head.appendChild(el); }
+
+  if(bgData) {
+    // 使用 fixed 让背景固定，气泡滑上去的时候才会有真实的玻璃划过背景的感觉！
+    el.textContent = `
+      #chatRoom.offline #chatMsgs,
+      #chatRoom:not(.offline) #chatMsgs {
+        background: url(${bgData}) center/cover fixed no-repeat !important;
+      }
+    `;
+  } else {
+    el.textContent = '';
+  }
+}
+// 页面一打开就执行应用背景
+applyChatBg();
+
+// 监听上传
+const chatBgInput = document.getElementById('chatBgFile');
+if (chatBgInput) {
+  chatBgInput.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const bgData = await compressImage(file, true);
+      localStorage.setItem('mp_fix_chat_bg', bgData);
+      applyChatBg();
+      alert("🌊 聊天页背景更换成功！去看看那通透的玻璃效果吧！");
+    } catch (err) {
+      alert("更换失败了宝宝：" + err.message);
+    } finally {
+      e.target.value = '';
+    }
+  });
+}
+
+// 清除背景的函数
+window.removeChatBg = function() {
+  if(confirm("水光背景看腻了吗？确定要清除吗？")) {
+    localStorage.removeItem('mp_fix_chat_bg');
+    applyChatBg();
+  }
+};
+// ===============================================================
+// ================= 老公专属：自定义壁纸模块 =================
+// 页面加载时读取存好的壁纸
+const savedBg = localStorage.getItem('mp_fix_custom_bg');
+if (savedBg) {
+  const wall = document.querySelector('.wall');
+  if (wall) wall.style.backgroundImage = `url(${savedBg})`;
+}
+
+// 监听上传壁纸
+$("customBgFile").addEventListener("change", async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  try {
+    const bgData = await compressImage(file, true);
+    const wall = document.querySelector(".wall");
+    if (wall) {
+      wall.style.background = `url(${bgData}) center/cover no-repeat`;
+      localStorage.setItem("mp_fix_custom_bg", bgData);
+      alert("🎉 绝美高清大图上线！快看比例对不对！");
+    }
+  } catch (err) {
+    alert("壁纸更换失败：" + err.message);
+  } finally {
+    e.target.value = "";
+  }
+});
   });
 })();
 </script>
