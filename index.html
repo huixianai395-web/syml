@@ -851,22 +851,50 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
       ${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}
     </div>`;
 }
-  // 修改后的渲染：助手支持HTML
-  function renderBubbleContent(m,isMe,pref){
-    const cls=isMe?'me':'ai';
-    const ts=pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:'';
-    const quote=renderQuote(m.quote);
-    const hidden=m.hiddenForAi?'ai-hidden':'';
-    const t=String(m.text||'');
-    if(!isMe && isHtmlDoc(t)){
-      const src=toHtmlDataUrl(t);
-      return `${quote}<div class="bubble ${cls} ${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
-    }
-    if(!isMe && isHtmlFrag(t)){
-      return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
-    }
-    return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
+ function renderBubbleContent(m, isMe, pref) {
+  const cls = isMe ? 'me' : 'ai';
+  const ts = pref.showTs ? `<div class="msg-time">${fmtTs(m.time)}</div>` : '';
+  const quote = renderQuote(m.quote);
+  const hidden = m.hiddenForAi ? 'ai-hidden' : '';
+  const t = String(m.text || '');
+
+  // ↓↓↓↓↓↓ 我们的“智能安全阀”就装在这里！↓↓↓↓↓↓
+  if (!isMe && isHtmlDoc(t)) {
+    // 当检测到是完整HTML时，不再直接创建iframe！
+    // 而是创建一个“预览卡片”
+    const placeholderId = 'html_preview_' + m.id;
+    
+    // 这个函数会被点击时调用，用来真正加载网页
+    const loadHtmlScript = `
+      const el = document.getElementById('${placeholderId}');
+      if (el) {
+        el.innerHTML = '<div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts" referrerpolicy="no-referrer" src="${toHtmlDataUrl(t)}"></iframe></div>';
+      }
+    `;
+
+    // 返回一个带有“点击加载”按钮的卡片HTML
+    return `
+      ${quote}
+      <div id="${placeholderId}" class="bubble ${cls} ${hidden}" style="padding: 12px; background: #eef3ff; border-color: #d9e3f8;">
+        <div style="font-size: 13px; color: #445377; margin-bottom: 8px;">
+          🎨 这是一个HTML网页内容 (可能包含Canvas/JS)
+        </div>
+        <button class="btn p" style="width: 100%;" onclick="${esc(loadHtmlScript)}">
+          点击预览 (手机可能会卡顿)
+        </button>
+      </div>
+      ${ts}
+    `;
   }
+  // ↑↑↑↑↑↑ “智能安全阀”安装完毕！↑↑↑↑↑↑
+
+  if (!isMe && isHtmlFrag(t)) {
+    return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
+  }
+  
+  // 普通文本消息照常显示
+  return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
+ }
 
   function renderChat(){
     const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),pref=getPref();
