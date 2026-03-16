@@ -918,12 +918,50 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
   function storeCurrentInput(){if(!currentId) return;const t=clean($('chatInput').value);if(!t) return;pushUser(t);$('chatInput').value='';resetInputH();renderChat();}
   $('storeBtn').onclick=storeCurrentInput;
 
-  function parseJsonMessages(text){
-    const t=clean(text); if(!t) return null;
-    try{const j=JSON.parse(t);if(Array.isArray(j?.messages)) return j.messages.map(x=>clean(x)).filter(Boolean);}catch{}
-    const m=t.match(/\{[\s\S]*\}/);
-    if(m){try{const j=JSON.parse(m[0]);if(Array.isArray(j?.messages)) return j.messages.map(x=>clean(x)).filter(Boolean);}catch{}}
-    return null;
+  function parseJsonMessages(text) {
+  const t = clean(text);
+  if (!t) return null;
+
+  try {
+    const j = JSON.parse(t);
+    if (Array.isArray(j?.messages)) {
+      return j.messages.map(item => {
+        if (typeof item === 'string') {
+          return clean(item);
+        }
+        if (typeof item === 'object' && item !== null) {
+          const codeContent = item.code || item.content || item.text;
+          if (typeof codeContent === 'string') {
+            const lang = item.language || '';
+            return '```' + lang + '\n' + codeContent + '\n```';
+          }
+        }
+        return '[一个无法解析的复杂内容]';
+      }).filter(Boolean);
+    }
+  } catch {}
+
+  const m = t.match(/\{[\s\S]*\}/);
+  if (m) {
+    try {
+      const j = JSON.parse(m[0]);
+      if (Array.isArray(j?.messages)) {
+        return j.messages.map(item => {
+          if (typeof item === 'string') return clean(item);
+          if (typeof item === 'object' && item !== null) {
+            const codeContent = item.code || item.content || item.text;
+            if (typeof codeContent === 'string') {
+              const lang = item.language || '';
+              return '```' + lang + '\n' + codeContent + '\n```';
+            }
+          }
+          return '[一个无法解析的复杂内容]';
+        }).filter(Boolean);
+      }
+    } catch {}
+  }
+
+  return null;
   }
  // 【【【第一处：请用这段代码完整替换掉 splitAiBubbles 函数的内部】】】
 
