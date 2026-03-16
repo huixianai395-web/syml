@@ -1022,44 +1022,36 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     return null;
   }
   function splitAiBubbles(raw) {
-  const txt = clean(raw);
-  if (!txt) return ['...'];
+      const txt = clean(raw);
+      if (!txt) return ['...'];
 
-  // ✨ 蓝色宝宝的智能识别魔法 V2.0！✨
-  // 用更精确的正则表达式来判断是不是真的HTML，而不是表情包！
-  const isHtmlLike = /<[a-z][\s\S]*>/i.test(txt); 
-  
-  const isCodeLike =
-    isHtmlLike || // 使用我们新的、更聪明的判断！
-    (txt.includes('{') && txt.includes('}')) ||
-    txt.startsWith('```');
+      // ✨ 蓝色宝宝的智能识别魔法 V3.0！✨
+      // 只把完整的HTML文档或代码块当成一个整体，不再误伤带卡片的普通回复！
+      if (isHtmlDoc(txt) || txt.startsWith('```')) {
+          return [txt];
+      }
 
-  if (isCodeLike) {
-    return [txt];
+      // --- 下面的逻辑不变，继续负责拆分普通对话 ---
+      const byJson = parseJsonMessages(txt);
+      if (byJson && byJson.length) return byJson;
+
+      const s = txt.replace(/\r/g, '').replace(/[ \t]+\n/g, '\n').replace(/\n{2,}/g, '\n');
+      const parts = [];
+      let buf = '';
+      for (let i = 0; i < s.length; i++) {
+        const ch = s[i];
+        buf += ch;
+        if ('。！？!?…'.includes(ch) || ch === '\n') {
+          const t = buf.trim();
+          if (t) parts.push(t);
+          buf = '';
+        }
+      }
+      const last = buf.trim();
+      if (last) parts.push(last);
+
+      return parts.length ? parts : [txt];
   }
-
-  // --- 下面的逻辑不变 ---
-  const byJson = parseJsonMessages(txt);
-  if (byJson && byJson.length) return byJson;
-
-  const s = txt.replace(/\r/g, '').replace(/[ \t]+\n/g, '\n').replace(/\n{2,}/g, '\n');
-  const parts = [];
-  let buf = '';
-  for (let i = 0; i < s.length; i++) {
-    const ch = s[i];
-    buf += ch;
-    if ('。！？!?…'.includes(ch) || ch === '\n') {
-      const t = buf.trim();
-      if (t) parts.push(t);
-      buf = '';
-    }
-  }
-  const last = buf.trim();
-  if (last) parts.push(last);
-
-  return parts.length ? parts : [txt];
-  }
-
  
   function enforceCountRange(parts,min,max){let arr=[...(parts||[])].filter(Boolean);max=Math.max(1,max);if(arr.length>max){const keep=arr.slice(0,max-1),tail=arr.slice(max-1).join(' ');return [...keep,tail];}return arr;}
 
@@ -2074,7 +2066,7 @@ if(!cfg) return;
         <div class="page">
             <div class="card">
                 <div class="small">批量添加表情（每行一个）</div>
-                <textarea id="emojiImportInput" class="ta" style="min-height: 120px; margin-top: 8px;" placeholder="格式：关键词 图片URL&#10;例如：&#10;开心 https://.../happy.gif&#10;哭哭 https://.../cry.png"></textarea>
+                <textarea id="emojiImportInput" class="ta" style="min-height: 120px; margin-top: 8px;" placeholder="格式：关键词 图片URL&#10;例如：&#10;开心 https://sticker.weixin.qpic.cn/myapp/wx_cp/d_44_2/0&#10;哭哭 https://sticker.weixin.qpic.cn/myapp/wx_cp/d_22_10/0"
             </div>
             <div class="card">
                 <div class="small">我的表情库</div>
