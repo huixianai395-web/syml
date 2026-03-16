@@ -851,7 +851,7 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
       ${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}
     </div>`;
 }
- function renderBubbleContent(m, isMe, pref) {
+function renderBubbleContent(m, isMe, pref) {
   const cls = isMe ? 'me' : 'ai';
   const ts = pref.showTs ? `<div class="msg-time">${fmtTs(m.time)}</div>` : '';
   const quote = renderQuote(m.quote);
@@ -877,8 +877,7 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
       </div>
       ${ts}
     `;
-  }
-  // ↑↑↑↑↑↑ 新的标记方案结束！↑↑↑↑↑↑
+  }// ↑↑↑↑↑↑ 新的标记方案结束！↑↑↑↑↑↑
 
   if (!isMe && isHtmlFrag(t)) {
     return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
@@ -886,6 +885,14 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
   
   return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
 }
+
+  if (!isMe && isHtmlFrag(t)) {
+    return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
+  }
+  
+  // 普通文本消息照常显示
+  return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
+ }
 
   function renderChat(){
     const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),pref=getPref();
