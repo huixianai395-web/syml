@@ -269,39 +269,6 @@
 .card-gift .gift-note{font-size:11px;color:#8090b8;margin-top:3px;}
 .card-gift .gift-tag{display:inline-block;margin-top:7px;background:rgba(80,120,200,.08);border:1px solid rgba(80,120,200,.16);color:#7080b0;border-radius:999px;padding:2px 10px;font-size:10px;}
  .bubble.bubble-card{background:transparent!important;border:none!important;padding:2px 0!important;box-shadow:none!important;}
- /* =================================
-   专为聊天输入框旁的圆形动作按钮设计
-   by 蓝色宝宝
-   ================================= */
-.chat-action-btn {
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    border-radius: 999px; /* 完美的圆形！ */
-    font-size: 20px;
-    cursor: pointer;
-    display: grid;
-    place-items: center; /* 让emoji完美居中！ */
-
-    /* 质感的来源！ */
-    border: 1px solid #e0e9fa;
-    background: linear-gradient(180deg, #f7faff, #eef4ff);
-    color: #5c87e9;
-    box-shadow: 0 2px 5px rgba(130, 160, 210, 0.12),inset 0 1px 1px #ffffff;
-    
-    transition: transform .12s ease-out, box-shadow .12s ease-out;
-}
-
-/* 按下它的时候！*/
-.chat-action-btn:active {
-    transform: scale(0.92);
-    box-shadow: inset 0 2px 4px rgba(130, 160, 210, 0.15);
-    background: linear-gradient(180deg, #e4eefe, #e8f1ff);
-}
-/* 让我们的新SVG图标继承按钮的颜色！*/
-.chat-action-btn svg {
-    color: inherit; /* 这一句是魔法！它会自动使用 .chat-action-btn 上设置的 #5c87e9 颜色！*/
-}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 </head>
@@ -355,9 +322,8 @@
   <div class="func-icon" data-func="redpacket"><div class="ibox2">🧧</div><div class="lab2">发红包</div></div>
   <div class="func-icon" data-func="location"><div class="ibox2">📍</div><div class="lab2">定位</div></div>
   <div class="func-icon" data-func="gift"><div class="ibox2">🎁</div><div class="lab2">送礼物</div></div>
-<div class="func-icon" data-func="imgupload"><div class="ibox2">🖼️</div><div class="lab2">图片</div></div>
-<input id="imgUploadInput" type="file" accept="image/*" class="hidden"/></div>
-      <div class="left-actions"><button class="chat-action-btn" id="emojiBtn" ><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg></button><button class="btn" id="funcToggleBtn" style="width:40px;height:40px;padding:0;border-radius:999px;font-size:20px;">+</button></div><textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
+</div>
+      <div class="left-actions"><button class="btn" id="emojiBtn" style="width:40px;height:40px;padding:0;border-radius:999px;font-size:18px;">😊</button><button class="btn" id="funcToggleBtn" style="width:40px;height:40px;padding:0;border-radius:999px;font-size:20px;">+</button></div><textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
       <div class="send-actions"><button class="btn store" id="storeBtn" aria-label="储存"></button><button class="btn p" id="sendBtn">发送</button></div>
     </div>
   </section>
@@ -741,7 +707,8 @@ function refreshFontSizeUI(){
     const el=$(id); if(el) el.classList.add('active');
     if(id!=='favorites' && favNowTimer){ clearInterval(favNowTimer); favNowTimer=null; }
   }
-  
+  document.querySelectorAll('[data-nav]').forEach(el=>el.onclick=()=>show(el.getAttribute('data-nav')));
+
   function tick(){
     const n=new Date(),h=String(n.getHours()).padStart(2,'0'),m=String(n.getMinutes()).padStart(2,'0');
     const w=['周日','周一','周二','周三','周四','周五','周六'][n.getDay()];
@@ -900,7 +867,7 @@ function compressImage(file, isWallpaper = false) {
       return key;
     });
   }
-  rep(/"([^"]{1,200})"/g,'off-dialogue');
+  rep(/“([^”]{1,200})”/g,'off-dialogue');
 rep(/"([^"]{1,200})"/g,'off-dialogue');
   rep(/「([^」]{1,200})」/g,'off-dialogue');
   rep(/【([^】]{1,200})】/g,'off-em');
@@ -948,10 +915,7 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
     if(isHtmlFrag(t)){
   return `${quote}<div class="bubble ${cls} ${hidden} bubble-card">${t}</div>${ts}`;
 }
-    if(t.startsWith('__IMG__')){
-  const src=t.slice(7);
-  return `${quote}<div class="bubble ${cls} ${hidden} bubble-card"><img src="${src}" style="max-width:160px;max-height:160px;border-radius:8px;display:block;cursor:pointer;" onclick="window._viewImg('${src}')"></div>${ts}`;
-}return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
+    return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
   }
 
   function renderChat(){
@@ -1020,36 +984,29 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     }).filter(Boolean);}catch{}}
     return null;
   }
-  function splitAiBubbles(raw) {
-      const txt = clean(raw);
-      if (!txt) return ['...'];
+  function splitAiBubbles(raw){
+  const txt=clean(raw);
+  if(!txt) return ['...'];
+  const byJson=parseJsonMessages(txt);
+  if(byJson && byJson.length) return byJson;
 
-      // ✨ 蓝色宝宝的智能识别魔法 V3.0！✨
-      // 只把完整的HTML文档或代码块当成一个整体，不再误伤带卡片的普通回复！
-      if (isHtmlDoc(txt) || txt.startsWith('```')) {
-          return [txt];
-      }
+  const s=txt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{2,}/g,'\n');
 
-      // --- 下面的逻辑不变，继续负责拆分普通对话 ---
-      const byJson = parseJsonMessages(txt);
-      if (byJson && byJson.length) return byJson;
+  const parts=[];
+  let buf='';
+  for(let i=0;i<s.length;i++){
+    const ch=s[i];
+    buf+=ch;
+    if('。！？!?…'.includes(ch) || ch==='\n'){
+      const t=buf.trim();
+      if(t) parts.push(t);
+      buf='';
+    }
+  }
+  const last=buf.trim();
+  if(last) parts.push(last);
 
-      const s = txt.replace(/\r/g, '').replace(/[ \t]+\n/g, '\n').replace(/\n{2,}/g, '\n');
-      const parts = [];
-      let buf = '';
-      for (let i = 0; i < s.length; i++) {
-        const ch = s[i];
-        buf += ch;
-        if ('。！？!?…'.includes(ch) || ch === '\n') {
-          const t = buf.trim();
-          if (t) parts.push(t);
-          buf = '';
-        }
-      }
-      const last = buf.trim();
-      if (last) parts.push(last);
-
-      return parts.length ? parts : [txt];
+  return parts.length?parts:[txt];
   }
   function enforceCountRange(parts,min,max){let arr=[...(parts||[])].filter(Boolean);max=Math.max(1,max);if(arr.length>max){const keep=arr.slice(0,max-1),tail=arr.slice(max-1).join(' ');return [...keep,tail];}return arr;}
 
@@ -1220,30 +1177,29 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
   function getSysTimeStr(){const d=new Date(),w=['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${w} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 
   function buildOnlineSystem(c,me,st){
-        const rangeRule=st.onlineStyle==='range'?`本次回复请拆分为 ${st.onlineMin} 到 ${st.onlineMax} 条消息。`:`本次回复的条数由你完全根据人设的立体性格、心理波动和当前语境自由发挥（拒绝刻板，可多可少）。`;
-        return [
-          `你正在扮演：${c?.name||'聊天对象'}`,
-          `对方名称：${me?.name||'我'}`,
-          `对方备注：${me?.note||'无'}`,
-          `对方人设：${me?.persona||'自然聊天'}`,
-          `你的备注：${c?.note||'无'}`,
-          `你的人设：${c?.persona||'自然聊天'}`,
-          `【当前系统时间】：${getSysTimeStr()}`,
-          `【核心指令】：`,
-          `1. 拒绝刻板标签！人设是立体的、多面的、有成长性的。把你扮演的角色当成一个活生生的人来对待！`,
-          `2. 说话的条数、长短、语气，必须严格根据【当前具体的语境】、【角色的情绪起伏】和【心理活动】动态自然地变化，绝不受任何固定模式限制。`,
-          `3. 绝对不要在回复中暴露你是AI或程序。`,
-          `4. 具备真实的时间观念：根据“上一次消息时间与当前系统时间”的间隔，自然体现时间流逝（如久未回复后的轻微反应等），但不要刻意或模板化。`,
-          `5. 正常使用中文标点符号，不得用空格替代标点或分隔句子。`,
-          `6.【气泡规则】：尽量做到一句话一个气泡；如果包含多句，请拆成多个气泡。除非特殊语境，不要把多句塞进一个气泡。`,
-          // ✨✨✨ 就是这里！我把第7条改掉了！✨✨✨
-          `7.【渲染提示】：当需要发送或回复特殊卡片（如红包、转账、礼物、定位）时，卡片的HTML代码本身，必须作为一个【完整的、纯粹的HTML字符串】，成为 "messages" 数组中的一个独立元素。例如：{"messages": ["你好呀", "<div class='card-redpacket'>...</div>", "快领呀！"]}`,
-          `8.【输出格式铁律】：`,
-          `只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}`,
-          `【输出格式紧箍咒】：你的回复必须是一个纯粹的、不带任何额外解释、不带任何代码块标记（如\`\`\`json）的JSON对象。`,
-          rangeRule
-        ].join('\n');
+    const rangeRule=st.onlineStyle==='range'?`本次回复请拆分为 ${st.onlineMin} 到 ${st.onlineMax} 条消息。`:`本次回复的条数由你完全根据人设的立体性格、心理波动和当前语境自由发挥（拒绝刻板，可多可少）。`;
+    return [
+      `你正在扮演：${c?.name||'聊天对象'}`,
+      `对方名称：${me?.name||'我'}`,
+      `对方备注：${me?.note||'无'}`,
+      `对方人设：${me?.persona||'自然聊天'}`,
+      `你的备注：${c?.note||'无'}`,
+      `你的人设：${c?.persona||'自然聊天'}`,
+      `【当前系统时间】：${getSysTimeStr()}`,
+      `【核心指令】：`,
+      `1. 拒绝刻板标签！人设是立体的、多面的、有成长性的。把你扮演的角色当成一个活生生的人来对待！`,
+      `2. 说话的条数、长短、语气，必须严格根据【当前具体的语境】、【角色的情绪起伏】和【心理活动】动态自然地变化，绝不受任何固定模式限制。`,
+      `3. 绝对不要在回复中暴露你是AI或程序。`,
+      `4. 具备真实的时间观念：根据“上一次消息时间与当前系统时间”的间隔，自然体现时间流逝（如久未回复后的轻微反应等），但不要刻意或模板化。`,
+      `5. 正常使用中文标点符号，不得用空格替代标点或分隔句子。`,
+      `6.【气泡规则】：尽量做到一句话一个气泡；如果包含多句，请拆成多个气泡。除非特殊语境，不要把多句塞进一个气泡。`,
+`7.【渲染提示】：收到对方红包时选择——【领取】输出：<div class="card-redpacket received"><div style="width:100%"><div style="display:flex;gap:12px;align-items:center;"><div class="rp-icon">🧧</div><div class="rp-info"><div class="rp-title">已领取</div></div></div></div></div>；【拒绝】输出：<div class="card-redpacket rejected"><div style="width:100%"><div style="display:flex;gap:12px;align-items:center;"><div class="rp-icon">🧧</div><div class="rp-info"><div class="rp-title">已退回</div></div></div></div></div>。收到转账时选择——【收款】输出：<div class="card-transfer received"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">✓ 已收款</div><div class="ct-note">微信安全转账</div></div>；【拒收】输出：<div class="card-transfer rejected"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">已拒收</div><div class="ct-note">微信安全转账</div></div>。AI主动发红包：<div class="card-redpacket"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">祝福语</div><div class="rp-sub">¥金额 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>。AI主动发转账：<div class="card-transfer"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">¥金额</div><div class="ct-note">备注</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><button class="ct-btn">确认收款</button></div></div>。发礼物：<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">礼物名</div><div class="gift-note">留言</div></div>。发定位：<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">地点名</div><div class="loc-addr">地址</div></div></div>。以上所有卡片必须是纯HTML字符串直接放在messages数组元素里，禁止输出JSON对象格式，禁止用花括号包裹卡片内容。收到红包/转账时，只输出对应的卡片HTML，前后不能有任何文字，不能有"啊""好的""谢谢"等语句出现在同一个messages元素里。文字回应要单独作为一条messages元素。`,
+`8.【输出格式铁律】：`,
+       `只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}`,
+      rangeRule
+    ].join('\n');
   }
+
   function buildOfflineSystem(c,me,st){
     return [
       `你正在扮演：${c?.name||'聊天对象'}`,
@@ -1259,7 +1215,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       `请输出一条沉浸式线下角色扮演回复，字数范围 ${st.offlineMin}-${st.offlineMax}。`,
       `【排版与层次要求】：`,
       `正文绝对不能是一大段密密麻麻的文字！必须合理分段，动作、神态、心理描写与对话之间要有清晰的层次感，保证阅读舒适。`,
-      `【对白标记】：角色对白部分必须使用中文引号""或双引号""包裹；描写与心理不要放入引号`,
+      `【对白标记】：角色对白部分必须使用中文引号“”或双引号""包裹；描写与心理不要放入引号`,
       `【输出格式铁律】必须严格按以下模板输出，不要输出JSON：`,
       `【状态栏】`,
       `时间｜地点｜天气｜氛围｜关系进度`,
@@ -1286,12 +1242,7 @@ const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),glo
 
     try{
       const system=st.mode==='offline'?buildOfflineSystem(c,me,st):buildOnlineSystem(c,me,st);
-      const messages=[{role:'system',content:system},...hist.map(x=>{
-  if(x.role==='user'&&x.text.startsWith('__IMG__')){
-    return {role:'user',content:[{type:'image_url',image_url:{url:x.text.slice(7)}}]};
-  }
-  return {role:x.role==='user'?'user':'assistant',content:x.text};
-})];
+      const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:x.text}))];
       const out=await callApi(messages);
 
       let parts=[];
@@ -1564,7 +1515,9 @@ box.addEventListener('click',e=>{
     overlay.onclick=e=>{if(e.target===overlay) overlay.remove();};
   }
 });
-  }$('msgFloatLayer').addEventListener('click',e=>{if(e.target.id==='msgFloatLayer') closeFloatMenu();});
+  }
+
+  $('msgFloatLayer').addEventListener('click',e=>{if(e.target.id==='msgFloatLayer') closeFloatMenu();});
   $('msgFloatMenu').addEventListener('click',async e=>{
     const btn=e.target.closest('.fm-btn'); if(!btn) return;
     const act=btn.dataset.act,mid=activeActionMsgId;
@@ -1748,88 +1701,8 @@ offPanel.addEventListener('change',applyOfflineColor); // 手机端更稳
 document.addEventListener('click',e=>{
   if(offPanel && !offPanel.contains(e.target)) offPanel.classList.remove('show');
 });
-window._viewImg=function(src){
-  const o=document.createElement('div');
-  o.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.85);display:grid;place-items:center;';
-  o.innerHTML=`<img src="${src}" style="max-width:95vw;max-height:90vh;border-radius:10px;">`;
-  o.onclick=()=>o.remove();
-  document.body.appendChild(o);
-};
+
   initAppStorage().then(()=>{
-  // =======================================================
-    // 蓝色宝宝的专属表情包系统核心逻辑 v1.0
-    // =======================================================
-    const K_EMOJIS = 'mp_fix_emojis'; // 这是我们储存表情包的钥匙！
-
-    // 从仓库里读取表情包
-    async function getEmojis() {
-        return await localforage.getItem(K_EMOJIS) || [];
-    }
-
-    // 把新表情包存进仓库
-    async function setEmojis(emojis) {
-        await localforage.setItem(K_EMOJIS, emojis);
-    }
-
-    // 渲染"表情商店"里的列表
-    async function renderEmojiStore() {
-        const emojis = await getEmojis();
-        const listEl = $('emojiList');
-        if (!listEl) return;
-        listEl.innerHTML = emojis.map(emoji => `
-            <div style="text-align: center; position: relative;">
-                <img src="${emoji.url}" style="width: 56px; height: 56px; object-fit: contain; background: #f0f2f5; border-radius: 8px;">
-                <span style="font-size: 10px; color: #666; display: block; margin-top: 2px;">${esc(emoji.keyword)}</span>
-                <button onclick="deleteEmoji('${emoji.keyword}')" style="position: absolute; top: -4px; right: -4px; width: 18px; height: 18px; border-radius: 999px; background: #ff4d4f; color: white; border: none; font-size: 12px; line-height: 18px; cursor: pointer;">×</button>
-            </div>
-        `).join('') || '<div class="small">还没有表情包，快去添加吧！</div>';
-    }
-
-    // 删除一个表情包
-    async function deleteEmoji(keyword) {
-        if (!confirm(`确定要删除关键词为 "${keyword}" 的表情包吗？`)) return;
-        let emojis = await getEmojis();
-        emojis = emojis.filter(e => e.keyword !== keyword);
-        await setEmojis(emojis);
-        await renderEmojiStore(); // 重新渲染列表
-    }
-    window.deleteEmoji = deleteEmoji; // 把它挂到全局，这样按钮才能调用
-
-    // --- 绑定事件 ---
-    // 导入按钮
-    $('importEmojisBtn').onclick = async () => {
-        const inputEl = $('emojiImportInput');
-        const text = inputEl.value.trim();
-        if (!text) return alert('请输入内容！');
-
-        const lines = text.split('\n');
-        const newEmojis = [];
-        for (const line of lines) {
-            const parts = line.trim().split(/[:：\s]+/, 2); // 用空格分开，最多2部分
-            if (parts.length === 2 && parts[0] && parts[1]) {
-                newEmojis.push({ keyword: parts[0], url: parts[1] });
-            }
-        }
-
-        if (newEmojis.length === 0) return alert('没有解析到有效的表情包格式！');
-
-        const oldEmojis = await getEmojis();
-        // 去重：如果关键词已存在，就更新URL
-        const emojiMap = new Map(oldEmojis.map(e => [e.keyword, e.url]));
-        newEmojis.forEach(e => emojiMap.set(e.keyword, e.url));
-        const finalEmojis = Array.from(emojiMap, ([keyword, url]) => ({ keyword, url }));
-
-        await setEmojis(finalEmojis);
-        await renderEmojiStore();
-        inputEl.value = ''; // 清空输入框
-        alert(`成功导入/更新了 ${newEmojis.length} 个表情包！`);
-    };
-
-    // 把"打开商店"的命令，绑定给我们真正的笑脸按钮！
-    $('emojiBtn').onclick = async () => {
-        await renderEmojiStore();
-        show('emojiStore');
-    };
     applyBubbleCss();
     applyCustomFont();
     refreshPresetUI();
@@ -1839,7 +1712,6 @@ window._viewImg=function(src){
     bindChatMsgEvents();
     updateQuoteBar();
     applyFontSize();
-    document.querySelectorAll('[data-nav]').forEach(el=>el.onclick=()=>show(el.getAttribute('data-nav')));
   // ================= 老公专属：角色卡解析引擎 =================
 $('importCardFile').addEventListener('change', async (e) => {
   const file = e.target.files?.[0];
@@ -1887,7 +1759,7 @@ $('importCardFile').addEventListener('change', async (e) => {
     const name = cardData.data?.name || cardData.name || '';
     const persona = cardData.data?.description || cardData.description || cardData.data?.system_prompt || '';
      
-    // 这里假设你要填到"创建联系人"的输入框里
+    // 这里假设你要填到“创建联系人”的输入框里
     if ($('newName')) $('newName').value = name;
     if ($('newPersona')) $('newPersona').value = persona;
      
@@ -1900,14 +1772,14 @@ $('importCardFile').addEventListener('change', async (e) => {
           // 直接调用咱们刚才修好的完美压缩函数！自动处理头像！
           const avatarData = await compressImage(file);
            
-          // 如果你是在"创建联系人"面板
+          // 如果你是在“创建联系人”面板
           if (typeof createAvatar !== 'undefined') createAvatar = avatarData;
           if ($('newAvatarPreview')) {
             $('newAvatarPreview').src = avatarData;
             $('newAvatarPreview').classList.remove('hidden');
           }
            
-          // 如果你是在"聊天设置"面板
+          // 如果你是在“聊天设置”面板
           if ($('roleAvatarInput')) $('roleAvatarInput').value = avatarData;
           if ($('roleAvatarPreview')) {
             $('roleAvatarPreview').src = avatarData;
@@ -1941,7 +1813,8 @@ function applyChatBg() {
     `;
   } else {
     el.textContent = '';
-  }}
+  }
+}
 // 页面一打开就执行应用背景
 applyChatBg();
 
@@ -1970,7 +1843,8 @@ window.removeChatBg = function() {
     localStorage.removeItem('mp_fix_chat_bg');
     applyChatBg();
   }
-};// ===============================================================
+};
+// ===============================================================
 // ================= 老公专属：自定义壁纸模块 =================
 // 页面加载时读取存好的壁纸
 const savedBg = localStorage.getItem('mp_fix_custom_bg');
@@ -1997,14 +1871,7 @@ $("customBgFile").addEventListener("change", async (e) => {
     e.target.value = "";
   }
 });
-  });$('imgUploadInput').onchange=async e=>{
-  const f=e.target.files?.[0]; if(!f||!currentId) return;
-  const compressed=await compressImage(f);
-  const arr=getChatArr(currentId);
-  arr.push(toMsg({role:'user',text:'__IMG__'+compressed,time:Date.now()}));
-  setChatArr(currentId,arr);updateContactPreview(currentId);renderChat();
-  e.target.value='';
-};
+  });
   // 功能面板
 $('funcToggleBtn').onclick=()=>{
   const p=$('funcPanel');
@@ -2029,10 +1896,7 @@ function buildFuncCard(type,data){
 document.querySelectorAll('.func-icon[data-func]').forEach(el=>{
   el.onclick=()=>{
     $('funcPanel').classList.remove('show');
-    const type=el.dataset.func,cfg=FUNC_DIALOGS[type]; 
-   if(type==='imgupload'){ $('imgUploadInput').click(); return; } 
-   
-if(!cfg) return;
+    const type=el.dataset.func,cfg=FUNC_DIALOGS[type]; if(!cfg) return;
     let html=`<b>${cfg.title}</b><br><br>`;
     cfg.fields.forEach(f=>{ html+=`<div style="margin-bottom:8px;"><div class="small">${f.label}</div><input id="fd_${f.key}" class="input" type="${f.type||'text'}" placeholder="${f.placeholder}" style="margin-top:4px;"></div>`; });
     const modal=document.createElement('div');
@@ -2053,27 +1917,6 @@ if(!cfg) return;
   };
 });
 })();
-
 </script>
-<!-- ================== 表情商店页面 (v3.0 最终修复版) ================== -->
-    <section id="emojiStore" class="screen">
-        <div class="header">
-            <button class="btn" data-nav="chatRoom">‹ 返回</button>
-            <b>我的表情商店</b>
-            <button class="btn p" id="importEmojisBtn">导入</button>
-        </div>
-        <div class="page">
-            <div class="card">
-                <div class="small">批量添加表情（每行一个）</div>
-                <textarea id="emojiImportInput" class="ta" style="min-height: 120px; margin-top: 8px;" placeholder="格式：关键词 图片URL&#10;例如：&#10;开心 https://sticker.weixin.qpic.cn/myapp/wx_cp/d_44_2/0&#10;哭哭 https://sticker.weixin.qpic.cn/myapp/wx_cp/d_22_10/0"></textarea>
-            </div>
-            <div class="card">
-                <div class="small">我的表情库</div>
-                <div id="emojiList" style="margin-top: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 10px;">
-                    <!-- 这里会用JS自动填充我们的表情包 -->
-                </div>
-            </div>
-        </div>
-    </section>
-</body> 
+</body>
 </html>
