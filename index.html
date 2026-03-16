@@ -1236,14 +1236,14 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
           `4. 具备真实的时间观念：根据“上一次消息时间与当前系统时间”的间隔，自然体现时间流逝（如久未回复后的轻微反应等），但不要刻意或模板化。`,
           `5. 正常使用中文标点符号，不得用空格替代标点或分隔句子。`,
           `6.【气泡规则】：尽量做到一句话一个气泡；如果包含多句，请拆成多个气泡。除非特殊语境，不要把多句塞进一个气泡。`,
-          `7.【渲染提示】：收到对方红包时选择----【领取】输出：<div class="card-redpacket received"><div style="width:100%"><div style="display:flex;gap:12px;align-items:center;"><div class="rp-icon">🧧</div><div class="rp-info"><div class="rp-title">已领取</div></div></div></div></div>；【拒绝】输出：<div class="card-redpacket rejected"><div style="width:100%"><div style="display:flex;gap:12px;align-items:center;"><div class="rp-icon">🧧</div><div class="rp-info"><div class="rp-title">已退回</div></div></div></div></div>。收到转账时选择----【收款】输出：<div class="card-transfer received"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">✓ 已收款</div><div class="ct-note">微信安全转账</div></div>；【拒收】输出：<div class="card-transfer rejected"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">已拒收</div><div class="ct-note">微信安全转账</div></div>。AI主动发红包：<div class="card-redpacket"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">祝福语</div><div class="rp-sub">¥金额 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>。AI主动发转账：<div class="card-transfer"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">¥金额</div><div class="ct-note">备注</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><button class="ct-btn">确认收款</button></div></div>。发礼物：<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">礼物名</div><div class="gift-note">留言</div></div>。发定位：<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">地点名</div><div class="loc-addr">地址</div></div></div>。以上所有卡片必须是纯HTML字符串直接放在messages数组元素里，禁止输出JSON对象格式，禁止用花括号包裹卡片内容。收到红包/转账时，只输出对应的卡片HTML，前后不能有任何文字，不能有“啊”“好的”“谢谢”等语句出现在同一个messages元素里。文字回应要单独作为一条messages元素。`,
+          // ✨✨✨ 就是这里！我把第7条改掉了！✨✨✨
+          `7.【渲染提示】：当需要发送或回复特殊卡片（如红包、转账、礼物、定位）时，卡片的HTML代码本身，必须作为一个【完整的、纯粹的HTML字符串】，成为 "messages" 数组中的一个独立元素。例如：{"messages": ["你好呀", "<div class='card-redpacket'>...</div>", "快领呀！"]}`,
           `8.【输出格式铁律】：`,
           `只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}`,
-          `【输出格式紧箍咒】：你的回复必须是一个纯粹的、不带任何额外解释、不带任何代码块标记（如\`\`\`json）的JSON对象。`, // 加上这个紧箍咒！
+          `【输出格式紧箍咒】：你的回复必须是一个纯粹的、不带任何额外解释、不带任何代码块标记（如\`\`\`json）的JSON对象。`,
           rangeRule
         ].join('\n');
   }
-
   function buildOfflineSystem(c,me,st){
     return [
       `你正在扮演：${c?.name||'聊天对象'}`,
