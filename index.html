@@ -867,9 +867,9 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
         <div style="font-size: 13px; color: #445377; margin-bottom: 8px;">
           🎨 这是一个HTML网页内容 (可能包含Canvas/JS)
         </div>
-        <button 
-          class="btn p preview-html-btn" 
-          style="width: 100%;" 
+        <button 
+          class="btn p preview-html-btn" 
+          style="width: 100%;" 
           data-mid="${m.id}"
         >
           点击预览 (手机可能会卡顿)
@@ -883,9 +883,10 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
   if (!isMe && isHtmlFrag(t)) {
     return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
   }
-  
+  
   return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
- }
+}
+
   function renderChat(){
     const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),pref=getPref();
     const me = {
@@ -1418,10 +1419,7 @@ setPref(p); applyBubbleCss(); applyFontSize();
     ['touchend','touchcancel'].forEach(ev=>box.addEventListener(ev,()=>{clearTimeout(lpTimer);lpTimer=null;},{passive:true}));
     box.addEventListener('click',e=>{const item=e.target.closest('.msg-item');if(!item) return;if(selectMode){e.preventDefault();toggleSelect(item.dataset.mid);}});
     
-
-
-
-  const box = $('chatMsgs');
+ const box = $('chatMsgs');
   box.addEventListener('click', function(e) {
     // 检查被点击的是不是我们的“预览”按钮
     if (e.target && e.target.classList.contains('preview-html-btn')) {
@@ -1440,9 +1438,7 @@ setPref(p); applyBubbleCss(); applyFontSize();
         placeholder.innerHTML = `<div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts" referrerpolicy="no-referrer" src="${toHtmlDataUrl(msg.text)}"></iframe></div>`;
       }
     }
-  });
-
-
+  }); 
   }
 
   $('msgFloatLayer').addEventListener('click',e=>{if(e.target.id==='msgFloatLayer') closeFloatMenu();});
