@@ -925,21 +925,23 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     if(m){try{const j=JSON.parse(m[0]);if(Array.isArray(j?.messages)) return j.messages.map(x=>clean(x)).filter(Boolean);}catch{}}
     return null;
   }
-  function splitAiBubbles(raw) {
-  // 1. 正名运动+清理
+ // 【【【第一处：请用这段代码完整替换掉 splitAiBubbles 函数的内部】】】
+
+function splitAiBubbles(raw) {
+  // 1. 正名运动+清理：统一所有省略号，并清理首尾空格
   const txt = String(raw || '').trim().replace(/\.{3,}/g, '……');
   if (!txt) return ['...'];
 
-  // 2. 优先处理JSON格式，这个很重要！不能丢！
+  // 2. 优先处理JSON格式：如果AI回复的是我们约定的JSON指令，直接返回，不进行拆分
   const byJson = parseJsonMessages(txt);
   if (byJson && byJson.length) return byJson;
 
-  // 3. 智能切割
+  // 3. 智能切割：使用新的正则表达式来匹配完整的句子
   const parts = txt.match(/[^。！？……\n]+([。！？……\n]|\s)*|\S+/g);
 
-  // 4. 清理结果并返回
+  // 4. 清理结果并返回：去掉每个气泡内容前后的多余空格，并过滤掉空内容
   return parts && parts.length ? parts.map(p => p.trim()).filter(Boolean) : [txt];
-  }
+}
   function enforceCountRange(parts,min,max){let arr=[...(parts||[])].filter(Boolean);max=Math.max(1,max);if(arr.length>max){const keep=arr.slice(0,max-1),tail=arr.slice(max-1).join(' ');return [...keep,tail];}return arr;}
 
   async function emitAiSequential(parts,targetId,mode){
@@ -1108,29 +1110,32 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 
   function getSysTimeStr(){const d=new Date(),w=['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${w} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 
-  function buildOnlineSystem(c,me,st){
-    const rangeRule=st.onlineStyle==='range'?`本次回复请拆分为 ${st.onlineMin} 到 ${st.onlineMax} 条消息。`:`本次回复的条数由你完全根据人设的立体性格、心理波动和当前语境自由发挥（拒绝刻板，可多可少）。`;
-    return [
-      `你正在扮演：${c?.name||'聊天对象'}`,
-      `对方名称：${me?.name||'我'}`,
-      `对方备注：${me?.note||'无'}`,
-      `对方人设：${me?.persona||'自然聊天'}`,
-      `你的备注：${c?.note||'无'}`,
-      `你的人设：${c?.persona||'自然聊天'}`,
-      `【当前系统时间】：${getSysTimeStr()}`,
-      `【核心指令】：`,
-      `1. 拒绝刻板标签！人设是立体的、多面的、有成长性的。把你扮演的角色当成一个活生生的人来对待！`,
-      `2. 说话的条数、长短、语气，必须严格根据【当前具体的语境】、【角色的情绪起伏】和【心理活动】动态自然地变化，绝不受任何固定模式限制。`,
-      `3. 绝对不要在回复中暴露你是AI或程序。`,
-      `4. 具备真实的时间观念：根据“上一次消息时间与当前系统时间”的间隔，自然体现时间流逝（如久未回复后的轻微反应等），但不要刻意或模板化。`,
-      `5. 正常使用中文标点符号，不得用空格替代标点或分隔句子。`,
-      `6.【气泡规则】：尽量做到一句话一个气泡；如果包含多句，请拆成多个气泡。除非特殊语境，不要把多句塞进一个气泡。`,
-`7.【渲染提示】：你可以输出 HTML/CSS/JS 片段；完整 HTML 会以网页嵌入显示。`,
-`8.【输出格式铁律】：`,
-       `只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}`,
-      rangeRule
-    ].join('\n');
-  }
+  // 【【【第二处：请用这段代码完整替换掉 buildOnlineSystem 函数的内部】】】
+
+function buildOnlineSystem(c, me, st) {
+  const rangeRule = st.onlineStyle === 'range' ? `本次回复请拆分为 ${st.onlineMin} 到 ${st.onlineMax} 条消息。` : `本次回复的条数由你完全根据人设的立体性格、心理波动和当前语境自由发挥（拒绝刻板，可多可少）。`;
+  return [
+    `你正在扮演：${c?.name || '聊天对象'}`,
+    `对方名称：${me?.name || '我'}`,
+    `对方备注：${me?.note || '无'}`,
+    `对方人设：${me?.persona || '自然聊天'}`,
+    `你的备注：${c?.note || '无'}`,
+    `你的人设：${c?.persona || '自然聊天'}`,
+    `【当前系统时间】：${getSysTimeStr()}`,
+    `【核心指令】：`,
+    `1. 拒绝刻板标签！人设是立体的、多面的、有成长性的。把你扮演的角色当成一个活生生的人来对待！`,
+    `2. 说话的条数、长短、语气，必须严格根据【当前具体的语境】、【角色的情绪起伏】和【心理活动】动态自然地变化，绝不受任何固定模式限制。`,
+    `3. 【新增】标点符号使用建议：通常情况下，标点符号（特别是省略号“……”）不应单独占一个气泡，它最好能紧跟句末或作为句首。但是，如果你扮演的角色性格或当前情境【非常需要】通过一个单独的、延迟发送的省略号来营造特殊的戏剧效果（如：故作停顿、表达无语、引发悬念等），那么允许你这样做。请你【自行判断】何时该合并，何时该为艺术而“刻意为之”，核心是【追求自然和高表现力】，避免无意义的、让对话显得尴尬的拆分。同时，【警惕】不要滥用这种“单独省略号”的技巧，用多了会显得油腻和套路化。`,
+    `4. 绝对不要在回复中暴露你是AI或程序。`,
+    `5. 具备真实的时间观念：根据“上一次消息时间与当前系统时间”的间隔，自然体现时间流逝（如久未回复后的轻微反应等），但不要刻意或模板化。`,
+    `6. 正常使用中文标点符号，不得用空格替代标点或分隔句子。`,
+    `7.【气泡规则】：尽量做到一句话一个气泡；如果包含多句，请拆成多个气泡。除非特殊语境，不要把多句塞进一个气泡。`,
+    `8.【渲染提示】：你可以输出 HTML/CSS/JS 片段；完整 HTML 会以网页嵌入显示。`,
+    `9.【输出格式铁律】：`,
+    `只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}`,
+    rangeRule
+  ].join('\n');
+}
 
   function buildOfflineSystem(c,me,st){
     return [
