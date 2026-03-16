@@ -851,42 +851,23 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
       ${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}
     </div>`;
 }
-function renderBubbleContent(m, isMe, pref) {
-  const cls = isMe ? 'me' : 'ai';
-  const ts = pref.showTs ? `<div class="msg-time">${fmtTs(m.time)}</div>` : '';
-  const quote = renderQuote(m.quote);
-  const hidden = m.hiddenForAi ? 'ai-hidden' : '';
-  const t = String(m.text || '');
-
-  // ↓↓↓↓↓↓ 这里是新的“事件委托”方案！↓↓↓↓↓↓
-  if (!isMe && isHtmlDoc(t)) {
-    // 我们不再生成复杂的onclick脚本，只留下简单的标记！
-    return `
-      ${quote}
-      <div class="bubble ${cls} ${hidden}" style="padding: 12px; background: #eef3ff; border-color: #d9e3f8;">
-        <div style="font-size: 13px; color: #445377; margin-bottom: 8px;">
-          🎨 这是一个HTML网页内容 (可能包含Canvas/JS)
-        </div>
-        <button 
-          class="btn p preview-html-btn" 
-          style="width: 100%;" 
-          data-mid="${m.id}"
-        >
-          点击预览 (手机可能会卡顿)
-        </button>
-      </div>
-      ${ts}
-    `;
-  }// ↑↑↑↑↑↑ 新的标记方案结束！↑↑↑↑↑↑
-
-  if (!isMe && isHtmlFrag(t)) {
-    return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
+  // 修改后的渲染：助手支持HTML
+  function renderBubbleContent(m,isMe,pref){
+    const cls=isMe?'me':'ai';
+    const ts=pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:'';
+    const quote=renderQuote(m.quote);
+    const hidden=m.hiddenForAi?'ai-hidden':'';
+    const t=String(m.text||'');
+    if(!isMe && isHtmlDoc(t)){
+      const src=toHtmlDataUrl(t);
+      return `${quote}<div class="bubble ${cls} ${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
+    }
+    if(!isMe && isHtmlFrag(t)){
+      return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
+    }
+    return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
   }
-  
-  return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
-}
 
-  
   function renderChat(){
     const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),pref=getPref();
     const me = {
@@ -937,49 +918,12 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
   function storeCurrentInput(){if(!currentId) return;const t=clean($('chatInput').value);if(!t) return;pushUser(t);$('chatInput').value='';resetInputH();renderChat();}
   $('storeBtn').onclick=storeCurrentInput;
 
-  function parseJsonMessages(text) {
-  const t = clean(text);
-  if (!t) return null;
-
-  let jsonData = null;
-  try {
-    jsonData = JSON.parse(t);
-  } catch {
-    const m = t.match(/\{[\s\S]*\}/);
-    if (m) {
-      try {
-        jsonData = JSON.parse(m[0]);
-      } catch {
-        return null;
-      }
-    } else {
-      return null;
-    }
-  }
-
-  if (jsonData && Array.isArray(jsonData.messages)) {
-    return jsonData.messages.map(item => {
-      if (typeof item === 'string') {
-        return clean(item);
-      }
-      
-      if (typeof item === 'object' && item !== null) {
-        const codeContent = item.code || item.content || item.text;
-        if (typeof codeContent === 'string') {
-          const lang = item.language || '';
-          return '```' + lang + '\n' + codeContent + '\n```';
-        } else {
-          // ↓↓↓↓↓↓ 关键的侦测代码在这里！↓↓↓↓↓↓
-          // 如果找不到认识的标签，就把整个神秘包裹变成文字显示出来！
-          return `【侦测到神秘包裹，结构如下：】\n\n${JSON.stringify(item, null, 2)}`;
-          // ↑↑↑↑↑↑ 侦测代码结束！↑↑↑↑↑↑
-        }
-      }
-      return '[一个无法解析的复杂内容]';
-    }).filter(Boolean);
-  }
-
-  return null;
+  function parseJsonMessages(text){
+    const t=clean(text); if(!t) return null;
+    try{const j=JSON.parse(t);if(Array.isArray(j?.messages)) return j.messages.map(x=>clean(x)).filter(Boolean);}catch{}
+    const m=t.match(/\{[\s\S]*\}/);
+    if(m){try{const j=JSON.parse(m[0]);if(Array.isArray(j?.messages)) return j.messages.map(x=>clean(x)).filter(Boolean);}catch{}}
+    return null;
   }
  // 【【【第一处：请用这段代码完整替换掉 splitAiBubbles 函数的内部】】】
 
@@ -1418,26 +1362,6 @@ setPref(p); applyBubbleCss(); applyFontSize();
     ['touchend','touchcancel'].forEach(ev=>box.addEventListener(ev,()=>{clearTimeout(lpTimer);lpTimer=null;},{passive:true}));
     box.addEventListener('click',e=>{const item=e.target.closest('.msg-item');if(!item) return;if(selectMode){e.preventDefault();toggleSelect(item.dataset.mid);}});
     
- box = $('chatMsgs');
-  box.addEventListener('click', function(e) {
-    // 检查被点击的是不是我们的“预览”按钮
-    if (e.target && e.target.classList.contains('preview-html-btn')) {
-      e.preventDefault(); // 阻止默认行为
-      const btn = e.target;
-      const mid = btn.dataset.mid;
-      if (!mid) return;
-
-      // 根据消息ID，找到原始的HTML内容
-      const msg = getMsgById(currentId, mid);
-      if (!msg || !isHtmlDoc(msg.text)) return;
-
-      // 动态创建iframe并替换按钮
-      const placeholder = btn.parentElement; // 按钮的父元素，也就是那个浅蓝色的bubble
-      if (placeholder) {
-        placeholder.innerHTML = `<div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts" referrerpolicy="no-referrer" src="${toHtmlDataUrl(msg.text)}"></iframe></div>`;
-      }
-    }
-  }); 
   }
 
   $('msgFloatLayer').addEventListener('click',e=>{if(e.target.id==='msgFloatLayer') closeFloatMenu();});
