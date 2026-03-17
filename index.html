@@ -1080,6 +1080,12 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
  function splitAiBubbles(raw) {
     const txt = String(raw || '').trim();
     if (!txt) return ['...'];
+   if (/^\s*\[img\][\s\S]*\[\/img\]\s*$/i.test(txt)) {
+      return [txt];
+    }
+    if (txt.includes('[img]') && txt.includes('[/img]')) {
+      return [txt];
+    }
 
     // 🚨 蓝色的紧急补丁：检测是否为 HTML 代码块 🚨
     // 如果开头是 <!doctype 或者 <html，说明是网页代码，绝对不能切分！
