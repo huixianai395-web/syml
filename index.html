@@ -1090,33 +1090,39 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
 
     // 备用方案：如果 JSON 解析失败
     if (!parsedMsgs || !parsedMsgs.length) {
-      // 保护代码块不被切碎
       const tempParts = txt.split(/(```[\s\S]*?```)/g);
       parsedMsgs = [];
       tempParts.forEach(p => {
-        if (!p.trim()) return; // 丢弃空行！
+        if (!p.trim()) return; // 丢弃空行
         if (p.startsWith('```')) {
           parsedMsgs.push(p);
         } else {
-          // 普通文本按句子切
+          // 普通文本按句子和换行切碎
           const sentences = p.match(/[^。！？……\n]+([。！？……\n]|\s)*|\S+/g);
           if (sentences) parsedMsgs.push(...sentences.map(s => s.trim()).filter(Boolean));
         }
       });
     }
 
-    // 核心处理：清洗并分离代码块
+    // 核心处理：清洗代码块，并把长文字强制拆分成短气泡
     parsedMsgs.forEach(msg => {
       const subParts = msg.split(/(```[\s\S]*?```)/g);
       subParts.forEach(sp => {
         let trimmed = sp.trim();
-        if (!trimmed) return; // 再次丢弃空行！关键！
+        if (!trimmed) return; // 彻底消灭中间的空白气泡！
         
         if (trimmed.startsWith('```')) {
+          // 代码块独立成一个气泡
           finalParts.push(trimmed);
         } else {
-          // 普通文字不再强制切碎，保持自然段落，避免太碎
-          finalParts.push(trimmed);
+          // 🔪 蓝色终极魔法：恢复智能切割！
+          // 只要遇到句号、感叹号、问号或者换行符，全部切成独立的小气泡！
+          const sentences = trimmed.match(/[^。！？……\n]+([。！？……\n]|\s)*|\S+/g);
+          if (sentences) {
+            sentences.forEach(s => {
+              if (s.trim()) finalParts.push(s.trim());
+            });
+          }
         }
       });
     });
