@@ -1081,54 +1081,46 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     if(m){try{const j=JSON.parse(m[0]);if(Array.isArray(j?.messages)) return j.messages.map(x=>clean(x)).filter(Boolean);}catch{}}
     return null;
   }
-  function splitAiBubbles(raw) {
+ function splitAiBubbles(raw) {
     const txt = String(raw || '').trim().replace(/\.{3,}/g, '……');
     if (!txt) return ['...'];
 
+    // 1. 尝试解析 JSON，如果失败就把整段文本当成一条消息处理
     let parsedMsgs = parseJsonMessages(txt);
-    let finalParts = [];
-
-    // 备用方案：如果 JSON 解析失败
     if (!parsedMsgs || !parsedMsgs.length) {
-      const tempParts = txt.split(/(```[\s\S]*?```)/g);
-      parsedMsgs = [];
-      tempParts.forEach(p => {
-        if (!p.trim()) return; // 丢弃空行
-        if (p.startsWith('```')) {
-          parsedMsgs.push(p);
-        } else {
-          // 普通文本按句子和换行切碎
-          const sentences = p.match(/[^。！？……\n]+([。！？……\n]|\s)*|\S+/g);
-          if (sentences) parsedMsgs.push(...sentences.map(s => s.trim()).filter(Boolean));
-        }
-      });
+      parsedMsgs = [txt];
     }
 
-    // 核心处理：清洗代码块，并把长文字强制拆分成短气泡
+    let finalParts = [];
+
     parsedMsgs.forEach(msg => {
-      const subParts = msg.split(/(```[\s\S]*?```)/g);
-      subParts.forEach(sp => {
-        let trimmed = sp.trim();
-        if (!trimmed) return; // 彻底消灭中间的空白气泡！
-        
-        if (trimmed.startsWith('```')) {
-          // 代码块独立成一个气泡
-          finalParts.push(trimmed);
+      // 2. 暴力降维切割法：直接用 ``` 劈开！不依赖正则的闭合匹配！
+      // 这样即使 AI 没写完代码（缺了结尾的 ```），也不会把代码切成饺子馅！
+      const chunks = msg.split('```');
+
+      for (let i = 0; i < chunks.length; i++) {
+        let chunk = chunks[i].trim();
+        if (!chunk) continue; // 丢弃纯空白的空气泡，防止卡死
+
+        if (i % 2 !== 0) {
+          // 奇数项：绝对是在 ``` 内部的代码（或者是未闭合的代码）
+          // 重新穿上反引号外衣，保证代码框渲染器能 100% 认出它！
+          finalParts.push('```' + chunks[i] + '```');
         } else {
-          // 🔪 蓝色终极魔法：恢复智能切割！
-          // 只要遇到句号、感叹号、问号或者换行符，全部切成独立的小气泡！
-          const sentences = trimmed.match(/[^。！？……\n]+([。！？……\n]|\s)*|\S+/g);
+          // 偶数项：绝对是普通的文字
+          // 恢复智能切割机，遇到句号、感叹号、换行符就切成清爽的独立小气泡
+          const sentences = chunk.match(/[^。！？……\n]+([。！？……\n]|\s)*|\S+/g);
           if (sentences) {
             sentences.forEach(s => {
               if (s.trim()) finalParts.push(s.trim());
             });
           }
         }
-      });
+      }
     });
 
     return finalParts.length ? finalParts : ['...'];
-  }
+ }
   function enforceCountRange(parts,min,max){let arr=[...(parts||[])].filter(Boolean);max=Math.max(1,max);if(arr.length>max){const keep=arr.slice(0,max-1),tail=arr.slice(max-1).join(' ');return [...keep,tail];}return arr;}
 
   async function emitAiSequential(parts,targetId,mode){
