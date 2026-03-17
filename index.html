@@ -1085,37 +1085,53 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     const txt = String(raw || '').trim().replace(/\.{3,}/g, '……');
     if (!txt) return ['...'];
 
-    // 1. 尝试解析 JSON，如果失败就把整段文本当成一条消息处理
-    let parsedMsgs = parseJsonMessages(txt);
-    if (!parsedMsgs || !parsedMsgs.length) {
-      parsedMsgs = [txt];
+    // 1. 【先破】不管 AI 是直接发文本，还是发 JSON 数组
+    // 我们先把它们全部提取出来，拼成一个完整的长字符串！
+    // 这样能把被 AI 拆散的代码块（比如 ``` 和代码分在不同行）重新粘回去
+    let fullText = txt;
+    const jsonMsgs = parseJsonMessages(txt);
+    if (jsonMsgs && jsonMsgs.length > 0) {
+      fullText = jsonMsgs.join('\n'); // 强行合并！
     }
 
     let finalParts = [];
 
-    parsedMsgs.forEach(msg => {
-      // 2. 暴力降维切割法：直接用 ``` 劈开！不依赖正则的闭合匹配！
-      // 这样即使 AI 没写完代码（缺了结尾的 ```），也不会把代码切成饺子馅！
-      const chunks = msg.split('```');
+    // 2. 【后立】使用“手术刀”正则，把完整的代码块整体挖出来
+    // 这个正则会把 ```包围的内容``` 作为分隔符，保留在数组里
+    const chunks = fullText.split(/(```[\s\S]*?```)/g);
 
-      for (let i = 0; i < chunks.length; i++) {
-        let chunk = chunks[i].trim();
-        if (!chunk) continue; // 丢弃纯空白的空气泡，防止卡死
+    chunks.forEach(chunk => {
+      let str = chunk.trim();
+      if (!str) return; // 丢弃无用的空行
 
-        if (i % 2 !== 0) {
-          // 奇数项：绝对是在 ``` 内部的代码（或者是未闭合的代码）
-          // 重新穿上反引号外衣，保证代码框渲染器能 100% 认出它！
-          finalParts.push('```' + chunks[i] + '```');
-        } else {
-          // 偶数项：绝对是普通的文字
-          // 恢复智能切割机，遇到句号、感叹号、换行符就切成清爽的独立小气泡
-          const sentences = chunk.match(/[^。！？……\n]+([。！？……\n]|\s)*|\S+/g);
-          if (sentences) {
-            sentences.forEach(s => {
-              if (s.trim()) finalParts.push(s.trim());
-            });
+      // 3. 【分类处理】
+      if (str.startsWith('```')) {
+        // === 情况A：这是代码块 ===
+        // 直接原样保留！哪怕它里面有换行、有句号，也绝不许切！
+        // 这样它就会被渲染成一个完整的黑色代码框
+        finalParts.push(str);
+      } else {
+        // === 情况B：这是普通文字 ===
+        // 这里才启用“短句切割机”，按句号、感叹号、换行符切分
+        // 让你看文字时像微信聊天一样一句句弹出来
+        const sentences = str.split(/([。\n]+)/); // 保留分隔符以便处理
+        
+        let buffer = '';
+        sentences.forEach(s => {
+          if (!s.trim()) return;
+          // 如果是标点或换行，拼接到上一句后面
+          if (/^[。\n]+$/.test(s)) {
+             if(finalParts.length > 0 && !finalParts[finalParts.length-1].startsWith('```')) {
+               finalParts[finalParts.length-1] += s;
+             } else if (buffer) {
+               buffer += s;
+             }
+          } else {
+             if(buffer) { finalParts.push(buffer); buffer = ''; }
+             finalParts.push(s);
           }
-        }
+        });
+        if (buffer) finalParts.push(buffer);
       }
     });
 
