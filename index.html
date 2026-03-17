@@ -284,6 +284,47 @@
 .bubble-img:active {
   transform: scale(0.96); /* 点击时轻轻缩一下，有按压感 */
 }
+/* 💻 蓝色特供：超酷的代码块样式 */
+.code-box {
+  background: #1e1e1e; /* 极客专属深灰色背景 */
+  border-radius: 8px;
+  margin: 6px 0;
+  overflow: hidden;
+  border: 1px solid #333;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.code-head {
+  background: #2d2d2d;
+  color: #a0a0a0;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-family: monospace;
+  text-transform: uppercase;
+  border-bottom: 1px solid #444;
+  display: flex;
+  justify-content: space-between;
+}
+
+.code-head::after {
+  content: "JS / CODE"; /* 右上角的小提示 */
+  color: #666;
+}
+
+.code-box pre {
+  margin: 0;
+  padding: 10px;
+  overflow-x: auto; /* 代码太长可以横向滑动 */
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 13px;
+  color: #d4d4d4;
+  line-height: 1.4;
+}
+
+/* 覆盖一下被选中的样式，防止看不清 */
+.code-box pre::selection, .code-box pre *::selection {
+  background: rgba(47,102,216,0.4);
+}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 </head>
@@ -940,7 +981,6 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
       ${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}
     </div>`;
 }
-  // 修改后的渲染：助手支持HTML
   function renderBubbleContent(m,isMe,pref){
     const cls=isMe?'me':'ai';
     const ts=pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:'';
@@ -948,13 +988,28 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
     const hidden=m.hiddenForAi?'ai-hidden':'';
     let t=String(m.text||'');
 
-    // === 📸 蓝色新增：图片渲染逻辑 ===
+    // === 📸 1. 图片渲染逻辑 ===
     if(t.startsWith('[img]') && t.endsWith('[/img]')){
-      const src = t.slice(5, -6); // 去掉标签取中间的 base64
+      const src = t.slice(5, -6);
       return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-img" src="${src}" onclick="showPreview('previewModalImg','${src}');$('modalPreview').classList.add('active')"></div>${ts}`;
     }
-    // ==============================
 
+    // === 💻 2. 蓝色新增：代码块安全渲染逻辑 ===
+    // 只要看到三个反引号，就拦截下来，不让它去执行危险的 HTML！
+    if(t.includes('```')) {
+      // 第一步：先进行安全转义，把 <script> 变成安全的文字
+      let safeText = esc(t);
+      
+      // 第二步：用魔法正则把反引号变成漂亮的 HTML 代码盒子
+      safeText = safeText.replace(/```([a-zA-Z]*)\n([\s\S]*?)```/g, function(match, lang, code) {
+         return `<div class="code-box"><div class="code-head">${lang || 'CODE'}</div><pre><code>${code}</code></pre></div>`;
+      });
+      
+      // 第三步：输出带代码盒子的气泡
+      return `${quote}<div class="bubble ${cls} ${hidden}">${safeText}</div>${ts}`;
+    }
+
+    // === 🌐 3. 原有的 HTML/普通文本 逻辑 ===
     if(!isMe && isHtmlDoc(t)){
       const src=toHtmlDataUrl(t);
       return `${quote}<div class="bubble ${cls} ${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
@@ -962,6 +1017,8 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
     if(!isMe && isHtmlFrag(t)){
       return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
     }
+    
+    // === 💬 4. 最普通的文字 ===
     return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
   }
 
