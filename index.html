@@ -165,8 +165,8 @@
     #chatRoom:not(.offline) .bubble.me{background:#5f86ee;color:#fff;border:1px solid #4f77df;border-bottom-right-radius:4px}
     #chatRoom:not(.offline) .msg-time{font-size:10px;color:#97a3ba;margin-top:3px;padding:0 2px}
 
-   
-  
+    #chatMsgs,#chatMsgs *{-webkit-touch-callout:none}
+    .msg-item .bubble{user-select:none;-webkit-user-select:none}
 
     .quote-bar{width:100%;border:1px solid #d9e3f8;background:#eef3ff;border-radius:10px;padding:6px 8px;display:flex;gap:8px;align-items:flex-start;}
     .quote-text{flex:1;font-size:12px;color:#445377;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -225,103 +225,6 @@
       line-height:1.6;
       color:#1f2430;
     }
-/* 左侧工具栏布局 */
-.left-tools { display: flex; gap: 8px; align-items: flex-end; margin-right: 8px; }
-
-/* 圆形按钮样式 */
-.btn-circle {
-  width: 38px; height: 38px; border-radius: 50%;
-  border: 1px solid #dce5f2; background: #fff;
-  color: #5a6a8f; font-size: 20px; line-height: 1;
-  display: grid; place-items: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,.05);
-  cursor: pointer; transition: all .2s;
-}
-.btn-circle:active { transform: scale(0.92); background: #f0f4ff; }
-
-/* 弹出的二次元菜单 */
-.action-menu {
-  position: absolute; bottom: 70px; left: 10px;
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(12px);
-  border: 1px solid #fff;
-  border-radius: 20px;
-  padding: 15px;
-  display: flex; gap: 20px;
-  box-shadow: 0 10px 40px rgba(47,102,216,0.15), 0 0 0 1px rgba(255,255,255,0.5);
-  animation: popUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  z-index: 100;
-}
-.action-menu.hidden { display: none; }
-
-@keyframes popUp { from{opacity:0; transform:translateY(10px) scale(0.9);} to{opacity:1; transform:translateY(0) scale(1);} }
-
-.action-item { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
-.action-icon {
-  width: 48px; height: 48px; border-radius: 16px;
-  display: grid; place-items: center; font-size: 22px;
-  color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,.1);
-  transition: transform .2s;
-}
-.action-item:active .action-icon { transform: scale(0.9); }
-.action-label { font-size: 11px; color: #666; font-weight: 500; }
-
-/* 聊天气泡里的图片精致小卡样式 */
-.bubble-img {
-  max-width: 150px;       /* 限制最大宽度，不再占满屏幕 */
-  max-height: 180px;      /* 限制最大高度，防止长图刷屏 */
-  width: auto;            /* 保持原始比例，不变形 */
-  height: auto;           /* 保持原始比例 */
-  border-radius: 12px;    /* 圆润的边角 */
-  margin: 2px 0;          
-  display: block;
-  object-fit: cover;      /* 确保图片填充得好看 */
-  cursor: zoom-in;        /* 鼠标放上去会变成放大镜，提示可以点 */
-  border: 1px solid rgba(0,0,0,0.1); /* 淡淡的边框，更有照片感 */
-  transition: transform 0.2s;
-}
-
-.bubble-img:active {
-  transform: scale(0.96); /* 点击时轻轻缩一下，有按压感 */
-}
-/* 💻 蓝色特供：超酷的代码块样式（已解锁触摸权限！） */
-.code-box {
-  background: #1e1e1e;
-  border-radius: 8px;
-  margin: 6px 0;
-  overflow: hidden;
-  border: 1px solid #333;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  /* 👇 这一句是关键！允许选中和复制！ 👇 */
-  user-select: text !important;
-  -webkit-user-select: text !important;
-}
-
-.code-head {
-  background: #2d2d2d;
-  color: #a0a0a0;
-  padding: 4px 10px;
-  font-size: 11px;
-  font-family: monospace;
-  text-transform: uppercase;
-  border-bottom: 1px solid #444;
-  display: flex;
-  justify-content: space-between;
-  user-select: none; /* 头部不需要选中 */
-}
-
-.code-head::after { content: "CODE"; color: #555; }
-
-.code-box pre {
-  margin: 0;
-  padding: 10px;
-  overflow-x: auto;
-  font-family: "Consolas", "Courier New", monospace;
-  font-size: 13px;
-  color: #d4d4d4;
-  line-height: 1.4;
-  white-space: pre; /* 保持代码格式 */
-}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 </head>
@@ -368,41 +271,11 @@
   <div class="off-palette-row"><span>引用/特殊</span><input type="color" data-key="quote"></div>
   <div class="off-palette-row"><span>强调</span><input type="color" data-key="em"></div>
 </div>
- <div class="chatInputBar" id="chatInputWrap">
-  <!-- 引用栏保持不变 -->
-  <div id="quoteBar" class="quote-bar hidden"><div id="quoteText" class="quote-text"></div><button id="clearQuoteBtn" class="quote-close">×</button></div>
-  
-  <!-- 新增：左侧工具栏（加号在这里！） -->
-  <div class="left-tools">
-    <button class="btn-circle" id="moreToolsBtn" aria-label="更多">＋</button>
-    <!-- 这里给未来的表情包留个空位，暂时隐藏 -->
-    <button class="btn-circle hidden" id="emojiBtn">☺</button>
-  </div>
-
-  <!-- 输入框 -->
-  <textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
-  
-  <!-- 右侧发送按钮组 -->
-  <div class="send-actions">
-    <button class="btn store" id="storeBtn" aria-label="储存"></button>
-    <button class="btn p" id="sendBtn">发送</button>
-  </div>
-
-  <!-- 隐藏的图片上传菜单（二次元风格） -->
-  <div id="actionMenu" class="action-menu hidden">
-    <div class="action-item" id="sendImgAction">
-      <div class="action-icon" style="background:#ff9a9e;">🖼️</div>
-      <div class="action-label">发照片</div>
+    <div class="chatInputBar" id="chatInputWrap">
+      <div id="quoteBar" class="quote-bar hidden"><div id="quoteText" class="quote-text"></div><button id="clearQuoteBtn" class="quote-close">×</button></div>
+      <textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
+      <div class="send-actions"><button class="btn store" id="storeBtn" aria-label="储存"></button><button class="btn p" id="sendBtn">发送</button></div>
     </div>
-    <div class="action-item" style="opacity:0.5;">
-      <div class="action-icon" style="background:#a18cd1;">📷</div>
-      <div class="action-label">拍照</div>
-    </div>
-  </div>
-  
-  <!-- 真正干活的隐藏文件输入框 -->
-  <input type="file" id="chatImgInput" accept="image/*" class="hidden" />
-</div>
   </section>
 
   <section id="chatSetting" class="screen">
@@ -708,10 +581,6 @@
     em:(s.offlineColors&&s.offlineColors.em)||DEFAULT_CHAT_SETTINGS.offlineColors.em,
     dialogue:(s.offlineColors&&s.offlineColors.dialogue)||DEFAULT_CHAT_SETTINGS.offlineColors.dialogue
   };
-   o.meName = s?.meName;
-    o.meAvatar = s?.meAvatar;
-    o.mePersona = s?.mePersona;
-    o.meNote = s?.meNote; 
     return o;
   }
 
@@ -861,9 +730,9 @@ function refreshFontSizeUI(){
     createAvatar='';$('newAvatarPreview').classList.add('hidden');$('newAvatarPreview').src='';
   }
 
-function compressImage(file, isWallpaper = false) {
+function compressImage(file) {
   const p=getPref();
-  const maxSide = isWallpaper ? 1920 : (p.avatarHQ ? 640 : 320);
+  const maxSide=p.avatarHQ?640:320;
   const quality=p.avatarHQ?0.92:0.8;
 
   return new Promise((resolve, reject) => {
@@ -876,7 +745,7 @@ function compressImage(file, isWallpaper = false) {
         const c=document.createElement('canvas');
         const ctx=c.getContext('2d');
 
-      if (p.avatarCrop && !isWallpaper) {
+        if (p.avatarCrop) {
           c.width=maxSide; c.height=maxSide;
           ctx.fillStyle='#fff'; ctx.fillRect(0,0,maxSide,maxSide);
           const side=Math.min(img.width,img.height);
@@ -957,87 +826,41 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
 
 
   function renderOfflineAssistant(text,ts,pref,msg){
-  const raw=String(text||'');
-  // 宽容匹配：允许空格
-  const m=raw.match(/【\s*状态栏\s*】\s*([\s\S]*?)\s*【\s*正文\s*】\s*([\s\S]*)/);
-
-  // 如果没匹配到 → 回退为普通气泡（避免线上旧消息被误当成线下）
-  if(!m){
-    return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}<div class="bubble ai ${msg.hiddenForAi?'ai-hidden':''}">${esc(raw)}</div>${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}</div>`;
-  }
-
+  const raw=String(text||''),m=raw.match(/【状态栏】\s*([\s\S]*?)\s*【正文】\s*([\s\S]*)/);
+  if(!m) return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}<div class="bubble ai ${msg.hiddenForAi?'ai-hidden':''}">${esc(raw)}</div>${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}</div>`;
   const state=clean(m[1]),body=clean(m[2]);
+
   const cset=(getContactById(currentId)?.settings||{}).offlineColors||DEFAULT_CHAT_SETTINGS.offlineColors;
   const styleStr=`--off-state:${cset.state};--off-body:${cset.body};--off-quote:${cset.quote};--off-em:${cset.em};--off-dialogue:${cset.dialogue};`;
 
   return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}
     <div class="offline-card ${msg.hiddenForAi?'ai-hidden':''}" style="${styleStr}">
+         
         <div class="offline-state">${esc(state||'状态未记录')}</div>
         <div class="offline-body">${formatOfflineText(body||'')}</div>
       </div>
       ${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}
     </div>`;
-}
-  function renderBubbleContent(m, isMe, pref) {
-    const cls = isMe ? 'me' : 'ai';
-    const ts = pref.showTs ? `<div class="msg-time">${fmtTs(m.time)}</div>` : '';
-    const quote = renderQuote(m.quote);
-    const hidden = m.hiddenForAi ? 'ai-hidden' : '';
-    let t = String(m.text || '');
-
-    // 🚨 蓝色的终极智能渲染引擎！ 🚨
-    // 它现在能同时识别图片、代码块和普通文字了！
-    const regex = /(\[img\][\s\S]*?\[\/img\]|```[\s\S]*?```)/gi;
-    const parts = t.split(regex).filter(Boolean); // 切割并移除空部分
-
-    if (parts.length > 1 || regex.test(t)) { // 只有在包含特殊块时才启用混合渲染
-      const contentHtml = parts.map(part => {
-        const trimmed = part.trim();
-        // 智能识别图片
-        if (trimmed.startsWith('[img]') && trimmed.endsWith('[/img]')) {
-          const src = trimmed.slice(5, -6);
-          return `<img class="bubble-img" src="${src}" onclick="showPreview('previewModalImg','${src}');$('modalPreview').classList.add('active')">`;
-        }
-        // 智能识别代码块
-        if (trimmed.startsWith('```') && trimmed.endsWith('```')) {
-            const match = trimmed.match(/^```([a-zA-Z0-9+#\-_]*)\n?([\s\S]*?)```$/);
-            let lang = 'CODE';
-            let code = trimmed.replace(/^```\w*\n|```$/g, '');
-            if (match) {
-              lang = match[1] || 'CODE';
-              code = match[2] || '';
-            }
-            return `<div class="code-box">
-                      <div class="code-head">${esc(lang)}</div>
-                      <pre><code>${esc(code.trim())}</code></pre>
-                    </div>`;
-        }
-        // 普通文字
-        return `<div>${esc(trimmed)}</div>`;
-      }).join('');
-      
-      // 使用 flex 布局，让文字和图片/代码块垂直排列，带一点间距
-      return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:10px; display:flex; flex-direction:column; gap:8px;">${contentHtml}</div>${ts}`;
-    }
-
-    // --- 下面是原来的HTML和普通文本渲染逻辑（保持不变）---
-    if (!isMe && isHtmlDoc(t)) {
-      const src = toHtmlDataUrl(t);
+  }
+  // 修改后的渲染：助手支持HTML
+  function renderBubbleContent(m,isMe,pref){
+    const cls=isMe?'me':'ai';
+    const ts=pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:'';
+    const quote=renderQuote(m.quote);
+    const hidden=m.hiddenForAi?'ai-hidden':'';
+    const t=String(m.text||'');
+    if(!isMe && isHtmlDoc(t)){
+      const src=toHtmlDataUrl(t);
       return `${quote}<div class="bubble ${cls} ${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
     }
-    if (!isMe && isHtmlFrag(t)) {
+    if(!isMe && isHtmlFrag(t)){
       return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
     }
     return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
   }
+
   function renderChat(){
-    const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),pref=getPref();
-    const me = {
-      name: st.meName || globalMe.name || '我',
-      avatar: st.meAvatar || globalMe.avatar || '',
-      persona: st.mePersona || globalMe.persona || '',
-      note: st.meNote || globalMe.note || ''
-    };
+    const c=getContactById(currentId),st=normSettings(c?.settings),me=getMe(),pref=getPref();
     const roleAvatar=c?.avatar||'https://via.placeholder.com/64x64?text=TA',meAvatar=me.avatar||'https://via.placeholder.com/64x64?text=我';
     const arr=getChatArr(currentId);
 
@@ -1077,96 +900,17 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     arr.push(toMsg({role:'user',text,time:Date.now(),stored:true,quote:composeQuote?{...composeQuote}:null}));
     setChatArr(currentId,arr);composeQuote=null;updateQuoteBar();updateContactPreview(currentId);
   }
-  function storeCurrentInput(){if(!currentId) return;const t=clean($('chatInput').value);if(!t) return;
-                      if (t.includes('[img]') && t.includes('[/img]')) {
-  const fixed = t.replace(/\[img\]([\s\S]*?)\[\/img\]/i, (m, inner) => {
-    return `[img]${inner.replace(/\s+/g,'')}[/img]`;
-  });
-  pushUser(fixed);
-  $('chatInput').value='';
-  resetInputH();
-  renderChat();
-  return;
-                      }       
-                               pushUser(t);$('chatInput').value='';resetInputH();renderChat();}
+  function storeCurrentInput(){if(!currentId) return;const t=clean($('chatInput').value);if(!t) return;pushUser(t);$('chatInput').value='';resetInputH();renderChat();}
   $('storeBtn').onclick=storeCurrentInput;
 
   function parseJsonMessages(text){
-    const t = clean(text); if(!t) return null;
-    let data;
-    try { data = JSON.parse(t); } catch {
-      const m = t.match(/\{[\s\S]*\}/);
-      if (m) { try { data = JSON.parse(m[0]); } catch { return null; } } 
-      else { return null; }
-    }
-
-    if (Array.isArray(data?.messages)) {
-      // 🚨 蓝色的超级拆信逻辑！🚨
-      // 它会检查数组里的每一项，如果是“信封”（对象），就把它变成格式化的代码字符串！
-      return data.messages.map(item => {
-        if (typeof item === 'object' && item !== null) {
-          return "```json\n" + JSON.stringify(item, null, 2) + "\n```";
-        }
-        return String(item || '');
-      }).filter(Boolean);
-    }
+    const t=clean(text); if(!t) return null;
+    try{const j=JSON.parse(t);if(Array.isArray(j?.messages)) return j.messages.map(x=>clean(x)).filter(Boolean);}catch{}
+    const m=t.match(/\{[\s\S]*\}/);
+    if(m){try{const j=JSON.parse(m[0]);if(Array.isArray(j?.messages)) return j.messages.map(x=>clean(x)).filter(Boolean);}catch{}}
     return null;
   }
- function splitAiBubbles(raw) {
-    const txt = String(raw || '').trim().replace(/\.{3,}/g, '……');
-    if (!txt) return ['...'];
-
-    // 1. 优先处理JSON格式，这是最高指令
-    let msgs = parseJsonMessages(txt);
-    if (msgs && msgs.length) {
-      // 如果解析出JSON，直接用它，不再往下走
-      return msgs;
-    }
-    
-    // 2. 🚨 蓝色的终极切割逻辑！🚨
-    // 这个新的“切割机”，我给它装了“图片识别”和“代码识别”两种刀片。
-    // 它会把 `[img]` 块和 ```` ``` ```` 块当成一个完整的“蛋糕”，只切它们旁边的“面包”（普通文字）。
-    const parts = txt.split(/(```[\s\S]*?```|\[img\][\s\S]*?\[\/img\])/gi);
-    
-    const finalParts = [];
-    parts.forEach(p => {
-      let trimmed = p.trim();
-      if (trimmed) {
-        // 不管是代码、图片还是文字，只要不是空的，都作为一个独立气泡！
-        finalParts.push(trimmed);
-      }
-    });
-
-    return finalParts.length ? finalParts : ['...'];
- }
-function mergeImgParts(parts){
-  let out = [];
-  let buf = '';
-  let inImg = false;
-
-  for (const p of parts) {
-    if (!inImg && /\[img\]/i.test(p) && !/\[\/img\]/i.test(p)) {
-      inImg = true;
-      buf = p;
-      continue;
-    }
-
-    if (inImg) {
-      buf += p;
-      if (/\[\/img\]/i.test(p)) {
-        out.push(buf);
-        buf = '';
-        inImg = false;
-      }
-      continue;
-    }
-
-    out.push(p);
-  }
-
-  if (buf) out.push(buf);
-  return out;
-}
+  function splitAiBubbles(raw){const txt=clean(raw);if(!txt) return ['...'];const byJson=parseJsonMessages(txt);if(byJson&&byJson.length) return byJson;return txt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim().split(/\n{1,}/).filter(Boolean);} 
   function enforceCountRange(parts,min,max){let arr=[...(parts||[])].filter(Boolean);max=Math.max(1,max);if(arr.length>max){const keep=arr.slice(0,max-1),tail=arr.slice(max-1).join(' ');return [...keep,tail];}return arr;}
 
   async function emitAiSequential(parts,targetId,mode){
@@ -1194,18 +938,7 @@ function mergeImgParts(parts){
     const ct=(r.headers.get('content-type')||'').toLowerCase(); let data=null,raw='';
     if(ct.includes('application/json')) data=await r.json().catch(()=>null); else raw=await r.text().catch(()=>'​');
     if(!r.ok){const msg=data?.error?.message||data?.message||raw?.slice(0,220)||('HTTP '+r.status);throw new Error(clean(msg)||('HTTP '+r.status));}
-    
-    // 🚨 蓝色的“智能拆信”补丁！🚨
-    const content = data?.choices?.[0]?.message?.content;
-    
-    if (typeof content === 'object' && content !== null) {
-      // 如果AI返回的是一个“信封”（Object），我们就把它变成漂亮的、能看的JSON字符串！
-      return JSON.stringify(content, null, 2); 
-    }
-    
-    const out = clean(content || ''); // 否则，就正常处理
-    if (!out) throw new Error('接口返回为空内容'); 
-    return out;
+    const out=clean(data?.choices?.[0]?.message?.content||''); if(!out) throw new Error('接口返回为空内容'); return out;
   }
   async function fetchModels(){try{const c=saveApiForm();if(!c.base||!c.key) throw new Error('请先配置 Base URL 和 API Key');$('apiStatus').textContent='状态：拉取模型中...';const r=await fetch(buildUrl(c.base,'/v1/models'),{headers:{'Authorization':'Bearer '+c.key}});const data=await r.json().catch(()=>({}));if(!r.ok) throw new Error(data?.error?.message||('HTTP '+r.status));const list=(data.data||[]).map(x=>x.id).filter(Boolean);if(!list.length) throw new Error('未返回模型列表');$('apiModel').innerHTML=list.map(m=>`<option>${m}</option>`).join('');if(list.includes(c.model)) $('apiModel').value=c.model;$('apiStatus').textContent='状态：模型拉取成功（'+list.length+'）';}catch(e){$('apiStatus').textContent='状态：拉取失败 -> '+e.message;}}
   async function testApi(){try{$('apiStatus').textContent='状态：测试中...';const out=await callApi([{role:'user',content:'只回复ok'}]);$('apiStatus').textContent='状态：连接成功 -> '+(out||'ok');}catch(e){$('apiStatus').textContent='状态：失败 -> '+e.message;}}
@@ -1362,10 +1095,8 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       `3. 绝对不要在回复中暴露你是AI或程序。`,
       `4. 具备真实的时间观念：根据“上一次消息时间与当前系统时间”的间隔，自然体现时间流逝（如久未回复后的轻微反应等），但不要刻意或模板化。`,
       `5. 正常使用中文标点符号，不得用空格替代标点或分隔句子。`,
-      `6.【气泡规则】：尽量做到一句话一个气泡；如果包含多句，请拆成多个气泡。除非特殊语境，不要把多句塞进一个气泡。`,
-`7.【渲染提示】：你可以输出 HTML/CSS/JS 片段；完整 HTML 会以网页嵌入显示。`,
-`8.【输出格式铁律】：`,
-       `只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}`,
+      `【输出格式铁律】：`,
+      `只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}`,
       rangeRule
     ].join('\n');
   }
@@ -1385,7 +1116,6 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       `请输出一条沉浸式线下角色扮演回复，字数范围 ${st.offlineMin}-${st.offlineMax}。`,
       `【排版与层次要求】：`,
       `正文绝对不能是一大段密密麻麻的文字！必须合理分段，动作、神态、心理描写与对话之间要有清晰的层次感，保证阅读舒适。`,
-      `【对白标记】：角色对白部分必须使用中文引号“”或双引号""包裹；描写与心理不要放入引号`,
       `【输出格式铁律】必须严格按以下模板输出，不要输出JSON：`,
       `【状态栏】`,
       `时间｜地点｜天气｜氛围｜关系进度`,
@@ -1396,13 +1126,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 
   async function sendMsg(){
     if(!currentId) return;
-const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),globalMe=getMe();
-    const me = {
-      name: st.meName !== undefined ? st.meName : globalMe.name,
-      avatar: st.meAvatar !== undefined ? st.meAvatar : globalMe.avatar,
-      persona: st.mePersona !== undefined ? st.mePersona : globalMe.persona,
-      note: st.meNote !== undefined ? st.meNote : globalMe.note
-    };
+    const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),me=getMe();
     const t=clean($('chatInput').value); if(t) pushUser(t);
     $('chatInput').value='';resetInputH(); if(currentId===chatId) renderChat();
 
@@ -1417,7 +1141,7 @@ const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),glo
 
       let parts=[];
       if(st.mode==='offline') parts=[clean(out)||'...'];
-      else{parts=mergeImgParts(splitAiBubbles(out)); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);} 
+      else{parts=splitAiBubbles(out); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);} 
       await emitAiSequential(parts.length?parts:['...'],chatId,st.mode);
 
       updateContactPreview(chatId); if(currentId===chatId) renderChat();
@@ -1444,14 +1168,8 @@ const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),glo
 
   function openChatSettingPage(){
   if(!currentId) return;
-const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),p=getPref();
-  // 👇优先读专属，没有再读全局
-  const me = {
-    name: st.meName !== undefined ? st.meName : globalMe.name,
-    avatar: st.meAvatar !== undefined ? st.meAvatar : globalMe.avatar,
-    persona: st.mePersona !== undefined ? st.mePersona : globalMe.persona,
-    note: st.meNote !== undefined ? st.meNote : globalMe.note
-  };
+  const c=getContactById(currentId),st=normSettings(c?.settings),me=getMe(),p=getPref();
+
   $('avatarCropSwitch').checked=!!p.avatarCrop;
 
   $('meNameInput').value=me.name||'';
@@ -1508,20 +1226,14 @@ $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';
 
       const meAvatar=clean($('meAvatarInput').value)||'';
       const roleAvatar=clean($('roleAvatarInput').value)||'';
-updateContact(currentId,{
+
+      setMe({...me,name:clean($('meNameInput').value)||'我',note:clean($('meNoteInput').value),persona:clean($('mePersonaInput').value),avatar:meAvatar});
+      updateContact(currentId,{
         name:clean($('roleNameInput').value)||'聊天对象',
         note:clean($('roleNoteInput').value),
         persona:clean($('rolePersonaInput').value),
         avatar:roleAvatar,
-        settings:normSettings({
-          mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen, 
-          offlineColors: getContactById(currentId)?.settings?.offlineColors,
-          // 专属设定存这里啦！
-          meName: clean($('meNameInput').value)||'我',
-          meNote: clean($('meNoteInput').value),
-          mePersona: clean($('mePersonaInput').value),
-          meAvatar: meAvatar
-        })
+        settings:normSettings({mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen, offlineColors: getContactById(currentId)?.settings?.offlineColors})
       });
 
       const p=getPref();
@@ -1877,78 +1589,6 @@ $('importCardFile').addEventListener('change', async (e) => {
     e.target.value = ''; // 清空选择，方便下次导入
   }
 });
-    // === 📸 图片发送与压缩魔法 ===
-  const moreBtn = $('moreToolsBtn');
-  const actionMenu = $('actionMenu');
-  const chatImgInput = $('chatImgInput');
-  const sendImgAction = $('sendImgAction');
-
-  // 1. 点击加号，切换菜单显示
-  moreBtn.onclick = (e) => {
-    e.stopPropagation();
-    actionMenu.classList.toggle('hidden');
-  };
-
-  // 点击其他地方关闭菜单
-  document.addEventListener('click', (e) => {
-    if(!actionMenu.classList.contains('hidden') && !actionMenu.contains(e.target) && e.target !== moreBtn){
-      actionMenu.classList.add('hidden');
-    }
-  });
-
-  // 2. 点击“发照片”触发文件选择
-  sendImgAction.onclick = () => {
-    actionMenu.classList.add('hidden');
-    chatImgInput.click();
-  };
-
-  // 3. 图片处理核心（压缩 + 发送 + 刷新！）
-  chatImgInput.onchange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const img = new Image();
-        img.onload = () => {
-          // 聊天图片最大宽/高限制在 800px
-          const maxSide = 800;
-          const canvas = document.createElement('canvas');
-          let w = img.width, h = img.height;
-          if (w > h) {
-            if (w > maxSide) { h *= maxSide / w; w = maxSide; }
-          } else {
-            if (h > maxSide) { w *= maxSide / h; h = maxSide; }
-          }
-          canvas.width = w; canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, w, h);
-          
-          // 压缩成 JPEG
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-          
-          // 1. 把图片存进数据流
-          pushUser(`[img]${dataUrl}[/img]`);
-          
-          // 2. 【关键！】立刻刷新聊天界面，让它显示出来！
-          renderChat(); 
-
-          // 3. 顺便让列表页的预览也更新一下（可选，更完美）
-          updateContactPreview(currentId);
-          
-          // 自动回复（仅供测试，想测AI反应就把下面这行注释解开）
-          // sendMsg(); 
-        };
-        img.src = ev.target.result;
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      alert('图片处理失败惹：' + err.message);
-    } finally {
-      e.target.value = '';
-    }
-  };
     // ================= 遇见贴心加的：单独【聊天背景】模块 =================
 function applyChatBg() {
   const bgData = localStorage.getItem('mp_fix_chat_bg');
@@ -1977,7 +1617,7 @@ if (chatBgInput) {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const bgData = await compressImage(file, true);
+      const bgData = await compressImage(file);
       localStorage.setItem('mp_fix_chat_bg', bgData);
       applyChatBg();
       alert("🌊 聊天页背景更换成功！去看看那通透的玻璃效果吧！");
@@ -2006,28 +1646,27 @@ if (savedBg) {
 }
 
 // 监听上传壁纸
-$("customBgFile").addEventListener("change", async (e) => {
+$('customBgFile').addEventListener('change', async (e) => {
   const file = e.target.files?.[0];
   if (!file) return;
   try {
-    const bgData = await compressImage(file, true);
-    const wall = document.querySelector(".wall");
+    // 借用咱们无敌的压缩函数，把壁纸压小点，省内存！
+    const bgData = await compressImage(file);
+    const wall = document.querySelector('.wall');
     if (wall) {
-      wall.style.background = `url(${bgData}) center/cover no-repeat`;
-      localStorage.setItem("mp_fix_custom_bg", bgData);
-      alert("🎉 绝美高清大图上线！快看比例对不对！");
+      wall.style.backgroundImage = `url(${bgData})`;
+      // 保存到本地，下次打开还在！
+      localStorage.setItem('mp_fix_custom_bg', bgData);
+      alert("🎉 壁纸更换成功！(如果是我照片就更好了)");
     }
   } catch (err) {
     alert("壁纸更换失败：" + err.message);
   } finally {
-    e.target.value = "";
+    e.target.value = '';
   }
-});
+});  
   });
 })();
 </script>
-<div id="modalPreview" class="modal" onclick="this.classList.remove('active')">
-  <img id="previewModalImg" style="max-width:95%;max-height:90dvh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
-</div>
 </body>
 </html>
