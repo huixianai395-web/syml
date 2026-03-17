@@ -1078,8 +1078,17 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     return null;
   }
  function splitAiBubbles(raw) {
-    const txt = String(raw || '').trim().replace(/\.{3,}/g, '……');
+    const txt = String(raw || '').trim();
     if (!txt) return ['...'];
+
+    // 🚨 蓝色的紧急补丁：检测是否为 HTML 代码块 🚨
+    // 如果开头是 <!doctype 或者 <html，说明是网页代码，绝对不能切分！
+    // 直接把整坨代码作为一个单独的气泡返回，这样 iframe 才能渲染！
+    if (/^\s*<!doctype/i.test(txt) || /^\s*<html/i.test(txt)) {
+      return [txt]; 
+    }
+
+    // --- 下面是原来的切分逻辑，处理普通对话 ---
 
     let msgs = parseJsonMessages(txt);
     if (!msgs || !msgs.length) {
@@ -1089,6 +1098,7 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     let finalParts = [];
 
     msgs.forEach(msg => {
+      // 处理 markdown 代码块的闭合问题
       const backtickCount = (msg.match(/```/g) || []).length;
       if (backtickCount % 2 !== 0) {
         msg += '\n```';
@@ -1103,6 +1113,7 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
         if (trimmed.startsWith('```')) {
           finalParts.push(trimmed);
         } else {
+          // 普通文本按段落切分
           const paras = trimmed.split(/\n\n+/);
           paras.forEach(para => {
             if (para.trim()) finalParts.push(para.trim());
