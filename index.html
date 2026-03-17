@@ -166,7 +166,7 @@
     #chatRoom:not(.offline) .msg-time{font-size:10px;color:#97a3ba;margin-top:3px;padding:0 2px}
 
     #chatMsgs,#chatMsgs *{-webkit-touch-callout:none}
-    .msg-item .bubble{user-select:none;-webkit-user-select:none}
+  
 
     .quote-bar{width:100%;border:1px solid #d9e3f8;background:#eef3ff;border-radius:10px;padding:6px 8px;display:flex;gap:8px;align-items:flex-start;}
     .quote-text{flex:1;font-size:12px;color:#445377;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -985,48 +985,42 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
     const hidden = m.hiddenForAi ? 'ai-hidden' : '';
     let t = String(m.text || '');
 
-    // 🚨 蓝色的终极渲染补丁！智能分离文字和图片！ 🚨
-    if (t.includes('[img]') && t.includes('[/img]')) {
-      const parts = t.split(/(\[img\][\s\S]*?\[\/img\])/i);
+    // 🚨 蓝色的终极智能渲染引擎！ 🚨
+    // 它现在能同时识别图片、代码块和普通文字了！
+    const regex = /(\[img\][\s\S]*?\[\/img\]|```[\s\S]*?```)/gi;
+    const parts = t.split(regex).filter(Boolean); // 切割并移除空部分
+
+    if (parts.length > 1 || regex.test(t)) { // 只有在包含特殊块时才启用混合渲染
       const contentHtml = parts.map(part => {
-        if (part.trim().startsWith('[img]')) {
-          const src = part.trim().slice(5, -6);
-          // 图片部分，直接渲染成 <img> 标签
+        const trimmed = part.trim();
+        // 智能识别图片
+        if (trimmed.startsWith('[img]') && trimmed.endsWith('[/img]')) {
+          const src = trimmed.slice(5, -6);
           return `<img class="bubble-img" src="${src}" onclick="showPreview('previewModalImg','${src}');$('modalPreview').classList.add('active')">`;
-        } else if (part.trim()) {
-          // 文字部分，用 <div> 包起来，并进行安全转义
-          return `<div>${esc(part)}</div>`;
         }
-        return '';
+        // 智能识别代码块
+        if (trimmed.startsWith('```') && trimmed.endsWith('```')) {
+            const match = trimmed.match(/^```([a-zA-Z0-9+#\-_]*)\n?([\s\S]*?)```$/);
+            let lang = 'CODE';
+            let code = trimmed.replace(/^```\w*\n|```$/g, '');
+            if (match) {
+              lang = match[1] || 'CODE';
+              code = match[2] || '';
+            }
+            return `<div class="code-box">
+                      <div class="code-head">${esc(lang)}</div>
+                      <pre><code>${esc(code.trim())}</code></pre>
+                    </div>`;
+        }
+        // 普通文字
+        return `<div>${esc(trimmed)}</div>`;
       }).join('');
       
-      // 返回一个混合了文字和图片的气泡
-      // 注意：这里我们给气泡加一点内边距，让文字和图片之间有呼吸感
-      return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:8px 12px; display:flex; flex-direction:column; gap:6px;">${contentHtml}</div>${ts}`;
+      // 使用 flex 布局，让文字和图片/代码块垂直排列，带一点间距
+      return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:10px; display:flex; flex-direction:column; gap:8px;">${contentHtml}</div>${ts}`;
     }
 
-    // --- 下面是原来的代码块和HTML渲染逻辑（保持不变）---
-
-    if (t.trim().startsWith('```') && t.trim().endsWith('```')) {
-      const match = t.trim().match(/^```([a-zA-Z0-9+#\-_]*)\n?([\s\S]*?)```$/);
-      let lang = 'CODE';
-      let code = t.trim().replace(/```/g, '');
-      
-      if (match) {
-        lang = match[1] || 'CODE';
-        code = match[2];
-      }
-      
-      return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:0;background:transparent;border:none;box-shadow:none;">
-        <div style="background:#1e1e1e; border-radius:8px; border:1px solid #333; overflow:hidden; margin:6px 0; box-shadow:0 4px 12px rgba(0,0,0,0.15); user-select:text; -webkit-user-select:text;">
-          <div style="background:#2d2d2d; color:#a0a0a0; padding:4px 10px; font-size:11px; font-family:monospace; text-transform:uppercase; border-bottom:1px solid #444; user-select:none;">
-            ${esc(lang)}
-          </div>
-          <pre style="margin:0; padding:10px; overflow-x:auto; font-family:Consolas,monospace; font-size:13px; color:#d4d4d4; line-height:1.4; white-space:pre;"><code>${esc(code.trim())}</code></pre>
-        </div>
-      </div>${ts}`;
-    }
-
+    // --- 下面是原来的HTML和普通文本渲染逻辑（保持不变）---
     if (!isMe && isHtmlDoc(t)) {
       const src = toHtmlDataUrl(t);
       return `${quote}<div class="bubble ${cls} ${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
@@ -1034,8 +1028,6 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
     if (!isMe && isHtmlFrag(t)) {
       return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
     }
-
-    // --- 最后的普通文本渲染 ---
     return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
   }
   function renderChat(){
