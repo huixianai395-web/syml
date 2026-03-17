@@ -978,52 +978,48 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
       ${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}
     </div>`;
 }
-  function renderBubbleContent(m,isMe,pref){
-    const cls=isMe?'me':'ai';
-    const ts=pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:'';
-    const quote=renderQuote(m.quote);
-    const hidden=m.hiddenForAi?'ai-hidden':'';
-    let t=String(m.text||'');
+  function renderBubbleContent(m, isMe, pref) {
+    const cls = isMe ? 'me' : 'ai';
+    const ts = pref.showTs ? `<div class="msg-time">${fmtTs(m.time)}</div>` : '';
+    const quote = renderQuote(m.quote);
+    const hidden = m.hiddenForAi ? 'ai-hidden' : '';
+    let t = String(m.text || '');
 
-    // === 📸 1. 图片渲染 ===
-    if(t.startsWith('[img]') && t.endsWith('[/img]')){
+    if (t.startsWith('[img]') && t.endsWith('[/img]')) {
       const src = t.slice(5, -6);
       return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-img" src="${src}" onclick="showPreview('previewModalImg','${src}');$('modalPreview').classList.add('active')"></div>${ts}`;
     }
 
-    // === 💻 2. 蓝色终极修复：代码块渲染 ===
-    // 只要是 ``` 开头的气泡，直接作为代码块处理，不再依赖正则替换！
-    // 这样能完美解决“白色气泡”和“格式错乱”的问题
-    if(t.trim().startsWith('```')) {
-      // 去掉首尾的反引号
-      let raw = t.trim().replace(/^```/, '').replace(/```$/, '');
-      // 尝试提取语言标记（比如 js, python）
+    if (t.trim().startsWith('```') && t.trim().endsWith('```')) {
+      const match = t.trim().match(/^```([a-zA-Z0-9+#\-_]*)\n?([\s\S]*?)```$/);
       let lang = 'CODE';
-      const firstLineBreak = raw.indexOf('\n');
-      if (firstLineBreak > -1 && firstLineBreak < 15) { // 假设语言标记不会超过15个字
-        const potentialLang = raw.slice(0, firstLineBreak).trim();
-        // 只有当它是纯字母时才认为是语言标记
-        if (/^[a-zA-Z0-9]+$/.test(potentialLang)) {
-          lang = potentialLang;
-          raw = raw.slice(firstLineBreak + 1); // 剩下的才是代码
-        }
+      let code = t.trim().replace(/```/g, '');
+      
+      if (match) {
+        lang = match[1] || 'CODE';
+        code = match[2];
       }
-      // 安全转义代码内容
-      const safeCode = esc(raw);
-      // 直接输出代码框气泡
-      return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:0;background:transparent;border:none;box-shadow:none;"><div class="code-box"><div class="code-head">${lang}</div><pre><code>${safeCode}</code></pre></div></div>${ts}`;
+      
+      return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:0;background:transparent;border:none;box-shadow:none;">
+        <div style="background:#1e1e1e; border-radius:8px; border:1px solid #333; overflow:hidden; margin:6px 0; box-shadow:0 4px 12px rgba(0,0,0,0.15); user-select:text; -webkit-user-select:text;">
+          <div style="background:#2d2d2d; color:#a0a0a0; padding:4px 10px; font-size:11px; font-family:monospace; text-transform:uppercase; border-bottom:1px solid #444; user-select:none;">
+            ${esc(lang)}
+          </div>
+          <pre style="margin:0; padding:10px; overflow-x:auto; font-family:Consolas,monospace; font-size:13px; color:#d4d4d4; line-height:1.4; white-space:pre;"><code>${esc(code.trim())}</code></pre>
+        </div>
+      </div>${ts}`;
     }
 
-    // === 🌐 3. 常规 HTML 嵌入 ===
-    if(!isMe && isHtmlDoc(t)){
-      const src=toHtmlDataUrl(t);
+    if (!isMe && isHtmlDoc(t)) {
+      const src = toHtmlDataUrl(t);
       return `${quote}<div class="bubble ${cls} ${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
     }
-    
-    // === 💬 4. 普通文字 ===
+    if (!isMe && isHtmlFrag(t)) {
+      return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
+    }
+
     return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
   }
-
   function renderChat(){
     const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),pref=getPref();
     const me = {
@@ -1085,66 +1081,35 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     const txt = String(raw || '').trim().replace(/\.{3,}/g, '……');
     if (!txt) return ['...'];
 
-    // 1. 尝试提取 JSON 内容，如果失败或为空，则把原文本作为单条消息处理
-    let jsonMsgs = parseJsonMessages(txt);
-    let fullText = (jsonMsgs && jsonMsgs.length > 0) ? jsonMsgs.join('\n') : txt;
+    let msgs = parseJsonMessages(txt);
+    if (!msgs || !msgs.length) {
+      msgs = [txt];
+    }
 
     let finalParts = [];
-    
-    // 2. 【核心魔法：逐行扫描重组法】
-    // 不依赖正则匹配成对的反引号，而是老老实实逐行分析状态
-    const lines = fullText.split('\n');
-    let inCodeBlock = false;
-    let buffer = [];
-    let currentLang = '';
 
-    // 辅助函数：把缓冲区的内容打包推送到 finalParts
-    const flushBuffer = () => {
-      if (buffer.length === 0) return;
-      const content = buffer.join('\n').trim();
-      if (!content) { buffer = []; return; } // 丢弃纯空块
+    msgs.forEach(msg => {
+      const backtickCount = (msg.match(/```/g) || []).length;
+      if (backtickCount % 2 !== 0) {
+        msg += '\n```';
+      }
 
-      if (inCodeBlock) {
-        // 如果是代码块，强行加上反引号外衣，确保渲染器能认出！
-        // 注意：这里手动补全结尾反引号，防止 AI 没写完导致渲染失败
-        finalParts.push('```' + currentLang + '\n' + content + '\n```');
-      } else {
-        // 如果是普通文字，使用智能短句切割
-        const sentences = content.match(/[^。！？……\n]+([。！？……\n]|\s)*|\S+/g);
-        if (sentences) {
-          sentences.forEach(s => {
-            if (s.trim()) finalParts.push(s.trim());
+      const parts = msg.split(/(```[\s\S]*?```)/g);
+
+      parts.forEach(p => {
+        let trimmed = p.trim();
+        if (!trimmed) return;
+
+        if (trimmed.startsWith('```')) {
+          finalParts.push(trimmed);
+        } else {
+          const paras = trimmed.split(/\n\n+/);
+          paras.forEach(para => {
+            if (para.trim()) finalParts.push(para.trim());
           });
-        } else {
-          finalParts.push(content);
         }
-      }
-      buffer = [];
-    };
-
-    lines.forEach(line => {
-      // 检查是否是代码块的分界线 (```)
-      if (line.trim().startsWith('```')) {
-        // 遇到分界线，先把之前的缓冲区内容打包发出去
-        flushBuffer();
-        
-        // 切换状态
-        inCodeBlock = !inCodeBlock;
-        
-        // 如果是进入代码块，提取语言标记
-        if (inCodeBlock) {
-          currentLang = line.trim().replace(/^```/, '').trim();
-        } else {
-          currentLang = '';
-        }
-      } else {
-        // 普通行，加入缓冲区
-        buffer.push(line);
-      }
+      });
     });
-
-    // 循环结束后，别忘了把最后剩下的缓冲区内容也发出去
-    flushBuffer();
 
     return finalParts.length ? finalParts : ['...'];
  }
