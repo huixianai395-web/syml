@@ -853,17 +853,16 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
     const quote=renderQuote(m.quote);
     const hidden=m.hiddenForAi?'ai-hidden':'';
     const t=String(m.text||'');
-    const t2=t.replace(/^```[\w]*\n?([\s\S]*?)```$/,'$1').trim();
-    if(!isMe && isHtmlDoc(t2)){
-      const src=toHtmlDataUrl(t2);
+    if(!isMe && isHtmlDoc(t)){
+      const src=toHtmlDataUrl(t);
       return `${quote}<div class="bubble ${cls} ${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts allow-modals" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
     }
-  if(!isMe && isHtmlFrag(t2)){
-  const wrapped=`<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:8px;">${t2}</body></html>`;
+  if(!isMe && isHtmlFrag(t)){
+  const wrapped=`<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:8px;">${t}</body></html>`;
   const src=toHtmlDataUrl(wrapped);
   return `${quote}<div class="bubble ${cls} ${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts allow-modals" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
     }
-    return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t2)}</div>${ts}`;
+    return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
   }
 
   function renderChat(){
