@@ -266,12 +266,23 @@
 .action-item:active .action-icon { transform: scale(0.9); }
 .action-label { font-size: 11px; color: #666; font-weight: 500; }
 
-/* 聊天气泡里的图片样式 */
+/* 聊天气泡里的图片精致小卡样式 */
 .bubble-img {
-  max-width: 100%; border-radius: 8px;
-  margin: 4px 0; display: block;
-  box-shadow: 0 2px 8px rgba(0,0,0,.08);
-  cursor: pointer;
+  max-width: 150px;       /* 限制最大宽度，不再占满屏幕 */
+  max-height: 180px;      /* 限制最大高度，防止长图刷屏 */
+  width: auto;            /* 保持原始比例，不变形 */
+  height: auto;           /* 保持原始比例 */
+  border-radius: 12px;    /* 圆润的边角 */
+  margin: 2px 0;          
+  display: block;
+  object-fit: cover;      /* 确保图片填充得好看 */
+  cursor: zoom-in;        /* 鼠标放上去会变成放大镜，提示可以点 */
+  border: 1px solid rgba(0,0,0,0.1); /* 淡淡的边框，更有照片感 */
+  transition: transform 0.2s;
+}
+
+.bubble-img:active {
+  transform: scale(0.96); /* 点击时轻轻缩一下，有按压感 */
 }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
