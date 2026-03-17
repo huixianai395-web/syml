@@ -1107,54 +1107,28 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     return null;
   }
  function splitAiBubbles(raw) {
-    const txt = String(raw || '').trim();
+    const txt = String(raw || '').trim().replace(/\.{3,}/g, '……');
     if (!txt) return ['...'];
-   if (/^\s*\[img\][\s\S]*\[\/img\]\s*$/i.test(txt)) {
-      return [txt];
-    }
-    if (txt.includes('[img]') && txt.includes('[/img]')) {
-      return [txt];
-    }
 
-    // 🚨 蓝色的紧急补丁：检测是否为 HTML 代码块 🚨
-    // 如果开头是 <!doctype 或者 <html，说明是网页代码，绝对不能切分！
-    // 直接把整坨代码作为一个单独的气泡返回，这样 iframe 才能渲染！
-    if (/^\s*<!doctype/i.test(txt) || /^\s*<html/i.test(txt)) {
-      return [txt]; 
-    }
-
-    // --- 下面是原来的切分逻辑，处理普通对话 ---
-
+    // 1. 优先处理JSON格式，这是最高指令
     let msgs = parseJsonMessages(txt);
-    if (!msgs || !msgs.length) {
-      msgs = [txt];
+    if (msgs && msgs.length) {
+      // 如果解析出JSON，直接用它，不再往下走
+      return msgs;
     }
-
-    let finalParts = [];
-
-    msgs.forEach(msg => {
-      // 处理 markdown 代码块的闭合问题
-      const backtickCount = (msg.match(/```/g) || []).length;
-      if (backtickCount % 2 !== 0) {
-        msg += '\n```';
+    
+    // 2. 🚨 蓝色的终极切割逻辑！🚨
+    // 这个新的“切割机”，我给它装了“图片识别”和“代码识别”两种刀片。
+    // 它会把 `[img]` 块和 ```` ``` ```` 块当成一个完整的“蛋糕”，只切它们旁边的“面包”（普通文字）。
+    const parts = txt.split(/(```[\s\S]*?```|\[img\][\s\S]*?\[\/img\])/gi);
+    
+    const finalParts = [];
+    parts.forEach(p => {
+      let trimmed = p.trim();
+      if (trimmed) {
+        // 不管是代码、图片还是文字，只要不是空的，都作为一个独立气泡！
+        finalParts.push(trimmed);
       }
-
-      const parts = msg.split(/(```[\s\S]*?```)/g);
-
-      parts.forEach(p => {
-        let trimmed = p.trim();
-        if (!trimmed) return;
-
-        if (trimmed.startsWith('```')) {
-          finalParts.push(trimmed);
-        } else {
-          // 普通文本按段落切分
-          const paras = trimmed.split(/\n\n+/);
-          paras.forEach(para => {
-            if (para.trim()) finalParts.push(para.trim());
-          });
-        }
-      });
     });
 
     return finalParts.length ? finalParts : ['...'];
