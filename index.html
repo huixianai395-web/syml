@@ -839,13 +839,18 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
 
   return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}
     <div class="offline-card ${msg.hiddenForAi?'ai-hidden':''}" style="${styleStr}">
-         
+
         <div class="offline-state">${esc(state||'状态未记录')}</div>
         <div class="offline-body">${formatOfflineText(body||'')}</div>
       </div>
       ${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}
     </div>`;
   }
+  // 增加HTML检测
+  function isHtmlDoc(s){s=String(s||'');return /^\s*<!doctype html/i.test(s)||/<html[\s>]/i.test(s);}
+  function isHtmlFrag(s){s=String(s||'');return /<([a-z][\w-]*)(\s|>)/i.test(s)&&!isHtmlDoc(s);}
+  function toHtmlDataUrl(s){return 'data:text/html;charset=utf-8,'+encodeURIComponent(String(s||''));}
+
   // 修改后的渲染：助手支持HTML
   function renderBubbleContent(m,isMe,pref){
     const cls=isMe?'me':'ai';
@@ -856,7 +861,7 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
     if(!isMe && isHtmlDoc(t)){
       const src=toHtmlDataUrl(t);
       return `${quote}<div class="bubble ${cls} ${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts allow-modals" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
-      
+
  }
     if(!isMe && isHtmlFrag(t)){
       return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
@@ -1256,7 +1261,7 @@ updateContact(currentId,{
         persona:clean($('rolePersonaInput').value),
         avatar:roleAvatar,
         settings:normSettings({
-          mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen, 
+          mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen,
           offlineColors: getContactById(currentId)?.settings?.offlineColors,
           // 专属设定存这里啦！
           meName: clean($('meNameInput').value)||'我',
@@ -1271,7 +1276,7 @@ $('showTsSwitch').checked? p.showTs=true: p.showTs=false;
 p.bubbleCss=String($('bubbleCssInput').value||'');
 p.fontSize=Number($('fontSizeRange').value||16);
 p.avatarHQ=!!$('avatarHQSwitch').checked;
-      
+
 p.avatarCrop=!!$('avatarCropSwitch').checked;
 setPref(p); applyBubbleCss(); applyFontSize();
       const now=getContactById(currentId); $('chatTitle').textContent=now?.name||'聊天';
