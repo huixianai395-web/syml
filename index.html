@@ -855,10 +855,12 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
     const t=String(m.text||'');
     if(!isMe && isHtmlDoc(t)){
       const src=toHtmlDataUrl(t);
-      return `${quote}<div class="bubble ${cls} ${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
+      return `${quote}<div class="bubble ${cls} ${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts allow-modals" referrerpolicy="no-referrer" src="${src}"></iframe>
     }
-    if(!isMe && isHtmlFrag(t)){
-      return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
+  if(!isMe && isHtmlFrag(t)){
+  const wrapped=`<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:8px;">${t}</body></html>`;
+  const src=toHtmlDataUrl(wrapped);
+  return `${quote}<div class="bubble ${cls} ${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts allow-modals" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
     }
     return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
   }
@@ -1103,7 +1105,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       `1. 拒绝刻板标签！人设是立体的、多面的、有成长性的。把你扮演的角色当成一个活生生的人来对待！`,
       `2. 说话的条数、长短、语气，必须严格根据【当前具体的语境】、【角色的情绪起伏】和【心理活动】动态自然地变化，绝不受任何固定模式限制。`,
       `3. 绝对不要在回复中暴露你是AI或程序。`,
-      `4. 若需要输出HTML内容，必须输出完整的<!doctype html>开头的独立HTML文件，严禁只输出HTML片段或代码块。`,
+      `4. 若需要输出HTML内容，必须是完整的<!doctype html>开头的独立文件，你的回复会被直接渲染显示，输出片段或代码块会显示空白。`,
       `5. 具备真实的时间观念：根据“上一次消息时间与当前系统时间”的间隔，自然体现时间流逝（如久未回复后的轻微反应等），但不要刻意或模板化。`,
       `6. 正常使用中文标点符号，不得用空格替代标点或分隔句子。`,
       `【输出格式铁律】：`,
