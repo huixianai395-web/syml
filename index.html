@@ -225,6 +225,54 @@
       line-height:1.6;
       color:#1f2430;
     }
+/* 左侧工具栏布局 */
+.left-tools { display: flex; gap: 8px; align-items: flex-end; margin-right: 8px; }
+
+/* 圆形按钮样式 */
+.btn-circle {
+  width: 38px; height: 38px; border-radius: 50%;
+  border: 1px solid #dce5f2; background: #fff;
+  color: #5a6a8f; font-size: 20px; line-height: 1;
+  display: grid; place-items: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,.05);
+  cursor: pointer; transition: all .2s;
+}
+.btn-circle:active { transform: scale(0.92); background: #f0f4ff; }
+
+/* 弹出的二次元菜单 */
+.action-menu {
+  position: absolute; bottom: 70px; left: 10px;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid #fff;
+  border-radius: 20px;
+  padding: 15px;
+  display: flex; gap: 20px;
+  box-shadow: 0 10px 40px rgba(47,102,216,0.15), 0 0 0 1px rgba(255,255,255,0.5);
+  animation: popUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 100;
+}
+.action-menu.hidden { display: none; }
+
+@keyframes popUp { from{opacity:0; transform:translateY(10px) scale(0.9);} to{opacity:1; transform:translateY(0) scale(1);} }
+
+.action-item { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
+.action-icon {
+  width: 48px; height: 48px; border-radius: 16px;
+  display: grid; place-items: center; font-size: 22px;
+  color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,.1);
+  transition: transform .2s;
+}
+.action-item:active .action-icon { transform: scale(0.9); }
+.action-label { font-size: 11px; color: #666; font-weight: 500; }
+
+/* 聊天气泡里的图片样式 */
+.bubble-img {
+  max-width: 100%; border-radius: 8px;
+  margin: 4px 0; display: block;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  cursor: pointer;
+}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 </head>
@@ -271,11 +319,41 @@
   <div class="off-palette-row"><span>引用/特殊</span><input type="color" data-key="quote"></div>
   <div class="off-palette-row"><span>强调</span><input type="color" data-key="em"></div>
 </div>
-    <div class="chatInputBar" id="chatInputWrap">
-      <div id="quoteBar" class="quote-bar hidden"><div id="quoteText" class="quote-text"></div><button id="clearQuoteBtn" class="quote-close">×</button></div>
-      <textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
-      <div class="send-actions"><button class="btn store" id="storeBtn" aria-label="储存"></button><button class="btn p" id="sendBtn">发送</button></div>
+ <div class="chatInputBar" id="chatInputWrap">
+  <!-- 引用栏保持不变 -->
+  <div id="quoteBar" class="quote-bar hidden"><div id="quoteText" class="quote-text"></div><button id="clearQuoteBtn" class="quote-close">×</button></div>
+  
+  <!-- 新增：左侧工具栏（加号在这里！） -->
+  <div class="left-tools">
+    <button class="btn-circle" id="moreToolsBtn" aria-label="更多">＋</button>
+    <!-- 这里给未来的表情包留个空位，暂时隐藏 -->
+    <button class="btn-circle hidden" id="emojiBtn">☺</button>
+  </div>
+
+  <!-- 输入框 -->
+  <textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
+  
+  <!-- 右侧发送按钮组 -->
+  <div class="send-actions">
+    <button class="btn store" id="storeBtn" aria-label="储存"></button>
+    <button class="btn p" id="sendBtn">发送</button>
+  </div>
+
+  <!-- 隐藏的图片上传菜单（二次元风格） -->
+  <div id="actionMenu" class="action-menu hidden">
+    <div class="action-item" id="sendImgAction">
+      <div class="action-icon" style="background:#ff9a9e;">🖼️</div>
+      <div class="action-label">发照片</div>
     </div>
+    <div class="action-item" style="opacity:0.5;">
+      <div class="action-icon" style="background:#a18cd1;">📷</div>
+      <div class="action-label">拍照</div>
+    </div>
+  </div>
+  
+  <!-- 真正干活的隐藏文件输入框 -->
+  <input type="file" id="chatImgInput" accept="image/*" class="hidden" />
+</div>
   </section>
 
   <section id="chatSetting" class="screen">
@@ -857,7 +935,15 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
     const ts=pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:'';
     const quote=renderQuote(m.quote);
     const hidden=m.hiddenForAi?'ai-hidden':'';
-    const t=String(m.text||'');
+    let t=String(m.text||'');
+
+    // === 📸 蓝色新增：图片渲染逻辑 ===
+    if(t.startsWith('[img]') && t.endsWith('[/img]')){
+      const src = t.slice(5, -6); // 去掉标签取中间的 base64
+      return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-img" src="${src}" onclick="showPreview('previewModalImg','${src}');$('modalPreview').classList.add('active')"></div>${ts}`;
+    }
+    // ==============================
+
     if(!isMe && isHtmlDoc(t)){
       const src=toHtmlDataUrl(t);
       return `${quote}<div class="bubble ${cls} ${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
@@ -1639,6 +1725,75 @@ $('importCardFile').addEventListener('change', async (e) => {
     e.target.value = ''; // 清空选择，方便下次导入
   }
 });
+    // === 📸 图片发送与压缩魔法 ===
+  const moreBtn = $('moreToolsBtn');
+  const actionMenu = $('actionMenu');
+  const chatImgInput = $('chatImgInput');
+  const sendImgAction = $('sendImgAction');
+
+  // 1. 点击加号，切换菜单显示
+  moreBtn.onclick = (e) => {
+    e.stopPropagation();
+    actionMenu.classList.toggle('hidden');
+  };
+
+  // 点击其他地方关闭菜单
+  document.addEventListener('click', (e) => {
+    if(!actionMenu.classList.contains('hidden') && !actionMenu.contains(e.target) && e.target !== moreBtn){
+      actionMenu.classList.add('hidden');
+    }
+  });
+
+  // 2. 点击“发照片”触发文件选择
+  sendImgAction.onclick = () => {
+    actionMenu.classList.add('hidden');
+    chatImgInput.click();
+  };
+
+  // 3. 图片处理核心（压缩 + 发送）
+  chatImgInput.onchange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 使用我们之前那个 compressImage 函数，但是参数稍微改一下让它更清晰
+    try {
+      // 借用现有的 compressImage，这里我强制给它设大一点的尺寸，保证聊天看图清晰
+      // 这里的逻辑稍微借用一下现有的，但我为了聊天图专门优化一下逻辑
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          // 聊天图片最大宽/高限制在 800px，既省空间又够清楚
+          const maxSide = 800;
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height;
+          if (w > h) {
+            if (w > maxSide) { h *= maxSide / w; w = maxSide; }
+          } else {
+            if (h > maxSide) { w *= maxSide / h; h = maxSide; }
+          }
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          
+          // 压缩成 JPEG，质量 0.7，体积非常小！
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          
+          // 直接发送！特殊的图片标记格式
+          pushUser(`[img]${dataUrl}[/img]`);
+          
+          // 自动回复（仅供测试）
+          // sendMsg(); 
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      alert('图片处理失败惹：' + err.message);
+    } finally {
+      e.target.value = '';
+    }
+  };
     // ================= 遇见贴心加的：单独【聊天背景】模块 =================
 function applyChatBg() {
   const bgData = localStorage.getItem('mp_fix_chat_bg');
@@ -1716,5 +1871,8 @@ $("customBgFile").addEventListener("change", async (e) => {
   });
 })();
 </script>
+<div id="modalPreview" class="modal" onclick="this.classList.remove('active')">
+  <img id="previewModalImg" style="max-width:95%;max-height:90dvh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+</div>
 </body>
 </html>
