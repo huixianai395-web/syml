@@ -1188,7 +1188,18 @@ function mergeImgParts(parts){
     const ct=(r.headers.get('content-type')||'').toLowerCase(); let data=null,raw='';
     if(ct.includes('application/json')) data=await r.json().catch(()=>null); else raw=await r.text().catch(()=>'​');
     if(!r.ok){const msg=data?.error?.message||data?.message||raw?.slice(0,220)||('HTTP '+r.status);throw new Error(clean(msg)||('HTTP '+r.status));}
-    const out=clean(data?.choices?.[0]?.message?.content||''); if(!out) throw new Error('接口返回为空内容'); return out;
+    
+    // 🚨 蓝色的“智能拆信”补丁！🚨
+    const content = data?.choices?.[0]?.message?.content;
+    
+    if (typeof content === 'object' && content !== null) {
+      // 如果AI返回的是一个“信封”（Object），我们就把它变成漂亮的、能看的JSON字符串！
+      return JSON.stringify(content, null, 2); 
+    }
+    
+    const out = clean(content || ''); // 否则，就正常处理
+    if (!out) throw new Error('接口返回为空内容'); 
+    return out;
   }
   async function fetchModels(){try{const c=saveApiForm();if(!c.base||!c.key) throw new Error('请先配置 Base URL 和 API Key');$('apiStatus').textContent='状态：拉取模型中...';const r=await fetch(buildUrl(c.base,'/v1/models'),{headers:{'Authorization':'Bearer '+c.key}});const data=await r.json().catch(()=>({}));if(!r.ok) throw new Error(data?.error?.message||('HTTP '+r.status));const list=(data.data||[]).map(x=>x.id).filter(Boolean);if(!list.length) throw new Error('未返回模型列表');$('apiModel').innerHTML=list.map(m=>`<option>${m}</option>`).join('');if(list.includes(c.model)) $('apiModel').value=c.model;$('apiStatus').textContent='状态：模型拉取成功（'+list.length+'）';}catch(e){$('apiStatus').textContent='状态：拉取失败 -> '+e.message;}}
   async function testApi(){try{$('apiStatus').textContent='状态：测试中...';const out=await callApi([{role:'user',content:'只回复ok'}]);$('apiStatus').textContent='状态：连接成功 -> '+(out||'ok');}catch(e){$('apiStatus').textContent='状态：失败 -> '+e.message;}}
