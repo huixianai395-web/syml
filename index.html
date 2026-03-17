@@ -1761,20 +1761,17 @@ $('importCardFile').addEventListener('change', async (e) => {
     chatImgInput.click();
   };
 
-  // 3. 图片处理核心（压缩 + 发送）
+  // 3. 图片处理核心（压缩 + 发送 + 刷新！）
   chatImgInput.onchange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // 使用我们之前那个 compressImage 函数，但是参数稍微改一下让它更清晰
     try {
-      // 借用现有的 compressImage，这里我强制给它设大一点的尺寸，保证聊天看图清晰
-      // 这里的逻辑稍微借用一下现有的，但我为了聊天图专门优化一下逻辑
       const reader = new FileReader();
       reader.onload = (ev) => {
         const img = new Image();
         img.onload = () => {
-          // 聊天图片最大宽/高限制在 800px，既省空间又够清楚
+          // 聊天图片最大宽/高限制在 800px
           const maxSide = 800;
           const canvas = document.createElement('canvas');
           let w = img.width, h = img.height;
@@ -1786,15 +1783,21 @@ $('importCardFile').addEventListener('change', async (e) => {
           canvas.width = w; canvas.height = h;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, w, h);
-          
-          // 压缩成 JPEG，质量 0.7，体积非常小！
+          
+          // 压缩成 JPEG
           const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-          
-          // 直接发送！特殊的图片标记格式
+          
+          // 1. 把图片存进数据流
           pushUser(`[img]${dataUrl}[/img]`);
-          
-          // 自动回复（仅供测试）
-          // sendMsg(); 
+          
+          // 2. 【关键！】立刻刷新聊天界面，让它显示出来！
+          renderChat(); 
+
+          // 3. 顺便让列表页的预览也更新一下（可选，更完美）
+          updateContactPreview(currentId);
+          
+          // 自动回复（仅供测试，想测AI反应就把下面这行注释解开）
+          // sendMsg(); 
         };
         img.src = ev.target.result;
       };
