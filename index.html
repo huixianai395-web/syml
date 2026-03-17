@@ -1067,7 +1067,18 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     arr.push(toMsg({role:'user',text,time:Date.now(),stored:true,quote:composeQuote?{...composeQuote}:null}));
     setChatArr(currentId,arr);composeQuote=null;updateQuoteBar();updateContactPreview(currentId);
   }
-  function storeCurrentInput(){if(!currentId) return;const t=clean($('chatInput').value);if(!t) return;pushUser(t);$('chatInput').value='';resetInputH();renderChat();}
+  function storeCurrentInput(){if(!currentId) return;const t=clean($('chatInput').value);if(!t) return;
+                      if (t.includes('[img]') && t.includes('[/img]')) {
+  const fixed = t.replace(/\[img\]([\s\S]*?)\[\/img\]/i, (m, inner) => {
+    return `[img]${inner.replace(/\s+/g,'')}[/img]`;
+  });
+  pushUser(fixed);
+  $('chatInput').value='';
+  resetInputH();
+  renderChat();
+  return;
+                      }       
+                               pushUser(t);$('chatInput').value='';resetInputH();renderChat();}
   $('storeBtn').onclick=storeCurrentInput;
 
   function parseJsonMessages(text){
@@ -1130,6 +1141,34 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
 
     return finalParts.length ? finalParts : ['...'];
  }
+function mergeImgParts(parts){
+  let out = [];
+  let buf = '';
+  let inImg = false;
+
+  for (const p of parts) {
+    if (!inImg && /\[img\]/i.test(p) && !/\[\/img\]/i.test(p)) {
+      inImg = true;
+      buf = p;
+      continue;
+    }
+
+    if (inImg) {
+      buf += p;
+      if (/\[\/img\]/i.test(p)) {
+        out.push(buf);
+        buf = '';
+        inImg = false;
+      }
+      continue;
+    }
+
+    out.push(p);
+  }
+
+  if (buf) out.push(buf);
+  return out;
+}
   function enforceCountRange(parts,min,max){let arr=[...(parts||[])].filter(Boolean);max=Math.max(1,max);if(arr.length>max){const keep=arr.slice(0,max-1),tail=arr.slice(max-1).join(' ');return [...keep,tail];}return arr;}
 
   async function emitAiSequential(parts,targetId,mode){
@@ -1369,7 +1408,7 @@ const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),glo
 
       let parts=[];
       if(st.mode==='offline') parts=[clean(out)||'...'];
-      else{parts=splitAiBubbles(out); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);} 
+      else{parts=mergeImgParts(splitAiBubbles(out)); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);} 
       await emitAiSequential(parts.length?parts:['...'],chatId,st.mode);
 
       updateContactPreview(chatId); if(currentId===chatId) renderChat();
