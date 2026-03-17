@@ -918,7 +918,10 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     try{const j=JSON.parse(t);if(Array.isArray(j?.messages)) return j.messages.map(x=>clean(x)).filter(Boolean);}catch{}
     const m=t.match(/\{[\s\S]*\}/);
     if(m){try{const j=JSON.parse(m[0]);if(Array.isArray(j?.messages)) return j.messages.map(x=>clean(x)).filter(Boolean);}catch{}}
-    return null;
+   const htmlMatch=t.match(/<!doctype html[\s\S]*?<\/html>/i)||t.match(/<html[\s\S]*?<\/html>/i);
+if(htmlMatch) return [htmlMatch[0]];
+return null;
+    
   }
   function splitAiBubbles(raw){const txt=clean(raw);if(!txt) return ['...'];const byJson=parseJsonMessages(txt);if(byJson&&byJson.length) return byJson;if(isHtmlDoc(txt)||isHtmlFrag(txt)||/^```/.test(txt)) return [txt];return txt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim().split(/\n{1,}/).filter(Boolean);}
   function enforceCountRange(parts,min,max){let arr=[...(parts||[])].filter(Boolean);max=Math.max(1,max);if(arr.length>max){const keep=arr.slice(0,max-1),tail=arr.slice(max-1).join(' ');return [...keep,tail];}return arr;}
