@@ -225,6 +225,50 @@
       line-height:1.6;
       color:#1f2430;
     }
+    /* 功能卡片 */
+.func-panel{display:none;width:100%;padding:8px 0 4px;display:none;flex-wrap:wrap;gap:10px 0;background:#f6f8ff;}
+.func-panel.show{display:flex;}
+.func-icon{width:25%;text-align:center;cursor:pointer;}
+.func-icon .ibox2{width:52px;height:52px;margin:0 auto 4px;border-radius:14px;background:#fff;border:1px solid #e4e8f5;display:grid;place-items:center;font-size:24px;}
+.func-icon .lab2{font-size:11px;color:#555;}
+.func-icon:active .ibox2{transform:scale(.88);}
+.left-actions{display:flex;gap:6px;align-items:flex-end;}
+.card-transfer{background:linear-gradient(145deg,#f5f2ee,#ede9e3);border:1px solid rgba(180,160,140,.18);border-radius:14px;padding:11px 13px;width:176px;box-shadow:0 2px 8px rgba(120,90,60,.08);color:#5c4a3a;position:relative;}
+.card-transfer .ct-header{display:flex;align-items:center;gap:6px;font-size:11px;color:#a89070;margin-bottom:8px;}
+.card-transfer .ct-header span{font-size:14px;}
+.card-transfer .ct-amount{font-size:22px;font-weight:700;color:#4a3828;letter-spacing:-0.5px;line-height:1;}
+.card-transfer .ct-note{font-size:11px;color:#a08878;margin-top:4px;}
+.card-transfer .ct-divider{border:none;border-top:1px solid rgba(160,130,110,.14);margin:9px 0 8px;}
+.card-transfer .ct-footer{display:flex;align-items:center;justify-content:space-between;}
+.card-transfer .ct-label{font-size:10px;color:#b8a898;}
+.card-transfer .ct-btn{background:rgba(160,130,100,.12);border:1px solid rgba(160,130,100,.22);color:#7a5a42;border-radius:12px;padding:4px 12px;font-size:11px;cursor:pointer;}
+.card-transfer .ct-received{font-size:11px;color:#a08878;margin-top:4px;}
+.card-transfer.received,.card-redpacket.received{filter:saturate(.3) brightness(.96);pointer-events:none;}
+.card-transfer.rejected,.card-redpacket.rejected{filter:saturate(.15) brightness(.88);opacity:.6;pointer-events:none;}
+
+.card-redpacket{background:linear-gradient(145deg,#f7eeea,#f0e4de);border:1px solid rgba(200,130,110,.16);border-radius:14px;padding:11px 13px;width:176px;box-shadow:0 2px 8px rgba(160,80,60,.07);color:#7a3828;position:relative;}
+.card-redpacket .rp-main{display:flex;gap:10px;align-items:center;}
+.card-redpacket .rp-icon{font-size:26px;flex-shrink:0;}
+.card-redpacket .rp-title{font-size:13px;font-weight:600;color:#6a3020;line-height:1.3;}
+.card-redpacket .rp-sub{font-size:10px;color:#b08878;margin-top:2px;}
+.card-redpacket .rp-divider{border:none;border-top:1px solid rgba(180,110,90,.12);margin:8px 0 7px;}
+.card-redpacket .rp-footer{display:flex;align-items:center;justify-content:space-between;}
+.card-redpacket .rp-label{font-size:10px;color:#c0a898;}
+.card-redpacket .rp-btn{background:rgba(190,100,80,.12);border:1px solid rgba(190,100,80,.22);color:#8a4030;border-radius:12px;padding:4px 12px;font-size:11px;cursor:pointer;}
+.card-redpacket .rp-opened{font-size:11px;color:#b09080;margin-top:4px;}
+
+.card-location{background:linear-gradient(145deg,#eef4f0,#e6ede8);border:1px solid rgba(100,160,130,.16);border-radius:14px;overflow:hidden;width:176px;box-shadow:0 2px 8px rgba(60,110,80,.07);}
+.card-location .loc-map{height:64px;background:linear-gradient(135deg,#d8ece2,#c8e0d2);display:grid;place-items:center;font-size:24px;}
+.card-location .loc-info{padding:8px 11px;}
+.card-location .loc-name{font-size:12px;font-weight:600;color:#3a6a52;}
+.card-location .loc-addr{font-size:10px;color:#88a898;margin-top:2px;}
+
+.card-gift{background:linear-gradient(145deg,#eef2f8,#e6ecf4);border:1px solid rgba(100,140,200,.14);border-radius:14px;padding:11px 13px;width:148px;box-shadow:0 2px 8px rgba(60,80,140,.06);text-align:center;position:relative;}
+.card-gift .gift-icon{font-size:26px;margin-bottom:5px;}
+.card-gift .gift-name{font-size:13px;font-weight:600;color:#384878;}
+.card-gift .gift-note{font-size:11px;color:#8090b8;margin-top:3px;}
+.card-gift .gift-tag{display:inline-block;margin-top:7px;background:rgba(80,120,200,.08);border:1px solid rgba(80,120,200,.16);color:#7080b0;border-radius:999px;padding:2px 10px;font-size:10px;}
+ .bubble.bubble-card{background:transparent!important;border:none!important;padding:2px 0!important;box-shadow:none!important;}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 </head>
@@ -273,7 +317,14 @@
 </div>
     <div class="chatInputBar" id="chatInputWrap">
       <div id="quoteBar" class="quote-bar hidden"><div id="quoteText" class="quote-text"></div><button id="clearQuoteBtn" class="quote-close">×</button></div>
-      <textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
+      <div id="funcPanel" class="func-panel">
+  <div class="func-icon" data-func="transfer"><div class="ibox2">💸</div><div class="lab2">转账</div></div>
+  <div class="func-icon" data-func="redpacket"><div class="ibox2">🧧</div><div class="lab2">发红包</div></div>
+  <div class="func-icon" data-func="location"><div class="ibox2">📍</div><div class="lab2">定位</div></div>
+  <div class="func-icon" data-func="gift"><div class="ibox2">🎁</div><div class="lab2">送礼物</div></div>
+<div class="func-icon" data-func="imgupload"><div class="ibox2">🖼️</div><div class="lab2">图片</div></div>
+<input id="imgUploadInput" type="file" accept="image/*" class="hidden"/></div>
+      <div class="left-actions"><button class="btn" id="emojiBtn" style="width:40px;height:40px;padding:0;border-radius:999px;font-size:18px;">😊</button><button class="btn" id="funcToggleBtn" style="width:40px;height:40px;padding:0;border-radius:999px;font-size:20px;">+</button></div><textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
       <div class="send-actions"><button class="btn store" id="storeBtn" aria-label="储存"></button><button class="btn p" id="sendBtn">发送</button></div>
     </div>
   </section>
@@ -581,6 +632,10 @@
     em:(s.offlineColors&&s.offlineColors.em)||DEFAULT_CHAT_SETTINGS.offlineColors.em,
     dialogue:(s.offlineColors&&s.offlineColors.dialogue)||DEFAULT_CHAT_SETTINGS.offlineColors.dialogue
   };
+   o.meName = s?.meName;
+    o.meAvatar = s?.meAvatar;
+    o.mePersona = s?.mePersona;
+    o.meNote = s?.meNote; 
     return o;
   }
 
@@ -730,9 +785,9 @@ function refreshFontSizeUI(){
     createAvatar='';$('newAvatarPreview').classList.add('hidden');$('newAvatarPreview').src='';
   }
 
-function compressImage(file) {
+function compressImage(file, isWallpaper = false) {
   const p=getPref();
-  const maxSide=p.avatarHQ?640:320;
+  const maxSide = isWallpaper ? 1920 : (p.avatarHQ ? 640 : 320);
   const quality=p.avatarHQ?0.92:0.8;
 
   return new Promise((resolve, reject) => {
@@ -745,7 +800,7 @@ function compressImage(file) {
         const c=document.createElement('canvas');
         const ctx=c.getContext('2d');
 
-        if (p.avatarCrop) {
+      if (p.avatarCrop && !isWallpaper) {
           c.width=maxSide; c.height=maxSide;
           ctx.fillStyle='#fff'; ctx.fillRect(0,0,maxSide,maxSide);
           const side=Math.min(img.width,img.height);
@@ -826,22 +881,27 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
 
 
   function renderOfflineAssistant(text,ts,pref,msg){
-  const raw=String(text||''),m=raw.match(/【状态栏】\s*([\s\S]*?)\s*【正文】\s*([\s\S]*)/);
-  if(!m) return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}<div class="bubble ai ${msg.hiddenForAi?'ai-hidden':''}">${esc(raw)}</div>${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}</div>`;
-  const state=clean(m[1]),body=clean(m[2]);
+  const raw=String(text||'');
+  // 宽容匹配：允许空格
+  const m=raw.match(/【\s*状态栏\s*】\s*([\s\S]*?)\s*【\s*正文\s*】\s*([\s\S]*)/);
 
+  // 如果没匹配到 → 回退为普通气泡（避免线上旧消息被误当成线下）
+  if(!m){
+    return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}<div class="bubble ai ${msg.hiddenForAi?'ai-hidden':''}">${esc(raw)}</div>${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}</div>`;
+  }
+
+  const state=clean(m[1]),body=clean(m[2]);
   const cset=(getContactById(currentId)?.settings||{}).offlineColors||DEFAULT_CHAT_SETTINGS.offlineColors;
   const styleStr=`--off-state:${cset.state};--off-body:${cset.body};--off-quote:${cset.quote};--off-em:${cset.em};--off-dialogue:${cset.dialogue};`;
 
   return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}
     <div class="offline-card ${msg.hiddenForAi?'ai-hidden':''}" style="${styleStr}">
-         
         <div class="offline-state">${esc(state||'状态未记录')}</div>
         <div class="offline-body">${formatOfflineText(body||'')}</div>
       </div>
       ${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}
     </div>`;
-  }
+}
   // 修改后的渲染：助手支持HTML
   function renderBubbleContent(m,isMe,pref){
     const cls=isMe?'me':'ai';
@@ -849,18 +909,27 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
     const quote=renderQuote(m.quote);
     const hidden=m.hiddenForAi?'ai-hidden':'';
     const t=String(m.text||'');
-    if(!isMe && isHtmlDoc(t)){
+    if(isHtmlDoc(t)){
       const src=toHtmlDataUrl(t);
       return `${quote}<div class="bubble ${cls} ${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
     }
-    if(!isMe && isHtmlFrag(t)){
-      return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
-    }
-    return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
+    if(isHtmlFrag(t)){
+  return `${quote}<div class="bubble ${cls} ${hidden} bubble-card">${t}</div>${ts}`;
+}
+    if(t.startsWith('__IMG__')){
+  const src=t.slice(7);
+  return `${quote}<div class="bubble ${cls} ${hidden} bubble-card"><img src="${src}" style="max-width:160px;max-height:160px;border-radius:8px;display:block;cursor:pointer;" onclick="window._viewImg('${src}')"></div>${ts}`;
+}return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
   }
 
   function renderChat(){
-    const c=getContactById(currentId),st=normSettings(c?.settings),me=getMe(),pref=getPref();
+    const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),pref=getPref();
+    const me = {
+      name: st.meName || globalMe.name || '我',
+      avatar: st.meAvatar || globalMe.avatar || '',
+      persona: st.mePersona || globalMe.persona || '',
+      note: st.meNote || globalMe.note || ''
+    };
     const roleAvatar=c?.avatar||'https://via.placeholder.com/64x64?text=TA',meAvatar=me.avatar||'https://via.placeholder.com/64x64?text=我';
     const arr=getChatArr(currentId);
 
@@ -882,6 +951,7 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     $('chatMsgs').scrollTop=$('chatMsgs').scrollHeight;
     $('multiCount').textContent=`已选 ${selectedIds.size} 项`;
   }
+
 
   function clearCurrentChat(){if(!currentId) return;if(!confirm('清空当前聊天？')) return;setChatArr(currentId,[]);updateContact(currentId,{preview:'',time:''});selectMode=false;selectedIds.clear();renderChat();renderContacts($('searchInput').value||'');}
   function deleteCurrentContact(){if(!currentId) return;if(!confirm('删除当前好友及聊天记录？')) return;setContacts(getContacts().filter(c=>c.id!==currentId));const map=getChats();delete map[currentId];setChats(map);currentId=null;renderContacts($('searchInput').value||'');show('wechat');}
@@ -905,12 +975,59 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
 
   function parseJsonMessages(text){
     const t=clean(text); if(!t) return null;
-    try{const j=JSON.parse(t);if(Array.isArray(j?.messages)) return j.messages.map(x=>clean(x)).filter(Boolean);}catch{}
+    try{const j=JSON.parse(t);if(Array.isArray(j?.messages)) return j.messages.flatMap(x=>{
+      if(typeof x==='string') return [clean(x)];
+      if(x&&typeof x==='object'&&Array.isArray(x.messages)) return x.messages.map(m=>typeof m==='string'?clean(m):String(m||''));
+      return [x&&typeof x==='object'?(x.html||x.content||x.text||x.message||''):String(x||'')];
+    }).filter(Boolean);}catch{}
     const m=t.match(/\{[\s\S]*\}/);
-    if(m){try{const j=JSON.parse(m[0]);if(Array.isArray(j?.messages)) return j.messages.map(x=>clean(x)).filter(Boolean);}catch{}}
+    if(m){try{const j=JSON.parse(m[0]);if(Array.isArray(j?.messages)) return j.messages.flatMap(x=>{
+      if(typeof x==='string') return [clean(x)];
+      if(x&&typeof x==='object'&&Array.isArray(x.messages)) return x.messages.map(m=>typeof m==='string'?clean(m):String(m||''));
+      return [x&&typeof x==='object'?(x.html||x.content||x.text||x.message||''):String(x||'')];
+    }).filter(Boolean);}catch{}}
     return null;
   }
-  function splitAiBubbles(raw){const txt=clean(raw);if(!txt) return ['...'];const byJson=parseJsonMessages(txt);if(byJson&&byJson.length) return byJson;return txt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim().split(/\n{1,}/).filter(Boolean);} 
+  function splitAiBubbles(raw) {
+  const txt = clean(raw);
+  if (!txt) return ['...'];
+
+  // ✨ 蓝色宝宝的智能识别魔法 V2.0！✨
+  // 用更精确的正则表达式来判断是不是真的HTML，而不是表情包！
+  const isHtmlLike = /<[a-z][\s\S]*>/i.test(txt); 
+  
+  const isCodeLike =
+    isHtmlLike || // 使用我们新的、更聪明的判断！
+    (txt.includes('{') && txt.includes('}')) ||
+    txt.startsWith('```');
+
+  if (isCodeLike) {
+    return [txt];
+  }
+
+  // --- 下面的逻辑不变 ---
+  const byJson = parseJsonMessages(txt);
+  if (byJson && byJson.length) return byJson;
+
+  const s = txt.replace(/\r/g, '').replace(/[ \t]+\n/g, '\n').replace(/\n{2,}/g, '\n');
+  const parts = [];
+  let buf = '';
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    buf += ch;
+    if ('。！？!?…'.includes(ch) || ch === '\n') {
+      const t = buf.trim();
+      if (t) parts.push(t);
+      buf = '';
+    }
+  }
+  const last = buf.trim();
+  if (last) parts.push(last);
+
+  return parts.length ? parts : [txt];
+  }
+
+ 
   function enforceCountRange(parts,min,max){let arr=[...(parts||[])].filter(Boolean);max=Math.max(1,max);if(arr.length>max){const keep=arr.slice(0,max-1),tail=arr.slice(max-1).join(' ');return [...keep,tail];}return arr;}
 
   async function emitAiSequential(parts,targetId,mode){
@@ -1095,8 +1212,10 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       `3. 绝对不要在回复中暴露你是AI或程序。`,
       `4. 具备真实的时间观念：根据“上一次消息时间与当前系统时间”的间隔，自然体现时间流逝（如久未回复后的轻微反应等），但不要刻意或模板化。`,
       `5. 正常使用中文标点符号，不得用空格替代标点或分隔句子。`,
-      `【输出格式铁律】：`,
-      `只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}`,
+      `6.【气泡规则】：尽量做到一句话一个气泡；如果包含多句，请拆成多个气泡。除非特殊语境，不要把多句塞进一个气泡。`,
+`7.【渲染提示】：收到对方红包时选择——【领取】输出：<div class="card-redpacket received"><div style="width:100%"><div style="display:flex;gap:12px;align-items:center;"><div class="rp-icon">🧧</div><div class="rp-info"><div class="rp-title">已领取</div></div></div></div></div>；【拒绝】输出：<div class="card-redpacket rejected"><div style="width:100%"><div style="display:flex;gap:12px;align-items:center;"><div class="rp-icon">🧧</div><div class="rp-info"><div class="rp-title">已退回</div></div></div></div></div>。收到转账时选择——【收款】输出：<div class="card-transfer received"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">✓ 已收款</div><div class="ct-note">微信安全转账</div></div>；【拒收】输出：<div class="card-transfer rejected"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">已拒收</div><div class="ct-note">微信安全转账</div></div>。AI主动发红包：<div class="card-redpacket"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">祝福语</div><div class="rp-sub">¥金额 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>。AI主动发转账：<div class="card-transfer"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">¥金额</div><div class="ct-note">备注</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><button class="ct-btn">确认收款</button></div></div>。发礼物：<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">礼物名</div><div class="gift-note">留言</div></div>。发定位：<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">地点名</div><div class="loc-addr">地址</div></div></div>。以上所有卡片必须是纯HTML字符串直接放在messages数组元素里，禁止输出JSON对象格式，禁止用花括号包裹卡片内容。收到红包/转账时，只输出对应的卡片HTML，前后不能有任何文字，不能有"啊""好的""谢谢"等语句出现在同一个messages元素里。文字回应要单独作为一条messages元素。`,
+`8.【输出格式铁律】：`,
+       `只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}`,
       rangeRule
     ].join('\n');
   }
@@ -1116,6 +1235,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       `请输出一条沉浸式线下角色扮演回复，字数范围 ${st.offlineMin}-${st.offlineMax}。`,
       `【排版与层次要求】：`,
       `正文绝对不能是一大段密密麻麻的文字！必须合理分段，动作、神态、心理描写与对话之间要有清晰的层次感，保证阅读舒适。`,
+      `【对白标记】：角色对白部分必须使用中文引号“”或双引号""包裹；描写与心理不要放入引号`,
       `【输出格式铁律】必须严格按以下模板输出，不要输出JSON：`,
       `【状态栏】`,
       `时间｜地点｜天气｜氛围｜关系进度`,
@@ -1126,7 +1246,13 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 
   async function sendMsg(){
     if(!currentId) return;
-    const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),me=getMe();
+const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),globalMe=getMe();
+    const me = {
+      name: st.meName !== undefined ? st.meName : globalMe.name,
+      avatar: st.meAvatar !== undefined ? st.meAvatar : globalMe.avatar,
+      persona: st.mePersona !== undefined ? st.mePersona : globalMe.persona,
+      note: st.meNote !== undefined ? st.meNote : globalMe.note
+    };
     const t=clean($('chatInput').value); if(t) pushUser(t);
     $('chatInput').value='';resetInputH(); if(currentId===chatId) renderChat();
 
@@ -1136,14 +1262,42 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 
     try{
       const system=st.mode==='offline'?buildOfflineSystem(c,me,st):buildOnlineSystem(c,me,st);
-      const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:x.text}))];
+      const messages=[{role:'system',content:system},...hist.map(x=>{
+  if(x.role==='user'&&x.text.startsWith('__IMG__')){
+    return {role:'user',content:[{type:'image_url',image_url:{url:x.text.slice(7)}}]};
+  }
+  return {role:x.role==='user'?'user':'assistant',content:x.text};
+})];
       const out=await callApi(messages);
 
       let parts=[];
       if(st.mode==='offline') parts=[clean(out)||'...'];
       else{parts=splitAiBubbles(out); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);} 
-      await emitAiSequential(parts.length?parts:['...'],chatId,st.mode);
-
+      (function syncCardFromAi(parts,chatId){
+  const txt=parts.join('');
+  const gotReceived=/card-(redpacket|transfer)\s+received/.test(txt);
+  const gotRejected=/card-(redpacket|transfer)\s+rejected/.test(txt);
+  if(!gotReceived&&!gotRejected) return;
+  const arr=getChatArr(chatId);
+  for(let i=arr.length-1;i>=0;i--){
+    const m=arr[i];
+    if(m.role!=='user') continue;
+    if(!/card-(redpacket|transfer)/.test(m.text||'')) continue;
+    if(/rp-opened|ct-received/.test(m.text||'')) continue;
+    if(gotReceived){
+      arr[i].text=arr[i].text
+        .replace(/<button[^>]*class="rp-btn"[^>]*>点击领取<\/button>/,'<div class="rp-opened">已领取</div>')
+        .replace(/<button[^>]*class="ct-btn"[^>]*>确认收款<\/button>/,'<div class="ct-received">✓ 已收款</div>');
+    }else{
+      arr[i].text=arr[i].text
+        .replace(/<button[^>]*class="rp-btn"[^>]*>点击领取<\/button>/,'<div class="rp-opened">已退回</div>')
+        .replace(/<button[^>]*class="ct-btn"[^>]*>确认收款<\/button>/,'<div class="ct-received">已拒收</div>');
+    }
+    setChatArr(chatId,arr);
+    break;
+  }
+})(parts,chatId);
+        await emitAiSequential(parts.length?parts:['...'],chatId,st.mode);
       updateContactPreview(chatId); if(currentId===chatId) renderChat();
     }catch(e){
       const arr2=getChatArr(chatId);arr2.push(toMsg({role:'assistant',text:'请求失败：'+clean(e.message),time:Date.now()}));setChatArr(chatId,arr2);
@@ -1168,8 +1322,14 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 
   function openChatSettingPage(){
   if(!currentId) return;
-  const c=getContactById(currentId),st=normSettings(c?.settings),me=getMe(),p=getPref();
-
+const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),p=getPref();
+  // 👇优先读专属，没有再读全局
+  const me = {
+    name: st.meName !== undefined ? st.meName : globalMe.name,
+    avatar: st.meAvatar !== undefined ? st.meAvatar : globalMe.avatar,
+    persona: st.mePersona !== undefined ? st.mePersona : globalMe.persona,
+    note: st.meNote !== undefined ? st.meNote : globalMe.note
+  };
   $('avatarCropSwitch').checked=!!p.avatarCrop;
 
   $('meNameInput').value=me.name||'';
@@ -1226,14 +1386,20 @@ $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';
 
       const meAvatar=clean($('meAvatarInput').value)||'';
       const roleAvatar=clean($('roleAvatarInput').value)||'';
-
-      setMe({...me,name:clean($('meNameInput').value)||'我',note:clean($('meNoteInput').value),persona:clean($('mePersonaInput').value),avatar:meAvatar});
-      updateContact(currentId,{
+updateContact(currentId,{
         name:clean($('roleNameInput').value)||'聊天对象',
         note:clean($('roleNoteInput').value),
         persona:clean($('rolePersonaInput').value),
         avatar:roleAvatar,
-        settings:normSettings({mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen, offlineColors: getContactById(currentId)?.settings?.offlineColors})
+        settings:normSettings({
+          mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen, 
+          offlineColors: getContactById(currentId)?.settings?.offlineColors,
+          // 专属设定存这里啦！
+          meName: clean($('meNameInput').value)||'我',
+          meNote: clean($('meNoteInput').value),
+          mePersona: clean($('mePersonaInput').value),
+          meAvatar: meAvatar
+        })
       });
 
       const p=getPref();
@@ -1306,7 +1472,74 @@ setPref(p); applyBubbleCss(); applyFontSize();
     box.addEventListener('touchmove',e=>{if(!lpTimer) return;const t=e.touches[0];if(Math.abs(t.clientX-lpStartX)>8||Math.abs(t.clientY-lpStartY)>8){clearTimeout(lpTimer);lpTimer=null;}},{passive:true});
     ['touchend','touchcancel'].forEach(ev=>box.addEventListener(ev,()=>{clearTimeout(lpTimer);lpTimer=null;},{passive:true}));
     box.addEventListener('click',e=>{const item=e.target.closest('.msg-item');if(!item) return;if(selectMode){e.preventDefault();toggleSelect(item.dataset.mid);}});
-    
+
+box.addEventListener('click',e=>{
+  const rpBtn=e.target.closest('.rp-btn');
+  if(rpBtn&&currentId){
+    const rpCard=rpBtn.closest('.card-redpacket');
+    if(!rpCard||rpCard.classList.contains('received')||rpCard.classList.contains('rejected')) return;
+    e.stopPropagation();
+    const msgItem=rpBtn.closest('.msg-item');
+    if(!msgItem) return;
+    const mid=msgItem.dataset.mid;
+    const overlay=document.createElement('div');
+    overlay.style.cssText='position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.3);display:grid;place-items:center;';
+    overlay.innerHTML=`<div style="background:#fff;border-radius:14px;padding:16px;min-width:220px;text-align:center;"><div style="font-size:14px;color:#333;margin-bottom:14px;">领取这个红包？</div><div style="display:flex;gap:10px;justify-content:center;"><button id="_rpAccept" style="flex:1;padding:10px;border:none;border-radius:10px;background:#e8f0ff;color:#2f66d8;font-size:14px;">领取</button><button id="_rpReject" style="flex:1;padding:10px;border:none;border-radius:10px;background:#fff0ee;color:#c04030;font-size:14px;">退回</button></div></div>`;
+    document.body.appendChild(overlay);
+    function doAction(isReceive){
+      overlay.remove();
+      const arr=getChatArr(currentId);
+      const idx=arr.findIndex(x=>x.id===mid);
+      if(idx<0) return;
+      if(isReceive){
+        arr[idx].text=arr[idx].text.replace(/class="card-redpacket"/,'class="card-redpacket received"').replace(/<button[^>]*class="rp-btn"[^>]*>[\s\S]*?<\/button>/,'<div class="rp-opened">已领取</div>');
+      }else{
+        arr[idx].text=arr[idx].text.replace(/class="card-redpacket"/,'class="card-redpacket rejected"').replace(/<button[^>]*class="rp-btn"[^>]*>[\s\S]*?<\/button>/,'<div class="rp-opened">已退回</div>');
+      }
+      const receiptHtml=isReceive
+        ?`<div class="card-redpacket received"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">已领取</div><div class="rp-sub">微信红包</div></div></div></div>`
+        :`<div class="card-redpacket rejected"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">已退回</div><div class="rp-sub">微信红包</div></div></div></div>`;
+      arr.push(toMsg({role:'user',text:receiptHtml,time:Date.now()}));
+      setChatArr(currentId,arr);renderChat();
+    }
+    overlay.querySelector('#_rpAccept').onclick=()=>doAction(true);
+    overlay.querySelector('#_rpReject').onclick=()=>doAction(false);
+    overlay.onclick=e=>{if(e.target===overlay) overlay.remove();};
+    return;
+  }
+  const ctBtn=e.target.closest('.ct-btn');
+  if(ctBtn&&currentId){
+    const ctCard=ctBtn.closest('.card-transfer');
+    if(!ctCard||ctCard.classList.contains('received')||ctCard.classList.contains('rejected')) return;
+    e.stopPropagation();
+    const msgItem=ctBtn.closest('[data-mid]')||ctBtn.closest('.msg-item');
+    if(!msgItem) return;
+    const mid=msgItem.dataset.mid;
+    const overlay=document.createElement('div');
+    overlay.style.cssText='position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.3);display:grid;place-items:center;';
+    overlay.innerHTML=`<div style="background:#fff;border-radius:14px;padding:16px;min-width:220px;text-align:center;"><div style="font-size:14px;color:#333;margin-bottom:14px;">收下这笔转账？</div><div style="display:flex;gap:10px;justify-content:center;"><button id="_ctAccept" style="flex:1;padding:10px;border:none;border-radius:10px;background:#e8f0ff;color:#2f66d8;font-size:14px;">收款</button><button id="_ctReject" style="flex:1;padding:10px;border:none;border-radius:10px;background:#fff0ee;color:#c04030;font-size:14px;">退回</button></div></div>`;
+    document.body.appendChild(overlay);
+    function doCtAction(isReceive){
+      overlay.remove();
+      const arr=getChatArr(currentId);
+      const idx=arr.findIndex(x=>x.id===mid);
+      if(idx<0) return;
+      if(isReceive){
+        arr[idx].text=arr[idx].text.replace(/class="card-transfer"/,'class="card-transfer received"').replace(/<button[^>]*class="ct-btn"[^>]*>[\s\S]*?<\/button>/,'<div class="ct-received">✓ 已收款</div>');
+        const receiptHtml=`<div class="card-transfer received"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">✓ 已收款</div><div class="ct-note">微信安全转账</div></div>`;
+        arr.push(toMsg({role:'user',text:receiptHtml,time:Date.now()}));
+      }else{
+        arr[idx].text=arr[idx].text.replace(/class="card-transfer"/,'class="card-transfer rejected"').replace(/<button[^>]*class="ct-btn"[^>]*>[\s\S]*?<\/button>/,'<div class="ct-received">已拒收</div>');
+        const receiptHtml=`<div class="card-transfer rejected"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">已拒收</div><div class="ct-note">微信安全转账</div></div>`;
+        arr.push(toMsg({role:'user',text:receiptHtml,time:Date.now()}));
+      }
+      setChatArr(currentId,arr);renderChat();
+    }
+    overlay.querySelector('#_ctAccept').onclick=()=>doCtAction(true);
+    overlay.querySelector('#_ctReject').onclick=()=>doCtAction(false);
+    overlay.onclick=e=>{if(e.target===overlay) overlay.remove();};
+  }
+});
   }
 
   $('msgFloatLayer').addEventListener('click',e=>{if(e.target.id==='msgFloatLayer') closeFloatMenu();});
@@ -1493,7 +1726,13 @@ offPanel.addEventListener('change',applyOfflineColor); // 手机端更稳
 document.addEventListener('click',e=>{
   if(offPanel && !offPanel.contains(e.target)) offPanel.classList.remove('show');
 });
-
+window._viewImg=function(src){
+  const o=document.createElement('div');
+  o.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.85);display:grid;place-items:center;';
+  o.innerHTML=`<img src="${src}" style="max-width:95vw;max-height:90vh;border-radius:10px;">`;
+  o.onclick=()=>o.remove();
+  document.body.appendChild(o);
+};
   initAppStorage().then(()=>{
     applyBubbleCss();
     applyCustomFont();
@@ -1617,7 +1856,7 @@ if (chatBgInput) {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const bgData = await compressImage(file);
+      const bgData = await compressImage(file, true);
       localStorage.setItem('mp_fix_chat_bg', bgData);
       applyChatBg();
       alert("🌊 聊天页背景更换成功！去看看那通透的玻璃效果吧！");
@@ -1646,26 +1885,78 @@ if (savedBg) {
 }
 
 // 监听上传壁纸
-$('customBgFile').addEventListener('change', async (e) => {
+$("customBgFile").addEventListener("change", async (e) => {
   const file = e.target.files?.[0];
   if (!file) return;
   try {
-    // 借用咱们无敌的压缩函数，把壁纸压小点，省内存！
-    const bgData = await compressImage(file);
-    const wall = document.querySelector('.wall');
+    const bgData = await compressImage(file, true);
+    const wall = document.querySelector(".wall");
     if (wall) {
-      wall.style.backgroundImage = `url(${bgData})`;
-      // 保存到本地，下次打开还在！
-      localStorage.setItem('mp_fix_custom_bg', bgData);
-      alert("🎉 壁纸更换成功！(如果是我照片就更好了)");
+      wall.style.background = `url(${bgData}) center/cover no-repeat`;
+      localStorage.setItem("mp_fix_custom_bg", bgData);
+      alert("🎉 绝美高清大图上线！快看比例对不对！");
     }
   } catch (err) {
     alert("壁纸更换失败：" + err.message);
   } finally {
-    e.target.value = '';
+    e.target.value = "";
   }
-});  
-  });
+});
+  });$('imgUploadInput').onchange=async e=>{
+  const f=e.target.files?.[0]; if(!f||!currentId) return;
+  const compressed=await compressImage(f);
+  const arr=getChatArr(currentId);
+  arr.push(toMsg({role:'user',text:'__IMG__'+compressed,time:Date.now()}));
+  setChatArr(currentId,arr);updateContactPreview(currentId);renderChat();
+  e.target.value='';
+};
+  // 功能面板
+$('funcToggleBtn').onclick=()=>{
+  const p=$('funcPanel');
+  p.classList.toggle('show');
+};
+
+const FUNC_DIALOGS={
+  transfer:{title:'转账',fields:[{label:'金额（元）',key:'amount',placeholder:'0.00',type:'number'},{label:'备注',key:'note',placeholder:'转账备注（可选）'}]},
+  redpacket:{title:'发红包',fields:[{label:'金额（元）',key:'amount',placeholder:'0.00',type:'number'},{label:'祝福语',key:'note',placeholder:'恭喜发财，大吉大利'}]},
+  location:{title:'发送位置',fields:[{label:'地点名称',key:'name',placeholder:'例：星巴克'},{label:'详细地址',key:'addr',placeholder:'例：xx路xx号'}]},
+  gift:{title:'送礼物',fields:[{label:'礼物名称',key:'name',placeholder:'例：玫瑰花'},{label:'留言',key:'note',placeholder:'送你的～'}]}
+};
+function buildFuncCard(type,data){
+  const cardId='cid_'+Date.now()+'_'+Math.floor(Math.random()*99999);
+  if(type==='transfer') return `<div class="card-transfer" data-card-id="${cardId}"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">¥${esc(data.amount||'0.00')}</div><div class="ct-note">${esc(data.note||'')}</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><button class="ct-btn" >确认收款</button></div></div>`;
+  if(type==='redpacket') return `<div class="card-redpacket" data-card-id="${cardId}"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">${esc(data.note||'恭喜发财，大吉大利')}</div><div class="rp-sub">¥${esc(data.amount||'0.00')} 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>`;
+  if(type==='location') return `<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">${esc(data.name||'位置')}</div><div class="loc-addr">${esc(data.addr||'')}</div></div></div>`;
+  if(type==='gift') return `<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">${esc(data.name||'礼物')}</div><div class="gift-note">${esc(data.note||'')}</div><div class="gift-tag">♥ 来自对方</div></div>`;
+  return '';
+}
+
+document.querySelectorAll('.func-icon[data-func]').forEach(el=>{
+  el.onclick=()=>{
+    $('funcPanel').classList.remove('show');
+    const type=el.dataset.func,cfg=FUNC_DIALOGS[type]; 
+   if(type==='imgupload'){ $('imgUploadInput').click(); return; } 
+   
+if(!cfg) return;
+    let html=`<b>${cfg.title}</b><br><br>`;
+    cfg.fields.forEach(f=>{ html+=`<div style="margin-bottom:8px;"><div class="small">${f.label}</div><input id="fd_${f.key}" class="input" type="${f.type||'text'}" placeholder="${f.placeholder}" style="margin-top:4px;"></div>`; });
+    const modal=document.createElement('div');
+    modal.className='modal active';modal.style.zIndex='9999';
+    modal.innerHTML=`<div class="modal-card" style="max-width:320px;">${html}<div class="row" style="justify-content:flex-end;margin-top:10px;"><button class="btn" id="fdCancelBtn">取消</button><button class="btn p" id="fdSendBtn">发送</button></div></div>`;
+    $('app').appendChild(modal);
+    modal.querySelector('#fdCancelBtn').onclick=()=>modal.remove();
+    modal.querySelector('#fdSendBtn').onclick=()=>{
+      const data={};
+      cfg.fields.forEach(f=>{ data[f.key]=clean(modal.querySelector('#fd_'+f.key)?.value||''); });
+      const cardHtml=buildFuncCard(type,data);
+      if(!cardHtml||!currentId){modal.remove();return;}
+      const arr=getChatArr(currentId);
+      arr.push(toMsg({role:'user',text:cardHtml,time:Date.now()}));
+      setChatArr(currentId,arr);updateContactPreview(currentId);renderChat();
+      modal.remove();$('funcPanel').classList.remove('show');
+    };
+  };
+});
 })();
 </script>
 </body>
