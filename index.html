@@ -985,10 +985,27 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
     const hidden = m.hiddenForAi ? 'ai-hidden' : '';
     let t = String(m.text || '');
 
-    if (t.startsWith('[img]') && t.endsWith('[/img]')) {
-      const src = t.slice(5, -6);
-      return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-img" src="${src}" onclick="showPreview('previewModalImg','${src}');$('modalPreview').classList.add('active')"></div>${ts}`;
+    // 🚨 蓝色的终极渲染补丁！智能分离文字和图片！ 🚨
+    if (t.includes('[img]') && t.includes('[/img]')) {
+      const parts = t.split(/(\[img\][\s\S]*?\[\/img\])/i);
+      const contentHtml = parts.map(part => {
+        if (part.trim().startsWith('[img]')) {
+          const src = part.trim().slice(5, -6);
+          // 图片部分，直接渲染成 <img> 标签
+          return `<img class="bubble-img" src="${src}" onclick="showPreview('previewModalImg','${src}');$('modalPreview').classList.add('active')">`;
+        } else if (part.trim()) {
+          // 文字部分，用 <div> 包起来，并进行安全转义
+          return `<div>${esc(part)}</div>`;
+        }
+        return '';
+      }).join('');
+      
+      // 返回一个混合了文字和图片的气泡
+      // 注意：这里我们给气泡加一点内边距，让文字和图片之间有呼吸感
+      return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:8px 12px; display:flex; flex-direction:column; gap:6px;">${contentHtml}</div>${ts}`;
     }
+
+    // --- 下面是原来的代码块和HTML渲染逻辑（保持不变）---
 
     if (t.trim().startsWith('```') && t.trim().endsWith('```')) {
       const match = t.trim().match(/^```([a-zA-Z0-9+#\-_]*)\n?([\s\S]*?)```$/);
@@ -1018,6 +1035,7 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
       return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
     }
 
+    // --- 最后的普通文本渲染 ---
     return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
   }
   function renderChat(){
