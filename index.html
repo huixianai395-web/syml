@@ -1080,19 +1080,52 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     return null;
   }
   function splitAiBubbles(raw) {
-  // 1. 正名运动+清理
-  const txt = String(raw || '').trim().replace(/\.{3,}/g, '……');
-  if (!txt) return ['...'];
+    const txt = String(raw || '').trim().replace(/\.{3,}/g, '……');
+    if (!txt) return ['...'];
 
-  // 2. 优先处理JSON格式，这个很重要！不能丢！
-  const byJson = parseJsonMessages(txt);
-  if (byJson && byJson.length) return byJson;
+    let parsedMsgs = parseJsonMessages(txt);
+    let finalParts = [];
 
-  // 3. 智能切割
-  const parts = txt.match(/[^。！？……\n]+([。！？……\n]|\s)*|\S+/g);
+    // 1. 如果 JSON 解析失败，我们用备用方案，但要先保护代码块不被切碎！
+    if (!parsedMsgs || !parsedMsgs.length) {
+      const tempParts = txt.split(/(```[\s\S]*?```)/g);
+      parsedMsgs = [];
+      tempParts.forEach(p => {
+        if (!p.trim()) return;
+        if (p.startsWith('```')) {
+          parsedMsgs.push(p); // 代码块原样保留
+        } else {
+          // 普通文本按标点符号切分
+          const sentences = p.match(/[^。！？……\n]+([。！？……\n]|\s)*|\S+/g);
+          if (sentences) parsedMsgs.push(...sentences.map(s => s.trim()).filter(Boolean));
+        }
+      });
+    }
 
-  // 4. 清理结果并返回
-  return parts && parts.length ? parts.map(p => p.trim()).filter(Boolean) : [txt];
+    // 2. 核心魔法：即使 JSON 解析成功，AI也可能把“文字+代码+文字”塞进同一个气泡里
+    // 我们需要把它们强行拆开，保证代码块独立成一个气泡，文字变成独立气泡！
+    parsedMsgs.forEach(msg => {
+      // 用正则把代码块和普通文字剥离开
+      const subParts = msg.split(/(```[\s\S]*?```)/g);
+      
+      subParts.forEach(sp => {
+        let trimmed = sp.trim();
+        if (!trimmed) return;
+        
+        if (trimmed.startsWith('```')) {
+          // 【代码块】直接作为一个独立的纯净气泡
+          finalParts.push(trimmed);
+        } else {
+          // 【普通文字】如果 AI 偷懒用了好几个换行，我们也帮它切成多条气泡，避免气泡过长！
+          const paragraphs = trimmed.split(/\n\n+/);
+          paragraphs.forEach(para => {
+            if (para.trim()) finalParts.push(para.trim());
+          });
+        }
+      });
+    });
+
+    return finalParts.length ? finalParts : ['...'];
   }
   function enforceCountRange(parts,min,max){let arr=[...(parts||[])].filter(Boolean);max=Math.max(1,max);if(arr.length>max){const keep=arr.slice(0,max-1),tail=arr.slice(max-1).join(' ');return [...keep,tail];}return arr;}
 
