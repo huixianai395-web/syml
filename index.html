@@ -830,27 +830,22 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
 
 
   function renderOfflineAssistant(text,ts,pref,msg){
-  const raw=String(text||'');
-  // 宽容匹配：允许空格
-  const m=raw.match(/【\s*状态栏\s*】\s*([\s\S]*?)\s*【\s*正文\s*】\s*([\s\S]*)/);
-
-  // 如果没匹配到 → 回退为普通气泡（避免线上旧消息被误当成线下）
-  if(!m){
-    return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}<div class="bubble ai ${msg.hiddenForAi?'ai-hidden':''}">${esc(raw)}</div>${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}</div>`;
-  }
-
+  const raw=String(text||''),m=raw.match(/【状态栏】\s*([\s\S]*?)\s*【正文】\s*([\s\S]*)/);
+  if(!m) return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}<div class="bubble ai ${msg.hiddenForAi?'ai-hidden':''}">${esc(raw)}</div>${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}</div>`;
   const state=clean(m[1]),body=clean(m[2]);
+
   const cset=(getContactById(currentId)?.settings||{}).offlineColors||DEFAULT_CHAT_SETTINGS.offlineColors;
   const styleStr=`--off-state:${cset.state};--off-body:${cset.body};--off-quote:${cset.quote};--off-em:${cset.em};--off-dialogue:${cset.dialogue};`;
 
   return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}
     <div class="offline-card ${msg.hiddenForAi?'ai-hidden':''}" style="${styleStr}">
+         
         <div class="offline-state">${esc(state||'状态未记录')}</div>
         <div class="offline-body">${formatOfflineText(body||'')}</div>
       </div>
       ${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}
     </div>`;
-}
+  }
   // 修改后的渲染：助手支持HTML
   function renderBubbleContent(m,isMe,pref){
     const cls=isMe?'me':'ai';
@@ -925,30 +920,7 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     if(m){try{const j=JSON.parse(m[0]);if(Array.isArray(j?.messages)) return j.messages.map(x=>clean(x)).filter(Boolean);}catch{}}
     return null;
   }
-  function splitAiBubbles(raw){
-  const txt=clean(raw);
-  if(!txt) return ['...'];
-  const byJson=parseJsonMessages(txt);
-  if(byJson && byJson.length) return byJson;
-
-  const s=txt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{2,}/g,'\n');
-
-  const parts=[];
-  let buf='';
-  for(let i=0;i<s.length;i++){
-    const ch=s[i];
-    buf+=ch;
-    if('。！？!?…'.includes(ch) || ch==='\n'){
-      const t=buf.trim();
-      if(t) parts.push(t);
-      buf='';
-    }
-  }
-  const last=buf.trim();
-  if(last) parts.push(last);
-
-  return parts.length?parts:[txt];
-  }
+  function splitAiBubbles(raw){const txt=clean(raw);if(!txt) return ['...'];const byJson=parseJsonMessages(txt);if(byJson&&byJson.length) return byJson;return txt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim().split(/\n{1,}/).filter(Boolean);} 
   function enforceCountRange(parts,min,max){let arr=[...(parts||[])].filter(Boolean);max=Math.max(1,max);if(arr.length>max){const keep=arr.slice(0,max-1),tail=arr.slice(max-1).join(' ');return [...keep,tail];}return arr;}
 
   async function emitAiSequential(parts,targetId,mode){
@@ -1133,10 +1105,8 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       `3. 绝对不要在回复中暴露你是AI或程序。`,
       `4. 具备真实的时间观念：根据“上一次消息时间与当前系统时间”的间隔，自然体现时间流逝（如久未回复后的轻微反应等），但不要刻意或模板化。`,
       `5. 正常使用中文标点符号，不得用空格替代标点或分隔句子。`,
-      `6.【气泡规则】：尽量做到一句话一个气泡；如果包含多句，请拆成多个气泡。除非特殊语境，不要把多句塞进一个气泡。`,
-`7.【渲染提示】：你可以输出 HTML/CSS/JS 片段；完整 HTML 会以网页嵌入显示。`,
-`8.【输出格式铁律】：`,
-       `只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}`,
+      `【输出格式铁律】：`,
+      `只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}`,
       rangeRule
     ].join('\n');
   }
@@ -1156,7 +1126,6 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       `请输出一条沉浸式线下角色扮演回复，字数范围 ${st.offlineMin}-${st.offlineMax}。`,
       `【排版与层次要求】：`,
       `正文绝对不能是一大段密密麻麻的文字！必须合理分段，动作、神态、心理描写与对话之间要有清晰的层次感，保证阅读舒适。`,
-      `【对白标记】：角色对白部分必须使用中文引号“”或双引号""包裹；描写与心理不要放入引号`,
       `【输出格式铁律】必须严格按以下模板输出，不要输出JSON：`,
       `【状态栏】`,
       `时间｜地点｜天气｜氛围｜关系进度`,
