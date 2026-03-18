@@ -839,18 +839,13 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
 
   return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}
     <div class="offline-card ${msg.hiddenForAi?'ai-hidden':''}" style="${styleStr}">
-
+         
         <div class="offline-state">${esc(state||'状态未记录')}</div>
         <div class="offline-body">${formatOfflineText(body||'')}</div>
       </div>
       ${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}
     </div>`;
   }
-  // 增加HTML检测
-  function isHtmlDoc(s){s=String(s||'');return /^\s*<!doctype html/i.test(s)||/<html[\s>]/i.test(s);}
-  function isHtmlFrag(s){s=String(s||'');return /<([a-z][\w-]*)(\s|>)/i.test(s)&&!isHtmlDoc(s);}
-  function toHtmlDataUrl(s){return 'data:text/html;charset=utf-8,'+encodeURIComponent(String(s||''));}
-
   // 修改后的渲染：助手支持HTML
   function renderBubbleContent(m,isMe,pref){
     const cls=isMe?'me':'ai';
@@ -861,7 +856,7 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
     if(!isMe && isHtmlDoc(t)){
       const src=toHtmlDataUrl(t);
       return `${quote}<div class="bubble ${cls} ${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts allow-modals" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
-
+      
  }
     if(!isMe && isHtmlFrag(t)){
       return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
@@ -1096,7 +1091,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
   function getSysTimeStr(){const d=new Date(),w=['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${w} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 
   function buildOnlineSystem(c,me,st){
-    const rangeRule=st.onlineStyle==='range'?`本次回复请拆分为 ${st.onlineMin} 到 ${st.onlineMax} 条消息。`:`本次回复的条数由你完全根据人设的立体性格、心理波动和当前语境自由发挥（拒绝刻板，气泡条数可多可少，但是每个个气泡尽量文字不超过一句话，就像微信聊天）。`;
+    const rangeRule=st.onlineStyle==='range'?`本次回复请拆分为 ${st.onlineMin} 到 ${st.onlineMax} 条消息。`:`本次回复的条数由你完全根据人设的立体性格、心理波动和当前语境自由发挥（拒绝刻板，可多可少）。`;
     return [
       `你正在扮演：${c?.name||'聊天对象'}`,
       `对方名称：${me?.name||'我'}`,
@@ -1107,16 +1102,13 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       `【当前系统时间】：${getSysTimeStr()}`,
       `【核心指令】：`,
       `1. 拒绝刻板标签！人设是立体的、多面的、有成长性的。把你扮演的角色当成一个活生生的人来对待！`,
-      `2. 说话的条数、长短（尽量一句话一个气泡）、语气，必须严格根据【当前具体的语境】、【角色的情绪起伏】和【心理活动】动态自然地变化，绝不受任何固定模式限制。`,
+      `2. 说话的条数、长短、语气，必须严格根据【当前具体的语境】、【角色的情绪起伏】和【心理活动】动态自然地变化，绝不受任何固定模式限制。`,
       `3. 绝对不要在回复中暴露你是AI或程序。`,
       `4. 具备真实的时间观念：根据“上一次消息时间与当前系统时间”的间隔，自然体现时间流逝（如久未回复后的轻微反应等），但不要刻意或模板化。`,
       `5.若输出HTML，按钮和交互元素的点击事件必须用onclick属性直接写在标签上，禁止使用addEventListener。`,
       `6. 正常使用中文标点符号，不得用空格替代标点或分隔句子。`,
-      `【输出格式铁律】：
-1. 只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}
-2. 本次回复的条数由你完全根据人设的立体性格、心理波动和当前语境自由发挥（拒绝刻板，气泡条数可多可少，但是每个气泡尽量文字不超过一句话，就像微信聊天）。
-3. 【代码防粘连绝对规则】：凡是回复中包含前端代码块（如html代码块），该代码块必须单独作为一个字符串存入JSON数组，绝对禁止与前后的文字合并在同一个气泡里！
-4. 遇到代码输出时，结构必须严格切分为：["代码前的铺垫", "html代码块", "代码后的互动"]。`,
+      `【输出格式铁律】：`,
+      `只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}`,
       rangeRule
     ].join('\n');
   }
@@ -1264,7 +1256,7 @@ updateContact(currentId,{
         persona:clean($('rolePersonaInput').value),
         avatar:roleAvatar,
         settings:normSettings({
-          mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen,
+          mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen, 
           offlineColors: getContactById(currentId)?.settings?.offlineColors,
           // 专属设定存这里啦！
           meName: clean($('meNameInput').value)||'我',
@@ -1279,7 +1271,7 @@ $('showTsSwitch').checked? p.showTs=true: p.showTs=false;
 p.bubbleCss=String($('bubbleCssInput').value||'');
 p.fontSize=Number($('fontSizeRange').value||16);
 p.avatarHQ=!!$('avatarHQSwitch').checked;
-
+      
 p.avatarCrop=!!$('avatarCropSwitch').checked;
 setPref(p); applyBubbleCss(); applyFontSize();
       const now=getContactById(currentId); $('chatTitle').textContent=now?.name||'聊天';
