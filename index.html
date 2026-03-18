@@ -1093,10 +1093,12 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
     s.current='默认'; setFontState(s); refreshFontUI(); applyFontByUrl('', '系统默认');
   };
 
-  function getSysTimeStr(){const d=new Date(),w=['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${w} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
-
   function buildOnlineSystem(c,me,st){
-    const rangeRule=st.onlineStyle==='range'?`本次回复请拆分为 ${st.onlineMin} 到 ${st.onlineMax} 条消息。`:`本次回复的条数由你完全根据人设的立体性格、心理波动和当前语境自由发挥（拒绝刻板，气泡条数可多可少，但是每个个气泡尽量文字不超过一句话，就像微信聊天）。`;
+    // 蓝色修改：加强了区间模式的语气，强制打断线下格式的惯性！
+    const rangeRule=st.onlineStyle==='range'
+      ? `本次回复【必须强制】拆分为 ${st.onlineMin} 到 ${st.onlineMax} 条独立的短消息（气泡）。\n⚠️重要：现在是微信聊天模式，严禁输出【状态栏】或长篇描写！每一条消息必须简短、口语化，像真人打字一样，绝对不要受历史记录中的“小说格式”影响！`
+      : `本次回复的条数由你完全根据人设的立体性格、心理波动和当前语境自由发挥（拒绝刻板，气泡条数可多可少，但是每个气泡尽量文字不超过一句话，就像微信聊天）。`;
+
     return [
       `你正在扮演：${c?.name||'聊天对象'}`,
       `对方名称：${me?.name||'我'}`,
@@ -1113,8 +1115,8 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       `5.若输出HTML，按钮和交互元素的点击事件必须用onclick属性直接写在标签上，禁止使用addEventListener。`,
       `6. 正常使用中文标点符号，不得用空格替代标点或分隔句子。`,
       `7.【输出格式铁律】：`,
-`只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}`,
-`凡是输出代码（HTML/JS等），代码必须单独作为一个数组元素，不加任何Markdown标记，只输出纯代码。结构：["铺垫话", "<!DOCTYPE html>...代码内容...", "代码后的互动"]。`,
+      `只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}`,
+      `凡是输出代码（HTML/JS等），代码必须单独作为一个数组元素，不加任何Markdown标记，只输出纯代码。结构：["铺垫话", "<!DOCTYPE html>...代码内容...", "代码后的互动"]。`,
       rangeRule
     ].join('\n');
   }
