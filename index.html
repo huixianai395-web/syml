@@ -930,7 +930,7 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
   function splitLongBubbles(parts,maxLen=30){
   const out=[];
   for(const p of parts){
-    if(p.length<=maxLen || /<[a-z][\w-]*[\s>]/i.test(p)){out.push(p);continue;}
+    if(p.length<=maxLen || !/^[\u4e00-\u9fff\w\s，。！？、；：""''（）—…～·~!?,;:().\-\d]+$/.test(p)){out.push(p);continue;}
     const segs=p.split(/(?<=[。！？!?…～~\n])/g).filter(Boolean);
     let buf='';
     for(const s of segs){
