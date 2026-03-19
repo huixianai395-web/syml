@@ -943,7 +943,20 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
   }
   function mergeCodeBubbles(parts){
   const out=[];let buf='';
-  for(const p of parts){
+  for(let p of parts){
+    if(buf){
+      buf+='\n'+p;
+      if(/<\/html>/i.test(p)){out.push(buf.trim());buf='';}
+    }else{
+      const di=p.search(/<!DOCTYPE\s+html/i);
+      if(di<0){const hi=p.search(/<html[\s>]/i);if(hi>0){out.push(p.slice(0,hi).trim());p=p.slice(hi);}else if(hi<0){out.push(p);continue;}}
+      if(di>0){out.push(p.slice(0,di).trim());p=p.slice(di);}
+      if(/<\/html>/i.test(p)){out.push(p);}else{buf=p;}
+    }
+  }
+  if(buf) out.push(buf.trim());
+  return out.filter(Boolean);
+  }
     if(buf){
       buf+='\n'+p;
       if(/<\/html>/i.test(p)){out.push(buf.trim());buf='';}
