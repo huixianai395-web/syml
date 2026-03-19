@@ -941,6 +941,19 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
   }
   return out.length?out:parts;
   }
+  function mergeCodeBubbles(parts){
+  const out=[];let buf='';
+  for(const p of parts){
+    if(buf){
+      buf+='\n'+p;
+      if(/<\/html>/i.test(p)){out.push(buf.trim());buf='';}
+    }else if(/<!DOCTYPE\s+html|<html[\s>]/i.test(p)){
+      if(/<\/html>/i.test(p)){out.push(p);}else{buf=p;}
+    }else{out.push(p);}
+  }
+  if(buf) out.push(buf.trim());
+  return out;
+  }
   function enforceCountRange(parts,min,max){let arr=[...(parts||[])].filter(Boolean);max=Math.max(1,max);if(arr.length>max){const keep=arr.slice(0,max-1),tail=arr.slice(max-1).join(' ');return [...keep,tail];}return arr;}
 
   async function emitAiSequential(parts,targetId,mode){
@@ -1192,7 +1205,7 @@ const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),glo
 
       let parts=[];
       if(st.mode==='offline') parts=[clean(out)||'...'];
-      else{parts=splitAiBubbles(out); parts=splitLongBubbles(parts,30); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);}
+      else{parts=splitAiBubbles(out); parts=mergeCodeBubbles(parts); parts=splitLongBubbles(parts,30); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);}
       await emitAiSequential(parts.length?parts:['...'],chatId,st.mode);
 
       updateContactPreview(chatId); if(currentId===chatId) renderChat();
