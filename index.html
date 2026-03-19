@@ -927,6 +927,20 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     return null;
   }
   function splitAiBubbles(raw){const txt=clean(raw);if(!txt) return ['...'];const byJson=parseJsonMessages(txt);if(byJson&&byJson.length) return byJson;return txt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim().split(/\n{1,}/).filter(Boolean);} 
+  function splitLongBubbles(parts,maxLen=30){
+  const out=[];
+  for(const p of parts){
+    if(p.length<=maxLen || /<[a-z][\w-]*[\s>]/i.test(p)){out.push(p);continue;}
+    const segs=p.split(/(?<=[。！？!?…～~\n])/g).filter(Boolean);
+    let buf='';
+    for(const s of segs){
+      if(buf.length+s.length>maxLen&&buf){out.push(buf.trim());buf='';}
+      buf+=s;
+    }
+    if(buf.trim()) out.push(buf.trim());
+  }
+  return out.length?out:parts;
+  }
   function enforceCountRange(parts,min,max){let arr=[...(parts||[])].filter(Boolean);max=Math.max(1,max);if(arr.length>max){const keep=arr.slice(0,max-1),tail=arr.slice(max-1).join(' ');return [...keep,tail];}return arr;}
 
   async function emitAiSequential(parts,targetId,mode){
@@ -1178,7 +1192,7 @@ const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),glo
 
       let parts=[];
       if(st.mode==='offline') parts=[clean(out)||'...'];
-      else{parts=splitAiBubbles(out); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);} 
+      else{parts=splitAiBubbles(out); parts=splitLongBubbles(parts,30); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);}
       await emitAiSequential(parts.length?parts:['...'],chatId,st.mode);
 
       updateContactPreview(chatId); if(currentId===chatId) renderChat();
