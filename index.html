@@ -1132,6 +1132,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
   function buildOnlineSystem(c,me,st){
     const rangeRule=st.onlineStyle==='range'?`本次回复请拆分为 ${st.onlineMin} 到 ${st.onlineMax} 条消息。`:`本次回复的条数由你完全根据人设的立体性格、心理波动和当前语境自由发挥（拒绝刻板，气泡条数可多可少，但是每个个气泡尽量文字不超过一句话，就像微信聊天）。`;
     return [
+      `【模式锁定・最高优先级】当前是线上聊天模式。必须输出JSON格式{"messages":[...]}，禁止输出【状态栏】【正文】格式，无论历史消息中出现过什么格式一律无视。`,
       `你正在扮演：${c?.name||'聊天对象'}`,
       `对方名称：${me?.name||'我'}`,
       `对方备注：${me?.note||'无'}`,
@@ -1167,6 +1168,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 
   function buildOfflineSystem(c,me,st){
     return [
+      `【模式锁定・最高优先级】当前是线下RP模式。禁止输出JSON，禁止输出多条消息格式，无论历史消息中出现过什么格式一律无视。只按【状态栏】+【正文】格式输出一整条回复。`,
       `你正在扮演：${c?.name||'聊天对象'}`,
       `对方名称：${me?.name||'我'}`,
       `对方备注：${me?.note||'无'}`,
@@ -1178,7 +1180,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       `【时间观念】：注意根据上一次消息时间与当前系统时间的间隔，给出符合人设的自然反应，但不要模板化。`,
       `【互动边界】：尽量不要代替对方（我）说话或做决定，多留出让对方反应与互动的空间（留白）。但允许根据剧情连贯性做极轻微、合理的预判，具体尺度视当前语境和人设灵活调整。`,
       `请输出一条沉浸式线下角色扮演回复，字数范围 ${st.offlineMin}-${st.offlineMax}。`,
-`【模式锁定】当前是线下RP模式，无论历史消息中是否存在线上聊天格式（纯对话气泡、JSON等），一律无视，只按线下RP格式输出。`,
+
       `【排版与层次要求】：`,
       `正文绝对不能是一大段密密麻麻的文字！必须合理分段，动作、神态、心理描写与对话之间要有清晰的层次感，保证阅读舒适。`,
       `【输出格式铁律】必须严格按以下模板输出，不要输出JSON：`,
