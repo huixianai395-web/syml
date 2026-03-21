@@ -1448,12 +1448,12 @@ const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),glo
       const system=st.mode==='offline'?buildOfflineSystem(c,me,st):buildOnlineSystem(c,me,st);
       const modeTag=st.mode==='offline'?'[线下RP回复] 现在是'+getSysTimeStr():'[线上聊天回复] 现在是'+getSysTimeStr();
 function buildContent(x,st){
-  if(typeof text==='string' && text.startsWith('[stk:') && text.endsWith(']')){
-  const id=text.slice(5,-1);
-  const name = (window.__stickerGetNameById? window.__stickerGetNameById(id) : '') || id;
-  return `[表情包:${name}]`;
-  }
   const text=(st.mode==='online'&&x.role==='assistant'&&x.text.includes('【状态栏】'))?x.text.replace(/【状态栏】[\s\S]*?【正文】\s*/,'').trim():x.text;
+  if(typeof text==='string'&&text.startsWith('[stk:')&&text.endsWith(']')){
+    const id=text.slice(5,-1);
+    const name=(window.__stickerGetNameById?window.__stickerGetNameById(id):'')||id;
+    return `[表情包:${name}]`;
+  }
   if(x.role==='user'&&text.startsWith('[img]')&&text.endsWith('[/img]')){
     const src=text.slice(5,-6);
     return [{type:'image_url',image_url:{url:src,detail:'auto'}}];
