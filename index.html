@@ -1214,7 +1214,7 @@ const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),glo
 
     try{
       const system=st.mode==='offline'?buildOfflineSystem(c,me,st):buildOnlineSystem(c,me,st);
-      const modeTag=st.mode==='offline'?'[线下RP回复]':'[线上聊天回复]';
+      const modeTag=st.mode==='offline'?'[线下RP回复] 现在是'+getSysTimeStr():'[线上聊天回复] 现在是'+getSysTimeStr();
 const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:(st.mode==='online'&&x.role==='assistant'&&x.text.includes('【状态栏】'))?x.text.replace(/【状态栏】[\s\S]*?【正文】\s*/,'').trim():x.text})),{role:'user',content:modeTag}];
       const out=await callApi(messages);
 
