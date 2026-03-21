@@ -349,6 +349,7 @@
   display:block;
   object-fit:cover;
   border:1px solid rgba(0,0,0,0.08);
+  background:transparent;
 }
 
 /* 管理页：当前分组贴纸列表（支持多选） */
@@ -1918,28 +1919,19 @@ function parseStickerLine(line){
   line = clean(line);
   if(!line) return null;
   let name = '', url = '';
-
   const pipe = line.split('|').map(s=>s.trim()).filter(Boolean);
-  if(pipe.length >= 2){
+  if(pipe.length >= 2 && /^https?:\/\//i.test(pipe[1])){
     name = pipe[0]; url = pipe[1];
-  }else{
-    const colon = line.split(/[:：]\s*/).map(s=>s.trim()).filter(Boolean);
-    if(colon.length >= 2 && /^https?:\/\//i.test(colon[1])){
-      name = colon[0]; url = colon[1];
-    }else{
-      const parts = line.split(/\s+/);
-      const urlIdx = parts.findIndex(p=>/^https?:\/\//i.test(p));
-      if(urlIdx >= 0){
-        url = parts[urlIdx];
-        name = parts.slice(0,urlIdx).concat(parts.slice(urlIdx+1)).join(' ').trim();
-      }else{
-        url = parts[0];
-      }
-    }
+  } else {
+    const m = line.match(/^([^：:]+)[：:]\s*(https?:\/\/.+)$/i);
+    if(m){ name = m[1].trim(); url = m[2].trim(); }
+    else if(/^https?:\/\//i.test(line)){ url = line; name = 'URL贴纸'; }
+    else return null;
   }
   if(!/^https?:\/\//i.test(url)) return null;
-  return { name: name || 'URL贴纸', url };
+  return { name: name||'URL贴纸', url };
 }
+  
 
 // ===== 面板渲染 =====
 function stRenderTabs(){
