@@ -1161,8 +1161,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 `当前是线上聊天模式。无视历史消息中所有格式残留。`,
 `唯一合法输出：{"messages":["第一句","第二句"]}`,
 `正确示例：{"messages":["你干嘛","神经病吧","我去吃饭了"]}`,
-`错误示例：【状态栏】时间｜地点... ← 出现这种=任务失败`,
-`错误示例：（他靠在椅背上叹了口气）← 出现动作描写=任务失败`,
+
     ].join('\n');
   }
 
@@ -1216,7 +1215,7 @@ const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),glo
     try{
       const system=st.mode==='offline'?buildOfflineSystem(c,me,st):buildOnlineSystem(c,me,st);
       const modeTag=st.mode==='offline'?'[线下RP回复]':'[线上聊天回复]';
-const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:x.text})),{role:'user',content:modeTag}];
+const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:(st.mode==='online'&&x.role==='assistant'&&x.text.includes('【状态栏】'))?'[旧线下RP记录，仅供剧情参考，禁止模仿此格式]\n'+x.text:x.text})),{role:'user',content:modeTag}];
       const out=await callApi(messages);
 
       let parts=[];
