@@ -984,7 +984,7 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
 
   function buildUrl(base,path){const b=(base||'').replace(/\/+$/,'');if(b.endsWith('/v1')) return b+path.replace('/v1','');return b+path;}
   async function callApi(messages){
-    const cfg=saveApiForm(); if(!cfg.base||!cfg.key) throw new Error('请先配置 Base URL 和 API Key');
+    const s=getApiState(),cfg=s.presets[s.current];if(!cfg.base||!cfg.key) throw new Error('请先配置 Base URL 和 API Key');
     const r=await fetch(buildUrl(cfg.base,'/v1/chat/completions'),{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.key},body:JSON.stringify({model:cfg.model,temperature:cfg.temp,messages})});
     const ct=(r.headers.get('content-type')||'').toLowerCase(); let data=null,raw='';
     if(ct.includes('application/json')) data=await r.json().catch(()=>null); else raw=await r.text().catch(()=>'​');
