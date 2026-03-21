@@ -1284,7 +1284,15 @@ const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),glo
     try{
       const system=st.mode==='offline'?buildOfflineSystem(c,me,st):buildOnlineSystem(c,me,st);
       const modeTag=st.mode==='offline'?'[线下RP回复] 现在是'+getSysTimeStr():'[线上聊天回复] 现在是'+getSysTimeStr();
-const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:(st.mode==='online'&&x.role==='assistant'&&x.text.includes('【状态栏】'))?x.text.replace(/【状态栏】[\s\S]*?【正文】\s*/,'').trim():x.text})),{role:'user',content:modeTag}];
+function buildContent(x,st){
+  const text=(st.mode==='online'&&x.role==='assistant'&&x.text.includes('【状态栏】'))?x.text.replace(/【状态栏】[\s\S]*?【正文】\s*/,'').trim():x.text;
+  if(x.role==='user'&&text.startsWith('[img]')&&text.endsWith('[/img]')){
+    const src=text.slice(5,-6);
+    return [{type:'image_url',image_url:{url:src,detail:'auto'}}];
+  }
+  return text;
+}
+const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:buildContent(x,st)})),{role:'user',content:modeTag}];
       const out=await callApi(messages);
 
       let parts=[];
