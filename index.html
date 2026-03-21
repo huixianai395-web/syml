@@ -1215,12 +1215,15 @@ const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),glo
     try{
       const system=st.mode==='offline'?buildOfflineSystem(c,me,st):buildOnlineSystem(c,me,st);
       const modeTag=st.mode==='offline'?'[线下RP回复]':'[线上聊天回复]';
-const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:(st.mode==='online'&&x.role==='assistant'&&x.text.includes('【状态栏】'))?'[旧线下RP记录，仅供剧情参考，禁止模仿此格式]\n'+x.text:x.text})),{role:'user',content:modeTag}];
+const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:(st.mode==='online'&&x.role==='assistant'&&x.text.includes('【状态栏】'))?x.text.replace(/【状态栏】[\s\S]*?【正文】\s*/,'').trim():x.text})),{role:'user',content:modeTag}];
       const out=await callApi(messages);
 
       let parts=[];
       if(st.mode==='offline') parts=[clean(out)||'...'];
-      else{parts=splitAiBubbles(out); parts=mergeCodeBubbles(parts); parts=splitLongBubbles(parts,30); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);}
+else{
+  if(out.includes('【状态栏】')){parts=[clean(out)||'...'];}
+  else{parts=splitAiBubbles(out); parts=mergeCodeBubbles(parts); parts=splitLongBubbles(parts,30); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);}
+}
       await emitAiSequential(parts.length?parts:['...'],chatId,st.mode);
 
       updateContactPreview(chatId); if(currentId===chatId) renderChat();
