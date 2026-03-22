@@ -1118,84 +1118,68 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
   function isHtmlFrag(s){s=String(s||'');return /<([a-z][\w-]*)(\s|>)/i.test(s)&&!isHtmlDoc(s);}
   function toHtmlDataUrl(s){return 'data:text/html;charset=utf-8,'+encodeURIComponent(String(s||''));}
 
-  // 修改后的渲染：助手支持HTML
+  // === 全能渲染器：修复表情包、修复转账显示、过滤后台暗号 ===
   function renderBubbleContent(m,isMe,pref){
     const cls=isMe?'me':'ai';
     const ts=pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:'';
     const quote=renderQuote(m.quote);
     const hidden=m.hiddenForAi?'ai-hidden':'';
-    const t=String(m.text||'');
-    // === 插入的代码开始 ===
+
+    // 1. 强力过滤后台暗号（解决“带出后台东西”的问题）
+    let t = String(m.text||'').replace(/\[(线上聊天回复|线下RP回复).*?\]/g, '').trim();
+
+    // 2. 也是先做安全转义
     let safeHtml = esc(t);
-    // ====== 新版代码 开始 ======
-    // 1. 模拟图片解析
+
+    // 3. 优先恢复表情包显示 (修复 [stk:ID] 显示为文字的问题)
+    safeHtml = safeHtml.replace(/\[stk:([a-zA-Z0-9_]+)\]/g, (match, id) => {
+       const src = window.__stickerGetSrcById ? window.__stickerGetSrcById(id) : '';
+       return src ? `<img class="bubble-sticker" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')">` : '';
+    });
+
+    // 4. 恢复引用和普通图片
+    safeHtml = safeHtml.replace(/^\[quote\]([\s\S]*?)\[\/quote\]([\s\S]*)$/, '<div class="msg-quote"><div class="q-content">$1</div></div>$2');
+    safeHtml = safeHtml.replace(/\[img\](.*?)\[\/img\]/g, '<img class="bubble-img" src="$1" onclick="document.getElementById(' + "'previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')" + '">');
+
+    // 5. 修复模拟发图卡片
     safeHtml = safeHtml.replace(/\[fakeimg=(.*?)\]([\s\S]*?)\[\/fakeimg\]/g, (match, cover, desc) => {
       let c = cover || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNkYmU4ZjkiLz48L3N2Zz4=';
       return `<div class="fake-img-box"><div onclick="this.style.display='none';this.nextElementSibling.style.display='block'"><img class="fake-img-cover" src="${c}"><div class="fake-img-overlay">点击看图</div></div><div class="fake-img-desc" onclick="this.style.display='none';this.previousElementSibling.style.display='block'">${desc}</div></div>`;
     });
-    // 2. AI发来的模拟图片
-    safeHtml = safeHtml.replace(/\[发送模拟图片：([\s\S]*?)\]/g, (match, desc) => {
-      let c = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNkYmU4ZjkiLz48Y2lyY2xlIGN4PSI1MCUiIGN5PSI1MCUiIHI9IjMwIiBmaWxsPSIjYmFjOWU4IiBvcGFjaXR5PSIwLjUiIGZpbHRlcj0iYmx1cig1cHgpIi8+PC9zdmc+';
-      return `<div class="fake-img-box"><div onclick="this.style.display='none';this.nextElementSibling.style.display='block'"><img class="fake-img-cover" src="${c}"><div class="fake-img-overlay">收到新照片✨</div></div><div class="fake-img-desc" onclick="this.style.display='none';this.previousElementSibling.style.display='block'">${desc}</div></div>`;
-    });
-    // 3. 转账解析增强（支持带状态）
-    safeHtml = safeHtml.replace(/\[transfer=([\d.]+)(?:\|(\d))?\]([\s\S]*?)\[\/transfer\]/g, (match, amt, status, note) => {
-      status = status || "0"; // 0待收, 1已收, 2退还
-      let bgColor = status === "0" ? "#f5a623" : "#fbdc9f";
-      let icon = status === "0" ? "💸" : (status === "1" ? "✅" : "↩️");
-      let subText = status === "0" ? "微信转账" : (status === "1" ? "微信转账-已收款" : "微信转账-已退还");
 
-      // 点击就弹详情页！
-      return `<div class="transfer-box" style="background:${bgColor};" onclick="window._openTransferDetail('${m.id}', '${amt}', '${status}', ${isMe})">
+    // 6. 修复 AI 主动发的模拟图
+    safeHtml = safeHtml.replace(/\[发送模拟图片：([\s\S]*?)\]/g, (match, desc) => {
+      let c = 'https://picsum.photos/300/400?blur=5'; // 稍微改了个好看的占位
+      return `<div class="fake-img-box"><div onclick="this.style.display='none';this.nextElementSibling.style.display='block'"><img class="fake-img-cover" src="${c}"><div class="fake-img-overlay">收到图片</div></div><div class="fake-img-desc" onclick="this.style.display='none';this.previousElementSibling.style.display='block'">${desc}</div></div>`;
+    });
+
+    // 7. 修复转账卡片 (解决“AI发的转账是代码” + “没有拒收提示”)
+    safeHtml = safeHtml.replace(/\[transfer=([\d.]+)(?:\|(\d))?\]([\s\S]*?)\[\/transfer\]/g, (match, amt, status, note) => {
+      status = status || "0";
+      let isDone = status !== "0";
+      let bgColor = isDone ? "#f9e4bd" : "#f5a623"; // 已收变浅
+      let icon = status === "0" ? "💸" : (status === "1" ? "✅" : "↩️");
+      let stateTxt = status === "0" ? "微信转账" : (status === "1" ? "已收款" : "已退还");
+
+      // 注意：这里加了 stopPropagation 防止点这个卡片时触发外层
+      return `<div class="transfer-box" style="background:${bgColor};" onclick="event.stopPropagation(); window._openTransferDetail('${m.id}', '${amt}', '${status}', ${isMe})">
           <div style="display:flex; align-items:center; gap:12px;">
             <div style="width:38px; height:38px; background:rgba(255,255,255,0.25); border-radius:50%; display:grid; place-items:center; font-size:22px; flex-shrink:0;">${icon}</div>
             <div style="flex:1; min-width:0;">
               <div style="font-size:16px; font-weight:700;">¥ ${amt}</div>
-              <div style="font-size:12px; opacity:0.9; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${note}</div>
+              <div style="font-size:12px; opacity:0.9; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${note}</div>
             </div>
           </div>
-          <div style="margin-top:10px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.2); font-size:10px; opacity:0.8;">${subText}</div>
+          <div style="margin-top:8px; padding-top:4px; border-top:1px solid rgba(255,255,255,0.2); font-size:10px; opacity:0.8;">${stateTxt}</div>
         </div>`;
     });
 
-    // 绝招：用内联样式彻底干掉老旧手机的白底边框！
-    let hasCard = safeHtml.includes('fake-img-box') || safeHtml.includes('transfer-box');
-    let exStyle = hasCard ? 'padding:0!important; background:transparent!important; border:none!important; box-shadow:none!important;' : '';
+    // 8. 强力去白边样式 (针对所有卡片)
+    let isCard = safeHtml.includes('fake-img-box') || safeHtml.includes('transfer-box') || safeHtml.includes('bubble-sticker');
+    let exStyle = isCard ? 'padding:0!important; background:transparent!important; border:none!important; box-shadow:none!important;' : '';
 
     return `${quote}<div class="bubble ${cls} ${hidden}" style="${exStyle}">${safeHtml}</div>${ts}`;
-// ====== 新版代码 结束 ======
-    const quoteMatch = t.match(/^\[quote\]([\s\S]*?)\[\/quote\]([\s\S]*)$/);
-if(quoteMatch){
-  const qText=quoteMatch[1].trim();
-  const body=quoteMatch[2].trim();
-  const qHtml=`<div class="msg-quote"><div class="q-content">${esc(qText)}</div></div>`;
-  return `${quote}${qHtml}<div class="bubble ${cls} ${hidden}">${esc(body)}</div>${ts}`;
-}
-    if(t.startsWith('[img]') && t.endsWith('[/img]')){
-      const src = t.slice(5, -6);
-      return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-img" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
-    }
-    if((t.startsWith('[stk:') || t.startsWith('[st_')) && t.endsWith(']')){
-  const id = t.startsWith('[stk:') ? t.slice(5,-1) : t.slice(1,-1);
-  const src = window.__stickerGetSrcById ? window.__stickerGetSrcById(id) : '';
-  if(!src) return `${quote}${ts}`;
-  return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-sticker" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
-}
-if(!isMe && isHtmlDoc(t)){
-  const src=toHtmlDataUrl(t);
-  return `${quote}<div class="bubble ${cls} has-html${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts allow-modals" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
-}
-    if(!isMe && isHtmlDoc(t)){
-      const src=toHtmlDataUrl(t);
-      return `${quote}<div class="bubble-wrap ${cls}"><img class="bubble-sticker" src="${safe}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
-
- }
-    if(!isMe && isHtmlFrag(t)){
-      return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
-    }
-    return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
   }
-
   function renderChat(){
     const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),pref=getPref();
     const me = {
@@ -2516,31 +2500,33 @@ $("customBgFile").addEventListener("change", async (e) => {
     pushUser(`[transfer=${amt}]${note}[/transfer]`);
     renderChat(); $('transferModal').classList.remove('active');
   };
-  // === 转账收款/退还的核心交互 ===
+// === 修复后的转账交互（小巧版） ===
   window._openTransferDetail = (mid, amt, status, isMe) => {
     let title = '', html = '', icon = '💸';
 
     if (status === "0") {
-      if (isMe) {
-        title = "等待对方收款";
-        html = `<div style="font-size:13px; color:#999;">1天内未收款，将退还至零钱</div>`;
-      } else {
-        title = "待你收款";
-        html = `<button class="btn p" style="background:#f5a623; width:100%; height:46px; border-radius:12px; font-weight:bold; font-size:16px; margin-bottom:12px;" onclick="window._doTransfer('${mid}', 1)">确认收款</button>
-                <button class="btn" style="width:100%; background:transparent; color:#999; text-decoration: underline;" onclick="window._doTransfer('${mid}', 2)">退还对方</button>`;
-      }
-    } else if (status === "1") {
-      icon = '✅'; title = isMe ? "对方已收款" : "已存入零钱";
-      html = `<div style="font-size:13px; color:#999;">资金已存入对方账户</div>`;
+        // 只要是未收款，不管是谁发的，你都可以操作（方便剧情扮演）
+        title = "待确认收款";
+        html = `<div style="display:flex; gap:10px; margin-top:15px;">
+                  <button class="btn p" style="flex:1; background:#f5a623; font-weight:bold; height:44px;" onclick="window._doTransfer('${mid}', 1)">确认收款</button>
+                  <button class="btn" style="flex:1; background:#f2e6d8; color:#d98e28; height:44px;" onclick="window._doTransfer('${mid}', 2)">立即退还</button>
+                </div>`;
     } else {
-      icon = '↩️'; title = isMe ? "对方已退还" : "已退还";
-      html = `<div style="font-size:13px; color:#999;">资金已原路退回</div>`;
+        // 已完成状态
+        if(status === "1") { icon = '✅'; title = "已收款"; html = `<div class="small" style="margin-top:10px;color:#999;">资金已存入零钱</div>`; }
+        if(status === "2") { icon = '↩️'; title = "已退还"; html = `<div class="small" style="margin-top:10px;color:#999;">资金已原路退回</div>`; }
     }
 
     $('tdIcon').innerText = icon;
     $('tdTitle').innerText = title;
     $('tdAmt').innerText = '¥ ' + parseFloat(amt).toFixed(2);
     $('tdActions').innerHTML = html;
+
+    // 强制缩小弹窗宽度，更精致
+    const modal = $('transferDetailModal').querySelector('.modal-card');
+    modal.style.maxWidth = '280px';
+    modal.style.padding = '25px 20px';
+
     $('transferDetailModal').classList.add('active');
   };
 
