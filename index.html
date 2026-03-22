@@ -739,14 +739,17 @@
 <!-- ===== 查手机页面 ===== -->
   <section id="phoneCheck" class="screen">
     <div class="header">
-      <button class="btn" data-nav="home">‹ 返回</button>
-      <b id="pcTitle">查TA手机</b>
-      <button class="btn p" id="pcRefreshBtn">🔄 一键查询</button>
+      <button class="btn" id="pcBackBtn">‹ 返回</button>
+      <b id="pcTitle">查手机</b>
+      <button class="btn p" id="pcRefreshBtn" style="display:none;">🔄 刷新</button>
     </div>
     <div class="page" style="padding:0;">
+      <div id="pcSelectPage" class="pc-apps" style="padding:12px;">
+        <div style="text-align:center;padding:10px 0 6px;font-size:13px;color:#7a86a8;">选择一部手机来翻</div>
+        <div id="pcContactList"></div>
+      </div>
       <div id="pcLoading" class="pc-loading spin hidden">正在翻TA手机中…</div>
-      <div id="pcEmpty" class="pc-loading">先在微信里选一个联系人聊几句天，再来这里偷看TA的手机~</div>
-      <div id="pcApps" class="pc-apps hidden"></div>
+      <div id="pcResultPage" class="pc-apps hidden"></div>
     </div>
   </section>
   <div id="contactModal" class="modal">
@@ -1937,289 +1940,244 @@ document.addEventListener('click',e=>{
     bindChatMsgEvents();
     updateQuoteBar();
     applyFontSize();
-   // ===== 查手机模块 =====
-    // 粘贴位置：在 initAppStorage().then(()=>{ 里面，
-    // 在 “// ================= 表情包（贴纸）模块” 这行的上面粘贴
+  // ===== 查手机模块 v2 =====
+    const pcCache = {};
+    let pcSelectedId = null;
 
-    let pcLastContactId = null;
-
-    $('phoneCheckIcon').onclick = () => {
-        // 如果有上次聊天的联系人就用它，否则提示
-        const contacts = getContacts();
-        if (!contacts.length) {
-            show('phoneCheck');
-            $('pcEmpty').classList.remove('hidden');
-            $('pcApps').classList.add('hidden');
-            $('pcLoading').classList.add('hidden');
-            return;
-        }
-        // 如果有当前聊天对象，用它；否则用第一个有聊天记录的
-        if (currentId && getContactById(currentId)) {
-            pcLastContactId = currentId;
-        } else {
-            const withChat = contacts.find(c => getChatArr(c.id).length > 0);
-            pcLastContactId = withChat ? withChat.id : contacts[0].id;
-        }
-        const c = getContactById(pcLastContactId);
-        $('pcTitle').textContent = '查' + (c?.name || 'TA') + '的手机';
-        show('phoneCheck');
-        // 如果已经有数据就显示，否则显示空提示
-        if ($('pcApps').innerHTML && !$('pcApps').classList.contains('hidden')) return;
-        $('pcEmpty').classList.remove('hidden');
-        $('pcApps').classList.add('hidden');
-        $('pcLoading').classList.add('hidden');
-    };
-
-    // 返回按钮绑定（因为是动态nav所以这里手动绑）
-    $('phoneCheck').querySelector('[data-nav="home"]').onclick = () => show('home');
-
-    $('pcRefreshBtn').onclick = () => pcDoQuery();
-
-    async function pcDoQuery() {
-        if (!pcLastContactId) return alert('请先选一个聊天对象');
-        const c = getContactById(pcLastContactId);
-        if (!c) return alert('联系人不存在');
-        const st = normSettings(c?.settings);
-        const globalMe = getMe();
-        const me = {
-            name: st.meName || globalMe.name || '我',
-            persona: st.mePersona || globalMe.persona || '',
-            note: st.meNote || globalMe.note || ''
-        };
-
-        // 拿最近的聊天记录摘要（最多15条）
-        const hist = getChatArr(pcLastContactId)
-            .filter(x => x.text && !x.hiddenForAi)
-            .slice(-15)
-            .map(x => `[${x.role === 'user' ? me.name : c.name}] ${(x.text || '').slice(0, 80)}`)
-            .join('\n');
-
-        $('pcEmpty').classList.add('hidden');
-        $('pcApps').classList.add('hidden');
-        $('pcLoading').classList.remove('hidden');
-
-        const sysPrompt = [
-            `你正在扮演：${c.name}`,
-            `你的人设：${c.persona || '自然'}`,
-            `对方名称：${me.name}`,
-            `对方备注：${me.note || '无'}`,
-            `现在是${getSysTimeStr()}`,
-            `最近的聊天记录摘要（用于理解当前剧情和关系状态）：`,
-            hist || '（暂无聊天记录）',
-            `【任务】你现在要模拟${c.name}的手机被翻看的情景。`,
-            `请根据${c.name}的人设、性格、和${me.name}的关系状态、当前剧情，生成${c.name}手机里各个APP的内容。`,
-            `要求：`,
-            `1. 内容必须贴合人设和当前剧情，有温度、有细节、有内心戏`,
-            `2. 微信联系人里必须包含${me.name}（但备注名要根据关系和人设自定义，不一定就叫${me.name}，可以是昵称/爱称/吐槽式备注），还要有3-5个其他联系人（家人/朋友/同事等，根据人设编）`,
-            `3. 每个微信联系人要有2-4条聊天消息`,
-            `4. 日记要有真情实感，写出角色的内心世界`,
-            `5. 备忘录要丰富，2-3条，内容各不相同（待办清单/随笔/提醒等）`,
-            `6. 搜索记录要有趣、符合人设，5-8条`,
-            `7. 草稿箱里放1-2条写了没发出去的消息（给${me.name}或别人的），要有情感张力`,
-            `8. 每次生成的内容都要不一样，随机、鲜活`,
-            `9. timeline是今天一天做了什么，要有内心独白`,
-            `10. 所有内容用中文`,
-            `严格输出以下JSON格式，不要输出任何其他内容：`,
-            `{`,
-            `  "wechat": {`,
-            `    "user_nickname": "（${c.name}给${me.name}的备注名）",`,
-            `    "contacts": [`,
-            `      { "name": "联系人名", "avatar": "emoji", "last": "最后一条消息摘要",`,
-            `        "messages": [{"from":"谁","text":"内容"}, ...] }`,
-            `    ]`,
-            `  },`,
-            `  "diary": [`,
-            `    { "date": "日期", "content": "日记内容（带内心戏，2-4行）" }`,
-            `  ],`,
-            `  "memo": [`,
-            `    { "title": "标题", "content": "内容（丰富一点）" }`,
-            `  ],`,
-            `  "search": ["搜索词1", "搜索词2", ...],`,
-            `  "alipay": [`,
-            `    { "item": "消费项目", "amount": "金额", "time": "时间" }`,
-            `  ],`,
-            `  "shopping": [`,
-            `    { "app": "淘宝/拼多多", "item": "商品名", "price": "价格", "note": "备注" }`,
-            `  ],`,
-            `  "schedule": [`,
-            `    { "time": "时间", "event": "事件" }`,
-            `  ],`,
-            `  "calls": [`,
-            `    { "name": "联系人", "type": "呼出/呼入/未接", "time": "时间" }`,
-            `  ],`,
-            `  "sms": [`,
-            `    { "from": "发件人", "text": "短信内容" }`,
-            `  ],`,
-            `  "drafts": [`,
-            `    { "to": "收件人", "text": "草稿内容（写了没发的话）" }`,
-            `  ],`,
-            `  "xiaohongshu": [`,
-            `    { "title": "收藏/浏览的标题", "note": "简短描述" }`,
-            `  ],`,
-            `  "douyin": [`,
-            `    { "title": "看过的视频描述", "note": "简短心理" }`,
-            `  ],`,
-            `  "music": [`,
-            `    { "song": "歌名", "artist": "歌手", "note": "听歌心情" }`,
-            `  ],`,
-            `  "timeline": [`,
-            `    { "time": "具体时间", "activity": "做了什么", "thought": "内心想法" }`,
-            `  ]`,
-            `}`
-        ].join('\n');
-        try {
-            const out = await callApi([
-                { role: 'system', content: sysPrompt },
-                { role: 'user', content: '现在翻开手机，生成所有APP内容。只输出JSON。' }
-            ]);
-
-
-            let data = null;
-            try {
-                const jsonStr = out.replace(/```json|```/g, '').trim();
-                const m = jsonStr.match(/\{[\s\S]*\}/);
-                data = JSON.parse(m ? m[0] : jsonStr);
-            } catch (e) {
-                throw new Error('AI返回格式异常，请重试');
-            }
-
-            pcRenderApps(data, c);
-
-
-        } catch (e) {
-            $('pcLoading').classList.add('hidden');
-            $('pcEmpty').classList.remove('hidden');
-            $('pcEmpty').textContent = '查询失败：' + (e.message || '未知错误');
-        }
+    function pcShowSelect() {
+      $('pcSelectPage').classList.remove('hidden');
+      $('pcResultPage').classList.add('hidden');
+      $('pcLoading').classList.add('hidden');
+      $('pcRefreshBtn').style.display = 'none';
+      $('pcTitle').textContent = '选择一部手机';
+      const contacts = getContacts();
+      $('pcContactList').innerHTML = contacts.length ? contacts.map(c => {
+        const av = c.avatar || 'https://via.placeholder.com/88x88?text=' + esc(c.name.slice(0,1));
+        const cached = pcCache[c.id] ? '<span style="font-size:11px;color:#07c160;margin-left:6px;">已查</span>' : '';
+        return '<div class="item" style="cursor:pointer;" onclick="window._pcPick(\''+c.id+'\')">' +
+          '<img class="avatar" src="'+av+'" />' +
+          '<div class="main"><div class="name">'+esc(c.name)+cached+'</div>' +
+          '<div class="preview">'+(c.preview ? esc(c.preview) : '点击翻看TA的手机')+'</div></div>' +
+          '<div style="color:#ccc;font-size:18px;font-weight:bold;">›</div></div>';
+      }).join('') : '<div style="text-align:center;padding:30px;color:#999;">还没有联系人</div>';
     }
 
-    function pcRenderApps(data, contact) {
+    $('phoneCheckIcon').onclick = () => { show('phoneCheck'); pcShowSelect(); };
+    $('pcBackBtn').onclick = () => {
+      if (!$('pcSelectPage').classList.contains('hidden')) { show('home'); }
+      else { pcShowSelect(); }
+    };
+
+    window._pcPick = (id) => {
+      pcSelectedId = id;
+      const c = getContactById(id);
+      $('pcTitle').textContent = '查' + (c?.name || 'TA') + '的手机';
+      $('pcRefreshBtn').style.display = '';
+      if (pcCache[id]) { pcRenderApps(pcCache[id], c); return; }
+      pcDoQuery();
+    };
+
+    $('pcRefreshBtn').onclick = () => pcDoQuery();async function pcDoQuery() {
+      if (!pcSelectedId) return;
+      const c = getContactById(pcSelectedId);
+      if (!c) return;
+      const st = normSettings(c?.settings);
+      const globalMe = getMe();
+      const me = {
+        name: st.meName || globalMe.name || '我',
+        persona: st.mePersona || globalMe.persona || '',
+        note: st.meNote || globalMe.note || ''
+      };
+      const hist = getChatArr(pcSelectedId)
+        .filter(x => x.text && !x.hiddenForAi)
+        .slice(-15)
+        .map(x => '[' + (x.role === 'user' ? me.name : c.name) + '] ' + (x.text || '').slice(0, 80))
+        .join('\n');
+
+      $('pcSelectPage').classList.add('hidden');
+      $('pcResultPage').classList.add('hidden');
+      $('pcLoading').classList.remove('hidden');
+
+      const sysPrompt = [
+        '你正在扮演：' + c.name,
+        '你的人设：' + (c.persona || '自然'),
+        '对方名称：' + me.name,
+        '对方备注：' + (me.note || '无'),
+        '现在是' + getSysTimeStr(),
+        '',
+        '最近的聊天记录摘要：',
+        hist || '（暂无聊天记录）',
+        '',
+        '【任务】模拟' + c.name + '的手机被翻看。根据人设、性格、和' + me.name + '的关系、当前剧情，生成手机里各APP内容。',
+        '',
+        '要求：',
+        '1. 内容贴合人设和剧情，有温度、细节、内心戏，每次都不一样',
+        '2. 微信：必须包含' + me.name + '（备注名根据关系自定义），还有3-5个其他人，每人2-4条消息',
+        '3. 日记：2-3篇，真情实感，每篇3-6行',
+        '4. 备忘录：3-5条，内容各不相同（待办/随笔/脑洞/哄人计划等）',
+        '5. 搜索记录：6-10条，有趣、暴露小心思。每条要有title和url（编一个合理的假URL）和detail（点开后看到的内容摘要，2-4行）',
+        '6. 草稿箱：2-3条没发的消息，有情感张力',
+        '7. 时间线：6-10条，每条带内心独白',
+        '8. 相册：6-9张照片文字描述和心情',
+        '9. 钱包：余额+6-8条收支记录',
+        '10. 小号：2-3条不想被发现的内容',
+        '11. 音乐：3-5首，带听歌心情',
+        '12. 小红书/抖音：各3-4条',
+        '13. 通话记录：4-6条',
+        '14. 短信：2-3条',
+        '15. 日程：3-5条',
+        '16. 购物：3-5条',
+        '17. 所有内容用中文',
+        '',
+        '严格输出JSON：',
+        '{',
+        '  "wechat":{"user_nickname":"备注名","contacts":[{"name":"名","avatar":"emoji","last":"摘要","messages":[{"from":"谁","text":"内容"}]}]},',
+        '  "diary":[{"date":"日期","content":"3-6行日记"}],',
+        '  "memo":[{"title":"标题","content":"丰富内容"}],',
+        '  "search":[{"title":"搜索标题","url":"假URL","detail":"点开后的内容摘要2-4行"}],',
+        '  "album":[{"desc":"照片描述","mood":"心情"}],',
+        '  "wallet":{"balance":"余额","records":[{"item":"项目","amount":"+或-金额","time":"时间"}]},',
+        '  "secret":[{"platform":"平台","content":"内容"}],',
+        '  "alipay":[{"item":"项目","amount":"金额","time":"时间"}],',
+        '  "shopping":[{"app":"平台","item":"商品","price":"价格","note":"备注"}],',
+        '  "schedule":[{"time":"时间","event":"事件"}],',
+        '  "calls":[{"name":"联系人","type":"呼出/呼入/未接","time":"时间"}],',
+        '  "sms":[{"from":"发件人","text":"内容"}],',
+        '  "drafts":[{"to":"收件人","text":"草稿"}],',
+        '  "xiaohongshu":[{"title":"标题","note":"描述"}],',
+        '  "douyin":[{"title":"视频描述","note":"心理"}],',
+        '  "music":[{"song":"歌名","artist":"歌手","note":"心情"}],',
+        '  "timeline":[{"time":"时间","activity":"做了什么","thought":"内心想法"}]',
+        '}'
+      ].join('\n');
+
+      try {
+        const out = await callApi([
+          { role: 'system', content: sysPrompt },
+          { role: 'user', content: '翻开手机，生成所有APP内容。只输出JSON。' }
+        ]);
+        let data = null;
+        try {
+          const jsonStr = out.replace(/```json|```/g, '').trim();
+          const m2 = jsonStr.match(/\{[\s\S]*\}/);
+          data = JSON.parse(m2 ? m2[0] : jsonStr);
+        } catch (e) { throw new Error('AI返回格式异常，请重试'); }
+        pcCache[pcSelectedId] = data;
+        pcRenderApps(data, c);
+      } catch (e) {
         $('pcLoading').classList.add('hidden');
-        $('pcEmpty').classList.add('hidden');
-        $('pcApps').classList.remove('hidden');
+        $('pcSelectPage').classList.remove('hidden');
+        alert('查询失败：' + (e.message || '未知错误'));
+      }
+    }function pcRenderApps(data, contact) {
+      $('pcLoading').classList.add('hidden');
+      $('pcSelectPage').classList.add('hidden');
+      $('pcResultPage').classList.remove('hidden');
+      $('pcResultPage').innerHTML = '';
+      const apps = [];
 
-        const apps = [];
+      if (data.wechat) {
+        const wx = data.wechat;
+        let b = '';
+        if (wx.user_nickname) b += '<div style="padding:6px 0 10px;font-size:12px;color:#888;">TA给你的备注：<b style="color:#2f66d8;">' + esc(wx.user_nickname) + '</b></div>';
+        (wx.contacts || []).forEach(c => {
+          b += '<div class="pc-wx-item" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'block\':\'none\'"><div class="pc-wx-av">' + (c.avatar||'👤') + '</div><div class="pc-wx-info"><div class="pc-wx-name">' + esc(c.name) + '</div><div class="pc-wx-last">' + esc(c.last||'') + '</div></div></div><div class="pc-wx-detail" style="display:none;">' + (c.messages||[]).map(m => '<div class="pc-wx-msg"><b>' + esc(m.from) + '：</b>' + esc(m.text) + '</div>').join('') + '</div>';
+        });
+        apps.push({icon:'💬',bg:'#07c160',name:'微信',desc:(wx.contacts||[]).length+'个联系人',body:b});
+      }
 
-        // 1. 微信
-        if (data.wechat) {
-            const wx = data.wechat;
-            let wxBody = '';
-            if (wx.user_nickname) {
-                wxBody += `<div style="padding:6px 0 10px;font-size:12px;color:#888;">TA给你的备注：<b style="color:#2f66d8;">${esc(wx.user_nickname)}</b></div>`;
-            }
-            (wx.contacts || []).forEach((c, ci) => {
-                wxBody += `<div class="pc-wx-item" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"> <div class="pc-wx-av">${c.avatar || '👤'}</div> <div class="pc-wx-info"><div class="pc-wx-name">${esc(c.name)}</div><div class="pc-wx-last">${esc(c.last || '')}</div></div> </div> <div class="pc-wx-detail" style="display:none;"> ${(c.messages || []).map(m => `<div class="pc-wx-msg"><b>${esc(m.from)}：</b>${esc(m.text)}</div>`).join('')} </div>`;
-            });
-            apps.push({ icon: '💬', bg: '#07c160', name: '微信', desc: `${(wx.contacts||[]).length}个最近联系人`, body: wxBody });
-        }
+      if (data.album && data.album.length) {
+        const b = data.album.map((a,i) => '<div class="pc-diary-item"><div style="font-size:12px;color:#2f66d8;font-weight:600;">📷 照片 '+(i+1)+'</div><div style="margin-top:4px;font-size:13px;">' + esc(a.desc) + '</div>' + (a.mood ? '<div style="font-size:12px;color:#888;margin-top:2px;font-style:italic;">💭 ' + esc(a.mood) + '</div>' : '') + '</div>').join('');
+        apps.push({icon:'🖼️',bg:'#ff9500',name:'相册',desc:data.album.length+'张照片',body:b});
+      }
 
-        // 2. 日记
-        if (data.diary && data.diary.length) {
-            const diaryBody = data.diary.map(d =>
-                `<div class="pc-diary-item"><div class="pc-diary-date">${esc(d.date)}</div><div class="pc-diary-text">${esc(d.content)}</div></div>`
-            ).join('');
-            apps.push({ icon: '📔', bg: '#ff9a9e', name: '日记', desc: '最近的心情', body: diaryBody });
-        }
+      if (data.wallet) {
+        const w = data.wallet;
+        let b = '<div style="background:linear-gradient(135deg,#ff9a56,#ff6b6b);color:#fff;border-radius:12px;padding:16px;margin-bottom:10px;"><div style="font-size:12px;opacity:.8;">余额</div><div style="font-size:28px;font-weight:700;margin-top:4px;">¥' + esc(w.balance||'0') + '</div></div>';
+        (w.records||[]).forEach(r => {
+          const isPlus = String(r.amount||'').includes('+');
+          b += '<div class="pc-pay-item"><div><div>' + esc(r.item) + '</div><div style="font-size:11px;color:#999;">' + esc(r.time||'') + '</div></div><div style="color:' + (isPlus?'#07c160':'#e74c3c') + ';font-weight:600;">' + esc(r.amount) + '</div></div>';
+        });
+        apps.push({icon:'💰',bg:'#ff6b6b',name:'钱包',desc:'余额 ¥'+esc(w.balance||'0'),body:b});
+      }
 
-        // 3. 备忘录
-        if (data.memo && data.memo.length) {
-            const memoBody = data.memo.map(m =>
-                `<div class="pc-memo-item"><div class="pc-memo-title">${esc(m.title)}</div><div class="pc-memo-text">${esc(m.content)}</div></div>`
-            ).join('');
-            apps.push({ icon: '📝', bg: '#ffc107', name: '备忘录', desc: `${data.memo.length}条笔记`, body: memoBody });
-        }
+      if (data.secret && data.secret.length) {
+        const b = data.secret.map(s => '<div class="pc-diary-item"><div style="font-size:12px;color:#9b59b6;font-weight:600;">🤫 ' + esc(s.platform||'小号') + '</div><div class="pc-diary-text">' + esc(s.content) + '</div></div>').join('');
+        apps.push({icon:'🤫',bg:'#9b59b6',name:'小号',desc:'不想被发现的',body:b});
+      }
 
-        // 4. 搜索记录
-        if (data.search && data.search.length) {
-            const searchBody = data.search.map(s =>
-                `<div class="pc-search-item">${esc(s)}</div>`
-            ).join('');
-            apps.push({ icon: '🌐', bg: '#4285f4', name: '搜索记录', desc: `${data.search.length}条搜索`, body: searchBody });
-        }
+      if (data.diary && data.diary.length) {
+        const b = data.diary.map(d => '<div class="pc-diary-item"><div class="pc-diary-date">' + esc(d.date) + '</div><div class="pc-diary-text">' + esc(d.content) + '</div></div>').join('');
+        apps.push({icon:'📔',bg:'#ff9a9e',name:'日记',desc:'最近的心情',body:b});
+      }
 
-        // 5. 草稿箱
-        if (data.drafts && data.drafts.length) {
-            const draftBody = data.drafts.map(d =>
-                `<div class="pc-draft-item"><div class="pc-draft-to">写给：${esc(d.to)}</div><div class="pc-draft-text">${esc(d.text)}</div></div>`
-            ).join('');
-            apps.push({ icon: '✏️', bg: '#9b59b6', name: '草稿箱', desc: '写了没发的话', body: draftBody });
-        }
+      if (data.memo && data.memo.length) {
+        const b = data.memo.map(m => '<div class="pc-memo-item"><div class="pc-memo-title">' + esc(m.title) + '</div><div class="pc-memo-text">' + esc(m.content) + '</div></div>').join('');
+        apps.push({icon:'📝',bg:'#ffc107',name:'备忘录',desc:data.memo.length+'条笔记',body:b});
+      }
 
-        // 6. 一天时间线
-        if (data.timeline && data.timeline.length) {
-            const tlBody = data.timeline.map(t =>
-                `<div class="pc-tl-item"><div class="pc-tl-time">${esc(t.time)}</div><div class="pc-tl-content"><div class="pc-tl-act">${esc(t.activity)}</div>${t.thought ? `<div class="pc-tl-thought">💭 ${esc(t.thought)}</div>` : ''}</div></div>`
-            ).join('');
-            apps.push({ icon: '⏱️', bg: '#2f66d8', name: '今日时间线', desc: '今天做了什么', body: tlBody });
-        }
+      if (data.search && data.search.length) {
+        const b = (Array.isArray(data.search) ? data.search : []).map(s => {
+          if (typeof s === 'string') return '<div class="pc-search-item">' + esc(s) + '</div>';
+          return '<div style="padding:10px 0;border-bottom:1px solid #f5f5f8;cursor:pointer;" onclick="this.querySelector(\'.pc-s-detail\').style.display=this.querySelector(\'.pc-s-detail\').style.display===\'none\'?\'block\':\'none\'">' +
+            '<div style="font-size:13px;color:#2f66d8;font-weight:600;">🔍 ' + esc(s.title||'') + '</div>' +
+            (s.url ? '<div style="font-size:11px;color:#999;margin-top:2px;">' + esc(s.url) + '</div>' : '') +
+            '<div class="pc-s-detail" style="display:none;margin-top:8px;padding:10px;background:#f8f9ff;border-radius:8px;border:1px solid #eef2ff;font-size:13px;color:#333;line-height:1.6;white-space:pre-wrap;">' + esc(s.detail||'暂无详情') + '</div></div>';
+        }).join('');
+        apps.push({icon:'🌐',bg:'#4285f4',name:'搜索记录',desc:(data.search||[]).length+'条',body:b});
+      }
 
-        // 7. 支付宝
-        if (data.alipay && data.alipay.length) {
-            const payBody = data.alipay.map(p =>
-                `<div class="pc-pay-item"><div><div>${esc(p.item)}</div><div style="font-size:11px;color:#999;">${esc(p.time||'')}</div></div><div class="pc-pay-amount">-${esc(p.amount)}</div></div>`
-            ).join('');
-            apps.push({ icon: '💰', bg: '#1677ff', name: '支付宝', desc: '最近消费', body: payBody });
-        }
+      if (data.drafts && data.drafts.length) {
+        const b = data.drafts.map(d => '<div class="pc-draft-item"><div class="pc-draft-to">写给：' + esc(d.to) + '</div><div class="pc-draft-text">' + esc(d.text) + '</div></div>').join('');
+        apps.push({icon:'✏️',bg:'#8e44ad',name:'草稿箱',desc:'写了没发的话',body:b});
+      }
 
-        // 8. 淘宝/拼多多
-        if (data.shopping && data.shopping.length) {
-            const shopBody = data.shopping.map(s =>
-                `<div class="pc-pay-item"><div><div>${esc(s.item)}</div><div style="font-size:11px;color:#999;">${esc(s.app||'淘宝')} ${s.note ? '· '+esc(s.note) : ''}</div></div><div style="color:#e74c3c;font-weight:600;">¥${esc(s.price)}</div></div>`
-            ).join('');
-            apps.push({ icon: '🛒', bg: '#ff5722', name: '购物', desc: '最近浏览/下单', body: shopBody });
-        }
+      if (data.timeline && data.timeline.length) {
+        const b = data.timeline.map(t => '<div class="pc-tl-item"><div class="pc-tl-time">' + esc(t.time) + '</div><div class="pc-tl-content"><div class="pc-tl-act">' + esc(t.activity) + '</div>' + (t.thought ? '<div class="pc-tl-thought">💭 ' + esc(t.thought) + '</div>' : '') + '</div></div>').join('');
+        apps.push({icon:'⏱️',bg:'#2f66d8',name:'今日时间线',desc:'今天做了什么',body:b});
+      }
 
-        // 9. 日程
-        if (data.schedule && data.schedule.length) {
-            const schBody = data.schedule.map(s =>
-                `<div class="pc-schedule-item"><div class="pc-schedule-time">${esc(s.time)}</div><div>${esc(s.event)}</div></div>`
-            ).join('');
-            apps.push({ icon: '📅', bg: '#00bcd4', name: '日程', desc: '近期安排', body: schBody });
-        }
+      if (data.music && data.music.length) {
+        const b = data.music.map(m => '<div class="pc-music-item"><div class="pc-music-icon">🎵</div><div><div>' + esc(m.song) + '</div><div class="pc-music-artist">' + esc(m.artist) + (m.note ? ' · ' + esc(m.note) : '') + '</div></div></div>').join('');
+        apps.push({icon:'🎵',bg:'#e74c3c',name:'音乐',desc:'最近在听',body:b});
+      }
 
-        // 10. 电话
-        if (data.calls && data.calls.length) {
-            const callBody = data.calls.map(c => {
-                const missed = (c.type||'').includes('未接');
-                return `<div class="pc-call-item"><div><div>${esc(c.name)}</div><div style="font-size:11px;color:#999;">${esc(c.time||'')}</div></div><div class="pc-call-type ${missed?'missed':''}">${esc(c.type)}</div></div>`;
-            }).join('');
-            apps.push({ icon: '📞', bg: '#4caf50', name: '电话', desc: '通话记录', body: callBody });
-        }
+      if (data.alipay && data.alipay.length) {
+        const b = data.alipay.map(p => '<div class="pc-pay-item"><div><div>' + esc(p.item) + '</div><div style="font-size:11px;color:#999;">' + esc(p.time||'') + '</div></div><div class="pc-pay-amount">-' + esc(p.amount) + '</div></div>').join('');
+        apps.push({icon:'💳',bg:'#1677ff',name:'支付宝',desc:'消费记录',body:b});
+      }
 
-        // 11. 短信
-        if (data.sms && data.sms.length) {
-            const smsBody = data.sms.map(s =>
-                `<div class="pc-sms-item"><div class="pc-sms-from">${esc(s.from)}</div><div class="pc-sms-text">${esc(s.text)}</div></div>`
-            ).join('');
-            apps.push({ icon: '💌', bg: '#e91e63', name: '短信', desc: `${data.sms.length}条`, body: smsBody });
-        }
+      if (data.shopping && data.shopping.length) {
+        const b = data.shopping.map(s => '<div class="pc-pay-item"><div><div>' + esc(s.item) + '</div><div style="font-size:11px;color:#999;">' + esc(s.app||'淘宝') + (s.note ? ' · ' + esc(s.note) : '') + '</div></div><div style="color:#e74c3c;font-weight:600;">¥' + esc(s.price) + '</div></div>').join('');
+        apps.push({icon:'🛒',bg:'#ff5722',name:'购物',desc:'最近浏览',body:b});
+      }
 
-        // 12. 音乐
-        if (data.music && data.music.length) {
-            const musicBody = data.music.map(m =>
-                `<div class="pc-music-item"><div class="pc-music-icon">🎵</div><div><div>${esc(m.song)}</div><div class="pc-music-artist">${esc(m.artist)} ${m.note ? '· '+esc(m.note) : ''}</div></div></div>`
-            ).join('');
-            apps.push({ icon: '🎵', bg: '#e74c3c', name: '音乐', desc: '最近在听', body: musicBody });
-        }
+      if (data.schedule && data.schedule.length) {
+        const b = data.schedule.map(s => '<div class="pc-schedule-item"><div class="pc-schedule-time">' + esc(s.time) + '</div><div>' + esc(s.event) + '</div></div>').join('');
+        apps.push({icon:'📅',bg:'#00bcd4',name:'日程',desc:'近期安排',body:b});
+      }
 
-        // 13. 小红书
-        if (data.xiaohongshu && data.xiaohongshu.length) {
-            const xhsBody = data.xiaohongshu.map(x =>
-                `<div class="pc-social-item"><div class="pc-social-title">${esc(x.title)}</div>${x.note ? `<div class="pc-social-note">${esc(x.note)}</div>` : ''}</div>`
-            ).join('');
-            apps.push({ icon: '📕', bg: '#fe2c55', name: '小红书', desc: '收藏/浏览', body: xhsBody });
-        }
+      if (data.calls && data.calls.length) {
+        const b = data.calls.map(c2 => { const missed=(c2.type||'').includes('未接'); return '<div class="pc-call-item"><div><div>'+esc(c2.name)+'</div><div style="font-size:11px;color:#999;">'+esc(c2.time||'')+'</div></div><div class="pc-call-type '+(missed?'missed':'')+'">'+esc(c2.type)+'</div></div>'; }).join('');
+        apps.push({icon:'📞',bg:'#4caf50',name:'电话',desc:'通话记录',body:b});
+      }
 
-        // 14. 抖音
-        if (data.douyin && data.douyin.length) {
-            const dyBody = data.douyin.map(d =>
-                `<div class="pc-social-item"><div class="pc-social-title">${esc(d.title)}</div>${d.note ? `<div class="pc-social-note">💭 ${esc(d.note)}</div>` : ''}</div>`
-            ).join('');
-            apps.push({ icon: '🎬', bg: '#000', name: '抖音', desc: '最近看的', body: dyBody });
-        }
+      if (data.sms && data.sms.length) {
+        const b = data.sms.map(s => '<div class="pc-sms-item"><div class="pc-sms-from">'+esc(s.from)+'</div><div class="pc-sms-text">'+esc(s.text)+'</div></div>').join('');
+        apps.push({icon:'💌',bg:'#e91e63',name:'短信',desc:data.sms.length+'条',body:b});
+      }
 
-        // 渲染所有APP卡片
-        $('pcApps').innerHTML = apps.map((a, i) => `<div class="pc-app" id="pcApp${i}"> <div class="pc-app-hd" onclick="this.parentElement.classList.toggle('open')"> <div class="pc-app-icon" style="background:${a.bg};">${a.icon}</div> <div class="pc-app-info"> <div class="pc-app-name">${esc(a.name)}</div> <div class="pc-app-desc">${esc(a.desc)}</div> </div> <div class="pc-app-arrow">›</div> </div> <div class="pc-app-body">${a.body}</div> </div>`).join('');
+      if (data.xiaohongshu && data.xiaohongshu.length) {
+        const b = data.xiaohongshu.map(x => '<div class="pc-social-item"><div class="pc-social-title">'+esc(x.title)+'</div>'+(x.note?'<div class="pc-social-note">'+esc(x.note)+'</div>':'')+'</div>').join('');
+        apps.push({icon:'📕',bg:'#fe2c55',name:'小红书',desc:'收藏/浏览',body:b});
+      }
+
+      if (data.douyin && data.douyin.length) {
+        const b = data.douyin.map(d => '<div class="pc-social-item"><div class="pc-social-title">'+esc(d.title)+'</div>'+(d.note?'<div class="pc-social-note">💭 '+esc(d.note)+'</div>':'')+'</div>').join('');
+        apps.push({icon:'🎬',bg:'#000',name:'抖音',desc:'最近看的',body:b});
+      }
+
+      $('pcResultPage').innerHTML = apps.map((a,i) => '<div class="pc-app" id="pcApp'+i+'"><div class="pc-app-hd" onclick="this.parentElement.classList.toggle(\'open\')"><div class="pc-app-icon" style="background:'+a.bg+';">'+a.icon+'</div><div class="pc-app-info"><div class="pc-app-name">'+esc(a.name)+'</div><div class="pc-app-desc">'+esc(a.desc)+'</div></div><div class="pc-app-arrow">›</div></div><div class="pc-app-body">'+a.body+'</div></div>').join('');
     }
     // ===== 查手机模块结束 =====
     // ================= 表情包（贴纸）模块（0触发API，仅入聊天） =================
