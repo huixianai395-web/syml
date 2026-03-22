@@ -383,7 +383,9 @@
 }
 .st-tile.selected .st-sel{background:#2f66d8;border-color:#2f66d8;color:#fff;}
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
+  <script>
+!function(){const m={};window.localforage={async getItem(k){try{return k in m?m[k]:(v=>v===null?null:JSON.parse(v))(localStorage.getItem(k))}catch{return null}},async setItem(k,v){m[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){console.warn('storage',e)}return v},async removeItem(k){delete m[k];localStorage.removeItem(k)}};}();
+  </script>
 </head>
 <body>
 <div id="app">
@@ -806,7 +808,7 @@
   let lpTimer=null,lpStartX=0,lpStartY=0;
   let meAvatarDraft='',roleAvatarDraft='';
   let favSelectMode=false,favSelected=new Set(),favNowTimer=null;
-
+let aiLock=false;
   const $=id=>document.getElementById(id);
   const clean=s=>String(s||'').trim();
   const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;' }[m]));
@@ -1510,6 +1512,8 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 
   async function sendMsg(){
     if(!currentId) return;
+    if(aiLock) return;
+aiLock=true;
 const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),globalMe=getMe();
     const me = {
       name: st.meName !== undefined ? st.meName : globalMe.name,
@@ -1555,7 +1559,7 @@ else{
     }catch(e){
       const arr2=getChatArr(chatId);arr2.push(toMsg({role:'assistant',text:'请求失败：'+clean(e.message),time:Date.now()}));setChatArr(chatId,arr2);
       updateContactPreview(chatId); if(currentId===chatId) renderChat();
-    }finally{setTyping(chatId,false);} 
+   }finally{setTyping(chatId,false);aiLock=false;}
   }
 
   $('sendBtn').onclick=sendMsg;
@@ -2559,6 +2563,7 @@ $("customBgFile").addEventListener("change", async (e) => {
 
     <button class="btn" style="margin-top:25px; background: #eef3ff; color: #5a6a8f; width:100%; border:none;" onclick="document.getElementById('transferDetailModal').classList.remove('active')">返回聊天</button>
   </div>
+</div>
 </div>
 </body>
 </html>
