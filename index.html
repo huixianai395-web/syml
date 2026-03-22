@@ -1461,7 +1461,7 @@ function buildContent(x,st){
   }
   return text;
 }
-const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:buildContent(x,st)})),{role:'user',content:modeTag}];
+const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:(()=>{const c=buildContent(x,st);return typeof c==='string'?`[${fmtTs(x.time)}] ${c}`:c;})()})),{role:'user',content:modeTag}];
       const out=await callApi(messages);
 
       let parts=[];
