@@ -766,6 +766,37 @@
   </div>
 
 </div>
+  <!-- === 模拟发图 & 转账的弹窗 === -->
+<div id="fakeImgModal" class="modal">
+  <div class="modal-card">
+    <h3 style="margin:0 0 15px;">✨ 发送模拟图片</h3>
+    <div id="fakeCoverPreviewBox" style="width:120px; height:120px; border-radius:12px; border:2px dashed #d7e3ff; margin:0 auto 15px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#a0b0d0; cursor:pointer;">
+      <span style="font-size:28px; margin-bottom:4px;">🖼️</span><span style="font-size:12px;">上传封面(可选)</span>
+    </div>
+    <img id="fakeCoverPreview" src="" style="width:120px; height:120px; border-radius:12px; object-fit:cover; border:2px dashed #d7e3ff; display:none; margin:0 auto 15px; cursor:pointer;">
+    <input type="file" id="fakeCoverFile" accept="image/*" class="hidden">
+    <div class="small" style="margin-bottom:6px;">画面描述（点击图片会翻转显示文字）：</div>
+    <textarea id="fakeImgDesc" class="ta" placeholder="例如：一张穿着白裙子的绝美全身照..." style="height:100px;"></textarea>
+    <div class="row" style="justify-content:flex-end;margin-top:15px;gap:10px;">
+      <button class="btn" onclick="document.getElementById('fakeImgModal').classList.remove('active')">取消</button>
+      <button class="btn p" id="sendFakeImgBtn">发送</button>
+    </div>
+  </div>
+</div>
+
+<div id="transferModal" class="modal">
+  <div class="modal-card">
+    <h3 style="margin:0 0 15px;">💸 发起转账</h3>
+    <div class="small">金额 (元)</div>
+    <input type="number" id="transferAmount" class="input" style="font-size:24px; font-weight:bold; color:#f5a623; margin-bottom:12px;" placeholder="0.00" />
+    <div class="small">备注</div>
+    <input type="text" id="transferNote" class="input" placeholder="转账给你的" />
+    <div class="row" style="justify-content:flex-end;margin-top:15px;gap:10px;">
+      <button class="btn" onclick="document.getElementById('transferModal').classList.remove('active')">取消</button>
+      <button class="btn p" id="sendTransferBtn" style="background:#f5a623;">确认转账</button>
+    </div>
+  </div>
+</div>
 
 <script>
 (() => {
@@ -2468,36 +2499,6 @@ $("customBgFile").addEventListener("change", async (e) => {
   <div id="modalPreview" class="modal" onclick="this.classList.remove('active')">
   <img id="previewModalImg" style="max-width:95%;max-height:90dvh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
   </div>
-  <!-- === 模拟发图 & 转账的弹窗 === -->
-<div id="fakeImgModal" class="modal">
-  <div class="modal-card">
-    <h3 style="margin:0 0 15px;">✨ 发送模拟图片</h3>
-    <div id="fakeCoverPreviewBox" style="width:120px; height:120px; border-radius:12px; border:2px dashed #d7e3ff; margin:0 auto 15px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#a0b0d0; cursor:pointer;">
-      <span style="font-size:28px; margin-bottom:4px;">🖼️</span><span style="font-size:12px;">上传封面(可选)</span>
-    </div>
-    <img id="fakeCoverPreview" src="" style="width:120px; height:120px; border-radius:12px; object-fit:cover; border:2px dashed #d7e3ff; display:none; margin:0 auto 15px; cursor:pointer;">
-    <input type="file" id="fakeCoverFile" accept="image/*" class="hidden">
-    <div class="small" style="margin-bottom:6px;">画面描述（点击图片会翻转显示文字）：</div>
-    <textarea id="fakeImgDesc" class="ta" placeholder="例如：一张穿着白裙子的绝美全身照..." style="height:100px;"></textarea>
-    <div class="row" style="justify-content:flex-end;margin-top:15px;gap:10px;">
-      <button class="btn" onclick="document.getElementById('fakeImgModal').classList.remove('active')">取消</button>
-      <button class="btn p" id="sendFakeImgBtn">发送</button>
-    </div>
-  </div>
-</div>
-
-<div id="transferModal" class="modal">
-  <div class="modal-card">
-    <h3 style="margin:0 0 15px;">💸 发起转账</h3>
-    <div class="small">金额 (元)</div>
-    <input type="number" id="transferAmount" class="input" style="font-size:24px; font-weight:bold; color:#f5a623; margin-bottom:12px;" placeholder="0.00" />
-    <div class="small">备注</div>
-    <input type="text" id="transferNote" class="input" placeholder="转账给你的" />
-    <div class="row" style="justify-content:flex-end;margin-top:15px;gap:10px;">
-      <button class="btn" onclick="document.getElementById('transferModal').classList.remove('active')">取消</button>
-      <button class="btn p" id="sendTransferBtn" style="background:#f5a623;">确认转账</button>
-    </div>
-  </div>
-</div>
+ 
 </body>
 </html>
