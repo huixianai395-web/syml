@@ -2029,7 +2029,7 @@ document.addEventListener('click',e=>{
         '1. 所有内容严格贴合人设和当前剧情关系，有温度细节内心戏，每次不一样',
         '2. 微信：必须包含' + me.name + '（备注名根据关系和人设自定义，绝对不能直接用原名，要用昵称/爱称/吐槽式/暗号式备注），还有3-6个其他联系人（家人/朋友/同事/群聊等根据人设编），每人消息条数2-6条随机不等',
         '3. 日记：2-3篇。格式像真实手机日记：开头写日期天气心情，正文分段写，有碎碎念有内心独白有对' + me.name + '的想法，每篇4-8行，语气口语化私密感强',
-        '4. 备忘录：4-7条！越多越好！类型要丰富随机：待办清单、购物清单、某件事的吐槽、脑洞随笔、哄' + me.name + '的计划、自我反省、健身/学习计划、想说没说出口的话、收藏的句子、记账、旅行计划等等随机组合',
+        '4. 备忘录：5-7条！大部分要是角色自己的私人内容（健身计划/游戏攻略/工作笔记/追剧清单/食谱/理财/自我反省等根据人设来），只有3-4条和' + me.name + '相关就行，不要全围绕' + me.name,
         '5. 搜索记录：6-10条，有趣暴露小心思。每条要有title、url（编合理假URL）、detail（点开看到的内容2-5行，要像真实网页摘要）',
         '6. 草稿箱：2-3条没发出的消息，情感张力强',
         '7. 时间线：6-10条带内心独白',
@@ -2099,11 +2099,10 @@ document.addEventListener('click',e=>{
             '<div class="pc-wx-av">' + (c.avatar||'👤') + '</div>' +
             '<div class="pc-wx-info"><div class="pc-wx-name">' + esc(c.name) + '</div><div class="pc-wx-last">' + esc(c.last||'') + '</div></div></div>' +
             '<div class="pc-wx-detail" style="display:none;">' +
-            (c.messages||[]).map(m => {
-              const isRole = m.from === (contact?.name||'');
-              return '<div style="display:flex;justify-content:' + (isRole?'flex-start':'flex-end') + ';padding:3px 0;">' +
-                '<div style="max-width:78%;padding:8px 10px;border-radius:' + (isRole?'4px 12px 12px 12px':'12px 4px 12px 12px') + ';background:' + (isRole?'#fff':'#95ec69') + ';border:1px solid ' + (isRole?'#e8e8ef':'#86d962') + ';font-size:13px;color:#222;">' +
-                '<div style="font-size:10px;color:#999;margin-bottom:2px;">' + esc(m.from) + '</div>' + esc(m.text) + '</div></div>';
+           (c.messages||[]).map(m => {
+              const isSelf = m.from === (contact?.name||'');
+              if(isSelf) return '<div style="display:flex;gap:8px;padding:4px 0;"><div style="width:30px;height:30px;border-radius:6px;background:#ddd;flex-shrink:0;display:grid;place-items:center;font-size:14px;">' + (c.avatar||'👤') + '</div><div style="max-width:72%;padding:8px 10px;border-radius:2px 12px 12px 12px;background:#fff;font-size:13px;color:#222;">' + esc(m.text) + '</div></div>';
+              return '<div style="display:flex;gap:8px;padding:4px 0;justify-content:flex-end;"><div style="max-width:72%;padding:8px 10px;border-radius:12px 2px 12px 12px;background:#95ec69;font-size:13px;color:#222;">' + esc(m.text) + '</div><div style="width:30px;height:30px;border-radius:6px;background:#a8d8ff;flex-shrink:0;display:grid;place-items:center;font-size:11px;color:#fff;">我</div></div>';
             }).join('') + '</div>';
         });
         apps.push({icon:'💬',bg:'#07c160',name:'微信',desc:(wx.contacts||[]).length+'个联系人',body:b});
