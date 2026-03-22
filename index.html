@@ -1086,12 +1086,14 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
     }
     if((t.startsWith('[stk:') || t.startsWith('[st_')) && t.endsWith(']')){
   const id = t.startsWith('[stk:') ? t.slice(5,-1) : t.slice(1,-1);
-  const id=t.slice(5,-1);
-  const src=window.__stickerGetSrcById?window.__stickerGetSrcById(id):'';
-  const safe=src||'';
-if(!safe) return `${quote}${ts}`;
-  return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-sticker" src="${safe}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
-    }
+  const src = window.__stickerGetSrcById ? window.__stickerGetSrcById(id) : '';
+  if(!src) return `${quote}${ts}`;
+  return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-sticker" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
+}
+if(!isMe && isHtmlDoc(t)){
+  const src=toHtmlDataUrl(t);
+  return `${quote}<div class="bubble ${cls} has-html${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts allow-modals" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
+}
     if(!isMe && isHtmlDoc(t)){
       const src=toHtmlDataUrl(t);
       return `${quote}<div class="bubble-wrap ${cls}"><img class="bubble-sticker" src="${safe}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
