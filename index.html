@@ -1087,7 +1087,8 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
     if(t.startsWith('[stk:') && t.endsWith(']')){
   const id=t.slice(5,-1);
   const src=window.__stickerGetSrcById?window.__stickerGetSrcById(id):'';
-  const safe=src||'https://via.placeholder.com/96x96?text=stk';
+  const safe=src||'';
+if(!safe) return `${quote}${ts}`;
   return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-sticker" src="${safe}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
     }
     if(!isMe && isHtmlDoc(t)){
