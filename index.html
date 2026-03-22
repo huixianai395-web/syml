@@ -73,13 +73,7 @@
     .bubble.me{background:#2f66d8;color:#fff;border-bottom-right-radius:6px}
     .bubble.ai{background:#fff;border:1px solid #e8e8ef;border-bottom-left-radius:6px}
     .msg-time{font-size:10px;color:#96a0b9;margin-top:4px;padding:0 2px}
-/* === 模拟发图 & 转账样式 === */
-.fake-img-box { position:relative; width:150px; height:180px; border-radius:12px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.08); background:#f0f4ff; cursor:pointer; font-size:12px;}
-.fake-img-cover { width:100%; height:100%; object-fit:cover; display:block; }
-.fake-img-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:bold; z-index:2; }
-.fake-img-desc { display:none; position:absolute; inset:0; background:#f8f9ff; padding:15px; overflow-y:auto; color:#333; line-height:1.6; z-index:3; text-align:left; word-break:break-all; }
-.transfer-box { background:#f5a623; color:#fff; border-radius:12px; padding:12px 16px; min-width:200px; display:inline-block; box-shadow:0 2px 8px rgba(245,166,35,0.2); text-align:left; cursor:pointer;}
-.bubble:has(.fake-img-box), .bubble:has(.transfer-box) { padding:0!important; background:transparent!important; border:none!important; box-shadow:none!important; }
+
     /* HTML 嵌入支持 */
     .bubble.has-html{padding:4px!important;max-width:100%!important;overflow:visible!important;background:transparent!important;border:none!important;box-shadow:none!important}
 .bubble .html-embed{width:100%;max-width:100%}
@@ -383,9 +377,7 @@
 }
 .st-tile.selected .st-sel{background:#2f66d8;border-color:#2f66d8;color:#fff;}
   </style>
-  <script>
-!function(){const m={};window.localforage={async getItem(k){try{return k in m?m[k]:(v=>v===null?null:JSON.parse(v))(localStorage.getItem(k))}catch{return null}},async setItem(k,v){m[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){console.warn('storage',e)}return v},async removeItem(k){delete m[k];localStorage.removeItem(k)}};}();
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 </head>
 <body>
 <div id="app">
@@ -452,7 +444,7 @@
         <button class="btn p" id="sendBtn">发送</button>
       </div>
       <div id="actionMenu" class="action-menu hidden">
-        
+        
         <div class="action-item" id="sendImgAction">
           <div class="action-icon" style="background:#ff9a9e;">🖼️</div>
           <div class="action-label">发照片</div>
@@ -461,14 +453,6 @@
           <div class="action-icon" style="background:#a18cd1;">📷</div>
           <div class="action-label">拍照</div>
         </div>
-        <div class="action-item" id="openFakeImgBtn">
-  <div class="action-icon" style="background:#a18cd1;">✨</div>
-  <div class="action-label">模拟发图</div>
-</div>
-<div class="action-item" id="openTransferBtn">
-  <div class="action-icon" style="background:#f5a623;">💸</div>
-  <div class="action-label">转账</div>
-</div>
       </div>
       <input type="file" id="chatImgInput" accept="image/*" class="hidden" />
       <div id="stickerSheet" class="sticker-sheet hidden">
@@ -768,37 +752,6 @@
   </div>
 
 </div>
-  <!-- === 模拟发图 & 转账的弹窗 === -->
-<div id="fakeImgModal" class="modal">
-  <div class="modal-card">
-    <h3 style="margin:0 0 15px;">✨ 发送模拟图片</h3>
-    <div id="fakeCoverPreviewBox" style="width:120px; height:120px; border-radius:12px; border:2px dashed #d7e3ff; margin:0 auto 15px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#a0b0d0; cursor:pointer;">
-      <span style="font-size:28px; margin-bottom:4px;">🖼️</span><span style="font-size:12px;">上传封面(可选)</span>
-    </div>
-    <img id="fakeCoverPreview" src="" style="width:120px; height:120px; border-radius:12px; object-fit:cover; border:2px dashed #d7e3ff; display:none; margin:0 auto 15px; cursor:pointer;">
-    <input type="file" id="fakeCoverFile" accept="image/*" class="hidden">
-    <div class="small" style="margin-bottom:6px;">画面描述（点击图片会翻转显示文字）：</div>
-    <textarea id="fakeImgDesc" class="ta" placeholder="例如：一张穿着白裙子的绝美全身照..." style="height:100px;"></textarea>
-    <div class="row" style="justify-content:flex-end;margin-top:15px;gap:10px;">
-      <button class="btn" onclick="document.getElementById('fakeImgModal').classList.remove('active')">取消</button>
-      <button class="btn p" id="sendFakeImgBtn">发送</button>
-    </div>
-  </div>
-</div>
-
-<div id="transferModal" class="modal">
-  <div class="modal-card">
-    <h3 style="margin:0 0 15px;">💸 发起转账</h3>
-    <div class="small">金额 (元)</div>
-    <input type="number" id="transferAmount" class="input" style="font-size:24px; font-weight:bold; color:#f5a623; margin-bottom:12px;" placeholder="0.00" />
-    <div class="small">备注</div>
-    <input type="text" id="transferNote" class="input" placeholder="转账给你的" />
-    <div class="row" style="justify-content:flex-end;margin-top:15px;gap:10px;">
-      <button class="btn" onclick="document.getElementById('transferModal').classList.remove('active')">取消</button>
-      <button class="btn p" id="sendTransferBtn" style="background:#f5a623;">确认转账</button>
-    </div>
-  </div>
-</div>
 
 <script>
 (() => {
@@ -808,7 +761,7 @@
   let lpTimer=null,lpStartX=0,lpStartY=0;
   let meAvatarDraft='',roleAvatarDraft='';
   let favSelectMode=false,favSelected=new Set(),favNowTimer=null;
-let aiLock=false;
+
   const $=id=>document.getElementById(id);
   const clean=s=>String(s||'').trim();
   const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;' }[m]));
@@ -1120,68 +1073,45 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
   function isHtmlFrag(s){s=String(s||'');return /<([a-z][\w-]*)(\s|>)/i.test(s)&&!isHtmlDoc(s);}
   function toHtmlDataUrl(s){return 'data:text/html;charset=utf-8,'+encodeURIComponent(String(s||''));}
 
-  // === 全能渲染器：修复表情包、修复转账显示、过滤后台暗号 ===
+  // 修改后的渲染：助手支持HTML
   function renderBubbleContent(m,isMe,pref){
     const cls=isMe?'me':'ai';
     const ts=pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:'';
     const quote=renderQuote(m.quote);
     const hidden=m.hiddenForAi?'ai-hidden':'';
+    const t=String(m.text||'');
+    const quoteMatch = t.match(/^\[quote\]([\s\S]*?)\[\/quote\]([\s\S]*)$/);
+if(quoteMatch){
+  const qText=quoteMatch[1].trim();
+  const body=quoteMatch[2].trim();
+  const qHtml=`<div class="msg-quote"><div class="q-content">${esc(qText)}</div></div>`;
+  return `${quote}${qHtml}<div class="bubble ${cls} ${hidden}">${esc(body)}</div>${ts}`;
+}
+    if(t.startsWith('[img]') && t.endsWith('[/img]')){
+      const src = t.slice(5, -6);
+      return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-img" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
+    }
+    if((t.startsWith('[stk:') || t.startsWith('[st_')) && t.endsWith(']')){
+  const id = t.startsWith('[stk:') ? t.slice(5,-1) : t.slice(1,-1);
+  const src = window.__stickerGetSrcById ? window.__stickerGetSrcById(id) : '';
+  if(!src) return `${quote}${ts}`;
+  return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-sticker" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
+}
+if(!isMe && isHtmlDoc(t)){
+  const src=toHtmlDataUrl(t);
+  return `${quote}<div class="bubble ${cls} has-html${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts allow-modals" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
+}
+    if(!isMe && isHtmlDoc(t)){
+      const src=toHtmlDataUrl(t);
+      return `${quote}<div class="bubble-wrap ${cls}"><img class="bubble-sticker" src="${safe}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
 
-    // 1. 强力过滤后台暗号（解决“带出后台东西”的问题）
-    let t = String(m.text||'').replace(/\[(线上聊天回复|线下RP回复).*?\]/g, '').trim();
-
-    // 2. 也是先做安全转义
-    let safeHtml = esc(t);
-
-    // 3. 优先恢复表情包显示 (修复 [stk:ID] 显示为文字的问题)
-    safeHtml = safeHtml.replace(/\[stk:([a-zA-Z0-9_]+)\]/g, (match, id) => {
-       const src = window.__stickerGetSrcById ? window.__stickerGetSrcById(id) : '';
-       return src ? `<img class="bubble-sticker" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')">` : '';
-    });
-
-    // 4. 恢复引用和普通图片
-    safeHtml = safeHtml.replace(/^\[quote\]([\s\S]*?)\[\/quote\]([\s\S]*)$/, '<div class="msg-quote"><div class="q-content">$1</div></div>$2');
-    safeHtml = safeHtml.replace(/\[img\](.*?)\[\/img\]/g, '<img class="bubble-img" src="$1" onclick="document.getElementById(' + "'previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')" + '">');
-
-    // 5. 修复模拟发图卡片
-    safeHtml = safeHtml.replace(/\[fakeimg=(.*?)\]([\s\S]*?)\[\/fakeimg\]/g, (match, cover, desc) => {
-      let c = cover || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNkYmU4ZjkiLz48L3N2Zz4=';
-      return `<div class="fake-img-box"><div onclick="this.style.display='none';this.nextElementSibling.style.display='block'"><img class="fake-img-cover" src="${c}"><div class="fake-img-overlay">点击看图</div></div><div class="fake-img-desc" onclick="this.style.display='none';this.previousElementSibling.style.display='block'">${desc}</div></div>`;
-    });
-
-    // 6. 修复 AI 主动发的模拟图
-    safeHtml = safeHtml.replace(/\[发送模拟图片：([\s\S]*?)\]/g, (match, desc) => {
-      let c = 'https://picsum.photos/300/400?blur=5'; // 稍微改了个好看的占位
-      return `<div class="fake-img-box"><div onclick="this.style.display='none';this.nextElementSibling.style.display='block'"><img class="fake-img-cover" src="${c}"><div class="fake-img-overlay">收到图片</div></div><div class="fake-img-desc" onclick="this.style.display='none';this.previousElementSibling.style.display='block'">${desc}</div></div>`;
-    });
-
-    // 7. 修复转账卡片 (解决“AI发的转账是代码” + “没有拒收提示”)
-    safeHtml = safeHtml.replace(/\[transfer=([\d.]+)(?:\|(\d))?\]([\s\S]*?)\[\/transfer\]/g, (match, amt, status, note) => {
-      status = status || "0";
-      let isDone = status !== "0";
-      let bgColor = isDone ? "#f9e4bd" : "#f5a623"; // 已收变浅
-      let icon = status === "0" ? "💸" : (status === "1" ? "✅" : "↩️");
-      let stateTxt = status === "0" ? "微信转账" : (status === "1" ? "已收款" : "已退还");
-
-      // 注意：这里加了 stopPropagation 防止点这个卡片时触发外层
-      return `<div class="transfer-box" style="background:${bgColor};" onclick="event.stopPropagation(); window._openTransferDetail('${m.id}', '${amt}', '${status}', ${isMe})">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <div style="width:38px; height:38px; background:rgba(255,255,255,0.25); border-radius:50%; display:grid; place-items:center; font-size:22px; flex-shrink:0;">${icon}</div>
-            <div style="flex:1; min-width:0;">
-              <div style="font-size:16px; font-weight:700;">¥ ${amt}</div>
-              <div style="font-size:12px; opacity:0.9; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${note}</div>
-            </div>
-          </div>
-          <div style="margin-top:8px; padding-top:4px; border-top:1px solid rgba(255,255,255,0.2); font-size:10px; opacity:0.8;">${stateTxt}</div>
-        </div>`;
-    });
-
-    // 8. 强力去白边样式 (针对所有卡片)
-    let isCard = safeHtml.includes('fake-img-box') || safeHtml.includes('transfer-box') || safeHtml.includes('bubble-sticker');
-    let exStyle = isCard ? 'padding:0!important; background:transparent!important; border:none!important; box-shadow:none!important;' : '';
-
-    return `${quote}<div class="bubble ${cls} ${hidden}" style="${exStyle}">${safeHtml}</div>${ts}`;
+ }
+    if(!isMe && isHtmlFrag(t)){
+      return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
+    }
+    return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
   }
+
   function renderChat(){
     const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),pref=getPref();
     const me = {
@@ -1273,7 +1203,7 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
   if(buf) out.push(buf.trim());
   return out.filter(Boolean);
   }
-    
+    
   function enforceCountRange(parts,min,max){let arr=[...(parts||[])].filter(Boolean);max=Math.max(1,max);if(arr.length>max){const keep=arr.slice(0,max-1),tail=arr.slice(max-1).join(' ');return [...keep,tail];}return arr;}
 
   async function emitAiSequential(parts,targetId,mode){
@@ -1445,7 +1375,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
   function buildOnlineSystem(c,me,st){
     const rangeRule=st.onlineStyle==='range'?`本次回复请拆分为 ${st.onlineMin} 到 ${st.onlineMax} 条消息。`:`本次回复的条数由你完全根据人设的立体性格、心理波动和当前语境自由发挥（拒绝刻板，气泡条数可多可少，但是每个个气泡尽量文字不超过一句话，就像微信聊天）。`;
     return [
-      
+      
       `你正在扮演：${c?.name||'聊天对象'}`,
       `对方名称：${me?.name||'我'}`,
       `对方备注：${me?.note||'无'}`,
@@ -1457,9 +1387,9 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       `1. 拒绝刻板标签！人设是立体的、多面的、有成长性的。把你扮演的角色当成一个活生生的人来对待！`,
       `2. 说话的条数、长短（尽量一句话一个气泡）、语气，必须严格根据【当前具体的语境】、【角色的情绪起伏】和【心理活动】动态自然地变化，绝不受任何固定模式限制。`,
       `3. 当弥洛明确要求你退出角色扮演时，立刻退出并正常对话。其他情况下保持角色。`,
-      
+      
       `4.若输出HTML，按钮和交互元素的点击事件必须用onclick属性直接写在标签上，禁止使用addEventListener。`,
-      
+      
 
       `【输出格式铁律】：
 1. 只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}
@@ -1470,7 +1400,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 `6. messages数组里的每一条都只能是角色说的话（纯对话文本），严禁混入任何动作描写、心理描写、场景描写、旁白叙述。`,
       rangeRule,
 `7.【表情包】你可以像真人一样发文字，也可以偶尔发1张表情包。若要发表情包，请让某一条消息内容严格等于：[stk:ID]，ID必须从下方列表中原样复制，禁止输出[表情包:ID=...]或任何其他格式。可用表情包列表：\n${window.__stickerPromptText?window.__stickerPromptText(200):'（暂无）'}`,
-`8. 具备真实的时间观念：根据“上一次消息时间与当前系统时间”的间隔，自然体现时间流逝（如久未回复后的轻微反应等），但不要刻意或模板化。`, 
+`8. 具备真实的时间观念：根据“上一次消息时间与当前系统时间”的间隔，自然体现时间流逝（如久未回复后的轻微反应等），但不要刻意或模板化。`, 
 `9. 每条消息必须带正常中文标点，禁止无标点长句。`,
 `10. 如需引用对方某条消息回复，在该条消息开头加：[quote]被引用内容[/quote]，然后接正文。例如：[quote]你吃饭没[/quote]刚吃完。`,
       `[FORMAT_LOCK]`,
@@ -1483,7 +1413,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 
   function buildOfflineSystem(c,me,st){
     return [
-      
+      
       `你正在扮演：${c?.name||'聊天对象'}`,
       `对方名称：${me?.name||'我'}`,
       `对方备注：${me?.note||'无'}`,
@@ -1512,8 +1442,6 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 
   async function sendMsg(){
     if(!currentId) return;
-    if(aiLock) return;
-aiLock=true;
 const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),globalMe=getMe();
     const me = {
       name: st.meName !== undefined ? st.meName : globalMe.name,
@@ -1559,7 +1487,7 @@ else{
     }catch(e){
       const arr2=getChatArr(chatId);arr2.push(toMsg({role:'assistant',text:'请求失败：'+clean(e.message),time:Date.now()}));setChatArr(chatId,arr2);
       updateContactPreview(chatId); if(currentId===chatId) renderChat();
-   }finally{setTyping(chatId,false);aiLock=false;}
+    }finally{setTyping(chatId,false);} 
   }
 
   $('sendBtn').onclick=sendMsg;
@@ -2013,7 +1941,7 @@ function parseStickerLine(line){
   if(!/^https?:\/\//i.test(url)) return null;
   return { name: name||'URL贴纸', url };
 }
-  
+  
 
 // ===== 面板渲染 =====
 function stRenderTabs(){
@@ -2479,91 +2407,10 @@ $("customBgFile").addEventListener("change", async (e) => {
   }
 });
   });
-  // === 模拟发图逻辑 ===
-  let curFakeCover='';
-  $('openFakeImgBtn').onclick=()=>{ $('actionMenu').classList.add('hidden'); $('fakeImgModal').classList.add('active'); };
-  $('fakeCoverPreviewBox').onclick=()=> $('fakeCoverFile').click();
-  $('fakeCoverFile').onchange=async e=>{
-    if(e.target.files[0]) {
-      curFakeCover=await compressImage(e.target.files[0]);
-      $('fakeCoverPreview').src=curFakeCover; $('fakeCoverPreview').style.display='block'; $('fakeCoverPreviewBox').style.display='none';
-    }
-  };
-  $('sendFakeImgBtn').onclick=()=>{
-    const d=clean($('fakeImgDesc').value);
-    if(!d) return alert('写点描述嘛');
-    pushUser(`[fakeimg=${curFakeCover}]${d}[/fakeimg]`);
-    renderChat(); $('fakeImgModal').classList.remove('active');
-  };
-
-  // === 转账逻辑 ===
-  $('openTransferBtn').onclick=()=>{ $('actionMenu').classList.add('hidden'); $('transferModal').classList.add('active'); };
-  $('sendTransferBtn').onclick=()=>{
-    const amt=$('transferAmount').value, note=clean($('transferNote').value)||'转账';
-    if(!amt) return alert('金额呢？');
-    pushUser(`[transfer=${amt}]${note}[/transfer]`);
-    renderChat(); $('transferModal').classList.remove('active');
-  };
-// === 修复后的转账交互（小巧版） ===
-  window._openTransferDetail = (mid, amt, status, isMe) => {
-    let title = '', html = '', icon = '💸';
-
-    if (status === "0") {
-        // 只要是未收款，不管是谁发的，你都可以操作（方便剧情扮演）
-        title = "待确认收款";
-        html = `<div style="display:flex; gap:10px; margin-top:15px;">
-                  <button class="btn p" style="flex:1; background:#f5a623; font-weight:bold; height:44px;" onclick="window._doTransfer('${mid}', 1)">确认收款</button>
-                  <button class="btn" style="flex:1; background:#f2e6d8; color:#d98e28; height:44px;" onclick="window._doTransfer('${mid}', 2)">立即退还</button>
-                </div>`;
-    } else {
-        // 已完成状态
-        if(status === "1") { icon = '✅'; title = "已收款"; html = `<div class="small" style="margin-top:10px;color:#999;">资金已存入零钱</div>`; }
-        if(status === "2") { icon = '↩️'; title = "已退还"; html = `<div class="small" style="margin-top:10px;color:#999;">资金已原路退回</div>`; }
-    }
-
-    $('tdIcon').innerText = icon;
-    $('tdTitle').innerText = title;
-    $('tdAmt').innerText = '¥ ' + parseFloat(amt).toFixed(2);
-    $('tdActions').innerHTML = html;
-
-    // 强制缩小弹窗宽度，更精致
-    const modal = $('transferDetailModal').querySelector('.modal-card');
-    modal.style.maxWidth = '280px';
-    modal.style.padding = '25px 20px';
-
-    $('transferDetailModal').classList.add('active');
-  };
-
-  // 修改底层数据状态的神仙代码
-  window._doTransfer = (mid, newStatus) => {
-    const arr = getChatArr(currentId);
-    const i = arr.findIndex(x => x.id === mid);
-    if(i < 0) return;
-
-    // 正则强行给文本打上标签 [transfer=金额|状态1或2]
-    arr[i].text = arr[i].text.replace(/\[transfer=([\d.]+)(?:\|\d)?\]/, `[transfer=$1|${newStatus}]`);
-    setChatArr(currentId, arr);
-    renderChat(); // 刷新气泡，卡片瞬间变色！
-    $('transferDetailModal').classList.remove('active');
-  };
 })();
 </script>
   <div id="modalPreview" class="modal" onclick="this.classList.remove('active')">
   <img id="previewModalImg" style="max-width:95%;max-height:90dvh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
   </div>
- <!-- === 收款/退还界面的大弹窗 === -->
-<div id="transferDetailModal" class="modal">
-  <div class="modal-card" style="text-align:center; padding:35px 20px; border-radius: 20px;">
-    <div id="tdIcon" style="font-size:50px; margin-bottom:10px;">💸</div>
-    <div id="tdTitle" style="font-size:15px; color:#333; margin-bottom:5px;"></div>
-    <div id="tdAmt" style="font-size:42px; font-weight:bold; color:#f5a623; margin-bottom:25px;"></div>
-
-    <!-- 动态显示收款按钮的地方 -->
-    <div id="tdActions"></div>
-
-    <button class="btn" style="margin-top:25px; background: #eef3ff; color: #5a6a8f; width:100%; border:none;" onclick="document.getElementById('transferDetailModal').classList.remove('active')">返回聊天</button>
-  </div>
-</div>
-</div>
 </body>
 </html>
