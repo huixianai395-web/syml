@@ -1186,11 +1186,7 @@ if(!isMe && isHtmlDoc(t)){
   const src=toHtmlDataUrl(t);
   return `${quote}<div class="bubble ${cls} has-html${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts allow-modals" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
 }
-    if(!isMe && isHtmlDoc(t)){
-      const src=toHtmlDataUrl(t);
-      return `${quote}<div class="bubble-wrap ${cls}"><img class="bubble-sticker" src="${safe}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
-
- }
+    
     if(!isMe && isHtmlFrag(t)){
       return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
     }
@@ -2008,10 +2004,21 @@ const sysPrompt = [
 `对方名称：${me.name}`,
 `对方备注：${me.note || '无'}`,
 `现在是${getSysTimeStr()}`,
-`, `最近的聊天记录摘要（用于理解当前剧情和关系状态）：`, hist || '（暂无聊天记录）', `,
+`最近的聊天记录摘要（用于理解当前剧情和关系状态）：`,
+hist || '（暂无聊天记录）',
 `【任务】你现在要模拟${c.name}的手机被翻看的情景。`,
 `请根据${c.name}的人设、性格、和${me.name}的关系状态、当前剧情，生成${c.name}手机里各个APP的内容。`,
-`, `要求：`, `1. 内容必须贴合人设和当前剧情，有温度、有细节、有内心戏`, `2. 微信联系人里必须包含${me.name}（但备注名要根据关系和人设自定义，不一定就叫${me.name}，可以是昵称/爱称/吐槽式备注），还要有3-5个其他联系人（家人/朋友/同事等，根据人设编）`, `3. 每个微信联系人要有2-4条聊天消息`, `4. 日记要有真情实感，写出角色的内心世界`, `5. 备忘录要丰富，2-3条，内容各不相同（待办清单/随笔/提醒等）`, `6. 搜索记录要有趣、符合人设，5-8条`, `7. 草稿箱里放1-2条写了没发出去的消息（给${me.name}或别人的），要有情感张力`, `8. 每次生成的内容都要不一样，随机、鲜活`, `9. timeline是今天一天做了什么，要有内心独白`, `10. 所有内容用中文`, `,
+`要求：`,
+`1. 内容必须贴合人设和当前剧情，有温度、有细节、有内心戏`,
+`2. 微信联系人里必须包含${me.name}（但备注名要根据关系和人设自定义，不一定就叫${me.name}，可以是昵称/爱称/吐槽式备注），还要有3-5个其他联系人（家人/朋友/同事等，根据人设编）`,
+`3. 每个微信联系人要有2-4条聊天消息`,
+`4. 日记要有真情实感，写出角色的内心世界`,
+`5. 备忘录要丰富，2-3条，内容各不相同（待办清单/随笔/提醒等）`,
+`6. 搜索记录要有趣、符合人设，5-8条`,
+`7. 草稿箱里放1-2条写了没发出去的消息（给${me.name}或别人的），要有情感张力`,
+`8. 每次生成的内容都要不一样，随机、鲜活`,
+`9. timeline是今天一天做了什么，要有内心独白`,
+`10. 所有内容用中文`,
 `严格输出以下JSON格式，不要输出任何其他内容：`,
 `{`,
 `  "wechat": {`,
@@ -2059,8 +2066,7 @@ const sysPrompt = [
 `    { "time": "具体时间", "activity": "做了什么", "thought": "内心想法" }`,
 `  ]`,
 `}`
-].join(’\n’);
-
+].join('\n');
 try {
 const out = await callApi([
 { role: ‘system’, content: sysPrompt },
