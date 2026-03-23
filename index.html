@@ -1280,9 +1280,10 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
       }).join('');
     }
     $('chatRoom').classList.toggle('select-mode',selectMode);
-    $('multiSelectBar').classList.toggle('hidden',!selectMode);
-    $('chatMsgs').scrollTop=$('chatMsgs').scrollHeight;
-    $('multiCount').textContent=`已选 ${selectedIds.size} 项`;
+$('multiSelectBar').classList.toggle('hidden',!selectMode);
+$('multiCount').textContent=`已选 ${selectedIds.size} 项`;
+const _msgs=$('chatMsgs');
+if(!selectMode){requestAnimationFrame(()=>{_msgs.scrollTop=_msgs.scrollHeight;setTimeout(()=>{_msgs.scrollTop=_msgs.scrollHeight;},120);});}
   }
 
   function clearCurrentChat(){if(!currentId) return;if(!confirm('清空当前聊天？')) return;setChatArr(currentId,[]);updateContact(currentId,{preview:'',time:''});selectMode=false;selectedIds.clear();renderChat();renderContacts($('searchInput').value||'');}
@@ -1813,7 +1814,7 @@ setPref(p); applyBubbleCss(); applyFontSize();
 
   function enterSelectMode(seedId){selectMode=true;selectedIds.clear();if(seedId) selectedIds.add(seedId);renderChat();}
   function exitSelectMode(){selectMode=false;selectedIds.clear();renderChat();}
-  function toggleSelect(mid){if(selectedIds.has(mid)) selectedIds.delete(mid); else selectedIds.add(mid);renderChat();}
+  function toggleSelect(mid){const savedScroll=$('chatMsgs').scrollTop;if(selectedIds.has(mid))selectedIds.delete(mid);else selectedIds.add(mid);renderChat();$('chatMsgs').scrollTop=savedScroll;}
   function selectAllMessages(){selectedIds=new Set(getChatArr(currentId).map(x=>x.id));renderChat();}
   function deleteByIds(ids){const set=new Set(ids);setChatArr(currentId,getChatArr(currentId).filter(m=>!set.has(m.id)));updateContactPreview(currentId);renderChat();}
   function favoriteByIds(ids){const set=new Set(ids),arr=getChatArr(currentId);arr.forEach(m=>{if(set.has(m.id)) m.favorite=true});setChatArr(currentId,arr);renderChat();}
