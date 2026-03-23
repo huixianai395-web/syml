@@ -543,7 +543,7 @@
     <div class="chatInputBar" id="chatInputWrap">
       <div id="quoteBar" class="quote-bar hidden"><div id="quoteText" class="quote-text"></div><button id="clearQuoteBtn" class="quote-close">×</button></div>
       <div class="left-tools">
-  <button class="btn-circle" id="moreToolsBtn" aria-label="更多">＋</button>
+  <button class="btn-circle hidden" id="moreToolsBtn" aria-label="更多">＋</button>
 
   <button class="btn-circle" id="stickerBtn" aria-label="表情包">
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -562,6 +562,7 @@
   <div class="func-icon" data-func="redpacket"><div class="ibox2">🧧</div><div class="lab2">发红包</div></div>
   <div class="func-icon" data-func="location"><div class="ibox2">📍</div><div class="lab2">定位</div></div>
   <div class="func-icon" data-func="gift"><div class="ibox2">🎁</div><div class="lab2">送礼物</div></div>
+        <div class="func-icon" data-func="image"><div class="ibox2">🖼️</div><div class="lab2">发照片</div></div>
       </div>
       <textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
       <div class="send-actions">
@@ -2864,6 +2865,7 @@ document.querySelectorAll('.func-icon[data-func]').forEach(el=>{
   el.onclick=()=>{
     $('funcPanel').classList.remove('show');
     const type=el.dataset.func,cfg=FUNC_DIALOGS[type]; if(!cfg) return;
+    if(type==='image'){$('funcPanel').classList.remove('show');$('chatImgInput').click();return;}
     let html=`<b>${cfg.title}</b><br><br>`;
     cfg.fields.forEach(f=>{ html+=`<div style="margin-bottom:8px;"><div class="small">${f.label}</div><input id="fd_${f.key}" class="input" type="${f.type||'text'}" placeholder="${f.placeholder}" style="margin-top:4px;"></div>`; });
     const modal=document.createElement('div');
