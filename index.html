@@ -239,31 +239,169 @@
 }
 .btn-circle:active { transform: scale(0.92); background: #f0f4ff; }
 
+/* 功能菜单（+号展开）- 高级玻璃拟态 */
 .action-menu {
-  position: absolute; bottom: 70px; left: 10px; right: 10px;
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(12px);
-  border: 1px solid #fff;
+  position: absolute; bottom: 80px; left: 10px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.6);
   border-radius: 20px;
-  padding: 15px;
-  display: grid; grid-template-columns: repeat(3,1fr); gap: 12px;
-  box-shadow: 0 10px 40px rgba(47,102,216,0.15), 0 0 0 1px rgba(255,255,255,0.5);
+  padding: 18px 15px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px 12px;
+  box-shadow: 0 12px 36px rgba(47,102,216,0.12), 0 0 0 1px rgba(255,255,255,0.4);
   animation: popUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   z-index: 100;
+  width: calc(100% - 20px);
+  max-width: 380px;
 }
 .action-menu.hidden { display: none; }
-@keyframes popUp { from{opacity:0; transform:translateY(10px) scale(0.9);} to{opacity:1; transform:translateY(0) scale(1);} }
-
-.action-item { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
-.action-icon {
-  width: 48px; height: 48px; border-radius: 16px;
-  display: grid; place-items: center; font-size: 22px;
-  color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,.1);
-  transition: transform .2s;
+@keyframes popUp { from{opacity:0; transform:translateY(10px) scale(0.95);} to{opacity:1; transform:translateY(0) scale(1);} }
+.action-item { 
+  display: flex; flex-direction: column; 
+  align-items: center; gap: 8px; cursor: pointer;
+  padding: 8px 4px; border-radius: 12px;
+  transition: background 0.2s ease;
 }
-.action-item:active .action-icon { transform: scale(0.9); }
-.action-label { font-size: 11px; color: #666; font-weight: 500; }
-
+.action-item:hover { background: rgba(237,243,255,0.8); }
+.action-item:active { transform: scale(0.95); }
+.action-icon {
+  width: 52px; height: 52px; border-radius: 18px;
+  display: grid; place-items: center; font-size: 24px;
+  color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  transition: transform 0.2s;
+}
+/* 各功能图标配色（高级渐变） */
+.action-icon.img { background: linear-gradient(135deg, #ff9a9e, #fecfef); }
+.action-icon.redpack { background: linear-gradient(135deg, #ff6b6b, #feca57); }
+.action-icon.transfer { background: linear-gradient(135deg, #4ecdc4, #45b7d1); }
+.action-icon.location { background: linear-gradient(135deg, #9b59b6, #71b7e6); }
+.action-icon.meituan { background: linear-gradient(135deg, #ff5252, #ff9800); }
+.action-label { 
+  font-size: 12px; color: #4a5a7a; 
+  font-weight: 500; text-align: center;
+  white-space: nowrap;
+}
+/* 模拟发图弹窗/转账/红包/定位/美团弹窗样式 */
+.func-modal {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: none; place-items: center;
+  z-index: 999; padding: 12px;
+}
+.func-modal.active { display: grid; }
+.func-modal-card {
+  width: 100%; max-width: 360px;
+  background: #fff; border-radius: 18px;
+  padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+}
+.func-modal-title {
+  font-size: 18px; font-weight: 700;
+  color: #222; margin-bottom: 16px;
+  text-align: center;
+}
+.func-input {
+  width: 100%; padding: 12px 15px;
+  border: 1px solid #e5e9f2; border-radius: 12px;
+  font-size: 16px; margin-bottom: 15px;
+}
+.func-input:focus {
+  outline: none; border-color: #5f86ee;
+  box-shadow: 0 0 0 2px rgba(95,134,238,0.2);
+}
+.func-btn-group {
+  display: flex; gap: 10px;
+  margin-top: 20px;
+}
+.func-btn {
+  flex: 1; padding: 12px 0;
+  border: none; border-radius: 12px;
+  font-size: 16px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+}
+.func-btn.cancel {
+  background: #f5f7fa; color: #6678a8;
+}
+.func-btn.confirm {
+  background: #5f86ee; color: #fff;
+}
+.func-btn:active { transform: scale(0.96); }
+/* 模拟图片气泡/转账/红包/定位/美团订单卡片样式 */
+.bubble-img-desc {
+  max-width: 180px; max-height: 200px;
+  width: auto; height: auto;
+  border-radius: 14px; margin: 2px 0;
+  display: block; cursor: zoom-in;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: linear-gradient(135deg, #f8f9ff, #edf2ff);
+  padding: 20px 15px;
+  color: #4a5a7a; line-height: 1.5;
+  word-break: break-word;
+}
+.bubble-redpack, .bubble-transfer, .bubble-location, .bubble-meituan {
+  max-width: 220px;
+  border-radius: 14px; padding: 15px;
+  margin: 2px 0; border: 1px solid #e5e9f2;
+}
+.bubble-redpack {
+  background: linear-gradient(135deg, #fff5f5, #fff0e6);
+  border-left: 4px solid #ff6b6b;
+}
+.bubble-transfer {
+  background: linear-gradient(135deg, #f0f9ff, #e6f7ff);
+  border-left: 4px solid #4ecdc4;
+}
+.bubble-location {
+  background: linear-gradient(135deg, #f8f0fb, #f0f7ff);
+  border-left: 4px solid #9b59b6;
+}
+.bubble-meituan {
+  background: linear-gradient(135deg, #fff8f0, #fff5f5);
+  border-left: 4px solid #ff5252;
+}
+.bubble-card-title {
+  font-size: 15px; font-weight: 700;
+  margin-bottom: 8px; color: #222;
+}
+.bubble-card-content {
+  font-size: 14px; color: #4a5a7a;
+  line-height: 1.6;
+}
+.bubble-card-sub {
+  font-size: 12px; color: #96a0b9;
+  margin-top: 8px;
+}
+/* 图片描述预览弹窗 */
+.desc-preview-modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.8); z-index: 9999;
+  display: none; place-items: center;
+  padding: 20px;
+}
+.desc-preview-modal.active { display: grid; }
+.desc-preview-card {
+  background: #fff; border-radius: 18px;
+  padding: 25px; max-width: 360px;
+  width: 100%;
+}
+.desc-preview-title {
+  font-size: 17px; font-weight: 700;
+  color: #222; margin-bottom: 15px;
+}
+.desc-preview-content {
+  font-size: 15px; color: #4a5a7a;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  margin-bottom: 20px;
+}
+.desc-preview-close {
+  width: 100%; padding: 12px 0;
+  background: #5f86ee; color: #fff;
+  border: none; border-radius: 12px;
+  font-size: 16px; font-weight: 600;
+  cursor: pointer;
+}
 .bubble-img {
   max-width: 150px; max-height: 180px;
   width: auto; height: auto;
@@ -448,26 +586,6 @@
 .pc-schedule-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #f5f5f8;font-size:13px;}
 .pc-schedule-item:last-child{border-bottom:none;}
 .pc-schedule-time{color:#2f66d8;font-weight:600;min-width:56px;flex-shrink:0;font-size:12px;}
-    /* 互动卡片 */
-.card-hb,.card-zz,.card-gift{border-radius:14px;padding:14px;min-width:200px;max-width:240px;position:relative;overflow:hidden;color:#fff;}
-.card-hb{background:linear-gradient(135deg,#e74c3c,#c0392b)}
-.card-hb::before{content:"¥";position:absolute;right:-8px;top:-10px;font-size:72px;opacity:.12;font-weight:900}
-.card-zz{background:linear-gradient(135deg,#2f66d8,#1a4db0)}
-.card-zz::before{content:"转";position:absolute;right:-4px;top:-6px;font-size:64px;opacity:.1;font-weight:900}
-.card-gift{background:linear-gradient(135deg,#9b59b6,#8e44ad);text-align:center}
-.card-gift .c-icon{font-size:42px;margin:6px 0}
-.card-gift.opened .c-icon{animation:giftPop .5s ease}
-@keyframes giftPop{0%{transform:scale(1)}50%{transform:scale(1.3) rotate(10deg)}100%{transform:scale(1)}}
-.c-top{font-size:13px;opacity:.9;margin-bottom:8px}
-.c-amount{font-size:28px;font-weight:800;letter-spacing:-1px}
-.c-name{font-size:15px;font-weight:700}
-.c-note{font-size:12px;opacity:.85;margin-top:6px}
-.c-actions{display:flex;gap:8px;margin-top:10px;justify-content:center}
-.c-btn{border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;transition:transform .15s}
-.c-btn:active{transform:scale(.94)}
-.c-btn.claim{background:rgba(255,255,255,.95);color:#333}
-.c-btn.reject{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4)}
-.c-status{font-size:12px;opacity:.75;margin-top:8px;font-style:italic}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 </head>
@@ -537,34 +655,112 @@
         <button class="btn p" id="sendBtn">发送</button>
       </div>
       <div id="actionMenu" class="action-menu hidden">
-        
-        <div class="action-item" id="sendImgAction">
-          <div class="action-icon" style="background:#ff9a9e;">🖼️</div>
-          <div class="action-label">发照片</div>
-        </div>
-        <div class="action-item" id="sendHbAction">
-  <div class="action-icon" style="background:#e74c3c;">🧧</div>
-  <div class="action-label">红包</div>
+  <!-- 模拟发图（带描述） -->
+  <div class="action-item" id="sendImgDescAction">
+    <div class="action-icon img">🖼️</div>
+    <div class="action-label">发图片(描述)</div>
+  </div>
+  <!-- 微信红包 -->
+  <div class="action-item" id="sendRedpackAction">
+    <div class="action-icon redpack">🧧</div>
+    <div class="action-label">发红包</div>
+  </div>
+  <!-- 微信转账 -->
+  <div class="action-item" id="sendTransferAction">
+    <div class="action-icon transfer">💴</div>
+    <div class="action-label">转账</div>
+  </div>
+  <!-- 发送定位 -->
+  <div class="action-item" id="sendLocationAction">
+    <div class="action-icon location">📍</div>
+    <div class="action-label">发定位</div>
+  </div>
+  <!-- 美团外卖 -->
+  <div class="action-item" id="sendMeituanAction">
+    <div class="action-icon meituan">🍔</div>
+    <div class="action-label">点外卖</div>
+  </div>
+  <!-- 保留原有拍照（置灰） -->
+  <div class="action-item" style="opacity:0.5;">
+    <div class="action-icon" style="background:#a18cd1;">📷</div>
+    <div class="action-label">拍照</div>
+  </div>
+      </div>
+      <!-- 1. 模拟发图（描述输入）弹窗 -->
+<div id="imgDescModal" class="func-modal">
+  <div class="func-modal-card">
+    <div class="func-modal-title">图片描述</div>
+    <textarea class="func-input" id="imgDescInput" rows="4" placeholder="输入图片描述，对方点击可查看..."></textarea>
+    <div class="func-btn-group">
+      <button class="func-btn cancel" id="imgDescCancel">取消</button>
+      <button class="func-btn confirm" id="imgDescSend">发送</button>
+    </div>
+  </div>
 </div>
-<div class="action-item" id="sendZzAction">
-  <div class="action-icon" style="background:#2f66d8;">💰</div>
-  <div class="action-label">转账</div>
+
+<!-- 2. 红包弹窗 -->
+<div id="redpackModal" class="func-modal">
+  <div class="func-modal-card">
+    <div class="func-modal-title">发微信红包</div>
+    <input type="number" class="func-input" id="redpackAmount" placeholder="输入红包金额（元）" min="0.01" step="0.01">
+    <input type="text" class="func-input" id="redpackMsg" placeholder="红包祝福语（可选）" value="恭喜发财，大吉大利">
+    <div class="func-btn-group">
+      <button class="func-btn cancel" id="redpackCancel">取消</button>
+      <button class="func-btn confirm" id="redpackSend">发送红包</button>
+    </div>
+  </div>
 </div>
-<div class="action-item" id="sendGiftAction">
-  <div class="action-icon" style="background:#9b59b6;">🎁</div>
-  <div class="action-label">礼物</div>
+
+<!-- 3. 转账弹窗 -->
+<div id="transferModal" class="func-modal">
+  <div class="func-modal-card">
+    <div class="func-modal-title">微信转账</div>
+    <input type="number" class="func-input" id="transferAmount" placeholder="输入转账金额（元）" min="0.01" step="0.01">
+    <input type="text" class="func-input" id="transferMsg" placeholder="转账备注（可选）" value="转账">
+    <div class="func-btn-group">
+      <button class="func-btn cancel" id="transferCancel">取消</button>
+      <button class="func-btn confirm" id="transferSend">确认转账</button>
+    </div>
+  </div>
 </div>
-<div class="action-item" id="sendRoleImgAction">
-  <div class="action-icon" style="background:#f0a;">📸</div>
-  <div class="action-label">对方发图</div>
+
+<!-- 4. 定位弹窗 -->
+<div id="locationModal" class="func-modal">
+  <div class="func-modal-card">
+    <div class="func-modal-title">发送定位</div>
+    <input type="text" class="func-input" id="locationName" placeholder="位置名称（如：我的位置）" value="我的位置">
+    <input type="text" class="func-input" id="locationAddr" placeholder="详细地址" value="北京市朝阳区建国路88号">
+    <div class="func-btn-group">
+      <button class="func-btn cancel" id="locationCancel">取消</button>
+      <button class="func-btn confirm" id="locationSend">发送位置</button>
+    </div>
+  </div>
 </div>
-        <div class="action-item" style="opacity:0.5;">
-          <div class="action-icon" style="background:#a18cd1;">📷</div>
-          <div class="action-label">拍照</div>
-        </div>
+
+<!-- 5. 美团外卖弹窗 -->
+<div id="meituanModal" class="func-modal">
+  <div class="func-modal-card">
+    <div class="func-modal-title">点美团外卖</div>
+    <input type="text" class="func-input" id="meituanShop" placeholder="商家名称" value="肯德基(朝阳店)">
+    <input type="text" class="func-input" id="meituanFood" placeholder="点餐内容" value="原味鸡2块+可乐1杯">
+    <input type="number" class="func-input" id="meituanPrice" placeholder="订单金额（元）" min="0.01" step="0.01" value="39.9">
+    <div class="func-btn-group">
+      <button class="func-btn cancel" id="meituanCancel">取消</button>
+      <button class="func-btn confirm" id="meituanSend">提交订单</button>
+    </div>
+  </div>
+</div>
+
+<!-- 图片描述预览弹窗 -->
+<div id="descPreviewModal" class="desc-preview-modal">
+  <div class="desc-preview-card">
+    <div class="desc-preview-title">图片描述</div>
+    <div class="desc-preview-content" id="descPreviewContent"></div>
+    <button class="desc-preview-close" id="descPreviewClose">关闭</button>
+  </div>
+</div>
       </div>
       <input type="file" id="chatImgInput" accept="image/*" class="hidden" />
-      <input type="file" id="chatImgInputRole" accept="image/*" class="hidden" />
       <div id="stickerSheet" class="sticker-sheet hidden">
   <div class="sticker-sheet-hd">
     <div id="stickerTabs" class="sticker-tabs"></div>
@@ -1203,58 +1399,119 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
   function isHtmlDoc(s){s=String(s||'');return /^\s*<!doctype html/i.test(s)||/<html[\s>]/i.test(s);}
   function isHtmlFrag(s){s=String(s||'');return /<([a-z][\w-]*)(\s|>)/i.test(s)&&!isHtmlDoc(s);}
   function toHtmlDataUrl(s){return 'data:text/html;charset=utf-8,'+encodeURIComponent(String(s||''));}
-function renderCard(cd,msgId){
-  const t=cd.t,s=cd.s||'pending';
-  const acts=s==='pending'?`<div class="c-actions"><button class="c-btn claim" onclick="event.stopPropagation();window._cardAct('${msgId}','claimed')">${t==='hb'?'领取红包':t==='zz'?'收款':'拆开礼物'}</button><button class="c-btn reject" onclick="event.stopPropagation();window._cardAct('${msgId}','rejected')">拒收</button></div>`:`<div class="c-status">${s==='claimed'?(t==='hb'?'🎉 已领取':t==='zz'?'✅ 已收款':'🎉 已拆开'):'↩ 已拒收'}</div>`;
-  if(t==='hb') return `<div class="card-hb"><div class="c-top">🧧 微信红包</div><div class="c-amount">¥${esc(cd.a||'0')}</div><div class="c-note">${esc(cd.n||'恭喜发财')}</div>${acts}</div>`;
-  if(t==='zz') return `<div class="card-zz"><div class="c-top">💰 微信转账</div><div class="c-amount">¥${esc(cd.a||'0')}</div><div class="c-note">${esc(cd.n||'转账')}</div>${acts}</div>`;
-  if(t==='gift'){const icon=(cd.g||'🎁').split(' ')[0]||'🎁';const opened=s==='claimed';return `<div class="card-gift ${opened?'opened':''}"><div class="c-icon">${opened?icon:'🎁'}</div><div class="c-name">${esc(cd.g||'神秘礼物')}</div>${cd.n?`<div class="c-note">${esc(cd.n)}</div>`:''}${acts}</div>`;}
-  return '';
-}
-window._cardAct=function(msgId,action){
-  if(!currentId) return;
-  const arr=getChatArr(currentId),idx=arr.findIndex(x=>x.id===msgId);
-  if(idx<0) return;
-  const t=arr[idx].text;
-  if(!t.startsWith('[card:')) return;
-  try{const cd=JSON.parse(t.slice(6,-1));if(cd.s!=='pending') return;cd.s=action;arr[idx].text='[card:'+JSON.stringify(cd)+']';setChatArr(currentId,arr);renderChat();}catch{}
-};
-  // 修改后的渲染：助手支持HTML
-  function renderBubbleContent(m,isMe,pref){
-    const cls=isMe?'me':'ai';
-    const ts=pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:'';
-    const quote=renderQuote(m.quote);
-    const hidden=m.hiddenForAi?'ai-hidden':'';
-    const t=String(m.text||'');
-    const quoteMatch = t.match(/^\[quote\]([\s\S]*?)\[\/quote\]([\s\S]*)$/);
-if(quoteMatch){
-  const qText=quoteMatch[1].trim();
-  const body=quoteMatch[2].trim();
-  const qHtml=`<div class="msg-quote"><div class="q-content">${esc(qText)}</div></div>`;
-  return `${quote}${qHtml}<div class="bubble ${cls} ${hidden}">${esc(body)}</div>${ts}`;
-}
-    if(t.startsWith('[card:')){try{const cd=JSON.parse(t.slice(6,-1));return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:0;background:transparent!important;border:none!important;box-shadow:none!important">${renderCard(cd,m.id)}</div>${ts}`;}catch{}}if(t.startsWith('[card:')){try{const cd=JSON.parse(t.slice(6,-1));return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:0;background:transparent!important;border:none!important;box-shadow:none!important">${renderCard(cd,m.id)}</div>${ts}`;}catch{}}
-    if(t.startsWith('[img]') && t.endsWith('[/img]')){
-      const src = t.slice(5, -6);
-      return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-img" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
-    }
-    if((t.startsWith('[stk:') || t.startsWith('[st_')) && t.endsWith(']')){
-  const id = t.startsWith('[stk:') ? t.slice(5,-1) : t.slice(1,-1);
-  const src = window.__stickerGetSrcById ? window.__stickerGetSrcById(id) : '';
-  if(!src) return `${quote}${ts}`;
-  return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-sticker" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
-}
-if(!isMe && isHtmlDoc(t)){
-  const src=toHtmlDataUrl(t);
-  return `${quote}<div class="bubble ${cls} has-html${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts allow-modals" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
-}
-    
-    if(!isMe && isHtmlFrag(t)){
-      return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
-    }
-    return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
+
+  // 修改后的渲染函数：支持模拟发图/转账/红包/定位/美团
+function renderBubbleContent(m,isMe,pref){
+  const cls=isMe?'me':'ai';
+  const ts=pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:'';
+  const quote=renderQuote(m.quote);
+  const hidden=m.hiddenForAi?'ai-hidden':'';
+  const t=String(m.text||'');
+  const quoteMatch = t.match(/^\[quote\]([\s\S]*?)\[\/quote\]([\s\S]*)$/);
+  
+  // 解析引用消息
+  if(quoteMatch){
+    const qText=quoteMatch[1].trim();
+    const body=quoteMatch[2].trim();
+    const qHtml=`<div class="msg-quote"><div class="q-content">${esc(qText)}</div></div>`;
+    return `${quote}${qHtml}<div class="bubble ${cls} ${hidden}">${esc(body)}</div>${ts}`;
   }
 
+  // 新功能1：模拟发图（带描述）[imgdesc]描述[/imgdesc]
+  if(t.startsWith('[imgdesc]') && t.endsWith('[/imgdesc]')){
+    const desc = t.slice(9, -10);
+    const descId = `imgdesc_${m.id}`;
+    return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;">
+      <div class="bubble-img-desc" onclick="showImgDescPreview('${esc(desc)}')">
+        🖼️ 点击查看图片描述
+      </div>
+    </div>${ts}`;
+  }
+
+  // 新功能2：红包 [redpack]金额|祝福语[/redpack]
+  if(t.startsWith('[redpack]') && t.endsWith('[/redpack]')){
+    const [amount, msg] = t.slice(9, -10).split('|');
+    return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;">
+      <div class="bubble-redpack">
+        <div class="bubble-card-title">🧧 微信红包</div>
+        <div class="bubble-card-content">¥${esc(amount)}<br>${esc(msg)}</div>
+        <div class="bubble-card-sub">点击领取</div>
+      </div>
+    </div>${ts}`;
+  }
+
+  // 新功能3：转账 [transfer]金额|备注[/transfer]
+  if(t.startsWith('[transfer]') && t.endsWith('[/transfer]')){
+    const [amount, msg] = t.slice(10, -11).split('|');
+    return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;">
+      <div class="bubble-transfer">
+        <div class="bubble-card-title">💴 微信转账</div>
+        <div class="bubble-card-content">¥${esc(amount)}<br>${esc(msg)}</div>
+        <div class="bubble-card-sub">点击收款</div>
+      </div>
+    </div>${ts}`;
+  }
+
+  // 新功能4：定位 [location]名称|地址[/location]
+  if(t.startsWith('[location]') && t.endsWith('[/location]')){
+    const [name, addr] = t.slice(10, -11).split('|');
+    return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;">
+      <div class="bubble-location">
+        <div class="bubble-card-title">📍 ${esc(name)}</div>
+        <div class="bubble-card-content">${esc(addr)}</div>
+        <div class="bubble-card-sub">点击查看地图</div>
+      </div>
+    </div>${ts}`;
+  }
+
+  // 新功能5：美团外卖 [meituan]商家|菜品|金额[/meituan]
+  if(t.startsWith('[meituan]') && t.endsWith('[/meituan]')){
+    const [shop, food, price] = t.slice(9, -10).split('|');
+    return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;">
+      <div class="bubble-meituan">
+        <div class="bubble-card-title">🍔 美团外卖订单</div>
+        <div class="bubble-card-content">商家：${esc(shop)}<br>菜品：${esc(food)}<br>金额：¥${esc(price)}</div>
+        <div class="bubble-card-sub">待骑手接单</div>
+      </div>
+    </div>${ts}`;
+  }
+
+  // 原有真实图片 [img]src[/img]
+  if(t.startsWith('[img]') && t.endsWith('[/img]')){
+    const src = t.slice(5, -6);
+    return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-img" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
+  }
+
+  // 原有表情包
+  if((t.startsWith('[stk:') || t.startsWith('[st_')) && t.endsWith(']')){
+    const id = t.startsWith('[stk:') ? t.slice(5,-1) : t.slice(1,-1);
+    const src = window.__stickerGetSrcById ? window.__stickerGetSrcById(id) : '';
+    if(!src) return `${quote}${ts}`;
+    return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-sticker" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
+  }
+
+  // 原有HTML文档/片段
+  if(!isMe && isHtmlDoc(t)){
+    const src=toHtmlDataUrl(t);
+    return `${quote}<div class="bubble ${cls} has-html${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts allow-modals" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
+  }
+  if(!isMe && isHtmlFrag(t)){
+    return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
+  }
+
+  // 普通文字消息
+  return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
+}
+
+// 新增：图片描述预览函数（全局）
+window.showImgDescPreview = function(desc) {
+  $('descPreviewContent').innerHTML = desc.replace(/\n/g, '<br>');
+  descPreviewModal.classList.add('active');
+};
+// 关闭图片描述预览
+$('descPreviewClose').onclick = () => {
+  descPreviewModal.classList.remove('active');
+};
   function renderChat(){
     const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),pref=getPref();
     const me = {
@@ -1546,7 +1803,6 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 `8. 具备真实的时间观念：根据“上一次消息时间与当前系统时间”的间隔，自然体现时间流逝（如久未回复后的轻微反应等），但不要刻意或模板化。`, 
 `9. 每条消息必须带正常中文标点，禁止无标点长句。`,
 `10. 如需引用对方某条消息回复，在该条消息开头加：[quote]被引用内容[/quote]，然后接正文。例如：[quote]你吃饭没[/quote]刚吃完。`,
-`11. 你也可以偶尔发红包/转账/礼物。让messages中某一条严格等于：[card:{"t":"hb","a":"金额","n":"祝福语","s":"pending","cid":"card_时间戳"}]。t可选hb/zz/gift。gift时不需要a，加"g":"礼物emoji+名字"。不要频繁发，应景即可。`,
       `[FORMAT_LOCK]`,
 `mode=CHAT_JSON | reject=OFFLINE_RP,ACTION_DESC,NARRATION`,
 `valid: {"messages":["...","..."]}`,
@@ -2083,7 +2339,7 @@ document.addEventListener('click',e=>{
         '1. 所有内容严格贴合人设和当前剧情关系，有温度细节内心戏，每次不一样',
         '2. 微信：必须包含' + me.name + '（备注名根据关系和人设自定义，绝对不能直接用原名，要用昵称/爱称/吐槽式/暗号式备注），还有3-6个其他联系人（家人/朋友/同事/群聊等根据人设编），每人消息条数2-8条随机不等。对话节奏要自然：同一个人可以连发好几条不等回复，有的人话痨有的人惜字如金，不要死板的一问一答',
         '3. 日记：2-3篇。格式像真实手机日记：开头写日期天气心情，正文分段写，有碎碎念有内心独白有对' + me.name + '的想法，每篇4-8行，语气口语化私密感强',
-        '4. 备忘录：5-7条！大部分要是角色自己的私人内容（日常/小心思/健身计划/游戏攻略/工作笔记/追剧清单/食谱/理财/自我反省等随便什么都可以根据人设来），只有3-4条和' + me.name + '相关就行，不要全围绕' + me.name,
+        '4. 备忘录：5-7条！大部分要是角色自己的私人内容（健身计划/游戏攻略/工作笔记/追剧清单/食谱/理财/自我反省等根据人设来），只有3-4条和' + me.name + '相关就行，不要全围绕' + me.name,
         '5. 搜索记录：6-10条，有趣暴露小心思。每条要有title、url（编合理假URL）、detail（点开看到的内容2-5行，要像真实网页摘要）',
         '6. 草稿箱：2-3条没发出的消息，情感张力强',
         '7. 时间线：6-10条带内心独白',
@@ -2605,88 +2861,179 @@ $('stickerMgrModal').addEventListener('click',e=>{ if(e.target.id==='stickerMgrM
 
 // 初次渲染
 stMgrRender(); stRenderSheet();
-// ======================================================
-    // === 图片发送 ===
-  const moreBtn = $('moreToolsBtn');
-  const actionMenu = $('actionMenu');
-  const chatImgInput = $('chatImgInput');
-  const sendImgAction = $('sendImgAction');
+// === 功能菜单开关 + 原有真实图片上传 ===
+const moreBtn = $('moreToolsBtn');
+const actionMenu = $('actionMenu');
+const chatImgInput = $('chatImgInput');
+// 功能弹窗开关
+const imgDescModal = $('imgDescModal');
+const redpackModal = $('redpackModal');
+const transferModal = $('transferModal');
+const locationModal = $('locationModal');
+const meituanModal = $('meituanModal');
+const descPreviewModal = $('descPreviewModal');
 
-  moreBtn.onclick = (e) => {
-    e.stopPropagation();
-    actionMenu.classList.toggle('hidden');
-  };
-  document.addEventListener('click', (e) => {
-    if(!actionMenu.classList.contains('hidden') && !actionMenu.contains(e.target) && e.target !== moreBtn){
-      actionMenu.classList.add('hidden');
-    }
-  });
-  sendImgAction.onclick = () => {
+// +号按钮开关功能菜单
+moreBtn.onclick = (e) => {
+  e.stopPropagation();
+  actionMenu.classList.toggle('hidden');
+  // 关闭所有功能弹窗
+  closeAllFuncModals();
+};
+// 点击空白关闭功能菜单和弹窗
+document.addEventListener('click', (e) => {
+  if(!actionMenu.classList.contains('hidden') && !actionMenu.contains(e.target) && e.target !== moreBtn){
     actionMenu.classList.add('hidden');
-    chatImgInput.click();
-  };
-  chatImgInput.onchange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const img = new Image();
-        img.onload = () => {
-          const maxSide = 800;
-          const canvas = document.createElement('canvas');
-          let w = img.width, h = img.height;
-          if (w > h) { if (w > maxSide) { h *= maxSide / w; w = maxSide; } }
-          else { if (h > maxSide) { w *= maxSide / h; h = maxSide; } }
-          canvas.width = w; canvas.height = h;
-          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-          pushUser(`[img]${dataUrl}[/img]`);
-          renderChat();
-        };
-        img.src = ev.target.result;
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      alert('图片处理失败：' + err.message);
-    } finally {
-      e.target.value = '';
-    }
-  };
-    // 卡片弹窗
-let _cardType='hb';
-function openCardModal(type){
-  _cardType=type;
-  $('actionMenu').classList.add('hidden');
-  $('cardModalTitle').textContent=type==='hb'?'发红包':type==='zz'?'转账':'送礼物';
-  $('cardAmount').value='';$('cardNote').value='';
-  $('cardAmountBox').classList.toggle('hidden',type==='gift');
-  $('cardGiftBox').classList.toggle('hidden',type!=='gift');
-  $('cardNoteLabel').textContent=type==='hb'?'祝福语':type==='zz'?'转账备注':'附言';
-  $('cardModal').classList.add('active');
+  }
+  if(!descPreviewModal.classList.contains('hidden') && !descPreviewModal.contains(e.target)){
+    descPreviewModal.classList.remove('active');
+  }
+});
+// 关闭所有功能弹窗
+function closeAllFuncModals() {
+  imgDescModal.classList.remove('active');
+  redpackModal.classList.remove('active');
+  transferModal.classList.remove('active');
+  locationModal.classList.remove('active');
+  meituanModal.classList.remove('active');
+  // 清空输入框
+  $('imgDescInput').value = '';
+  $('redpackAmount').value = '';
+  $('redpackMsg').value = '恭喜发财，大吉大利';
+  $('transferAmount').value = '';
+  $('transferMsg').value = '转账';
+  $('locationName').value = '我的位置';
+  $('locationAddr').value = '北京市朝阳区建国路88号';
+  $('meituanShop').value = '肯德基(朝阳店)';
+  $('meituanFood').value = '原味鸡2块+可乐1杯';
+  $('meituanPrice').value = '39.9';
 }
-$('sendHbAction').onclick=()=>openCardModal('hb');
-$('sendZzAction').onclick=()=>openCardModal('zz');
-$('sendGiftAction').onclick=()=>openCardModal('gift');
-$('cardCancelBtn').onclick=()=>$('cardModal').classList.remove('active');
-$('cardModal').addEventListener('click',e=>{if(e.target.id==='cardModal')$('cardModal').classList.remove('active');});
-$('cardSendBtn').onclick=()=>{
-  if(!currentId) return;
-  const sender=$('cardSender').value;
-  const cd={t:_cardType,s:'pending',cid:'cd_'+Date.now()};
-  if(_cardType!=='gift'){cd.a=clean($('cardAmount').value)||'0';cd.n=clean($('cardNote').value)||(_cardType==='hb'?'恭喜发财':'转账');}
-  else{cd.g=$('cardGiftSel').value;cd.n=clean($('cardNote').value);}
-  const arr=getChatArr(currentId);
-  arr.push(toMsg({role:sender==='assistant'?'assistant':'user',text:'[card:'+JSON.stringify(cd)+']',time:Date.now()}));
-  setChatArr(currentId,arr);updateContactPreview(currentId);renderChat();
-  $('cardModal').classList.remove('active');
+// 原有真实图片上传（保留，不修改）
+chatImgInput.onchange = async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  try {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        const maxSide = 800;
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > h) { if (w > maxSide) { h *= maxSide / w; w = maxSide; } }
+        else { if (h > maxSide) { w *= maxSide / h; h = maxSide; } }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        pushUser(`[img]${dataUrl}[/img]`);
+        renderChat();
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  } catch (err) {
+    alert('图片处理失败：' + err.message);
+  } finally {
+    e.target.value = '';
+    actionMenu.classList.add('hidden');
+  }
+};// === 功能1：模拟发图（带描述） ===
+// 打开发图描述弹窗
+$('sendImgDescAction').onclick = () => {
+  actionMenu.classList.add('hidden');
+  imgDescModal.classList.add('active');
+  $('imgDescInput').focus();
+};
+// 取消发图
+$('imgDescCancel').onclick = closeAllFuncModals;
+// 发送图片描述
+$('imgDescSend').onclick = () => {
+  const desc = clean($('imgDescInput').value);
+  if (!desc) {
+    alert('请输入图片描述！');
+    return;
+  }
+  // 发送模拟图片气泡（自定义标识[imgdesc]，和原有真实图片区分）
+  pushUser(`[imgdesc]${desc}[/imgdesc]`);
+  renderChat();
+  closeAllFuncModals();
+};// === 功能2：微信红包 ===
+$('sendRedpackAction').onclick = () => {
+  actionMenu.classList.add('hidden');
+  redpackModal.classList.add('active');
+  $('redpackAmount').focus();
+};
+$('redpackCancel').onclick = closeAllFuncModals;
+$('redpackSend').onclick = () => {
+  const amount = clean($('redpackAmount').value);
+  const msg = clean($('redpackMsg').value) || '恭喜发财，大吉大利';
+  if (!amount || Number(amount) <= 0) {
+    alert('请输入有效的红包金额！');
+    return;
+  }
+  // 发送红包气泡
+  pushUser(`[redpack]${amount}|${msg}[/redpack]`);
+  renderChat();
+  closeAllFuncModals();
 };
 
-// 对方发图
-$('sendRoleImgAction').onclick=()=>{$('actionMenu').classList.add('hidden');$('chatImgInputRole').click();};
-$('chatImgInputRole').onchange=async(e)=>{
-  const file=e.target.files?.[0];if(!file||!currentId) return;
-  try{const reader=new FileReader();reader.onload=(ev)=>{const img=new Image();img.onload=()=>{const mx=800;const c=document.createElement('canvas');let w=img.width,h=img.height;if(w>h){if(w>mx){h*=mx/w;w=mx;}}else{if(h>mx){w*=mx/h;h=mx;}}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);const d=c.toDataURL('image/jpeg',0.7);const arr=getChatArr(currentId);arr.push(toMsg({role:'assistant',text:`[img]${d}[/img]`,time:Date.now()}));setChatArr(currentId,arr);updateContactPreview(currentId);renderChat();};img.src=ev.target.result;};reader.readAsDataURL(file);}catch(err){alert('失败：'+err.message);}finally{e.target.value='';}
+// === 功能3：微信转账 ===
+$('sendTransferAction').onclick = () => {
+  actionMenu.classList.add('hidden');
+  transferModal.classList.add('active');
+  $('transferAmount').focus();
+};
+$('transferCancel').onclick = closeAllFuncModals;
+$('transferSend').onclick = () => {
+  const amount = clean($('transferAmount').value);
+  const msg = clean($('transferMsg').value) || '转账';
+  if (!amount || Number(amount) <= 0) {
+    alert('请输入有效的转账金额！');
+    return;
+  }
+  // 发送转账气泡
+  pushUser(`[transfer]${amount}|${msg}[/transfer]`);
+  renderChat();
+  closeAllFuncModals();
+};// === 功能4：发送定位 ===
+$('sendLocationAction').onclick = () => {
+  actionMenu.classList.add('hidden');
+  locationModal.classList.add('active');
+  $('locationAddr').focus();
+};
+$('locationCancel').onclick = closeAllFuncModals;
+$('locationSend').onclick = () => {
+  const name = clean($('locationName').value) || '我的位置';
+  const addr = clean($('locationAddr').value);
+  if (!addr) {
+    alert('请输入详细地址！');
+    return;
+  }
+  // 发送定位气泡
+  pushUser(`[location]${name}|${addr}[/location]`);
+  renderChat();
+  closeAllFuncModals();
+};
+
+// === 功能5：美团外卖 ===
+$('sendMeituanAction').onclick = () => {
+  actionMenu.classList.add('hidden');
+  meituanModal.classList.add('active');
+  $('meituanFood').focus();
+};
+$('meituanCancel').onclick = closeAllFuncModals;
+$('meituanSend').onclick = () => {
+  const shop = clean($('meituanShop').value);
+  const food = clean($('meituanFood').value);
+  const price = clean($('meituanPrice').value);
+  if (!shop || !food || !price || Number(price) <= 0) {
+    alert('请填写完整的点餐信息并输入有效金额！');
+    return;
+  }
+  // 发送美团订单气泡
+  pushUser(`[meituan]${shop}|${food}|${price}[/meituan]`);
+  renderChat();
+  closeAllFuncModals();
 };
   // ================= 老公专属：角色卡解析引擎 =================
 $('importCardFile').addEventListener('change', async (e) => {
@@ -2850,40 +3197,6 @@ $("customBgFile").addEventListener("change", async (e) => {
   });
 })();
 </script>
-  <div id="cardModal" class="modal">
-  <div class="modal-card">
-    <h3 id="cardModalTitle" style="margin:0 0 10px;">发红包</h3>
-    <div class="small">发送方</div>
-    <select id="cardSender" class="select" style="margin-top:4px;">
-      <option value="user">我</option>
-      <option value="assistant">对方</option>
-    </select>
-    <div id="cardAmountBox">
-      <div class="small" style="margin-top:8px;">金额</div>
-      <input id="cardAmount" class="input" type="number" step="0.01" placeholder="0.00" />
-    </div>
-    <div class="small" style="margin-top:8px;" id="cardNoteLabel">祝福语</div>
-    <input id="cardNote" class="input" placeholder="恭喜发财，大吉大利" />
-    <div id="cardGiftBox" class="hidden">
-      <div class="small" style="margin-top:8px;">选礼物</div>
-      <select id="cardGiftSel" class="select">
-        <option value="🌹 玫瑰花">🌹 玫瑰花</option>
-        <option value="🧸 泰迪熊">🧸 泰迪熊</option>
-        <option value="💍 戒指">💍 戒指</option>
-        <option value="🎂 蛋糕">🎂 蛋糕</option>
-        <option value="👗 裙子">👗 裙子</option>
-        <option value="🏠 房子">🏠 房子</option>
-        <option value="🚗 跑车">🚗 跑车</option>
-        <option value="⭐ 星星">⭐ 星星</option>
-        <option value="🌙 月亮">🌙 月亮</option>
-      </select>
-    </div>
-    <div class="row" style="justify-content:flex-end;margin-top:12px;">
-      <button class="btn" id="cardCancelBtn">取消</button>
-      <button class="btn p" id="cardSendBtn">发送</button>
-    </div>
-  </div>
-  </div>
   <div id="modalPreview" class="modal" onclick="this.classList.remove('active')">
   <img id="previewModalImg" style="max-width:95%;max-height:90dvh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
   </div>
