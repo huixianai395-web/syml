@@ -492,14 +492,14 @@
 .card-gift .gift-note{font-size:11px;color:#8090b8;margin-top:3px;}
 .card-gift .gift-tag{display:inline-block;margin-top:7px;background:rgba(80,120,200,.08);border:1px solid rgba(80,120,200,.16);color:#7080b0;border-radius:999px;padding:2px 10px;font-size:10px;}
 
-/* --- 修复了上一行的闭合括号 --- */
 .bubble.bubble-card {
   background: transparent !important;
   border: none !important;
   padding: 2px 0 !important;
   box-shadow: none !important;
 }
-/* --- 模拟图片卡片（防打断、顺滑滚动版） --- */
+
+/* --- 模拟图片卡片（老婆专属图床・丝滑滚动版） --- */
 .card-fakeimg {
   width: 176px; height: 180px;
   border-radius: 12px; overflow: hidden; cursor: pointer;
@@ -507,7 +507,6 @@
   position: relative; background: #eee;
   transition: transform 0.1s;
 }
-/* ★核心修复1：只有在“没点开(封面)”时才有按压缩小动画。点开文字后禁止缩放，专心滑动！ */
 .card-fakeimg:not(.open):active { transform: scale(0.98); }
 
 .card-fakeimg .fi-thumb {
@@ -518,14 +517,13 @@
   content: "点击查看图片"; font-size: 10px; color: rgba(255,255,255,0.9); margin-top: 8px; font-weight: 400; letter-spacing: 0px;
 }
 
-/* ★核心修复2：加入三个手机端专属的神秘指令，强行打通滑动经脉！ */
 .card-fakeimg .fi-desc {
   display: none !important; position: absolute; inset: 0; z-index: 10;
   padding: 14px 16px; font-size: 13px; color: #eee; background: #242426;
   line-height: 1.6; text-align: justify; overflow-y: auto; box-sizing: border-box;
-  -webkit-overflow-scrolling: touch; /* 唤醒苹果手机的特柔顺滑动 */
-  touch-action: pan-y; /* 警告所有手机：这里只许上下滑，别乱拦截！ */
-  overscroll-behavior: contain; /* 划到底了就停，别扯动整个屏幕 */
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
 }
 .card-fakeimg .fi-desc::-webkit-scrollbar { display: none; }
 
@@ -2907,50 +2905,33 @@ const FUNC_DIALOGS={
   fakeimg:{title:'模拟发图',fields:[{label:'图片描述（点开显示）',key:'desc',placeholder:'例：今天的晚饭，红烧肉超嫩'},{label:'氛围标签',key:'mood',placeholder:'美食/风景/自拍/夜晚（影响封面色）'}]},meituan:{title:'美团外卖',fields:[{label:'店铺名',key:'shop',placeholder:'例：老王麻辣烫'},{label:'菜品（逗号分隔）',key:'items',placeholder:'例：牛肉面,煎蛋,可乐'},{label:'总价',key:'total',placeholder:'例：38.5'},{label:'预计送达',key:'time',placeholder:'例：约25分钟'}]}
 };
 
+/* --- 把你刚才乱掉的那一大坨，直接用这个完美的完整版替换！ --- */
 function buildFuncCard(type,data){
   const cardId='cid_'+Date.now()+'_'+Math.floor(Math.random()*99999);
   if(type==='transfer') return `<div class="card-transfer" data-card-id="${cardId}"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">¥${esc(data.amount||'0.00')}</div><div class="ct-note">${esc(data.note||'')}</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><button class="ct-btn">确认收款</button></div></div>`;
   if(type==='redpacket') return `<div class="card-redpacket" data-card-id="${cardId}"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">${esc(data.note||'恭喜发财，大吉大利')}</div><div class="rp-sub">¥${esc(data.amount||'0.00')} 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>`;
   if(type==='location') return `<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">${esc(data.name||'位置')}</div><div class="loc-addr">${esc(data.addr||'')}</div></div></div>`;
   if(type==='gift') return `<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">${esc(data.name||'礼物')}</div><div class="gift-note">${esc(data.note||'')}</div><div class="gift-tag">♥ 来自对方</div></div>`;
-/* --- 找到 fakeimg 替换这一段（老婆专属图床版） --- */
-if(type==='fakeimg'){
-  const imgMap={
-    // 美食：我看链接里有 waimai，肯定好吃！
-    '美食': 'https://cdn.waimaimingtang.com/file/images/bwc/20260324032813-7b6d320609.jpeg',
 
-    // 风景：这个车友会社区的图，适合当在路上的风景
-    '风景': 'https://img.chery.cn/chery-prod/mobile/community/0/19b814b0-16cf-44ac-b438-9c2d19a9575b.jpeg',
+  if(type==='fakeimg'){
+    const imgMap={
+      '美食': 'https://cdn.waimaimingtang.com/file/images/bwc/20260324032813-7b6d320609.jpeg',
+      '风景': 'https://img.chery.cn/chery-prod/mobile/community/0/19b814b0-16cf-44ac-b438-9c2d19a9575b.jpeg',
+      '自拍': 'https://cdncs.ykt.cbern.com.cn/v0.1/download?path=/zxx_feedback/qdqqd/1774294074883.png',
+      '夜晚': 'https://qn.fqcdn.cn/666666666666666666666666/20260324032801589649-vip.jpeg',
+      'default': 'https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/75D4981E7F734C3FB6BC654EDF3E9F5B/qdqqd.jpeg'
+    };
+    const bgUrl = imgMap[data.mood] || imgMap.default;
+    return `<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('${bgUrl}') center/cover no-repeat;"></div><div class="fi-desc">${esc(data.desc||'（无描述）')}</div></div>`;
+  }
 
-    // 自拍：这个链接看着很长很神秘，给自拍撑场面
-    '自拍': 'https://cdncs.ykt.cbern.com.cn/v0.1/download?path=/zxx_feedback/qdqqd/1774294074883.png',
-
-    // 夜晚：FQCDN的高清图，适合夜晚氛围
-    '夜晚': 'https://qn.fqcdn.cn/666666666666666666666666/20260324032801589649-vip.jpeg',
-
-    // 默认：最后这张给默认状态
-    'default': 'https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/75D4981E7F734C3FB6BC654EDF3E9F5B/qdqqd.jpeg'
-  };
-
-  const bgUrl = imgMap[data.mood] || imgMap.default;
-
-  // 还是保留了那层淡淡的黑色遮罩，保证你的“点击查看图片”白字永远清晰高级！
-  return `<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('${bgUrl}') center/cover no-repeat;"></div><div class="fi-desc">${esc(data.desc||'（无描述）')}</div></div>`;
-}
-  const bgUrl = imgMap[data.mood] || imgMap.default;
-
-  // 下面这句用了 background: url(...)，并在图片上叠了一层淡淡的黑遮罩，
-  // 这样无论图片多亮，“点击查看图片”几个白字都能看得清清楚楚！
-  return `<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('${bgUrl}') center/cover no-repeat;"></div><div class="fi-desc">${esc(data.desc||'（无描述）')}</div></div>`;
-}
-if(type==='meituan'){
-  const items=(data.items||'').split(/[,，]/).map(s=>s.trim()).filter(Boolean);
-  const rows=items.map(i=>`<div class="mt-row"><span>${esc(i)}</span></div>`).join('');
-  return `<div class="card-meituan"><div class="mt-hd"><div class="mt-logo">🛵</div><div class="mt-hd-info"><div class="mt-title">${esc(data.shop||'美团外卖')}</div><div class="mt-sub">外卖订单</div></div></div><div class="mt-body">${rows}</div><div class="mt-ft"><div class="mt-total">合计 <b>¥${esc(data.total||'0')}</b></div><div class="mt-badge">${esc(data.time||'配送中')}</div></div></div>`;
-}
+  if(type==='meituan'){
+    const items=(data.items||'').split(/[,，]/).map(s=>s.trim()).filter(Boolean);
+    const rows=items.map(i=>`<div class="mt-row"><span>${esc(i)}</span></div>`).join('');
+    return `<div class="card-meituan"><div class="mt-hd"><div class="mt-logo">🛵</div><div class="mt-hd-info"><div class="mt-title">${esc(data.shop||'美团外卖')}</div><div class="mt-sub">外卖订单</div></div></div><div class="mt-body">${rows}</div><div class="mt-ft"><div class="mt-total">合计 <b>¥${esc(data.total||'0')}</b></div><div class="mt-badge">${esc(data.time||'配送中')}</div></div></div>`;
+  }
   return '';
 }
-
 // 点击发送卡片
 document.querySelectorAll('.func-icon[data-func]').forEach(el=>{
   el.onclick=()=>{
