@@ -1343,7 +1343,22 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
   if(buf) out.push(buf.trim());
   return out.filter(Boolean);
   }
-    
+    function extractCardBubbles(parts){
+  const out=[];
+  for(const p of parts){
+    if(!isHtmlFrag(p)){out.push(p);continue;}
+    // 把卡片HTML从混合内容里提取出来
+    const cardRe=/(<div class="card-(?:transfer|redpacket|location|gift)[^]*?<\/div>)/g;
+    const cards=[...p.matchAll(cardRe)].map(m=>m[1]);
+    if(!cards.length){out.push(p);continue;}
+    let rest=p;
+    for(const card of cards) rest=rest.replace(card,'');
+    rest=rest.replace(/\s+/g,' ').trim();
+    if(rest) out.push(rest);
+    for(const card of cards) out.push(card);
+  }
+  return out;
+    }
   function enforceCountRange(parts,min,max){let arr=[...(parts||[])].filter(Boolean);max=Math.max(1,max);if(arr.length>max){const keep=arr.slice(0,max-1),tail=arr.slice(max-1).join(' ');return [...keep,tail];}return arr;}
 
   async function emitAiSequential(parts,targetId,mode){
@@ -1620,7 +1635,7 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
       if(st.mode==='offline') parts=[clean(out)||'...'];
 else{
   if(out.includes('【状态栏】')){parts=[clean(out)||'...'];}
-  else{parts=splitAiBubbles(out); parts=mergeCodeBubbles(parts); parts=splitLongBubbles(parts,30); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);}
+  else{parts=splitAiBubbles(out); parts=mergeCodeBubbles(parts); parts=splitLongBubbles(parts,30);parts=extractCardBubbles(parts); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);}
 }
       syncCardFromAi(parts, chatId);
       await emitAiSequential(parts.length?parts:['...'],chatId,st.mode);
