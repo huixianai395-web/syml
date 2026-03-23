@@ -2864,8 +2864,9 @@ function buildFuncCard(type,data){
 document.querySelectorAll('.func-icon[data-func]').forEach(el=>{
   el.onclick=()=>{
     $('funcPanel').classList.remove('show');
-    const type=el.dataset.func,cfg=FUNC_DIALOGS[type]; if(!cfg) return;
-    if(type==='image'){$('chatImgInput').click();$('funcPanel').classList.remove('show');return;}
+    const type=el.dataset.func;
+if(type==='image'){$('chatImgInput').click();$('funcPanel').classList.remove('show');return;}
+const cfg=FUNC_DIALOGS[type]; if(!cfg) return;
     let html=`<b>${cfg.title}</b><br><br>`;
     cfg.fields.forEach(f=>{ html+=`<div style="margin-bottom:8px;"><div class="small">${f.label}</div><input id="fd_${f.key}" class="input" type="${f.type||'text'}" placeholder="${f.placeholder}" style="margin-top:4px;"></div>`; });
     const modal=document.createElement('div');
