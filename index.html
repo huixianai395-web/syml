@@ -2914,19 +2914,18 @@ function buildFuncCard(type,data){
   if(type==='location') return `<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">${esc(data.name||'位置')}</div><div class="loc-addr">${esc(data.addr||'')}</div></div></div>`;
   if(type==='gift') return `<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">${esc(data.name||'礼物')}</div><div class="gift-note">${esc(data.note||'')}</div><div class="gift-tag">♥ 来自对方</div></div>`;
  if(type==='fakeimg'){
-    // 这里我给你换了一组更高级的莫兰迪/流体渐变色，不要那些大红大绿了
     const moodMap={
-      '美食': 'linear-gradient(120deg, #f093fb 0%, #f5576c 100%)', // 暖洋洋的高级粉
-      '风景': 'linear-gradient(120deg, #4facfe 0%, #00f2fe 100%)', // 通透的天空蓝
-      '自拍': 'linear-gradient(120deg, #43e97b 0%, #38f9d7 100%)', // 很清新的薄荷绿
-      '夜晚': 'linear-gradient(120deg, #30cfd0 0%, #330867 100%)', // 深邃的极光紫
-      'default': 'linear-gradient(120deg, #a18cd1 0%, #fbc2eb 100%)' // 默认的梦幻紫
+      '美食':'linear-gradient(135deg, #f093fb, #f5576c)',
+      '风景':'linear-gradient(135deg, #4facfe, #00f2fe)',
+      '自拍':'linear-gradient(135deg, #43e97b, #38f9d7)',
+      '夜晚':'linear-gradient(135deg, #30cfd0, #330867)',
+      'default':'linear-gradient(135deg, #a18cd1, #fbc2eb)'
     };
-
     const grad=moodMap[data.mood]||moodMap.default;
 
-    // 注意看这里：没有 ${emoji} 了，我直接写死了一个 "PHOTO" 单词，更加杂志风
-    return `<div class="card-fakeimg"><div class="fi-thumb" style="background:${grad};color:rgba(255,255,255,0.8);font-size:14px;letter-spacing:4px;font-weight:700;">PHOTO</div><div class="fi-desc">${esc(data.desc||'（无描述）')}</div></div>`;
+    // ★ 注意看这里：style 后面那个 > 和 </div> 之间，现在是空的！什么字都没有！
+    // 这样就只剩下背景色了，超级干净！
+    return `<div class="card-fakeimg"><div class="fi-thumb" style="background:${grad};"></div><div class="fi-desc">${esc(data.desc||'（无描述）')}</div></div>`;
  }
 if(type==='meituan'){
   const items=(data.items||'').split(/[,，]/).map(s=>s.trim()).filter(Boolean);
