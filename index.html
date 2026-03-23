@@ -494,7 +494,7 @@
 
 .bubble.bubble-card{background:transparent!important;border:none!important;padding:2px 0!important;box-shadow:none!important;}
   .card-fakeimg{width:176px;border-radius:14px;overflow:hidden;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);position:relative;}
-.card-fakeimg .fi-thumb{width:100%;height:118px;display:flex;align-items:center;justify-content:center;font-size:36px;position:relative;}
+.card-fakeimg .fi-thumb{width:100%;height:118px;display:flex;align-items:center;justify-content:center;font-size:36px;position:relative;z-index:0;}
 .card-fakeimg .fi-thumb::after{content:"点击查看";position:absolute;bottom:0;left:0;right:0;padding:4px;background:rgba(0,0,0,.32);color:#fff;font-size:10px;text-align:center;}
 .card-fakeimg .fi-desc{position:absolute;inset:0;z-index:10;padding:10px 12px;font-size:12px;color:#fff;background:rgba(0,0,0,.82);display:none;overflow-y:auto;white-space:pre-wrap;line-height:1.6;-webkit-overflow-scrolling:touch;border-radius:14px;}
 .card-meituan{background:#fff;border:1px solid #ffe0b2;border-radius:14px;overflow:hidden;width:210px;box-shadow:0 2px 8px rgba(255,100,0,.08);}
@@ -2884,7 +2884,7 @@ function buildFuncCard(type,data){
   const emojiMap={美食:'🍜',风景:'🌅',自拍:'🤳',夜晚:'🌙',default:'🖼️'};
   const grad=moodMap[data.mood]||moodMap.default;
   const emoji=emojiMap[data.mood]||emojiMap.default;
-  return `<div class="card-fakeimg" onclick="this.querySelector('.fi-desc').style.display=this.querySelector('.fi-desc').style.display==='block'?'none':'block'"><div class="fi-thumb" style="background:${grad};">${emoji}</div><div class="fi-desc">${esc(data.desc||'（无描述）')}</div></div>`;
+  return `<div class="card-fakeimg"><div class="fi-thumb" style="background:${grad};">${emoji}</div><div class="fi-desc">${esc(data.desc||'（无描述）')}</div></div>`;
 }
 if(type==='meituan'){
   const items=(data.items||'').split(/[,，]/).map(s=>s.trim()).filter(Boolean);
