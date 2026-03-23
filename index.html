@@ -496,7 +496,7 @@
   .card-fakeimg{width:176px;border-radius:14px;overflow:hidden;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);position:relative;}
 .card-fakeimg .fi-thumb{width:100%;height:118px;display:flex;align-items:center;justify-content:center;font-size:36px;position:relative;}
 .card-fakeimg .fi-thumb::after{content:"点击查看";position:absolute;bottom:0;left:0;right:0;padding:4px;background:rgba(0,0,0,.32);color:#fff;font-size:10px;text-align:center;}
-.card-fakeimg .fi-desc{position:absolute;inset:0;padding:10px 12px;font-size:12px;color:#fff;background:rgba(0,0,0,.75);display:none;overflow-y:auto;white-space:pre-wrap;line-height:1.6;-webkit-overflow-scrolling:touch;border-radius:14px;z-index:2;}
+.card-fakeimg .fi-desc{position:absolute;inset:0;z-index:10;padding:10px 12px;font-size:12px;color:#fff;background:rgba(0,0,0,.82);display:none;overflow-y:auto;white-space:pre-wrap;line-height:1.6;-webkit-overflow-scrolling:touch;border-radius:14px;}
 .card-meituan{background:#fff;border:1px solid #ffe0b2;border-radius:14px;overflow:hidden;width:210px;box-shadow:0 2px 8px rgba(255,100,0,.08);}
 .card-meituan .mt-hd{background:linear-gradient(135deg,#ff6b00,#ff9a00);padding:10px 12px;display:flex;align-items:center;gap:8px;}
 .card-meituan .mt-logo{font-size:22px;}
@@ -2920,7 +2920,10 @@ const cfg=FUNC_DIALOGS[type]; if(!cfg) return;
     };
   };
 });
-
+$('chatMsgs').addEventListener('click',e=>{
+  const fi=e.target.closest('.card-fakeimg');
+  if(fi){const d=fi.querySelector('.fi-desc');if(d) d.style.display=d.style.display==='block'?'none':'block';return;}
+});
 // 红包点击交互
 $('chatMsgs').addEventListener('click',e=>{
   const rpBtn=e.target.closest('.rp-btn');
