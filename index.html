@@ -1357,9 +1357,12 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     }
     const card=end>0?cardAndAfter.slice(0,end):cardAndAfter;
     const after=end>0?cardAndAfter.slice(end).trim():'';
-    if(before) out.push(before);
-    out.push(card);
-    if(after) out.push(after);
+    if(before && before.replace(/<[^>]*>/g,'').trim()) out.push(before);
+out.push(card);
+if(after){
+  const subs=after.split(/(?<=[。！？!?\n])\s*/).map(s=>s.trim()).filter(Boolean);
+  subs.forEach(s=>out.push(s));
+}
   }
   return out;
     }
