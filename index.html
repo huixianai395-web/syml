@@ -448,6 +448,49 @@
 .pc-schedule-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #f5f5f8;font-size:13px;}
 .pc-schedule-item:last-child{border-bottom:none;}
 .pc-schedule-time{color:#2f66d8;font-weight:600;min-width:56px;flex-shrink:0;font-size:12px;}
+    .func-panel{display:none;width:100%;padding:8px 0 4px;flex-wrap:wrap;gap:10px 0;background:#f6f8ff;}
+.func-panel.show{display:flex;}
+.func-icon{width:25%;text-align:center;cursor:pointer;}
+.func-icon .ibox2{width:52px;height:52px;margin:0 auto 4px;border-radius:14px;background:#fff;border:1px solid #e4e8f5;display:grid;place-items:center;font-size:24px;}
+.func-icon .lab2{font-size:11px;color:#555;}
+.func-icon:active .ibox2{transform:scale(.88);}
+
+.card-transfer{background:linear-gradient(145deg,#f5f2ee,#ede9e3);border:1px solid rgba(180,160,140,.18);border-radius:14px;padding:11px 13px;width:176px;box-shadow:0 2px 8px rgba(120,90,60,.08);color:#5c4a3a;position:relative;}
+.card-transfer .ct-header{display:flex;align-items:center;gap:6px;font-size:11px;color:#a89070;margin-bottom:8px;}
+.card-transfer .ct-header span{font-size:14px;}
+.card-transfer .ct-amount{font-size:22px;font-weight:700;color:#4a3828;letter-spacing:-0.5px;line-height:1;}
+.card-transfer .ct-note{font-size:11px;color:#a08878;margin-top:4px;}
+.card-transfer .ct-divider{border:none;border-top:1px solid rgba(160,130,110,.14);margin:9px 0 8px;}
+.card-transfer .ct-footer{display:flex;align-items:center;justify-content:space-between;}
+.card-transfer .ct-label{font-size:10px;color:#b8a898;}
+.card-transfer .ct-btn{background:rgba(160,130,100,.12);border:1px solid rgba(160,130,100,.22);color:#7a5a42;border-radius:12px;padding:4px 12px;font-size:11px;cursor:pointer;}
+.card-transfer.received,.card-redpacket.received{filter:saturate(.3) brightness(.96);pointer-events:none;}
+.card-transfer.rejected,.card-redpacket.rejected{filter:saturate(.15) brightness(.88);opacity:.6;pointer-events:none;}
+
+.card-redpacket{background:linear-gradient(145deg,#f7eeea,#f0e4de);border:1px solid rgba(200,130,110,.16);border-radius:14px;padding:11px 13px;width:176px;box-shadow:0 2px 8px rgba(160,80,60,.07);color:#7a3828;position:relative;}
+.card-redpacket .rp-main{display:flex;gap:10px;align-items:center;}
+.card-redpacket .rp-icon{font-size:26px;flex-shrink:0;}
+.card-redpacket .rp-title{font-size:13px;font-weight:600;color:#6a3020;line-height:1.3;}
+.card-redpacket .rp-sub{font-size:10px;color:#b08878;margin-top:2px;}
+.card-redpacket .rp-divider{border:none;border-top:1px solid rgba(180,110,90,.12);margin:8px 0 7px;}
+.card-redpacket .rp-footer{display:flex;align-items:center;justify-content:space-between;}
+.card-redpacket .rp-label{font-size:10px;color:#c0a898;}
+.card-redpacket .rp-btn{background:rgba(190,100,80,.12);border:1px solid rgba(190,100,80,.22);color:#8a4030;border-radius:12px;padding:4px 12px;font-size:11px;cursor:pointer;}
+.card-redpacket .rp-opened{font-size:11px;color:#b09080;margin-top:4px;}
+
+.card-location{background:linear-gradient(145deg,#eef4f0,#e6ede8);border:1px solid rgba(100,160,130,.16);border-radius:14px;overflow:hidden;width:176px;box-shadow:0 2px 8px rgba(60,110,80,.07);}
+.card-location .loc-map{height:64px;background:linear-gradient(135deg,#d8ece2,#c8e0d2);display:grid;place-items:center;font-size:24px;}
+.card-location .loc-info{padding:8px 11px;}
+.card-location .loc-name{font-size:12px;font-weight:600;color:#3a6a52;}
+.card-location .loc-addr{font-size:10px;color:#88a898;margin-top:2px;}
+
+.card-gift{background:linear-gradient(145deg,#eef2f8,#e6ecf4);border:1px solid rgba(100,140,200,.14);border-radius:14px;padding:11px 13px;width:148px;box-shadow:0 2px 8px rgba(60,80,140,.06);text-align:center;position:relative;}
+.card-gift .gift-icon{font-size:26px;margin-bottom:5px;}
+.card-gift .gift-name{font-size:13px;font-weight:600;color:#384878;}
+.card-gift .gift-note{font-size:11px;color:#8090b8;margin-top:3px;}
+.card-gift .gift-tag{display:inline-block;margin-top:7px;background:rgba(80,120,200,.08);border:1px solid rgba(80,120,200,.16);color:#7080b0;border-radius:999px;padding:2px 10px;font-size:10px;}
+
+.bubble.bubble-card{background:transparent!important;border:none!important;padding:2px 0!important;box-shadow:none!important;}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 </head>
@@ -510,6 +553,13 @@
   </button>
 
   <button class="btn-circle hidden" id="emojiBtn">☺</button>
+        <button class="btn" id="funcToggleBtn" style="width:40px;height:40px;padding:0;border-radius:999px;font-size:20px;">+</button>
+      </div>
+      <div id="funcPanel" class="func-panel">
+  <div class="func-icon" data-func="transfer"><div class="ibox2">💸</div><div class="lab2">转账</div></div>
+  <div class="func-icon" data-func="redpacket"><div class="ibox2">🧧</div><div class="lab2">发红包</div></div>
+  <div class="func-icon" data-func="location"><div class="ibox2">📍</div><div class="lab2">定位</div></div>
+  <div class="func-icon" data-func="gift"><div class="ibox2">🎁</div><div class="lab2">送礼物</div></div>
       </div>
       <textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
       <div class="send-actions">
@@ -1498,6 +1548,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 `valid: {"messages":["...","..."]}`,
 `example: {"messages":["你干嘛","神经病吧","我去吃饭了"]}`,
 `fatal_pattern: 【状态栏】→BLOCK | （动作）→BLOCK`,
+`【渲染提示】：收到对方红包时选择——【领取】输出：<div class="card-redpacket received">...</div>；【拒绝】输出：<div class="card-redpacket rejected">...</div>。收到转账时选择——【收款】输出：<div class="card-transfer received">...</div>；【拒收】输出：<div class="card-transfer rejected">...</div>。AI主动发红包：<div class="card-redpacket"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">祝福语</div><div class="rp-sub">¥金额 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>。AI主动发转账：<div class="card-transfer"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">¥金额</div><div class="ct-note">备注</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><button class="ct-btn">确认收款</button></div></div>。发礼物：<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">礼物名</div><div class="gift-note">留言</div></div>。发定位：<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">地点名</div><div class="loc-addr">地址</div></div></div>。卡片必须是纯HTML字符串放在messages数组元素里，禁止JSON对象格式。收到红包/转账时只输出卡片HTML，前后不能有任何文字。文字回应单独作为一条messages元素。`,
     ].join('\n');
   }
 
@@ -1571,6 +1622,7 @@ else{
   if(out.includes('【状态栏】')){parts=[clean(out)||'...'];}
   else{parts=splitAiBubbles(out); parts=mergeCodeBubbles(parts); parts=splitLongBubbles(parts,30); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);}
 }
+      syncCardFromAi(parts, chatId);
       await emitAiSequential(parts.length?parts:['...'],chatId,st.mode);
 
       updateContactPreview(chatId); if(currentId===chatId) renderChat();
@@ -2029,7 +2081,7 @@ document.addEventListener('click',e=>{
         '1. 所有内容严格贴合人设和当前剧情关系，有温度细节内心戏，每次不一样',
         '2. 微信：必须包含' + me.name + '（备注名根据关系和人设自定义，绝对不能直接用原名，要用昵称/爱称/吐槽式/暗号式备注），还有3-6个其他联系人（家人/朋友/同事/群聊等根据人设编），每人消息条数2-8条随机不等。对话节奏要自然：同一个人可以连发好几条不等回复，有的人话痨有的人惜字如金，不要死板的一问一答',
         '3. 日记：2-3篇。格式像真实手机日记：开头写日期天气心情，正文分段写，有碎碎念有内心独白有对' + me.name + '的想法，每篇4-8行，语气口语化私密感强',
-        '4. 备忘录：5-7条！大部分要是角色自己的私人内容（健身计划/游戏攻略/工作笔记/追剧清单/食谱/理财/自我反省等根据人设来），只有3-4条和' + me.name + '相关就行，不要全围绕' + me.name,
+        '4. 备忘录：5-7条！大部分要是角色自己的私人内容（小心思/健身计划/游戏攻略/工作笔记/追剧清单/食谱/理财/自我反省等什么都行，越多越好根据人设来），只有3-4条和' + me.name + '相关就行，不要全围绕' + me.name,
         '5. 搜索记录：6-10条，有趣暴露小心思。每条要有title、url（编合理假URL）、detail（点开看到的内容2-5行，要像真实网页摘要）',
         '6. 草稿箱：2-3条没发出的消息，情感张力强',
         '7. 时间线：6-10条带内心独白',
@@ -2759,6 +2811,148 @@ $("customBgFile").addEventListener("change", async (e) => {
   }
 });
   });
+  // 功能面板开关
+$('funcToggleBtn').onclick=()=>{
+  const p=$('funcPanel');
+  p.classList.toggle('show');
+};
+
+// 四件套配置
+const FUNC_DIALOGS={
+  transfer:{title:'转账',fields:[{label:'金额（元）',key:'amount',placeholder:'0.00',type:'number'},{label:'备注',key:'note',placeholder:'转账备注（可选）'}]},
+  redpacket:{title:'发红包',fields:[{label:'金额（元）',key:'amount',placeholder:'0.00',type:'number'},{label:'祝福语',key:'note',placeholder:'恭喜发财，大吉大利'}]},
+  location:{title:'发送位置',fields:[{label:'地点名称',key:'name',placeholder:'例：星巴克'},{label:'详细地址',key:'addr',placeholder:'例：xx路xx号'}]},
+  gift:{title:'送礼物',fields:[{label:'礼物名称',key:'name',placeholder:'例：玫瑰花'},{label:'留言',key:'note',placeholder:'送你的～'}]}
+};
+
+function buildFuncCard(type,data){
+  const cardId='cid_'+Date.now()+'_'+Math.floor(Math.random()*99999);
+  if(type==='transfer') return `<div class="card-transfer" data-card-id="${cardId}"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">¥${esc(data.amount||'0.00')}</div><div class="ct-note">${esc(data.note||'')}</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><button class="ct-btn">确认收款</button></div></div>`;
+  if(type==='redpacket') return `<div class="card-redpacket" data-card-id="${cardId}"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">${esc(data.note||'恭喜发财，大吉大利')}</div><div class="rp-sub">¥${esc(data.amount||'0.00')} 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>`;
+  if(type==='location') return `<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">${esc(data.name||'位置')}</div><div class="loc-addr">${esc(data.addr||'')}</div></div></div>`;
+  if(type==='gift') return `<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">${esc(data.name||'礼物')}</div><div class="gift-note">${esc(data.note||'')}</div><div class="gift-tag">♥ 来自对方</div></div>`;
+  return '';
+}
+
+// 点击发送卡片
+document.querySelectorAll('.func-icon[data-func]').forEach(el=>{
+  el.onclick=()=>{
+    $('funcPanel').classList.remove('show');
+    const type=el.dataset.func,cfg=FUNC_DIALOGS[type]; if(!cfg) return;
+    let html=`<b>${cfg.title}</b><br><br>`;
+    cfg.fields.forEach(f=>{ html+=`<div style="margin-bottom:8px;"><div class="small">${f.label}</div><input id="fd_${f.key}" class="input" type="${f.type||'text'}" placeholder="${f.placeholder}" style="margin-top:4px;"></div>`; });
+    const modal=document.createElement('div');
+    modal.className='modal active';modal.style.zIndex='9999';
+    modal.innerHTML=`<div class="modal-card" style="max-width:320px;">${html}<div class="row" style="justify-content:flex-end;margin-top:10px;"><button class="btn" id="fdCancelBtn">取消</button><button class="btn p" id="fdSendBtn">发送</button></div></div>`;
+    $('app').appendChild(modal);
+    modal.querySelector('#fdCancelBtn').onclick=()=>modal.remove();
+    modal.querySelector('#fdSendBtn').onclick=()=>{
+      const data={};
+      cfg.fields.forEach(f=>{ data[f.key]=clean(modal.querySelector('#fd_'+f.key)?.value||''); });
+      const cardHtml=buildFuncCard(type,data);
+      if(!cardHtml||!currentId){modal.remove();return;}
+      const arr=getChatArr(currentId);
+      arr.push(toMsg({role:'user',text:cardHtml,time:Date.now()}));
+      setChatArr(currentId,arr);updateContactPreview(currentId);renderChat();
+      modal.remove();$('funcPanel').classList.remove('show');
+    };
+  };
+});
+
+// 红包点击交互
+$('chatMsgs').addEventListener('click',e=>{
+  const rpBtn=e.target.closest('.rp-btn');
+  if(rpBtn&&currentId){
+    const rpCard=rpBtn.closest('.card-redpacket');
+    if(!rpCard||rpCard.classList.contains('received')||rpCard.classList.contains('rejected')) return;
+    e.stopPropagation();
+    const msgItem=rpBtn.closest('.msg-item');
+    if(!msgItem) return;
+    const mid=msgItem.dataset.mid;
+    const overlay=document.createElement('div');
+    overlay.style.cssText='position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.3);display:grid;place-items:center;';
+    overlay.innerHTML=`<div style="background:#fff;border-radius:14px;padding:16px;min-width:220px;text-align:center;"><div style="font-size:14px;color:#333;margin-bottom:14px;">领取这个红包？</div><div style="display:flex;gap:10px;justify-content:center;"><button id="_rpAccept" style="flex:1;padding:10px;border:none;border-radius:10px;background:#e8f0ff;color:#2f66d8;font-size:14px;">领取</button><button id="_rpReject" style="flex:1;padding:10px;border:none;border-radius:10px;background:#fff0ee;color:#c04030;font-size:14px;">退回</button></div></div>`;
+    document.body.appendChild(overlay);
+    function doAction(isReceive){
+      overlay.remove();
+      const arr=getChatArr(currentId);
+      const idx=arr.findIndex(x=>x.id===mid);
+      if(idx<0) return;
+      if(isReceive){
+        arr[idx].text=arr[idx].text.replace(/class="card-redpacket"/,'class="card-redpacket received"').replace(/<button[^>]*class="rp-btn"[^>]*>[\s\S]*?<\/button>/,'<div class="rp-opened">已领取</div>');
+      }else{
+        arr[idx].text=arr[idx].text.replace(/class="card-redpacket"/,'class="card-redpacket rejected"').replace(/<button[^>]*class="rp-btn"[^>]*>[\s\S]*?<\/button>/,'<div class="rp-opened">已退回</div>');
+      }
+      const receiptHtml=isReceive
+        ?`<div class="card-redpacket received"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">已领取</div><div class="rp-sub">微信红包</div></div></div></div>`
+        :`<div class="card-redpacket rejected"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">已退回</div><div class="rp-sub">微信红包</div></div></div></div>`;
+      arr.push(toMsg({role:'user',text:receiptHtml,time:Date.now()}));
+      setChatArr(currentId,arr);renderChat();
+    }
+    overlay.querySelector('#_rpAccept').onclick=()=>doAction(true);
+    overlay.querySelector('#_rpReject').onclick=()=>doAction(false);
+    overlay.onclick=e=>{if(e.target===overlay) overlay.remove();};
+    return;
+  }
+
+  // 转账点击交互
+  const ctBtn=e.target.closest('.ct-btn');
+  if(ctBtn&&currentId){
+    const ctCard=ctBtn.closest('.card-transfer');
+    if(!ctCard||ctCard.classList.contains('received')||ctCard.classList.contains('rejected')) return;
+    e.stopPropagation();
+    const msgItem=ctBtn.closest('[data-mid]')||ctBtn.closest('.msg-item');
+    if(!msgItem) return;
+    const mid=msgItem.dataset.mid;
+    const overlay=document.createElement('div');
+    overlay.style.cssText='position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.3);display:grid;place-items:center;';
+    overlay.innerHTML=`<div style="background:#fff;border-radius:14px;padding:16px;min-width:220px;text-align:center;"><div style="font-size:14px;color:#333;margin-bottom:14px;">收下这笔转账？</div><div style="display:flex;gap:10px;justify-content:center;"><button id="_ctAccept" style="flex:1;padding:10px;border:none;border-radius:10px;background:#e8f0ff;color:#2f66d8;font-size:14px;">收款</button><button id="_ctReject" style="flex:1;padding:10px;border:none;border-radius:10px;background:#fff0ee;color:#c04030;font-size:14px;">退回</button></div></div>`;
+    document.body.appendChild(overlay);
+    function doCtAction(isReceive){
+      overlay.remove();
+      const arr=getChatArr(currentId);
+      const idx=arr.findIndex(x=>x.id===mid);
+      if(idx<0) return;
+      if(isReceive){
+        arr[idx].text=arr[idx].text.replace(/class="card-transfer"/,'class="card-transfer received"').replace(/<button[^>]*class="ct-btn"[^>]*>[\s\S]*?<\/button>/,'<div class="ct-received">✓ 已收款</div>');
+        arr.push(toMsg({role:'user',text:`<div class="card-transfer received"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">✓ 已收款</div><div class="ct-note">微信安全转账</div></div>`,time:Date.now()}));
+      }else{
+        arr[idx].text=arr[idx].text.replace(/class="card-transfer"/,'class="card-transfer rejected"').replace(/<button[^>]*class="ct-btn"[^>]*>[\s\S]*?<\/button>/,'<div class="ct-received">已拒收</div>');
+        arr.push(toMsg({role:'user',text:`<div class="card-transfer rejected"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">已拒收</div><div class="ct-note">微信安全转账</div></div>`,time:Date.now()}));
+      }
+      setChatArr(currentId,arr);renderChat();
+    }
+    overlay.querySelector('#_ctAccept').onclick=()=>doCtAction(true);
+    overlay.querySelector('#_ctReject').onclick=()=>doCtAction(false);
+    overlay.onclick=e=>{if(e.target===overlay) overlay.remove();};
+  }
+});
+
+// AI回复时自动同步卡片状态
+function syncCardFromAi(parts,chatId){
+  const txt=parts.join('');
+  const gotReceived=/card-(redpacket|transfer)\s+received/.test(txt);
+  const gotRejected=/card-(redpacket|transfer)\s+rejected/.test(txt);
+  if(!gotReceived&&!gotRejected) return;
+  const arr=getChatArr(chatId);
+  for(let i=arr.length-1;i>=0;i--){
+    const m=arr[i];
+    if(m.role!=='user') continue;
+    if(!/card-(redpacket|transfer)/.test(m.text||'')) continue;
+    if(/rp-opened|ct-received/.test(m.text||'')) continue;
+    if(gotReceived){
+      arr[i].text=arr[i].text
+        .replace(/<button[^>]*class="rp-btn"[^>]*>点击领取<\/button>/,'<div class="rp-opened">已领取</div>')
+        .replace(/<button[^>]*class="ct-btn"[^>]*>确认收款<\/button>/,'<div class="ct-received">✓ 已收款</div>');
+    }else{
+      arr[i].text=arr[i].text
+        .replace(/<button[^>]*class="rp-btn"[^>]*>点击领取<\/button>/,'<div class="rp-opened">已退回</div>')
+        .replace(/<button[^>]*class="ct-btn"[^>]*>确认收款<\/button>/,'<div class="ct-received">已拒收</div>');
+    }
+    setChatArr(chatId,arr);
+    break;
+  }
+}
 })();
 </script>
   <div id="modalPreview" class="modal" onclick="this.classList.remove('active')">
