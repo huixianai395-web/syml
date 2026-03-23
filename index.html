@@ -1646,6 +1646,7 @@ else{
   if(out.includes('【状态栏】')){parts=[clean(out)||'...'];}
   else{parts=splitAiBubbles(out); parts=mergeCodeBubbles(parts); parts=splitLongBubbles(parts,30);parts=extractCardBubbles(parts); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);}
 }
+      parts=parts.filter(p=>isHtmlFrag(p)?true:p.trim().length>0);
       syncCardFromAi(parts, chatId);
       await emitAiSequential(parts.length?parts:['...'],chatId,st.mode);
 
