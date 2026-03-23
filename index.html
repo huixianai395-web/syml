@@ -493,6 +493,22 @@
 .card-gift .gift-tag{display:inline-block;margin-top:7px;background:rgba(80,120,200,.08);border:1px solid rgba(80,120,200,.16);color:#7080b0;border-radius:999px;padding:2px 10px;font-size:10px;}
 
 .bubble.bubble-card{background:transparent!important;border:none!important;padding:2px 0!important;box-shadow:none!important;}
+    .card-fakeimg{width:176px;border-radius:14px;overflow:hidden;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);}
+.card-fakeimg .fi-thumb{width:100%;height:118px;display:flex;align-items:center;justify-content:center;font-size:36px;position:relative;}
+.card-fakeimg .fi-thumb::after{content:"点击查看";position:absolute;bottom:0;left:0;right:0;padding:4px;background:rgba(0,0,0,.32);color:#fff;font-size:10px;text-align:center;}
+.card-fakeimg .fi-desc{padding:9px 11px;font-size:12px;color:#333;background:#f8f8f8;display:none;white-space:pre-wrap;line-height:1.55;border-top:1px solid #eee;}
+.card-meituan{background:#fff;border:1px solid #ffe0b2;border-radius:14px;overflow:hidden;width:210px;box-shadow:0 2px 8px rgba(255,100,0,.08);}
+.card-meituan .mt-hd{background:linear-gradient(135deg,#ff6b00,#ff9a00);padding:10px 12px;display:flex;align-items:center;gap:8px;}
+.card-meituan .mt-logo{font-size:22px;}
+.card-meituan .mt-hd-info .mt-title{color:#fff;font-weight:700;font-size:13px;}
+.card-meituan .mt-hd-info .mt-sub{color:rgba(255,255,255,.82);font-size:10px;margin-top:1px;}
+.card-meituan .mt-body{padding:8px 12px;}
+.card-meituan .mt-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #fff5ee;font-size:12px;color:#333;}
+.card-meituan .mt-row:last-child{border-bottom:none;}
+.card-meituan .mt-ft{background:#fff8f0;padding:7px 12px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #ffe0b2;}
+.card-meituan .mt-total{font-size:12px;color:#555;}
+.card-meituan .mt-total b{color:#ff6b00;font-size:14px;}
+.card-meituan .mt-badge{font-size:10px;padding:3px 8px;border-radius:999px;background:#ff6b00;color:#fff;}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 </head>
@@ -563,6 +579,8 @@
   <div class="func-icon" data-func="location"><div class="ibox2">📍</div><div class="lab2">定位</div></div>
   <div class="func-icon" data-func="gift"><div class="ibox2">🎁</div><div class="lab2">送礼物</div></div>
         <div class="func-icon" data-func="image"><div class="ibox2">🖼️</div><div class="lab2">发照片</div></div>
+        <div class="func-icon" data-func="fakeimg"><div class="ibox2">🌄</div><div class="lab2">模拟发图</div></div>
+<div class="func-icon" data-func="meituan"><div class="ibox2">🛵</div><div class="lab2">美团外卖</div></div>
       </div>
       <textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
       <div class="send-actions">
@@ -2849,7 +2867,8 @@ const FUNC_DIALOGS={
   transfer:{title:'转账',fields:[{label:'金额（元）',key:'amount',placeholder:'0.00',type:'number'},{label:'备注',key:'note',placeholder:'转账备注（可选）'}]},
   redpacket:{title:'发红包',fields:[{label:'金额（元）',key:'amount',placeholder:'0.00',type:'number'},{label:'祝福语',key:'note',placeholder:'恭喜发财，大吉大利'}]},
   location:{title:'发送位置',fields:[{label:'地点名称',key:'name',placeholder:'例：星巴克'},{label:'详细地址',key:'addr',placeholder:'例：xx路xx号'}]},
-  gift:{title:'送礼物',fields:[{label:'礼物名称',key:'name',placeholder:'例：玫瑰花'},{label:'留言',key:'note',placeholder:'送你的～'}]}
+  gift:{title:'送礼物',fields:[{label:'礼物名称',key:'name',placeholder:'例：玫瑰花'},{label:'留言',key:'note',placeholder:'送你的～'}]},
+  fakeimg:{title:'模拟发图',fields:[{label:'图片描述（点开显示）',key:'desc',placeholder:'例：今天的晚饭，红烧肉超嫩'},{label:'氛围标签',key:'mood',placeholder:'美食/风景/自拍/夜晚（影响封面色）'}]},meituan:{title:'美团外卖',fields:[{label:'店铺名',key:'shop',placeholder:'例：老王麻辣烫'},{label:'菜品（逗号分隔）',key:'items',placeholder:'例：牛肉面,煎蛋,可乐'},{label:'总价',key:'total',placeholder:'例：38.5'},{label:'预计送达',key:'time',placeholder:'例：约25分钟'}]}
 };
 
 function buildFuncCard(type,data){
@@ -2858,6 +2877,18 @@ function buildFuncCard(type,data){
   if(type==='redpacket') return `<div class="card-redpacket" data-card-id="${cardId}"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">${esc(data.note||'恭喜发财，大吉大利')}</div><div class="rp-sub">¥${esc(data.amount||'0.00')} 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>`;
   if(type==='location') return `<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">${esc(data.name||'位置')}</div><div class="loc-addr">${esc(data.addr||'')}</div></div></div>`;
   if(type==='gift') return `<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">${esc(data.name||'礼物')}</div><div class="gift-note">${esc(data.note||'')}</div><div class="gift-tag">♥ 来自对方</div></div>`;
+  if(type==='fakeimg'){
+  const moodMap={美食:'linear-gradient(135deg,#f6d365,#fda085)',风景:'linear-gradient(135deg,#89f7fe,#66a6ff)',自拍:'linear-gradient(135deg,#fddb92,#d1fdff)',夜晚:'linear-gradient(135deg,#1a1a2e,#16213e)',default:'linear-gradient(135deg,#667eea,#764ba2)'};
+  const emojiMap={美食:'🍜',风景:'🌅',自拍:'🤳',夜晚:'🌙',default:'🖼️'};
+  const grad=moodMap[data.mood]||moodMap.default;
+  const emoji=emojiMap[data.mood]||emojiMap.default;
+  return `<div class="card-fakeimg" onclick="this.querySelector('.fi-desc').style.display=this.querySelector('.fi-desc').style.display==='block'?'none':'block'"><div class="fi-thumb" style="background:${grad};">${emoji}</div><div class="fi-desc">${esc(data.desc||'（无描述）')}</div></div>`;
+}
+if(type==='meituan'){
+  const items=(data.items||'').split(/[,，]/).map(s=>s.trim()).filter(Boolean);
+  const rows=items.map(i=>`<div class="mt-row"><span>${esc(i)}</span></div>`).join('');
+  return `<div class="card-meituan"><div class="mt-hd"><div class="mt-logo">🛵</div><div class="mt-hd-info"><div class="mt-title">${esc(data.shop||'美团外卖')}</div><div class="mt-sub">外卖订单</div></div></div><div class="mt-body">${rows}</div><div class="mt-ft"><div class="mt-total">合计 <b>¥${esc(data.total||'0')}</b></div><div class="mt-badge">${esc(data.time||'配送中')}</div></div></div>`;
+}
   return '';
 }
 
