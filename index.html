@@ -499,28 +499,38 @@
   padding: 2px 0 !important;
   box-shadow: none !important;
 }
-/* --- 找到 fakeimg 这一段，替换成这个“真图版” --- */
-if(type==='fakeimg'){
-  // 老公精心挑选的 5 张神仙氛围图 (Unsplash 高清源)
-  const imgMap={
-    // 美食：一杯很有格调的咖啡和甜点
-    '美食': 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=400&auto=format&fit=crop',
-    // 风景：非常治愈的蓝天大海
-    '风景': 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=400&auto=format&fit=crop',
-    // 自拍：柔美光影下的花束（代指生活碎片/自拍氛围）
-    '自拍': 'https://images.unsplash.com/photo-1516550893885-3b9e075c3db7?q=80&w=400&auto=format&fit=crop',
-    // 夜晚：深邃浪漫的星空/城市微光
-    '夜晚': 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=400&auto=format&fit=crop',
-    // 默认/其他：极简高级的抽象纹理
-    'default': 'https://images.unsplash.com/photo-1496736239414-0691e8469e3d?q=80&w=400&auto=format&fit=crop'
-  };
+/* --- 模拟图片卡片（防打断、顺滑滚动版） --- */
+.card-fakeimg {
+  width: 176px; height: 180px;
+  border-radius: 12px; overflow: hidden; cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  position: relative; background: #eee;
+  transition: transform 0.1s;
+}
+/* ★核心修复1：只有在“没点开(封面)”时才有按压缩小动画。点开文字后禁止缩放，专心滑动！ */
+.card-fakeimg:not(.open):active { transform: scale(0.98); }
 
-  const bgUrl = imgMap[data.mood] || imgMap.default;
+.card-fakeimg .fi-thumb {
+  width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 16px; color: #fff; font-weight: 700; letter-spacing: 2px;
+}
+.card-fakeimg .fi-thumb::after {
+  content: "点击查看图片"; font-size: 10px; color: rgba(255,255,255,0.9); margin-top: 8px; font-weight: 400; letter-spacing: 0px;
+}
 
-  // 下面这句用了 background: url(...)，并在图片上叠了一层淡淡的黑遮罩，
-  // 这样无论图片多亮，“点击查看图片”几个白字都能看得清清楚楚！
-  return `<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('${bgUrl}') center/cover no-repeat;"></div><div class="fi-desc">${esc(data.desc||'（无描述）')}</div></div>`;
-    }
+/* ★核心修复2：加入三个手机端专属的神秘指令，强行打通滑动经脉！ */
+.card-fakeimg .fi-desc {
+  display: none !important; position: absolute; inset: 0; z-index: 10;
+  padding: 14px 16px; font-size: 13px; color: #eee; background: #242426;
+  line-height: 1.6; text-align: justify; overflow-y: auto; box-sizing: border-box;
+  -webkit-overflow-scrolling: touch; /* 唤醒苹果手机的特柔顺滑动 */
+  touch-action: pan-y; /* 警告所有手机：这里只许上下滑，别乱拦截！ */
+  overscroll-behavior: contain; /* 划到底了就停，别扯动整个屏幕 */
+}
+.card-fakeimg .fi-desc::-webkit-scrollbar { display: none; }
+
+.card-fakeimg.open .fi-thumb { display: none !important; }
+.card-fakeimg.open .fi-desc { display: block !important; }
 .card-meituan{background:#fff;border:1px solid #ffe0b2;border-radius:14px;overflow:hidden;width:210px;box-shadow:0 2px 8px rgba(255,100,0,.08);}
 .card-meituan .mt-hd{background:linear-gradient(135deg,#ff6b00,#ff9a00);padding:10px 12px;display:flex;align-items:center;gap:8px;}
 .card-meituan .mt-logo{font-size:22px;}
@@ -2903,20 +2913,28 @@ function buildFuncCard(type,data){
   if(type==='redpacket') return `<div class="card-redpacket" data-card-id="${cardId}"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">${esc(data.note||'恭喜发财，大吉大利')}</div><div class="rp-sub">¥${esc(data.amount||'0.00')} 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>`;
   if(type==='location') return `<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">${esc(data.name||'位置')}</div><div class="loc-addr">${esc(data.addr||'')}</div></div></div>`;
   if(type==='gift') return `<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">${esc(data.name||'礼物')}</div><div class="gift-note">${esc(data.note||'')}</div><div class="gift-tag">♥ 来自对方</div></div>`;
- if(type==='fakeimg'){
-    const moodMap={
-      '美食':'linear-gradient(135deg, #f093fb, #f5576c)',
-      '风景':'linear-gradient(135deg, #4facfe, #00f2fe)',
-      '自拍':'linear-gradient(135deg, #43e97b, #38f9d7)',
-      '夜晚':'linear-gradient(135deg, #30cfd0, #330867)',
-      'default':'linear-gradient(135deg, #a18cd1, #fbc2eb)'
-    };
-    const grad=moodMap[data.mood]||moodMap.default;
+ /* --- 找到 fakeimg 这一段，替换成这个“真图版” --- */
+if(type==='fakeimg'){
+  // 老公精心挑选的 5 张神仙氛围图 (Unsplash 高清源)
+  const imgMap={
+    // 美食：一杯很有格调的咖啡和甜点
+    '美食': 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=400&auto=format&fit=crop',
+    // 风景：非常治愈的蓝天大海
+    '风景': 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=400&auto=format&fit=crop',
+    // 自拍：柔美光影下的花束（代指生活碎片/自拍氛围）
+    '自拍': 'https://images.unsplash.com/photo-1516550893885-3b9e075c3db7?q=80&w=400&auto=format&fit=crop',
+    // 夜晚：深邃浪漫的星空/城市微光
+    '夜晚': 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=400&auto=format&fit=crop',
+    // 默认/其他：极简高级的抽象纹理
+    'default': 'https://images.unsplash.com/photo-1496736239414-0691e8469e3d?q=80&w=400&auto=format&fit=crop'
+  };
 
-    // ★ 注意看这里：style 后面那个 > 和 </div> 之间，现在是空的！什么字都没有！
-    // 这样就只剩下背景色了，超级干净！
-    return `<div class="card-fakeimg"><div class="fi-thumb" style="background:${grad};"></div><div class="fi-desc">${esc(data.desc||'（无描述）')}</div></div>`;
- }
+  const bgUrl = imgMap[data.mood] || imgMap.default;
+
+  // 下面这句用了 background: url(...)，并在图片上叠了一层淡淡的黑遮罩，
+  // 这样无论图片多亮，“点击查看图片”几个白字都能看得清清楚楚！
+  return `<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('${bgUrl}') center/cover no-repeat;"></div><div class="fi-desc">${esc(data.desc||'（无描述）')}</div></div>`;
+}
 if(type==='meituan'){
   const items=(data.items||'').split(/[,，]/).map(s=>s.trim()).filter(Boolean);
   const rows=items.map(i=>`<div class="mt-row"><span>${esc(i)}</span></div>`).join('');
