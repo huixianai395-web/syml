@@ -1316,7 +1316,7 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
   function splitLongBubbles(parts,maxLen=30){
   const out=[];
   for(const p of parts){
-    if(p.length<=maxLen || isHtmlDoc(p)){out.push(p);continue;}
+    if(p.length<=maxLen || isHtmlDoc(p) || isHtmlFrag(p)){out.push(p);continue;}
     const segs=p.split(/(?<=[。！？!?…\n])/g).filter(Boolean);
     let buf='';
     for(const s of segs){
