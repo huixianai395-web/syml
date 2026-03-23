@@ -1346,16 +1346,20 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     function extractCardBubbles(parts){
   const out=[];
   for(const p of parts){
-    if(!isHtmlFrag(p)){out.push(p);continue;}
-    // 把卡片HTML从混合内容里提取出来
-    const cardRe=/(<div class="card-(?:transfer|redpacket|location|gift)[^]*?<\/div>)/g;
-    const cards=[...p.matchAll(cardRe)].map(m=>m[1]);
-    if(!cards.length){out.push(p);continue;}
-    let rest=p;
-    for(const card of cards) rest=rest.replace(card,'');
-    rest=rest.replace(/\s+/g,' ').trim();
-    if(rest) out.push(rest);
-    for(const card of cards) out.push(card);
+    const cardStart=p.indexOf('<div class="card-');
+    if(cardStart<0){out.push(p);continue;}
+    const before=p.slice(0,cardStart).trim();
+    const cardAndAfter=p.slice(cardStart);
+    let depth=0,end=-1;
+    for(let i=0;i<cardAndAfter.length;i++){
+      if(cardAndAfter.slice(i,i+4)==='<div') depth++;
+      else if(cardAndAfter.slice(i,i+6)==='</div'){depth--;if(depth===0){end=i+6;break;}}
+    }
+    const card=end>0?cardAndAfter.slice(0,end):cardAndAfter;
+    const after=end>0?cardAndAfter.slice(end).trim():'';
+    if(before) out.push(before);
+    out.push(card);
+    if(after) out.push(after);
   }
   return out;
     }
