@@ -168,6 +168,8 @@
 
     #chatMsgs,#chatMsgs *{-webkit-touch-callout:none}
     .msg-item .bubble{user-select:none;-webkit-user-select:none}
+    .bubble.bubble-card{user-select:auto!important;-webkit-user-select:auto!important;pointer-events:auto!important;}
+.bubble.bubble-card button{pointer-events:auto!important;}
 
     .quote-bar{width:100%;border:1px solid #d9e3f8;background:#eef3ff;border-radius:10px;padding:6px 8px;display:flex;gap:8px;align-items:flex-start;}
     .quote-text{flex:1;font-size:12px;color:#445377;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1357,7 +1359,7 @@ return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}
     }
     const card=end>0?cardAndAfter.slice(0,end):cardAndAfter;
     const after=end>0?cardAndAfter.slice(end).trim():'';
-    if(before && before.replace(/<[^>]*>/g,'').trim()) out.push(before);
+    if(before && /[\u4e00-\u9fa5a-zA-Z0-9]/.test(before.replace(/<[^>]*>/g,''))) out.push(before);
 out.push(card);
 if(after){
   const subs=after.split(/\n|(?<=[。！？!?…])\s*/).map(s=>s.trim()).filter(Boolean);
