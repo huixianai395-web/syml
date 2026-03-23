@@ -493,10 +493,63 @@
 .card-gift .gift-tag{display:inline-block;margin-top:7px;background:rgba(80,120,200,.08);border:1px solid rgba(80,120,200,.16);color:#7080b0;border-radius:999px;padding:2px 10px;font-size:10px;}
 
 .bubble.bubble-card{background:transparent!important;border:none!important;padding:2px 0!important;box-shadow:none!important;}
-  .card-fakeimg{width:176px;border-radius:14px;overflow:hidden;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);position:relative;}
-.card-fakeimg .fi-thumb{width:100%;height:118px;display:flex;align-items:center;justify-content:center;font-size:36px;position:relative;z-index:0;}
-.card-fakeimg .fi-thumb::after{content:"点击查看";position:absolute;bottom:0;left:0;right:0;padding:4px;background:rgba(0,0,0,.32);color:#fff;font-size:10px;text-align:center;}
-.card-fakeimg .fi-desc{position:absolute;inset:0;z-index:10;padding:10px 12px;font-size:12px;color:#fff;background:rgba(0,0,0,.82);display:none;overflow-y:auto;white-space:pre-wrap;line-height:1.6;-webkit-overflow-scrolling:touch;border-radius:14px;}
+/* --- 把原来的 .card-fakeimg 相关样式全删了，换成这个 --- */
+.card-fakeimg {
+  width: 180px; /* 稍微宽一点，大气 */
+  min-height: 100px;
+  border-radius: 12px; /* 圆角更润 */
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08); /* 加点投影，高级 */
+  position: relative;
+  border: 1px solid rgba(0,0,0,0.04);
+  background: #f0f0f0;
+  transition: transform 0.1s;
+}
+.card-fakeimg:active { transform: scale(0.98); }
+
+/* 封面层：默认显示 */
+.card-fakeimg .fi-thumb {
+  width: 100%;
+  height: 118px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 500;
+  letter-spacing: 1px;
+  /* 默认没有任何 Emoji，只有干净的背景 */
+}
+/* 封面上的文字修饰 */
+.card-fakeimg .fi-thumb::after {
+  content: "点击查看图片";
+  font-size: 11px;
+  opacity: 0.85;
+  margin-top: 4px; /* 稍微下沉一点 */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* 描述层：默认隐藏 */
+.card-fakeimg .fi-desc {
+  display: none; /* 平时彻底消失 */
+  width: 100%;
+  min-height: 118px; /* 保证高度一致或自适应 */
+  padding: 14px 16px;
+  font-size: 13px;
+  color: #fff;
+  background: #2c2c2e; /* 类似iOS相册的深灰背景，高级感 */
+  line-height: 1.6;
+  text-align: justify;
+  word-break: break-word;
+}
+
+/* ★★★ 核心切换逻辑 ★★★ */
+/* 当 JS 给它加上 .open 类名时：封面隐藏，描述显示 */
+.card-fakeimg.open .fi-thumb { display: none !important; }
+.card-fakeimg.open .fi-desc { display: block !important; }
+
+/* 删掉原来的 .card-fakeimg .fi-thumb::after 的旧样式 */
 .card-meituan{background:#fff;border:1px solid #ffe0b2;border-radius:14px;overflow:hidden;width:210px;box-shadow:0 2px 8px rgba(255,100,0,.08);}
 .card-meituan .mt-hd{background:linear-gradient(135deg,#ff6b00,#ff9a00);padding:10px 12px;display:flex;align-items:center;gap:8px;}
 .card-meituan .mt-logo{font-size:22px;}
@@ -2879,13 +2932,21 @@ function buildFuncCard(type,data){
   if(type==='redpacket') return `<div class="card-redpacket" data-card-id="${cardId}"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">${esc(data.note||'恭喜发财，大吉大利')}</div><div class="rp-sub">¥${esc(data.amount||'0.00')} 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>`;
   if(type==='location') return `<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">${esc(data.name||'位置')}</div><div class="loc-addr">${esc(data.addr||'')}</div></div></div>`;
   if(type==='gift') return `<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">${esc(data.name||'礼物')}</div><div class="gift-note">${esc(data.note||'')}</div><div class="gift-tag">♥ 来自对方</div></div>`;
-  if(type==='fakeimg'){
-  const moodMap={美食:'linear-gradient(135deg,#f6d365,#fda085)',风景:'linear-gradient(135deg,#89f7fe,#66a6ff)',自拍:'linear-gradient(135deg,#fddb92,#d1fdff)',夜晚:'linear-gradient(135deg,#1a1a2e,#16213e)',default:'linear-gradient(135deg,#667eea,#764ba2)'};
-  const emojiMap={美食:'🍜',风景:'🌅',自拍:'🤳',夜晚:'🌙',default:'🖼️'};
-  const grad=moodMap[data.mood]||moodMap.default;
-  const emoji=emojiMap[data.mood]||emojiMap.default;
-  return `<div class="card-fakeimg"><div class="fi-thumb" style="background:${grad};">${emoji}</div><div class="fi-desc">${esc(data.desc||'（无描述）')}</div></div>`;
-}
+ if(type==='fakeimg'){
+    // 这里我给你换了一组更高级的莫兰迪/流体渐变色，不要那些大红大绿了
+    const moodMap={
+      '美食': 'linear-gradient(120deg, #f093fb 0%, #f5576c 100%)', // 暖洋洋的高级粉
+      '风景': 'linear-gradient(120deg, #4facfe 0%, #00f2fe 100%)', // 通透的天空蓝
+      '自拍': 'linear-gradient(120deg, #43e97b 0%, #38f9d7 100%)', // 很清新的薄荷绿
+      '夜晚': 'linear-gradient(120deg, #30cfd0 0%, #330867 100%)', // 深邃的极光紫
+      'default': 'linear-gradient(120deg, #a18cd1 0%, #fbc2eb 100%)' // 默认的梦幻紫
+    };
+
+    const grad=moodMap[data.mood]||moodMap.default;
+
+    // 注意看这里：没有 ${emoji} 了，我直接写死了一个 "PHOTO" 单词，更加杂志风
+    return `<div class="card-fakeimg"><div class="fi-thumb" style="background:${grad};color:rgba(255,255,255,0.8);font-size:14px;letter-spacing:4px;font-weight:700;">PHOTO</div><div class="fi-desc">${esc(data.desc||'（无描述）')}</div></div>`;
+ }
 if(type==='meituan'){
   const items=(data.items||'').split(/[,，]/).map(s=>s.trim()).filter(Boolean);
   const rows=items.map(i=>`<div class="mt-row"><span>${esc(i)}</span></div>`).join('');
@@ -2920,9 +2981,15 @@ const cfg=FUNC_DIALOGS[type]; if(!cfg) return;
     };
   };
 });
+/* --- 找到 fakeimg 的点击事件监听替换 --- */
 $('chatMsgs').addEventListener('click',e=>{
-  const fi=e.target.closest('.card-fakeimg');
-  if(fi){const d=fi.querySelector('.fi-desc');if(d) d.style.display=d.style.display==='block'?'none':'block';return;}
+  const fi = e.target.closest('.card-fakeimg');
+  if(fi){
+    // 直接切换 open 类名，CSS 会自动处理“显示这个、隐藏那个”
+    fi.classList.toggle('open');
+    return;
+  }
+  // ... 下面是红包的代码不要动 ...
 });
 // 红包点击交互
 $('chatMsgs').addEventListener('click',e=>{
