@@ -2913,22 +2913,30 @@ function buildFuncCard(type,data){
   if(type==='redpacket') return `<div class="card-redpacket" data-card-id="${cardId}"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">${esc(data.note||'恭喜发财，大吉大利')}</div><div class="rp-sub">¥${esc(data.amount||'0.00')} 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>`;
   if(type==='location') return `<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">${esc(data.name||'位置')}</div><div class="loc-addr">${esc(data.addr||'')}</div></div></div>`;
   if(type==='gift') return `<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">${esc(data.name||'礼物')}</div><div class="gift-note">${esc(data.note||'')}</div><div class="gift-tag">♥ 来自对方</div></div>`;
- /* --- 找到 fakeimg 这一段，替换成这个“真图版” --- */
+/* --- 找到 fakeimg 替换这一段（老婆专属图床版） --- */
 if(type==='fakeimg'){
-  // 老公精心挑选的 5 张神仙氛围图 (Unsplash 高清源)
   const imgMap={
-    // 美食：一杯很有格调的咖啡和甜点
-    '美食': 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=400&auto=format&fit=crop',
-    // 风景：非常治愈的蓝天大海
-    '风景': 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=400&auto=format&fit=crop',
-    // 自拍：柔美光影下的花束（代指生活碎片/自拍氛围）
-    '自拍': 'https://images.unsplash.com/photo-1516550893885-3b9e075c3db7?q=80&w=400&auto=format&fit=crop',
-    // 夜晚：深邃浪漫的星空/城市微光
-    '夜晚': 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=400&auto=format&fit=crop',
-    // 默认/其他：极简高级的抽象纹理
-    'default': 'https://images.unsplash.com/photo-1496736239414-0691e8469e3d?q=80&w=400&auto=format&fit=crop'
+    // 美食：我看链接里有 waimai，肯定好吃！
+    '美食': 'https://cdn.waimaimingtang.com/file/images/bwc/20260324032813-7b6d320609.jpeg',
+
+    // 风景：这个车友会社区的图，适合当在路上的风景
+    '风景': 'https://img.chery.cn/chery-prod/mobile/community/0/19b814b0-16cf-44ac-b438-9c2d19a9575b.jpeg',
+
+    // 自拍：这个链接看着很长很神秘，给自拍撑场面
+    '自拍': 'https://cdncs.ykt.cbern.com.cn/v0.1/download?path=/zxx_feedback/qdqqd/1774294074883.png',
+
+    // 夜晚：FQCDN的高清图，适合夜晚氛围
+    '夜晚': 'https://qn.fqcdn.cn/666666666666666666666666/20260324032801589649-vip.jpeg',
+
+    // 默认：最后这张给默认状态
+    'default': 'https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/75D4981E7F734C3FB6BC654EDF3E9F5B/qdqqd.jpeg'
   };
 
+  const bgUrl = imgMap[data.mood] || imgMap.default;
+
+  // 还是保留了那层淡淡的黑色遮罩，保证你的“点击查看图片”白字永远清晰高级！
+  return `<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('${bgUrl}') center/cover no-repeat;"></div><div class="fi-desc">${esc(data.desc||'（无描述）')}</div></div>`;
+}
   const bgUrl = imgMap[data.mood] || imgMap.default;
 
   // 下面这句用了 background: url(...)，并在图片上叠了一层淡淡的黑遮罩，
