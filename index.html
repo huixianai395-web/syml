@@ -1365,7 +1365,24 @@ if(!selectMode){requestAnimationFrame(()=>{_msgs.scrollTop=_msgs.scrollHeight;se
   if(r){try{const arr=JSON.parse('['+r[1]+']');return arr.map(x=>clean(String(x))).filter(Boolean);}catch{}}
   return null;
   }
-  function splitAiBubbles(raw){const txt=clean(raw).replace(/\[\d{2}:\d{2}\]\s*/g,'');if(!txt) return ['...'];const byJson=parseJsonMessages(txt);if(byJson&&byJson.length){const out=[];for(const m of byJson){const lines=String(m).split(/\n|(?<=[。！？!?…])\s*/).map(s=>s.trim()).filter(Boolean);out.push(...lines);}return out;}return txt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim().split(/\n{1,}/).map(s=>s.replace(/\[线上聊天回复\]/g,'').trim()).filter(Boolean);}
+  function splitAiBubbles(raw){
+  const txt=clean(raw).replace(/\[\d{2}:\d{2}\]\s*/g,'');
+  if(!txt) return ['...'];
+  const htmlDocs=[];
+  let safeTxt=txt.replace(/(<!DOCTYPE\s+html[\s\S]*?<\/html>)/gi,(m)=>{htmlDocs.push(m);return `__HTML_DOC_${htmlDocs.length-1}__`;});
+  const byJson=parseJsonMessages(safeTxt);
+  if(byJson&&byJson.length){
+    const out=[];
+    for(const m of byJson){
+      let s=String(m).replace(/__HTML_DOC_(\d+)__/g,(_,i)=>htmlDocs[Number(i)]||'');
+      if(isHtmlDoc(s)){out.push(s);continue;}
+      const lines=s.split(/\n|(?<=[。！？!?…])\s*/).map(x=>x.trim()).filter(Boolean);
+      out.push(...lines);
+    }
+    return out;
+  }
+  return safeTxt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim().split(/\n{1,}/).map(s=>s.replace(/\[线上聊天回复\]/g,'').replace(/__HTML_DOC_(\d+)__/g,(_,i)=>htmlDocs[Number(i)]||'').trim()).filter(Boolean);
+  }
                               
   function splitLongBubbles(parts,maxLen=30){
   const out=[];
