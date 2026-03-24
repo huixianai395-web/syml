@@ -1488,63 +1488,45 @@ rep(/"([^"]{1,200})"/g,'off-dialogue');
   function isHtmlFrag(s){s=String(s||'');return /<([a-z][\w-]*)(\s|>)/i.test(s)&&!isHtmlDoc(s);}
   function toHtmlDataUrl(s){return 'data:text/html;charset=utf-8,'+encodeURIComponent(String(s||''));}
 
-  // 修改后的渲染：助手支持HTML，且修复语音条匹配严谨度
+  // 修改后的渲染：助手支持HTML
   function renderBubbleContent(m,isMe,pref){
     const cls=isMe?'me':'ai';
     const ts=pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:'';
     const quote=renderQuote(m.quote);
     const hidden=m.hiddenForAi?'ai-hidden':'';
-
-    // 关键修复：这里加了 .trim() 去除首尾隐形空格，防止正则匹配失效
-    const t=String(m.text||'').trim();
-
-    // 优化正则：允许数字前后有空格 (\s*)
-    const voiceMatch=t.match(/^\[voice:(\s*\d+\s*):([\s\S]*)\]$/);
-    if(voiceMatch){
-      const dur=voiceMatch[1].trim(),vtext=voiceMatch[2],vid='vr_'+m.id;
-      // 限制一下最大宽度，别让语音条太长撑破布局
-      const w=Math.min(180,72+Number(dur)*4);
-      const waves='<div class="voice-wave"></div>'.repeat(6);
-
-      return `${quote}<div class="bubble ${cls} ${hidden}" style="width:${w}px;cursor:pointer;" onclick="var el=document.getElementById('${vid}');if(el)el.classList.toggle('hidden');this.classList.toggle('voice-playing')">
-        <div class="bubble-voice">
-          <div class="voice-waves">${waves}</div>
-          <div class="voice-dur">${dur}″</div>
-        </div>
-      </div>
-      <div id="${vid}" class="voice-reveal hidden">${esc(vtext)}</div>${ts}`;
-    }
-
+    const t=String(m.text||'');
+    const voiceMatch=t.match(/^\[voice:(\d+):([\s\S]*)\]$/);
+if(voiceMatch){
+  const dur=voiceMatch[1],vtext=voiceMatch[2],vid='vr_'+m.id;
+  const w=Math.min(180,72+Number(dur)*4);
+  const waves='<div class="voice-wave"></div>'.repeat(6);
+  return `${quote}<div class="bubble ${cls} ${hidden}" style="width:${w}px;cursor:pointer;" onclick="var el=document.getElementById('${vid}');if(el)el.classList.toggle('hidden');this.classList.toggle('voice-playing')"><div class="bubble-voice"><div class="voice-waves">${waves}</div><div class="voice-dur">${dur}″</div></div></div><div id="${vid}" class="voice-reveal hidden">${esc(vtext)}</div>${ts}`;
+}
     const quoteMatch = t.match(/^\[quote\]([\s\S]*?)\[\/quote\]([\s\S]*)$/);
-    if(quoteMatch){
-      const qText=quoteMatch[1].trim();
-      const body=quoteMatch[2].trim();
-      const qHtml=`<div class="msg-quote"><div class="q-content">${esc(qText)}</div></div>`;
-      return `${quote}${qHtml}<div class="bubble ${cls} ${hidden}">${esc(body)}</div>${ts}`;
-    }
-
+if(quoteMatch){
+  const qText=quoteMatch[1].trim();
+  const body=quoteMatch[2].trim();
+  const qHtml=`<div class="msg-quote"><div class="q-content">${esc(qText)}</div></div>`;
+  return `${quote}${qHtml}<div class="bubble ${cls} ${hidden}">${esc(body)}</div>${ts}`;
+}
     if(t.startsWith('[img]') && t.endsWith('[/img]')){
       const src = t.slice(5, -6);
       return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-img" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
     }
-
     if((t.startsWith('[stk:') || t.startsWith('[st_')) && t.endsWith(']')){
-      const id = t.startsWith('[stk:') ? t.slice(5,-1) : t.slice(1,-1);
-      const src = window.__stickerGetSrcById ? window.__stickerGetSrcById(id) : '';
-      if(!src) return `${quote}${ts}`;
-      return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-sticker" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
-    }
-
-    if(!isMe && isHtmlDoc(t)){
-      const src=toHtmlDataUrl(t);
-      return `${quote}<div class="bubble ${cls} has-html${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts allow-modals" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
-    }
-
+  const id = t.startsWith('[stk:') ? t.slice(5,-1) : t.slice(1,-1);
+  const src = window.__stickerGetSrcById ? window.__stickerGetSrcById(id) : '';
+  if(!src) return `${quote}${ts}`;
+  return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-sticker" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
+}
+if(!isMe && isHtmlDoc(t)){
+  const src=toHtmlDataUrl(t);
+  return `${quote}<div class="bubble ${cls} has-html${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts allow-modals" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
+}
+    
     if(isHtmlFrag(t)){
-      return `${quote}<div class="bubble ${cls} ${hidden} bubble-card">${t}</div>${ts}`;
+  return `${quote}<div class="bubble ${cls} ${hidden} bubble-card">${t}</div>${ts}`;
     }
-
-    // 兜底：普通文本
     return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
   }
 
@@ -1608,7 +1590,7 @@ if(!selectMode){requestAnimationFrame(()=>{_msgs.scrollTop=_msgs.scrollHeight;se
   if(r){try{const arr=JSON.parse('['+r[1]+']');return arr.map(x=>clean(String(x))).filter(Boolean);}catch{}}
   return null;
   }
-  function splitAiBubbles(raw){let txt=clean(raw).replace(/\[\d{2}:\d{2}\]\s*/g,'').replace(/```json\s*/gi,'').replace(/```\s*/g,'');if(!txt) return ['...'];const byJson=parseJsonMessages(txt);if(byJson&&byJson.length){const out=[];for(const m of byJson){let s=String(m).trim();if(!s) continue;if(isHtmlDoc(s)||isHtmlFrag(s)){out.push(s);continue;}const lines=s.split(/\n|(?<=[。！？!?…])\s*/).map(x=>x.trim()).filter(Boolean);out.push(...lines);}return out.length?out:['...'];}const htmlDocs=[];const voiceHolders=[];txt=txt.replace(/\[voice:\d+:[^\]]*\]/g,(m)=>{voiceHolders.push(m);return `__VOICE_${voiceHolders.length-1}__`;});let safeTxt=txt.replace(/(<!DOCTYPE\s+html[\s\S]*?<\/html>)/gi,(m)=>{htmlDocs.push(m);return `__HTML_DOC_${htmlDocs.length-1}__`;});let result=safeTxt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim().split(/\n{1,}/).map(s=>s.replace(/\[线上聊天回复\]/g,'').trim()).filter(Boolean);result=result.map(s=>s.replace(/__HTML_DOC_(\d+)__/g,(_,i)=>htmlDocs[Number(i)]||''));result=result.map(s=>s.replace(/__VOICE_(\d+)__/g,(_,i)=>voiceHolders[Number(i)]||''));return result.length?result:['...'];}
+  function splitAiBubbles(raw){let txt=clean(raw).replace(/\[\d{2}:\d{2}\]\s*/g,'').replace(/```json\s*/gi,'').replace(/```\s*/g,'');if(!txt) return ['...'];const byJson=parseJsonMessages(txt);if(byJson&&byJson.length){const out=[];for(const m of byJson){let s=String(m).trim();if(!s) continue;if(isHtmlDoc(s)||isHtmlFrag(s)){out.push(s);continue;}if(/^\[voice:\d+:/.test(s)||/^\[stk:/.test(s)||/^\[call:/.test(s)||/^\[quote\]/.test(s)){out.push(s);continue;}const lines=s.split(/\n|(?<=[。！？!?…])\s*/).map(x=>x.trim()).filter(Boolean);out.push(...lines);}return out.length?out:['...'];}const htmlDocs=[];const voiceHolders=[];txt=txt.replace(/\[voice:\d+:[^\]]*\]/g,(m)=>{voiceHolders.push(m);return `__VOICE_${voiceHolders.length-1}__`;});let safeTxt=txt.replace(/(<!DOCTYPE\s+html[\s\S]*?<\/html>)/gi,(m)=>{htmlDocs.push(m);return `__HTML_DOC_${htmlDocs.length-1}__`;});let result=safeTxt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim().split(/\n{1,}/).map(s=>s.replace(/\[线上聊天回复\]/g,'').trim()).filter(Boolean);result=result.map(s=>s.replace(/__HTML_DOC_(\d+)__/g,(_,i)=>htmlDocs[Number(i)]||''));result=result.map(s=>s.replace(/__VOICE_(\d+)__/g,(_,i)=>voiceHolders[Number(i)]||''));return result.length?result:['...'];}
                               
   function splitLongBubbles(parts,maxLen=30){
   const out=[];
