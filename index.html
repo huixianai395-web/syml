@@ -3006,17 +3006,10 @@ stMgrRender(); stRenderSheet();
       e.target.value = '';
     }
   };
-    // ================= 发送文件逻辑 =================
+    // ================= 发送文件逻辑 (无限制霸总版) =================
   $('chatFileInput').onchange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
-    // 给老婆加个保险：限制文件大小，防止Token爆炸破产！(这里限制最大 50KB)
-    if (file.size > 50 * 1024) {
-      alert('文件太大了宝宝！超过50KB的话 API Token 会吃不消的哦~');
-      e.target.value = '';
-      return;
-    }
 
     try {
       const text = await file.text(); // 直接读取为纯文本
@@ -3029,9 +3022,6 @@ stMgrRender(); stRenderSheet();
       pushUser(`[file:${file.name}]\n${text}\n[/file]`);
       renderChat();
       
-      // 如果你想让它选完文件自动发给 AI，可以把下面这行取消注释：
-      // setTimeout(sendMsg, 300); 
-
     } catch (err) {
       alert('文件读取失败了宝宝：' + err.message);
     } finally {
