@@ -632,7 +632,7 @@
 
 /* 列表行通用样式 (发现页/我页使用) */
 .wx-list-row {
-  display: flex; align-items: center; padding: 16px; background: #fff; 
+  display: flex; align-items: center; padding: 16px; background: #fff; 
   border-radius: 12px; margin-bottom: 10px; cursor: pointer; border: 1px solid #ececf2;
 }
 .wx-list-row:active { background: #f8f9ff; }
@@ -707,7 +707,7 @@
   <section id="wechat" class="screen">
     <!-- 这一层 wrapper 负责内部布局，绝不破坏你的桌面隐藏机制！ -->
     <div style="display:flex; flex-direction:column; height:100%; width:100%;">
-      
+      
       <!-- 1. 【微信】聊天列表 Tab -->
       <div id="wxTab-chat" class="wx-tab-content active">
         <div class="header"><button class="btn" data-nav="home">‹ 返回</button><b>微信</b><button class="btn" id="addContactBtn">+联系人</button></div>
@@ -750,7 +750,7 @@
             <select id="mePresetSelect" class="select" style="margin-bottom:10px;"></select>
             <div class="small">世界观与性格设定 (AI会死死记住)：</div>
             <textarea id="mePagePersona" class="ta" style="min-height:120px; margin-top:6px;" placeholder="在这里写下你的背景设定..."></textarea>
-            
+            
             <div class="row" style="margin-top:12px; flex-wrap:wrap;">
               <button class="btn p" id="mePageSaveBtn" style="flex:1;">保存当前设定</button>
               <button class="btn" id="mePageNewBtn" style="flex:1;">+ 新建身份</button>
@@ -785,7 +785,7 @@
   <!-- ================= 朋友圈页面 ================= -->
   <section id="moments" class="screen">
     <div class="moments-scroll" id="momentsScroll" onscroll="window._checkMomentsScroll()">
-      
+      
       <!-- 沉浸式顶部导航栏 -->
       <div class="moments-top-bar" id="momentsTopBar" style="position: fixed; top: 0; left: 0; width: 100%; height: calc(44px + var(--safe-top)); padding-top: var(--safe-top); z-index: 9999; display: flex; align-items: center; justify-content: space-between;">
         <!-- 绝对无敌的返回按钮，霸占左边巨大点击区 -->
@@ -818,7 +818,7 @@
   <!-- ================= 发朋友圈弹窗 ================= -->
   <div id="publishMomentModal" class="modal" style="z-index: 1000;">
     <div class="modal-card" style="background: #f3f3f5; padding: 0; overflow: hidden; max-width: 100%; height: 100dvh; border-radius: 0; display: flex; flex-direction: column;">
-      
+      
       <!-- 顶部操作栏 -->
       <div style="height: calc(44px + var(--safe-top)); padding-top: var(--safe-top); display: flex; justify-content: space-between; align-items: center; padding-left: 15px; padding-right: 15px; background: #ededed; border-bottom: 1px solid #e5e5e5;">
         <span onclick="document.getElementById('publishMomentModal').classList.remove('active')" style="font-size: 16px; color: #191919; cursor: pointer;">取消</span>
@@ -828,7 +828,7 @@
       <!-- 输入区 -->
       <div style="padding: 20px; flex: 1; background: #fff;">
         <textarea id="momentInputText" class="ta" style="border: none; background: transparent; min-height: 120px; font-size: 16px; padding: 0; outline: none;" placeholder="这一刻的想法..."></textarea>
-        
+        
         <!-- 图片添加区 -->
         <div style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
           <div id="momentImgPreviewWrap" style="display: none; position: relative; width: 90px; height: 90px;">
@@ -839,7 +839,7 @@
           <input type="file" id="momentImgFile" accept="image/*" class="hidden">
         </div>
       </div>
-      
+      
     </div>
   </div>
   <!-- ================= 升级版结束 ================= -->
@@ -3598,14 +3598,14 @@ function syncCardFromAi(parts,chatId){
 
  // ================= 朋友圈真实数据引擎 =================
   const K_MOMENTS = 'mp_fix_moments';
-  
+  
   // 绕过管家，直接把数据死死钉在浏览器的底层 localStorage 里！绝对不丢！
-  function getMoments() { 
-    try { return JSON.parse(localStorage.getItem(K_MOMENTS)) || []; } 
-    catch(e) { return []; } 
+  function getMoments() { 
+    try { return JSON.parse(localStorage.getItem(K_MOMENTS)) || []; } 
+    catch(e) { return []; } 
   }
-  function setMoments(v) { 
-    localStorage.setItem(K_MOMENTS, JSON.stringify(v)); 
+  function setMoments(v) { 
+    localStorage.setItem(K_MOMENTS, JSON.stringify(v)); 
   }
 
   // 格式化时间
@@ -3621,7 +3621,7 @@ function syncCardFromAi(parts,chatId){
   function renderMomentsFeed() {
     const feed = $('momentsFeed');
     const data = getMoments();
-    
+    
     if (!data.length) {
       feed.innerHTML = '<div style="text-align:center; padding:50px 0; color:#999; font-size:14px;">朋友圈空空如也，快点击右上角相机发一条吧！</div>';
       return;
@@ -3632,7 +3632,7 @@ function syncCardFromAi(parts,chatId){
       if (m.images && m.images.length > 0) {
         imgHtml = `<div class="m-imgs" data-count="${m.images.length}">${m.images.map(img => `<img src="${img}">`).join('')}</div>`;
       }
-      
+      
       let cmtHtml = '';
       if ((m.likes && m.likes.length) || (m.comments && m.comments.length)) {
         let likesStr = (m.likes && m.likes.length) ? `<div class="m-like-list"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> ${m.likes.join(', ')}</div>` : '';
@@ -3659,7 +3659,7 @@ function syncCardFromAi(parts,chatId){
   }
 
   // === 发布朋友圈的交互逻辑 ===
-  let momentDraftImg = ''; 
+  let momentDraftImg = ''; 
 
   $('momentImgFile').addEventListener('change', async (e) => {
     const f = e.target.files?.[0];
@@ -3682,11 +3682,11 @@ function syncCardFromAi(parts,chatId){
   $('sendMomentBtn').onclick = () => {
     const text = clean($('momentInputText').value);
     if (!text && !momentDraftImg) return alert('总得写点什么或者发张图吧，老婆！');
-    
+    
     const me = getMe();
     const ms = getMoments();
     const newId = 'm_' + Date.now();
-    
+    
     ms.unshift({
       id: newId,
       authorId: 'me',
@@ -3698,12 +3698,12 @@ function syncCardFromAi(parts,chatId){
       likes: [],
       comments: []
     });
-    
-    setMoments(ms); 
+    
+    setMoments(ms); 
     $('publishMomentModal').classList.remove('active');
     $('momentInputText').value = '';
     window._clearMomentImg();
-    renderMomentsFeed(); 
+    renderMomentsFeed(); 
 
     // 唤醒 AI！
     setTimeout(() => {
@@ -3741,9 +3741,9 @@ function syncCardFromAi(parts,chatId){
       if(target) {
         if(aiData.like && !target.likes.includes(npc.name)) target.likes.push(npc.name);
         if(aiData.comment) target.comments.push({ authorName: npc.name, text: aiData.comment });
-        
-        setMoments(ms); 
-        
+        
+        setMoments(ms); 
+        
         // 如果还停留在朋友圈，自动刷新显示评论！
         if($('moments').classList.contains('active')) {
           renderMomentsFeed();
@@ -3777,11 +3777,11 @@ function syncCardFromAi(parts,chatId){
   $('sendMomentBtn').onclick = () => {
     const text = clean($('momentInputText').value);
     if (!text && !momentDraftImg) return alert('总得写点什么或者发张图吧，老婆！');
-    
+    
     const me = getMe();
     const ms = getMoments();
     const newId = 'm_' + Date.now();
-    
+    
     // 1. 先把你的动态发出去
     ms.unshift({
       id: newId,
@@ -3794,8 +3794,8 @@ function syncCardFromAi(parts,chatId){
       likes: [],
       comments: []
     });
-    
-    setMoments(ms); 
+    
+    setMoments(ms); 
     $('publishMomentModal').classList.remove('active');
     $('momentInputText').value = '';
     window._clearMomentImg();
@@ -3807,7 +3807,7 @@ function syncCardFromAi(parts,chatId){
     }, 1000);
   };
 
- // ================= AI 自动点赞评论大脑 (100% 纯真实 API 版) =================
+  // ================= AI 自动点赞评论大脑 (100% 纯真实 API 版) =================
   window._triggerMomentsAI = async function(momentId, contentText) {
     try {
       const contacts = getContacts() || [];
@@ -3828,7 +3828,7 @@ function syncCardFromAi(parts,chatId){
       const cleaned = out.replace(/```json|```/g, '').trim();
       const m2 = cleaned.match(/\{[\s\S]*\}/);
       if (!m2) throw new Error("AI没有返回正确的JSON格式");
-      
+      
       const aiData = JSON.parse(m2[0]);
 
       // 把 AI 绞尽脑汁想出来的真实评论，写入数据库
@@ -3837,13 +3837,13 @@ function syncCardFromAi(parts,chatId){
       if(target) {
         if (!target.likes) target.likes = [];
         if (!target.comments) target.comments = [];
-        
+        
         // 写入点赞和评论
         if(aiData.like && !target.likes.includes(npc.name)) target.likes.push(npc.name);
         if(aiData.comment) target.comments.push({ authorName: npc.name, text: aiData.comment });
-        
-        setMoments(ms); 
-        
+        
+        setMoments(ms); 
+        
         // 如果老婆还在看朋友圈，屏幕立刻刷新出最新评论！
         const momentsPage = document.getElementById('moments');
         if(momentsPage && momentsPage.classList.contains('active')) {
@@ -3855,14 +3855,15 @@ function syncCardFromAi(parts,chatId){
       console.log('真实的API请求失败了，咱们不弄虚作假:', e);
     }
   };
+
   $('momentsCoverFile').addEventListener('change', async (e) => {
     const f = e.target.files?.[0];
     if(!f) return;
     try {
-      const imgData = await compressImage(f, true); 
+      const imgData = await compressImage(f, true); 
       $('momentsCoverImg').src = imgData;
       localStorage.setItem('mp_fix_moments_cover', imgData);
-    } catch(err) { alert('封面更换失败：' + err.message); } 
+    } catch(err) { alert('封面更换失败：' + err.message); } 
     finally { e.target.value = ''; }
   });
 
@@ -3952,7 +3953,7 @@ function syncCardFromAi(parts,chatId){
     try {
       meAvatarDraftGlobal = await compressImage(f);
       $('mePageAvatar').src = meAvatarDraftGlobal;
-    } catch(err) { alert('头像处理失败：' + err.message); } 
+    } catch(err) { alert('头像处理失败：' + err.message); } 
     finally { e.target.value = ''; }
   });
   })();
@@ -3961,4 +3962,4 @@ function syncCardFromAi(parts,chatId){
   <img id="previewModalImg" style="max-width:95%;max-height:90dvh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
   </div>
 </body>
-</html>
+  </html>
