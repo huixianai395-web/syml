@@ -611,10 +611,117 @@
 .call-btn-flip button{background:rgba(255,255,255,.15);}
 .card-call{background:linear-gradient(135deg,#f0f4ff,#e8eeff);border:1px solid #d8e2ff;border-radius:14px;padding:11px 13px;display:flex;align-items:center;gap:10px;width:210px;}
 .card-call .cc-icon{font-size:20px;}.card-call .cc-info{flex:1;min-width:0;}.card-call .cc-title{font-size:13px;font-weight:600;color:#2f66d8;}.card-call .cc-sub{font-size:11px;color:#8899bb;margin-top:1px;}
+    /* ================= 真·微信主屏幕框架样式 ================= */
+#wechatHomeScreen {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: #ededed; z-index: 1000; /* 层级很高，盖住底下的东西 */
+  display: flex; flex-direction: column;
+}
+.wechat-tab-content {
+  flex: 1; overflow-y: auto; display: none;
+}
+.wechat-tab-content.active {
+  display: block;
+}
+/* 底部导航栏 */
+.wechat-bottom-nav {
+  height: 55px; background: #f7f7f7; border-top: 1px solid #d1d1d1;
+  display: flex; justify-content: space-around; align-items: center;
+  padding-bottom: env(safe-area-inset-bottom); /* 适配苹果底部黑条 */
+}
+.nav-item {
+  display: flex; flex-direction: column; align-items: center;
+  font-size: 10px; color: #191919; cursor: pointer;
+}
+.nav-item.active { color: #07c160; }
+.nav-icon { width: 24px; height: 24px; margin-bottom: 2px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+/* 列表项通用样式 */
+.list-row {
+  display: flex; align-items: center; padding: 16px; background: #fff; border-bottom: 1px solid #f2f2f2; cursor: pointer;
+}
+.list-row:active { background: #ececec; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 </head>
 <body>
+  <!-- ================= 微信主屏幕 (盖在聊天界面上面) ================= -->
+    <div id="wechatHomeScreen">
+      
+      <!-- 1. 【微信】消息列表页 -->
+      <div id="tab-chatlist" class="wechat-tab-content active">
+        <div style="height:44px; background:#ededed; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:16px;">微信 (1)</div>
+        <!-- 聊天列表里的沈昼白，点击进入真实聊天 -->
+        <div class="list-row" onclick="openRealChat()">
+          <div style="width:48px;height:48px;border-radius:6px;background:#ddd;margin-right:12px;overflow:hidden;">
+            <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=Shen" style="width:100%;height:100%;">
+          </div>
+          <div style="flex:1;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span style="font-size:16px;font-weight:500;">沈昼白</span>
+              <span style="font-size:12px;color:#b2b2b2;">刚才</span>
+            </div>
+            <div style="font-size:14px;color:#b2b2b2;">[草稿] 妈妈你这是把小心思都...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. 【发现】页 (先做个入口) -->
+      <div id="tab-discover" class="wechat-tab-content">
+        <div style="height:44px; background:#ededed; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:16px;">发现</div>
+        <div class="list-row" style="margin-top:8px;">
+          <div style="width:28px;height:28px;margin-right:12px;"><svg viewBox="0 0 24 24" style="width:100%;height:100%;stroke:#07c160;fill:none;stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle></svg></div>
+          <div style="flex:1;font-size:16px;">朋友圈</div>
+          <div style="color:#b2b2b2;font-weight:bold;">></div>
+        </div>
+      </div>
+
+      <!-- 3. 【我】页 (多重预设管理) -->
+      <div id="tab-me" class="wechat-tab-content">
+        <div style="padding:40px 20px 20px 20px; background:#fff; display:flex; align-items:center;">
+          <div style="width:64px;height:64px;border-radius:8px;background:#ddd;margin-right:16px;overflow:hidden;">
+            <!-- 占位头像 -->
+            <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=Milo" style="width:100%;height:100%;">
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:20px;font-weight:bold;margin-bottom:4px;">你怎么呆呆的</div>
+            <div style="font-size:14px;color:#777;">微信号：ynhdhjytsm1213</div>
+          </div>
+        </div>
+
+        <div style="padding:16px; margin-top:8px; background:#fff;">
+          <div style="font-size:16px; font-weight:bold; margin-bottom:12px; color:#07c160;">👑 我的身份预设库</div>
+          <select id="presetSelector" onchange="loadSelectedPreset()" style="width:100%; padding:10px; margin-bottom:12px; border:1px solid #ddd; border-radius:6px; font-size:14px; background:#f9f9f9;">
+            <!-- 预设列表将通过JS生成 -->
+          </select>
+          <input type="text" id="presetName" placeholder="预设名称 (如：傲娇大小姐模式)" style="width:100%; padding:10px; margin-bottom:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+          <textarea id="presetContent" placeholder="在这里写下你的世界观和性格设定..." style="width:100%; height:120px; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box; resize:none;"></textarea>
+          <div style="display:flex; gap:10px; margin-top:10px;">
+            <button onclick="savePreset()" style="flex:1; background:#07c160; color:#fff; border:none; padding:10px; border-radius:6px; font-size:14px;">保存/更新预设</button>
+            <button onclick="createNewPreset()" style="flex:1; background:#fff; color:#333; border:1px solid #ddd; padding:10px; border-radius:6px; font-size:14px;">+ 新建预设</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部导航栏 -->
+      <div class="wechat-bottom-nav">
+        <div class="nav-item active" onclick="switchWechatTab('chatlist', this)">
+          <svg class="nav-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <span>微信</span>
+        </div>
+        <div class="nav-item" style="opacity:0.5;">
+          <svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <span>通讯录</span>
+        </div>
+        <div class="nav-item" onclick="switchWechatTab('discover', this)">
+          <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+          <span>发现</span>
+        </div>
+        <div class="nav-item" onclick="switchWechatTab('me', this)">
+          <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <span>我</span>
+        </div>
+      </div>
+    </div>
 <div id="app">
 
   <section id="home" class="screen active">
@@ -644,7 +751,7 @@
 
   <section id="chatRoom" class="screen">
     <div class="header">
-      <button class="btn" data-nav="wechat">‹ 返回</button>
+      <button class="btn" onclick="backToWechatHome()">‹ 返回</button>
       <div class="chat-head-center"><div class="chat-head-title" id="chatTitle">聊天</div><div class="chat-head-sub" id="chatSub"></div></div>
       <div class="head-right">
         <button class="icon-btn" id="favEntryBtn" title="收藏夹">★</button>
@@ -1047,7 +1154,78 @@
   const DEFAULT_CHAT_SETTINGS={mode:'online',onlineStyle:'free',onlineMin:2,onlineMax:6,offlineMin:220,offlineMax:420,offlineColors:{state:'#7b5f3a',body:'#3b2f22',quote:'#6b6f88',em:'#c15454',dialogue:'#2f66d8'}};
   let currentId=null,createAvatar='',typingForId=null,composeQuote=null,activeActionMsgId=null,selectMode=false,selectedIds=new Set(),editMsgId=null;
   let callState={active:false,phase:'idle',type:null,start:0,timer:null,chatId:null,callMsgs:[]};
+// ================= 微信主框架 & 预设管理系统 =================
+function switchWechatTab(tabId, element) {
+  // 切换底部图标变绿
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  element.classList.add('active');
+  // 切换页面内容
+  document.querySelectorAll('.wechat-tab-content').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+}
 
+// 打开真正的聊天界面（隐藏主屏幕）
+function openRealChat() {
+  document.getElementById('wechatHomeScreen').style.display = 'none';
+}
+
+// 退回主屏幕（请把这个函数绑定到你聊天界面的 "< 返回" 按钮上！）
+function backToHome() {
+  document.getElementById('wechatHomeScreen').style.display = 'flex';
+}
+
+// --- 多重预设管理逻辑 ---
+let userPresets = JSON.parse(localStorage.getItem('myPresets')) || [
+  { id: 1, name: '默认模式', content: '我是弥洛，懂代码的黑客少女。' }
+];
+let currentPresetId = localStorage.getItem('currentPresetId') || 1;
+
+function renderPresetList() {
+  const sel = document.getElementById('presetSelector');
+  sel.innerHTML = '';
+  userPresets.forEach(p => {
+    let opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name;
+    if(p.id == currentPresetId) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  loadSelectedPreset();
+}
+
+function loadSelectedPreset() {
+  const id = document.getElementById('presetSelector').value;
+  const preset = userPresets.find(p => p.id == id);
+  if(preset) {
+    document.getElementById('presetName').value = preset.name;
+    document.getElementById('presetContent').value = preset.content;
+    currentPresetId = id;
+    localStorage.setItem('currentPresetId', currentPresetId);
+  }
+}
+
+function savePreset() {
+  const name = document.getElementById('presetName').value;
+  const content = document.getElementById('presetContent').value;
+  const preset = userPresets.find(p => p.id == currentPresetId);
+  if(preset) {
+    preset.name = name;
+    preset.content = content;
+  }
+  localStorage.setItem('myPresets', JSON.stringify(userPresets));
+  renderPresetList();
+  alert('预设保存成功！现在AI认死你了！');
+}
+
+function createNewPreset() {
+  const newId = Date.now();
+  userPresets.push({ id: newId, name: '新预设', content: '' });
+  currentPresetId = newId;
+  renderPresetList();
+}
+
+// 初始化渲染
+renderPresetList();
 function fmtCallDur(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60);return String(m).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
 
 function callRenderBtns(){
