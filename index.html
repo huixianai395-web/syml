@@ -787,14 +787,14 @@
     <div class="moments-scroll" id="momentsScroll" onscroll="window._checkMomentsScroll()">
       
       <!-- 沉浸式顶部导航栏 -->
-      <div class="moments-top-bar" id="momentsTopBar">
-        <!-- 返回按钮 (加了44px的隐形点击区域，随便点都能中) -->
-        <div onclick="show('wechat')" style="width: 44px; height: 44px; display: flex; align-items: center; cursor: pointer; margin-left: -10px; padding-left: 10px;">
-          <svg viewBox="0 0 24 24" fill="none" style="pointer-events: none;"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      <div class="moments-top-bar" id="momentsTopBar" style="position: fixed; top: 0; left: 0; width: 100%; height: calc(44px + var(--safe-top)); padding-top: var(--safe-top); z-index: 9999; display: flex; align-items: center; justify-content: space-between;">
+        <!-- 绝对无敌的返回按钮，霸占左边巨大点击区 -->
+        <div onclick="show('wechat')" style="width: 60px; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+          <svg viewBox="0 0 24 24" fill="none" style="width: 28px; height: 28px; stroke: #fff; stroke-width: 2; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); pointer-events: none;"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </div>
-        <!-- 相机按钮 (发朋友圈) -->
-        <div onclick="document.getElementById('publishMomentModal').classList.add('active')" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: flex-end; cursor: pointer; margin-right: -10px; padding-right: 10px;">
-          <svg viewBox="0 0 24 24" fill="none" style="pointer-events: none;"><circle cx="12" cy="12" r="3"></circle><path d="M19 4h-2l-1-2H8L7 4H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"></path></svg>
+        <!-- 绝对无敌的相机按钮，霸占右边巨大点击区 -->
+        <div onclick="document.getElementById('publishMomentModal').classList.add('active')" style="width: 60px; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+          <svg viewBox="0 0 24 24" fill="none" style="width: 26px; height: 26px; stroke: #fff; stroke-width: 2; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); pointer-events: none;"><circle cx="12" cy="12" r="3"></circle><path d="M19 4h-2l-1-2H8L7 4H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"></path></svg>
         </div>
       </div>
 
@@ -3596,14 +3596,19 @@ function syncCardFromAi(parts,chatId){
     show('moments');
   };
 
-  // ================= 朋友圈真实数据引擎 =================
+ // ================= 朋友圈真实数据引擎 =================
   const K_MOMENTS = 'mp_fix_moments';
   
-  // 获取和保存朋友圈数据
-  function getMoments() { return getJ(K_MOMENTS, []); }
-  function setMoments(v) { setJ(K_MOMENTS, v); }
+  // 绕过管家，直接把数据死死钉在浏览器的底层 localStorage 里！绝对不丢！
+  function getMoments() { 
+    try { return JSON.parse(localStorage.getItem(K_MOMENTS)) || []; } 
+    catch(e) { return []; } 
+  }
+  function setMoments(v) { 
+    localStorage.setItem(K_MOMENTS, JSON.stringify(v)); 
+  }
 
-  // 格式化时间（比如：刚刚、5分钟前、2小时前）
+  // 格式化时间
   window._formatTimeAgo = function(ts) {
     const diff = Date.now() - ts;
     if (diff < 60000) return '刚刚';
@@ -3623,13 +3628,11 @@ function syncCardFromAi(parts,chatId){
     }
 
     feed.innerHTML = data.map(m => {
-      // 处理图片九宫格
       let imgHtml = '';
       if (m.images && m.images.length > 0) {
         imgHtml = `<div class="m-imgs" data-count="${m.images.length}">${m.images.map(img => `<img src="${img}">`).join('')}</div>`;
       }
       
-      // 处理点赞和评论区
       let cmtHtml = '';
       if ((m.likes && m.likes.length) || (m.comments && m.comments.length)) {
         let likesStr = (m.likes && m.likes.length) ? `<div class="m-like-list"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> ${m.likes.join(', ')}</div>` : '';
@@ -3656,7 +3659,100 @@ function syncCardFromAi(parts,chatId){
   }
 
   // === 发布朋友圈的交互逻辑 ===
-  let momentDraftImg = ''; // 暂存选中的图片
+  let momentDraftImg = ''; 
+
+  $('momentImgFile').addEventListener('change', async (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    try {
+      momentDraftImg = await compressImage(f, false);
+      $('momentImgPreview').src = momentDraftImg;
+      $('momentImgPreviewWrap').style.display = 'block';
+      $('momentAddImgBtn').style.display = 'none';
+    } catch(err) { alert('图片处理失败'); }
+    e.target.value = '';
+  });
+
+  window._clearMomentImg = function() {
+    momentDraftImg = '';
+    $('momentImgPreviewWrap').style.display = 'none';
+    $('momentAddImgBtn').style.display = 'grid';
+  };
+
+  $('sendMomentBtn').onclick = () => {
+    const text = clean($('momentInputText').value);
+    if (!text && !momentDraftImg) return alert('总得写点什么或者发张图吧，老婆！');
+    
+    const me = getMe();
+    const ms = getMoments();
+    const newId = 'm_' + Date.now();
+    
+    ms.unshift({
+      id: newId,
+      authorId: 'me',
+      authorName: me.name || '弥洛',
+      authorAvatar: me.avatar || 'https://via.placeholder.com/120',
+      text: text,
+      images: momentDraftImg ? [momentDraftImg] : [],
+      time: Date.now(),
+      likes: [],
+      comments: []
+    });
+    
+    setMoments(ms); 
+    $('publishMomentModal').classList.remove('active');
+    $('momentInputText').value = '';
+    window._clearMomentImg();
+    renderMomentsFeed(); 
+
+    // 唤醒 AI！
+    setTimeout(() => {
+      if(window._triggerMomentsAI) window._triggerMomentsAI(newId, text);
+    }, 1000);
+  };
+
+  // ================= AI 自动点赞评论大脑 (带保底机制) =================
+  window._triggerMomentsAI = async function(momentId, contentText) {
+    try {
+      const contacts = getContacts();
+      // 优先找沈昼白，如果没有，就找列表第一个，如果连联系人都没有，就临时捏一个沈昼白！
+      let npc = contacts.find(c => c.name.includes('沈昼白')) || contacts[0] || { name: '沈昼白', persona: '傲娇，嘴硬心软的计算机系校草' };
+
+      let aiData = { like: true, comment: "勉强给你点个赞吧。" }; // 终极保底评论
+
+      try {
+        const sysPrompt = `你现在是：${npc.name}\n你的人设：${npc.persona||'普通朋友'}\n你的好友刚刚发了一条朋友圈，文案是：“${contentText||'[分享了一张图片]'}”。\n请你严格根据你的人设性格，决定是否点赞，并写一条符合微信朋友圈口语化习惯的简短评论（禁止长篇大论，带点情绪或吐槽）。\n\n【必须严格输出JSON格式】：\n{"like": true或false, "comment": "你的评论内容"}`;
+
+        const out = await callApi([
+          { role: 'system', content: sysPrompt },
+          { role: 'user', content: '快去回复这条朋友圈！' }
+        ]);
+
+        const cleaned = out.replace(/```json|```/g, '').trim();
+        const m2 = cleaned.match(/\{[\s\S]*\}/);
+        if(m2) aiData = JSON.parse(m2[0]);
+      } catch(apiErr) {
+        console.log('API请求失败，触发保底评论机制！');
+      }
+
+      // 把评论写入数据库
+      const ms = getMoments();
+      const target = ms.find(x => x.id === momentId);
+      if(target) {
+        if(aiData.like && !target.likes.includes(npc.name)) target.likes.push(npc.name);
+        if(aiData.comment) target.comments.push({ authorName: npc.name, text: aiData.comment });
+        
+        setMoments(ms); 
+        
+        // 如果还停留在朋友圈，自动刷新显示评论！
+        if($('moments').classList.contains('active')) {
+          renderMomentsFeed();
+        }
+      }
+    } catch(e) {
+      console.log('NPC彻底罢工:', e);
+    }
+  };
 
   $('momentImgFile').addEventListener('change', async (e) => {
     const f = e.target.files?.[0];
