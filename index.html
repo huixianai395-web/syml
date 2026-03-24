@@ -789,7 +789,7 @@
       <!-- 沉浸式顶部导航栏 -->
       <div class="moments-top-bar" id="momentsTopBar" style="position: fixed; top: 0; left: 0; width: 100%; height: calc(44px + var(--safe-top)); padding-top: var(--safe-top); z-index: 9999; display: flex; align-items: center; justify-content: space-between;">
         <!-- 绝对无敌的返回按钮，霸占左边巨大点击区 -->
-        <div onclick="show('wechat')" style="width: 60px; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+        <div data-nav="wechat" style="width: 60px; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; padding-left: 10px;">
           <svg viewBox="0 0 24 24" fill="none" style="width: 28px; height: 28px; stroke: #fff; stroke-width: 2; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); pointer-events: none;"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </div>
         <!-- 绝对无敌的相机按钮，霸占右边巨大点击区 -->
@@ -3807,48 +3807,54 @@ function syncCardFromAi(parts,chatId){
     }, 1000);
   };
 
-  // ================= AI 自动点赞评论大脑 =================
+ // ================= AI 自动点赞评论大脑 (100% 纯真实 API 版) =================
   window._triggerMomentsAI = async function(momentId, contentText) {
     try {
-      const contacts = getContacts();
-      if(!contacts.length) return; // 没联系人就不评论了
-      
-      // 优先抓沈昼白来评论，没有沈昼白就抓列表里的第一个人
-      let npc = contacts.find(c => c.name.includes('沈昼白')) || contacts[0];
+      const contacts = getContacts() || [];
+      // 优先找沈昼白，如果没有，就抓列表里第一个真实的联系人
+      let npc = contacts.find(c => c && c.name && c.name.includes('沈昼白')) || contacts[0];
+      if (!npc) return; // 如果你连联系人都没有，就直接取消，绝不造假
 
-      // 给 AI 下达指令
-      const sysPrompt = `你现在是：${npc.name}\n你的人设：${npc.persona||'普通朋友'}\n你的好友刚刚发了一条朋友圈，文案是：“${contentText||'[分享了一张图片]'}”。\n请你严格根据你的人设性格，决定是否点赞，并写一条符合微信朋友圈口语化习惯的简短评论（禁止长篇大论，带点情绪或吐槽）。\n\n【必须严格输出JSON格式】：\n{"like": true或false, "comment": "你的评论内容"}`;
+      // 给 AI 下达的真实指令
+      const sysPrompt = `你现在是：${npc.name}\n你的人设：${npc.persona||'普通朋友'}\n你的好友刚刚发了一条朋友圈，文案是：“${contentText||'[分享了一张图片]'}”。\n请你严格根据你的人设性格，决定是否点赞，并写一条符合微信朋友圈口语化习惯的简短评论（禁止长篇大论，带点情绪或吐槽）。\n\n【必须严格输出JSON格式】：\n{"like": true或false, "comment": "你的真实评论内容"}`;
 
-      // 调用咱们封装好的神级 API
+      // 纯真实调用API，没有保底，全靠AI的灵魂临场发挥！
       const out = await callApi([
         { role: 'system', content: sysPrompt },
         { role: 'user', content: '快去回复这条朋友圈！' }
       ]);
 
-      // 解析 AI 的 JSON 回复
+      // 解析 AI 真实的 JSON 回复
       const cleaned = out.replace(/```json|```/g, '').trim();
       const m2 = cleaned.match(/\{[\s\S]*\}/);
-      const data = JSON.parse(m2 ? m2[0] : cleaned);
+      if (!m2) throw new Error("AI没有返回正确的JSON格式");
+      
+      const aiData = JSON.parse(m2[0]);
 
-      // 把 AI 的评论和点赞写进朋友圈里！
+      // 把 AI 绞尽脑汁想出来的真实评论，写入数据库
       const ms = getMoments();
       const target = ms.find(x => x.id === momentId);
       if(target) {
-        if(data.like && !target.likes.includes(npc.name)) target.likes.push(npc.name);
-        if(data.comment) target.comments.push({ authorName: npc.name, text: data.comment });
+        if (!target.likes) target.likes = [];
+        if (!target.comments) target.comments = [];
         
-        setMoments(ms); // 保存
+        // 写入点赞和评论
+        if(aiData.like && !target.likes.includes(npc.name)) target.likes.push(npc.name);
+        if(aiData.comment) target.comments.push({ authorName: npc.name, text: aiData.comment });
         
-        // 如果老婆此时还停留在朋友圈页面，就自动刷新，假装“突然收到新评论”
-        if($('moments').classList.contains('active')) {
+        setMoments(ms); 
+        
+        // 如果老婆还在看朋友圈，屏幕立刻刷新出最新评论！
+        const momentsPage = document.getElementById('moments');
+        if(momentsPage && momentsPage.classList.contains('active')) {
           renderMomentsFeed();
         }
       }
     } catch(e) {
-      console.log('NPC在赶来评论的路上摔倒了:', e);
+      // 绝不造假！如果 API 断了或者报错，只在后台记录，朋友圈保持安静
+      console.log('真实的API请求失败了，咱们不弄虚作假:', e);
     }
   };
-
   $('momentsCoverFile').addEventListener('change', async (e) => {
     const f = e.target.files?.[0];
     if(!f) return;
