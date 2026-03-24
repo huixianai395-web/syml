@@ -541,6 +541,43 @@
 .card-meituan .mt-total{font-size:12px;color:#555;}
 .card-meituan .mt-total b{color:#ff6b00;font-size:14px;}
 .card-meituan .mt-badge{font-size:10px;padding:3px 8px;border-radius:999px;background:#ff6b00;color:#fff;}
+/* ===== 新增：拟态语音与通话气泡 ===== */
+
+/* 语音气泡 (微信风格) */
+.bubble-voice {
+  display: flex; align-items: center; gap: 8px;
+  min-width: 60px; cursor: pointer;
+}
+/* 区分只有我和对方（我方在右，绿色/蓝色；对方在左，白色） */
+.bubble.me .bubble-voice { flex-direction: row-reverse; }
+.bubble-voice .v-icon {
+  width: 14px; height: 18px;
+  mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E") center/contain no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E") center/contain no-repeat;
+  background-color: #333; /* 默认深色 */
+}
+.bubble.me .bubble-voice .v-icon { background-color: #fff; transform: rotate(180deg); } /* 我方白色图标 */
+.bubble-voice .v-duration { font-size: 14px; opacity: 0.9; }
+
+/* 通话气泡 (微信视频/语音通话结束样式) */
+.bubble-call {
+  display: flex; align-items: center; gap: 10px;
+  padding: 2px 0;
+}
+.bubble.me .bubble-call { flex-direction: row-reverse; }
+.bubble-call .c-icon {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: rgba(0,0,0,0.05); color: #333;
+}
+.bubble.me .bubble-call .c-icon { background: rgba(255,255,255,0.2); color: #fff; }
+.bubble-call .c-text { display: flex; flex-direction: column; font-size: 14px; }
+.bubble.me .bubble-call .c-text { align-items: flex-end; }
+.bubble-call svg { width: 18px; height: 18px; fill: currentColor; }
+
+/* 优化功能面板图标（线条风格） */
+.func-icon .ibox2.svg-icon { background: #fdfdfd; border-color: #ebedf5; color: #5a6a8f; }
+.func-icon .ibox2.svg-icon svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 </head>
@@ -613,6 +650,27 @@
         <div class="func-icon" data-func="image"><div class="ibox2">🖼️</div><div class="lab2">发照片</div></div>
         <div class="func-icon" data-func="fakeimg"><div class="ibox2">🌄</div><div class="lab2">模拟发图</div></div>
 <div class="func-icon" data-func="meituan"><div class="ibox2">🛵</div><div class="lab2">美团外卖</div></div>
+        <!-- 在 funcPanel 内部追加 -->
+<div class="func-icon" data-func="voice_msg">
+  <div class="ibox2 svg-icon">
+    <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+  </div>
+  <div class="lab2">模拟语音</div>
+</div>
+
+<div class="func-icon" data-func="voice_call">
+  <div class="ibox2 svg-icon">
+    <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+  </div>
+  <div class="lab2">语音通话</div>
+</div>
+
+<div class="func-icon" data-func="video_call">
+  <div class="ibox2 svg-icon">
+    <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+  </div>
+  <div class="lab2">视频通话</div>
+</div>
       </div>
       <textarea id="chatInput" class="ta" placeholder="输入消息..."></textarea>
       <div class="send-actions">
@@ -2896,18 +2954,47 @@ $('funcToggleBtn').onclick=()=>{
   p.classList.toggle('show');
 };
 
-// 四件套配置
+/* === 将 FUNC_DIALOGS 替换或追加以下内容 === */
 const FUNC_DIALOGS={
   transfer:{title:'转账',fields:[{label:'金额（元）',key:'amount',placeholder:'0.00',type:'number'},{label:'备注',key:'note',placeholder:'转账备注（可选）'}]},
   redpacket:{title:'发红包',fields:[{label:'金额（元）',key:'amount',placeholder:'0.00',type:'number'},{label:'祝福语',key:'note',placeholder:'恭喜发财，大吉大利'}]},
   location:{title:'发送位置',fields:[{label:'地点名称',key:'name',placeholder:'例：星巴克'},{label:'详细地址',key:'addr',placeholder:'例：xx路xx号'}]},
   gift:{title:'送礼物',fields:[{label:'礼物名称',key:'name',placeholder:'例：玫瑰花'},{label:'留言',key:'note',placeholder:'送你的～'}]},
-  fakeimg:{title:'模拟发图',fields:[{label:'图片描述（点开显示）',key:'desc',placeholder:'例：今天的晚饭，红烧肉超嫩'},{label:'氛围标签',key:'mood',placeholder:'美食/风景/自拍/夜晚（影响封面色）'}]},meituan:{title:'美团外卖',fields:[{label:'店铺名',key:'shop',placeholder:'例：老王麻辣烫'},{label:'菜品（逗号分隔）',key:'items',placeholder:'例：牛肉面,煎蛋,可乐'},{label:'总价',key:'total',placeholder:'例：38.5'},{label:'预计送达',key:'time',placeholder:'例：约25分钟'}]}
+  fakeimg:{title:'模拟发图',fields:[{label:'图片描述（点开显示）',key:'desc',placeholder:'例：今天的晚饭，红烧肉超嫩'},{label:'氛围标签',key:'mood',placeholder:'美食/风景/自拍/夜晚（影响封面色）'}]},
+  meituan:{title:'美团外卖',fields:[{label:'店铺名',key:'shop',placeholder:'例：老王麻辣烫'},{label:'菜品',key:'items',placeholder:'例：牛肉面'},{label:'总价',key:'total',placeholder:'38.5'}]},
+
+  // === 新增配置开始 ===
+  voice_msg: { title:'模拟语音消息', fields: [{label:'时长（秒）', key:'len', placeholder:'例：12', type:'number'}] },
+  voice_call: { title:'模拟语音通话', fields: [{label:'通话时长/状态文字', key:'text', placeholder:'例：已通话 12:45 或 已取消'}, {label:'类型', key:'type', placeholder:'不用填', value:'voice'}] },
+  video_call: { title:'模拟视频通话', fields: [{label:'通话时长/状态文字', key:'text', placeholder:'例：已通话 05:20'}, {label:'类型', key:'type', placeholder:'不用填', value:'video'}] }
+  // === 新增配置结束 ===
 };
 
-/* --- 把你刚才乱掉的那一大坨，直接用这个完美的完整版替换！ --- */
+/* === 替换原来的 buildFuncCard 函数 === */
 function buildFuncCard(type,data){
   const cardId='cid_'+Date.now()+'_'+Math.floor(Math.random()*99999);
+
+  // --- 新增逻辑：语音条 ---
+  if(type==='voice_msg'){
+    const len = Math.max(1, parseInt(data.len||2));
+    // 粗略模拟长度：最少60px，每秒加2px，最长200px
+    const width = Math.min(200, 60 + len * 2);
+    return `<div class="bubble-voice" style="width:${width}px"><div class="v-icon"></div><div class="v-duration">${len}"</div></div>`;
+  }
+
+  // --- 新增逻辑：通话记录 (语音 & 视频) ---
+  if(type==='voice_call' || type==='video_call'){
+    const isVideo = type === 'video_call';
+    const text = data.text || '已通话 00:00';
+    // 这里的 SVG 是纯代码画的图标，不用担心引用问题
+    const iconSvg = isVideo
+      ? `<svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>`
+      : `<svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`;
+
+    return `<div class="bubble-call"><div class="c-icon">${iconSvg}</div><div class="c-text"><span>${esc(text)}</span></div></div>`;
+  }
+
+  // --- 原有逻辑保持不变 ---
   if(type==='transfer') return `<div class="card-transfer" data-card-id="${cardId}"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">¥${esc(data.amount||'0.00')}</div><div class="ct-note">${esc(data.note||'')}</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><button class="ct-btn">确认收款</button></div></div>`;
   if(type==='redpacket') return `<div class="card-redpacket" data-card-id="${cardId}"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">${esc(data.note||'恭喜发财，大吉大利')}</div><div class="rp-sub">¥${esc(data.amount||'0.00')} 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>`;
   if(type==='location') return `<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">${esc(data.name||'位置')}</div><div class="loc-addr">${esc(data.addr||'')}</div></div></div>`;
@@ -2924,7 +3011,6 @@ function buildFuncCard(type,data){
     const bgUrl = imgMap[data.mood] || imgMap.default;
     return `<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('${bgUrl}') center/cover no-repeat;"></div><div class="fi-desc">${esc(data.desc||'（无描述）')}</div></div>`;
   }
-
   if(type==='meituan'){
     const items=(data.items||'').split(/[,，]/).map(s=>s.trim()).filter(Boolean);
     const rows=items.map(i=>`<div class="mt-row"><span>${esc(i)}</span></div>`).join('');
