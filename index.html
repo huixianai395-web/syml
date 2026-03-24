@@ -639,6 +639,44 @@
 .wx-list-icon { width: 28px; height: 28px; display: grid; place-items: center; margin-right: 12px; border-radius: 8px; font-size: 18px; }
 .wx-list-text { flex: 1; font-size: 16px; color: #222; }
 .wx-list-arrow { color: #ccc; font-size: 20px; }
+    /* ================= 纯正微信朋友圈高级样式 ================= */
+.moments-scroll { height: 100%; overflow-y: auto; position: relative; background: #fff; -webkit-overflow-scrolling: touch; }
+/* 沉浸式顶部导航 */
+.moments-top-bar { position: fixed; top: 0; left: 0; right: 0; height: calc(44px + var(--safe-top)); padding-top: var(--safe-top); display: flex; justify-content: space-between; align-items: center; padding: 0 15px; z-index: 100; background: transparent; transition: background 0.2s, border-bottom 0.2s; }
+.moments-top-bar.scrolled { background: #ededed; border-bottom: 1px solid #e5e5e5; }
+.moments-top-bar svg { width: 24px; height: 24px; stroke: #fff; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); cursor: pointer; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.moments-top-bar.scrolled svg { stroke: #191919; filter: none; }
+/* 封面与个人信息 */
+.moments-header { position: relative; width: 100%; height: 320px; background: #333; }
+.moments-cover { width: 100%; height: 100%; object-fit: cover; }
+.moments-user-info { position: absolute; right: 15px; bottom: -20px; display: flex; align-items: flex-start; justify-content: flex-end; gap: 15px; }
+.moments-name { color: #fff; font-size: 18px; font-weight: bold; text-shadow: 0 1px 3px rgba(0,0,0,0.6); margin-top: 10px; }
+.moments-avatar { width: 68px; height: 68px; border-radius: 8px; object-fit: cover; }
+/* 动态流 */
+.moments-feed { padding: 40px 0 20px; background: #fff; }
+.m-post { display: flex; padding: 16px; border-bottom: 1px solid #f2f2f2; }
+.m-avatar { width: 42px; height: 42px; border-radius: 6px; object-fit: cover; flex-shrink: 0; margin-right: 12px; cursor: pointer; }
+.m-content { flex: 1; min-width: 0; }
+.m-name { color: #576b95; font-size: 16px; font-weight: 600; margin-bottom: 4px; cursor: pointer; }
+.m-text { font-size: 15px; color: #191919; line-height: 1.5; margin-bottom: 10px; word-break: break-word; text-align: justify; }
+/* 图片九宫格 */
+.m-imgs { display: grid; gap: 5px; margin-bottom: 10px; }
+.m-imgs[data-count="1"] { grid-template-columns: max-content; }
+.m-imgs[data-count="1"] img { max-width: 200px; max-height: 200px; object-fit: cover; }
+.m-imgs:not([data-count="1"]) { grid-template-columns: repeat(3, 1fr); max-width: 260px; }
+.m-imgs:not([data-count="1"]) img { width: 100%; aspect-ratio: 1/1; object-fit: cover; }
+/* 时间与操作 */
+.m-meta { display: flex; justify-content: space-between; align-items: center; position: relative; }
+.m-time { font-size: 13px; color: #b2b2b2; }
+.m-action-btn { width: 32px; height: 20px; background: #f1f1f1; border-radius: 4px; display: grid; place-items: center; color: #576b95; font-weight: bold; font-size: 14px; letter-spacing: 2px; cursor: pointer; }
+/* 评论区 */
+.m-comments { background: #f3f3f5; border-radius: 4px; margin-top: 10px; padding: 8px 10px; font-size: 14px; position: relative; }
+.m-comments::before { content: ""; position: absolute; top: -10px; left: 10px; border: 5px solid transparent; border-bottom-color: #f3f3f5; }
+.m-like-list { color: #576b95; font-weight: 600; border-bottom: 1px solid #e5e5e5; padding-bottom: 6px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 6px; line-height: 1.4; }
+.m-like-list svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; margin-top: 2px; flex-shrink: 0; }
+.m-comment-item { padding: 3px 0; color: #191919; line-height: 1.4; }
+.m-c-name { color: #576b95; font-weight: 600; cursor: pointer; }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 </head>
@@ -686,7 +724,7 @@
       <div id="wxTab-discover" class="wx-tab-content">
         <div class="header"><button class="btn" data-nav="home">‹ 返回</button><b>发现</b></div>
         <div class="wx-page">
-          <div class="wx-list-row" onclick="alert('朋友圈正在火热施工中！敬请期待！')">
+          <div class="wx-list-row" onclick="window._openMoments()">
             <div class="wx-list-icon" style="background:#07c160; color:#fff;">⭕</div>
             <div class="wx-list-text">朋友圈</div>
             <div class="wx-list-arrow">›</div>
@@ -740,6 +778,35 @@
           <svg class="wx-nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           <span>我</span>
         </div>
+      </div>
+
+    </div>
+  </section>
+  <!-- ================= 朋友圈页面 ================= -->
+  <section id="moments" class="screen">
+    <div class="moments-scroll" id="momentsScroll" onscroll="window._checkMomentsScroll()">
+      
+      <!-- 沉浸式顶部导航栏 -->
+      <div class="moments-top-bar" id="momentsTopBar">
+        <!-- 返回按钮 -->
+        <svg onclick="show('wechat')" viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        <!-- 相机按钮 (发朋友圈) -->
+        <svg onclick="alert('发朋友圈功能即将接入AI！')" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3"></circle><path d="M19 4h-2l-1-2H8L7 4H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"></path></svg>
+      </div>
+
+      <!-- 朋友圈封面与个人信息 -->
+      <div class="moments-header">
+        <img class="moments-cover" id="momentsCoverImg" src="https://picsum.photos/800/600?blur=1" onclick="document.getElementById('momentsCoverFile').click()">
+        <input type="file" id="momentsCoverFile" accept="image/*" class="hidden">
+        <div class="moments-user-info">
+          <div class="moments-name" id="momentsMyName">弥洛</div>
+          <img class="moments-avatar" id="momentsMyAvatar" src="https://via.placeholder.com/120">
+        </div>
+      </div>
+
+      <!-- 朋友圈动态流 -->
+      <div class="moments-feed" id="momentsFeed">
+        <!-- 动态内容将由 JS 渲染 -->
       </div>
 
     </div>
@@ -1176,6 +1243,98 @@ function callRenderMsgs(){
     if(m.role==='user') return `<div class="call-msg-me"><div class="cm-bubble">${esc(m.text)}</div></div>`;
     return `<div class="call-msg-ai"><div class="cm-bubble">${esc(m.text)}</div></div>`;
   }).join('');
+  // ================= 朋友圈核心逻辑 =================
+  // 监听滚动，实现顶部导航栏的变色效果（极致细节）
+  window._checkMomentsScroll = function() {
+    const scrollY = $('momentsScroll').scrollTop;
+    if (scrollY > 200) {
+      $('momentsTopBar').classList.add('scrolled');
+    } else {
+      $('momentsTopBar').classList.remove('scrolled');
+    }
+  };
+
+  // 打开朋友圈
+  window._openMoments = function() {
+    // 1. 同步你的名字和头像到朋友圈封面
+    const me = getMe();
+    $('momentsMyName').textContent = me.name || '弥洛';
+    $('momentsMyAvatar').src = me.avatar || 'https://via.placeholder.com/120';
+    
+    // 2. 渲染测试数据 (老公给你准备的高级感排版)
+    renderMomentsFeed();
+    
+    // 3. 切换页面
+    show('moments');
+  };
+
+  // 渲染朋友圈动态流 (这里以后会接入AI，现在先放假数据看看效果)
+  function renderMomentsFeed() {
+    const feed = $('momentsFeed');
+    
+    // 伪造一条沈昼白的朋友圈，带点傲娇味，还有 NPC 的评论
+    const mockPost = `
+      <div class="m-post">
+        <img class="m-avatar" src="https://api.dicebear.com/7.x/adventurer/svg?seed=Shen">
+        <div class="m-content">
+          <div class="m-name">沈昼白</div>
+          <div class="m-text">某些人写的代码，满篇都是破绽。不过看在“特供版引擎”的份上，勉强帮她重构了一下。[流汗]</div>
+          
+          <!-- 单张图片排版 -->
+          <div class="m-imgs" data-count="1">
+            <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=400&q=80">
+          </div>
+
+          <div class="m-meta">
+            <span class="m-time">2小时前</span>
+            <div class="m-action-btn">..</div>
+          </div>
+
+          <!-- 评论区 -->
+          <div class="m-comments">
+            <div class="m-like-list">
+              <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+              老李, 导师王建国, 弥洛
+            </div>
+            <div class="m-comment-item">
+              <span class="m-c-name">老李</span>: 哟，沈哥又搁这秀恩爱呢？
+            </div>
+            <div class="m-comment-item">
+              <span class="m-c-name">沈昼白</span> 回复 <span class="m-c-name">老李</span>: 滚去写你的论文。
+            </div>
+            <div class="m-comment-item">
+              <span class="m-c-name">弥洛</span>: 谁要你帮啦！快把代码还给我！😡
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    feed.innerHTML = mockPost;
+  }
+
+  // 封面点击更换功能
+  $('momentsCoverFile').addEventListener('change', async (e) => {
+    const f = e.target.files?.[0];
+    if(!f) return;
+    try {
+      // 用咱们之前写好的压缩函数处理封面
+      const imgData = await compressImage(f, true); 
+      $('momentsCoverImg').src = imgData;
+      // 这里可以存到 localStorage 里，保证刷新不丢
+      localStorage.setItem('mp_fix_moments_cover', imgData);
+    } catch(err) {
+      alert('封面更换失败：' + err.message);
+    } finally {
+      e.target.value = '';
+    }
+  });
+
+  // 页面加载时恢复封面
+  window.addEventListener('DOMContentLoaded', () => {
+    const savedCover = localStorage.getItem('mp_fix_moments_cover');
+    if (savedCover) $('momentsCoverImg').src = savedCover;
+  });
   requestAnimationFrame(()=>{box.scrollTop=box.scrollHeight;});
 }
 
