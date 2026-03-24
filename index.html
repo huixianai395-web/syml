@@ -788,10 +788,14 @@
       
       <!-- 沉浸式顶部导航栏 -->
       <div class="moments-top-bar" id="momentsTopBar">
-        <!-- 返回按钮 -->
-        <svg onclick="show('wechat')" viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        <!-- 返回按钮 (加了44px的隐形点击区域，随便点都能中) -->
+        <div onclick="show('wechat')" style="width: 44px; height: 44px; display: flex; align-items: center; cursor: pointer; margin-left: -10px; padding-left: 10px;">
+          <svg viewBox="0 0 24 24" fill="none" style="pointer-events: none;"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </div>
         <!-- 相机按钮 (发朋友圈) -->
-        <svg onclick="document.getElementById('publishMomentModal').classList.add('active')" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3"></circle><path d="M19 4h-2l-1-2H8L7 4H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"></path></svg>
+        <div onclick="document.getElementById('publishMomentModal').classList.add('active')" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: flex-end; cursor: pointer; margin-right: -10px; padding-right: 10px;">
+          <svg viewBox="0 0 24 24" fill="none" style="pointer-events: none;"><circle cx="12" cy="12" r="3"></circle><path d="M19 4h-2l-1-2H8L7 4H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"></path></svg>
+        </div>
       </div>
 
       <!-- 朋友圈封面与个人信息 -->
@@ -3680,10 +3684,11 @@ function syncCardFromAi(parts,chatId){
     
     const me = getMe();
     const ms = getMoments();
+    const newId = 'm_' + Date.now();
     
-    // 把新动态塞进数组最前面
+    // 1. 先把你的动态发出去
     ms.unshift({
-      id: 'm_' + Date.now(),
+      id: newId,
       authorId: 'me',
       authorName: me.name || '弥洛',
       authorAvatar: me.avatar || 'https://via.placeholder.com/120',
@@ -3694,15 +3699,58 @@ function syncCardFromAi(parts,chatId){
       comments: []
     });
     
-    setMoments(ms); // 保存到本地
-    
-    // 清理现场并关闭弹窗
+    setMoments(ms); 
     $('publishMomentModal').classList.remove('active');
     $('momentInputText').value = '';
     window._clearMomentImg();
-    
-    // 重新渲染朋友圈！
-    renderMomentsFeed();
+    renderMomentsFeed(); // 渲染到屏幕上
+
+    // 2. 偷偷唤醒 AI，让 NPC 赶来评论！
+    setTimeout(() => {
+      if(window._triggerMomentsAI) window._triggerMomentsAI(newId, text);
+    }, 1000);
+  };
+
+  // ================= AI 自动点赞评论大脑 =================
+  window._triggerMomentsAI = async function(momentId, contentText) {
+    try {
+      const contacts = getContacts();
+      if(!contacts.length) return; // 没联系人就不评论了
+      
+      // 优先抓沈昼白来评论，没有沈昼白就抓列表里的第一个人
+      let npc = contacts.find(c => c.name.includes('沈昼白')) || contacts[0];
+
+      // 给 AI 下达指令
+      const sysPrompt = `你现在是：${npc.name}\n你的人设：${npc.persona||'普通朋友'}\n你的好友刚刚发了一条朋友圈，文案是：“${contentText||'[分享了一张图片]'}”。\n请你严格根据你的人设性格，决定是否点赞，并写一条符合微信朋友圈口语化习惯的简短评论（禁止长篇大论，带点情绪或吐槽）。\n\n【必须严格输出JSON格式】：\n{"like": true或false, "comment": "你的评论内容"}`;
+
+      // 调用咱们封装好的神级 API
+      const out = await callApi([
+        { role: 'system', content: sysPrompt },
+        { role: 'user', content: '快去回复这条朋友圈！' }
+      ]);
+
+      // 解析 AI 的 JSON 回复
+      const cleaned = out.replace(/```json|```/g, '').trim();
+      const m2 = cleaned.match(/\{[\s\S]*\}/);
+      const data = JSON.parse(m2 ? m2[0] : cleaned);
+
+      // 把 AI 的评论和点赞写进朋友圈里！
+      const ms = getMoments();
+      const target = ms.find(x => x.id === momentId);
+      if(target) {
+        if(data.like && !target.likes.includes(npc.name)) target.likes.push(npc.name);
+        if(data.comment) target.comments.push({ authorName: npc.name, text: data.comment });
+        
+        setMoments(ms); // 保存
+        
+        // 如果老婆此时还停留在朋友圈页面，就自动刷新，假装“突然收到新评论”
+        if($('moments').classList.contains('active')) {
+          renderMomentsFeed();
+        }
+      }
+    } catch(e) {
+      console.log('NPC在赶来评论的路上摔倒了:', e);
+    }
   };
 
   $('momentsCoverFile').addEventListener('change', async (e) => {
