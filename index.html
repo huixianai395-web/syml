@@ -1243,101 +1243,8 @@ function callRenderMsgs(){
     if(m.role==='user') return `<div class="call-msg-me"><div class="cm-bubble">${esc(m.text)}</div></div>`;
     return `<div class="call-msg-ai"><div class="cm-bubble">${esc(m.text)}</div></div>`;
   }).join('');
-  // ================= 朋友圈核心逻辑 =================
-  // 监听滚动，实现顶部导航栏的变色效果（极致细节）
-  window._checkMomentsScroll = function() {
-    const scrollY = $('momentsScroll').scrollTop;
-    if (scrollY > 200) {
-      $('momentsTopBar').classList.add('scrolled');
-    } else {
-      $('momentsTopBar').classList.remove('scrolled');
-    }
-  };
-
-  // 打开朋友圈
-  window._openMoments = function() {
-    // 1. 同步你的名字和头像到朋友圈封面
-    const me = getMe();
-    $('momentsMyName').textContent = me.name || '弥洛';
-    $('momentsMyAvatar').src = me.avatar || 'https://via.placeholder.com/120';
-    
-    // 2. 渲染测试数据 (老公给你准备的高级感排版)
-    renderMomentsFeed();
-    
-    // 3. 切换页面
-    show('moments');
-  };
-
-  // 渲染朋友圈动态流 (这里以后会接入AI，现在先放假数据看看效果)
-  function renderMomentsFeed() {
-    const feed = $('momentsFeed');
-    
-    // 伪造一条沈昼白的朋友圈，带点傲娇味，还有 NPC 的评论
-    const mockPost = `
-      <div class="m-post">
-        <img class="m-avatar" src="https://api.dicebear.com/7.x/adventurer/svg?seed=Shen">
-        <div class="m-content">
-          <div class="m-name">沈昼白</div>
-          <div class="m-text">某些人写的代码，满篇都是破绽。不过看在“特供版引擎”的份上，勉强帮她重构了一下。[流汗]</div>
-          
-          <!-- 单张图片排版 -->
-          <div class="m-imgs" data-count="1">
-            <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=400&q=80">
-          </div>
-
-          <div class="m-meta">
-            <span class="m-time">2小时前</span>
-            <div class="m-action-btn">..</div>
-          </div>
-
-          <!-- 评论区 -->
-          <div class="m-comments">
-            <div class="m-like-list">
-              <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-              老李, 导师王建国, 弥洛
-            </div>
-            <div class="m-comment-item">
-              <span class="m-c-name">老李</span>: 哟，沈哥又搁这秀恩爱呢？
-            </div>
-            <div class="m-comment-item">
-              <span class="m-c-name">沈昼白</span> 回复 <span class="m-c-name">老李</span>: 滚去写你的论文。
-            </div>
-            <div class="m-comment-item">
-              <span class="m-c-name">弥洛</span>: 谁要你帮啦！快把代码还给我！😡
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    feed.innerHTML = mockPost;
-  }
-
-  // 封面点击更换功能
-  $('momentsCoverFile').addEventListener('change', async (e) => {
-    const f = e.target.files?.[0];
-    if(!f) return;
-    try {
-      // 用咱们之前写好的压缩函数处理封面
-      const imgData = await compressImage(f, true); 
-      $('momentsCoverImg').src = imgData;
-      // 这里可以存到 localStorage 里，保证刷新不丢
-      localStorage.setItem('mp_fix_moments_cover', imgData);
-    } catch(err) {
-      alert('封面更换失败：' + err.message);
-    } finally {
-      e.target.value = '';
-    }
-  });
-
-  // 页面加载时恢复封面
-  window.addEventListener('DOMContentLoaded', () => {
-    const savedCover = localStorage.getItem('mp_fix_moments_cover');
-    if (savedCover) $('momentsCoverImg').src = savedCover;
-  });
   requestAnimationFrame(()=>{box.scrollTop=box.scrollHeight;});
 }
-
 function startCallUI(type,dir,chatId){
   const c=getContactById(chatId); if(!c) return;
   callState={active:false,phase:dir==='outgoing'?'ringing-out':'ringing-in',type,start:0,timer:null,chatId,callMsgs:[]};
@@ -3640,23 +3547,81 @@ function syncCardFromAi(parts,chatId){
     break;
   }
 }
-})();
+// ================= 朋友圈核心逻辑 =================
+  window._checkMomentsScroll = function() {
+    const scrollY = $('momentsScroll').scrollTop;
+    if (scrollY > 200) {
+      $('momentsTopBar').classList.add('scrolled');
+    } else {
+      $('momentsTopBar').classList.remove('scrolled');
+    }
+  };
+
+  window._openMoments = function() {
+    const me = getMe();
+    $('momentsMyName').textContent = me.name || '弥洛';
+    $('momentsMyAvatar').src = me.avatar || 'https://via.placeholder.com/120';
+    renderMomentsFeed();
+    show('moments');
+  };
+
+  function renderMomentsFeed() {
+    const feed = $('momentsFeed');
+    const mockPost = `
+      <div class="m-post">
+        <img class="m-avatar" src="https://api.dicebear.com/7.x/adventurer/svg?seed=Shen">
+        <div class="m-content">
+          <div class="m-name">沈昼白</div>
+          <div class="m-text">某些人写的代码，满篇都是破绽。不过看在“特供版引擎”的份上，勉强帮她重构了一下。[流汗]</div>
+          <div class="m-imgs" data-count="1">
+            <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=400&q=80">
+          </div>
+          <div class="m-meta">
+            <span class="m-time">2小时前</span>
+            <div class="m-action-btn">..</div>
+          </div>
+          <div class="m-comments">
+            <div class="m-like-list">
+              <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+              老李, 导师王建国, 弥洛
+            </div>
+            <div class="m-comment-item"><span class="m-c-name">老李</span>: 哟，沈哥又搁这秀恩爱呢？</div>
+            <div class="m-comment-item"><span class="m-c-name">沈昼白</span> 回复 <span class="m-c-name">老李</span>: 滚去写你的论文。</div>
+            <div class="m-comment-item"><span class="m-c-name">弥洛</span>: 谁要你帮啦！快把代码还给我！😡</div>
+          </div>
+        </div>
+      </div>
+    `;
+    feed.innerHTML = mockPost;
+  }
+
+  $('momentsCoverFile').addEventListener('change', async (e) => {
+    const f = e.target.files?.[0];
+    if(!f) return;
+    try {
+      const imgData = await compressImage(f, true); 
+      $('momentsCoverImg').src = imgData;
+      localStorage.setItem('mp_fix_moments_cover', imgData);
+    } catch(err) { alert('封面更换失败：' + err.message); } 
+    finally { e.target.value = ''; }
+  });
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const savedCover = localStorage.getItem('mp_fix_moments_cover');
+    if (savedCover) $('momentsCoverImg').src = savedCover;
+  });
+
   // ================= 真·微信底部 Tab 切换与多重预设逻辑 =================
   window._switchWxTab = function(tabId, el) {
-    // 切换图标高亮
     document.querySelectorAll('.wx-nav-item').forEach(n => n.classList.remove('active'));
     el.classList.add('active');
-    // 切换内容页
     document.querySelectorAll('.wx-tab-content').forEach(c => c.classList.remove('active'));
     document.getElementById('wxTab-' + tabId).classList.add('active');
-    
-    // 如果切到了“我”页面，刷新一下数据
     if(tabId === 'me') renderMePresetsUI();
   };
 
-  // 预设管理核心逻辑
   const K_PRESETS_LIST = 'mp_fix_me_presets_list';
-  let meAvatarDraftGlobal = ''; // 暂存刚上传的头像
+  let meAvatarDraftGlobal = '';
 
   function getMePresets() {
     return getJ(K_PRESETS_LIST, { currentId: 'default', list: [{ id: 'default', name: '默认模式', persona: '我是弥洛。', avatar: '' }] });
@@ -3666,9 +3631,7 @@ function syncCardFromAi(parts,chatId){
   function renderMePresetsUI() {
     const data = getMePresets();
     const cur = data.list.find(x => x.id === data.currentId) || data.list[0];
-    
     $('mePresetSelect').innerHTML = data.list.map(p => `<option value="${p.id}" ${p.id === data.currentId ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
-    
     $('mePageName').value = cur.name || '';
     $('mePagePersona').value = cur.persona || '';
     $('mePageAvatar').src = cur.avatar || 'https://via.placeholder.com/64x64?text=我';
@@ -3679,11 +3642,8 @@ function syncCardFromAi(parts,chatId){
     const data = getMePresets();
     data.currentId = e.target.value;
     setMePresets(data);
-    
-    // 切换预设时，自动把当前预设写入到全局的 getMe() 中，让聊天立刻生效！
     const cur = data.list.find(x => x.id === data.currentId);
     if(cur) setMe({ name: cur.name, persona: cur.persona, avatar: cur.avatar, note: '' });
-    
     renderMePresetsUI();
     alert('✅ 已切换至：' + cur.name);
   });
@@ -3696,8 +3656,6 @@ function syncCardFromAi(parts,chatId){
       data.list[idx].persona = clean($('mePagePersona').value);
       data.list[idx].avatar = meAvatarDraftGlobal;
       setMePresets(data);
-      
-      // 同步到全局
       setMe({ name: data.list[idx].name, persona: data.list[idx].persona, avatar: data.list[idx].avatar, note: '' });
       renderMePresetsUI();
       alert('保存成功！AI现在死死记住这个设定了！');
@@ -3722,25 +3680,20 @@ function syncCardFromAi(parts,chatId){
       data.list = data.list.filter(x => x.id !== data.currentId);
       data.currentId = data.list[0].id;
       setMePresets(data);
-      
       const cur = data.list[0];
       setMe({ name: cur.name, persona: cur.persona, avatar: cur.avatar, note: '' });
       renderMePresetsUI();
     }
   };
 
-  // 头像上传逻辑
   $('mePageAvatarFile').addEventListener('change', async (e) => {
     const f = e.target.files?.[0];
     if(!f) return;
     try {
       meAvatarDraftGlobal = await compressImage(f);
       $('mePageAvatar').src = meAvatarDraftGlobal;
-    } catch(err) {
-      alert('头像处理失败：' + err.message);
-    } finally {
-      e.target.value = '';
-    }
+    } catch(err) { alert('头像处理失败：' + err.message); } 
+    finally { e.target.value = ''; }
   });
 </script>
   <div id="modalPreview" class="modal" onclick="this.classList.remove('active')">
