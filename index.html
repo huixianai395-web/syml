@@ -665,79 +665,83 @@
     </div>
   </section>
 
-<!-- ================= 升级版：真·微信主界面 ================= -->
-  <section id="wechat" class="screen" style="display:flex; flex-direction:column; padding:0;">
-    
-    <!-- 1. 【微信】聊天列表 Tab -->
-    <div id="wxTab-chat" class="wx-tab-content active">
-      <div class="header"><button class="btn" data-nav="home">‹ 桌面</button><b>微信</b><button class="btn" id="addContactBtn">+联系人</button></div>
-      <div class="wx-page"><input id="searchInput" class="input" placeholder="搜索联系人" /><div id="contactList" class="list" style="margin-top:10px;"></div></div>
-    </div>
-
-    <!-- 2. 【通讯录】Tab (暂用作占位) -->
-    <div id="wxTab-contact" class="wx-tab-content">
-      <div class="header"><button class="btn" data-nav="home">‹ 桌面</button><b>通讯录</b></div>
-      <div class="wx-page"><div class="card small" style="text-align:center; padding:40px 10px;">老婆，通讯录功能待开发哦~<br>联系人都在“微信”列表里啦！</div></div>
-    </div>
-
-    <!-- 3. 【发现】Tab (朋友圈入口) -->
-    <div id="wxTab-discover" class="wx-tab-content">
-      <div class="header"><button class="btn" data-nav="home">‹ 桌面</button><b>发现</b></div>
-      <div class="wx-page">
-        <div class="wx-list-row" onclick="alert('朋友圈正在火热施工中！敬请期待！')">
-          <div class="wx-list-icon" style="background:#07c160; color:#fff;">⭕</div>
-          <div class="wx-list-text">朋友圈</div>
-          <div class="wx-list-arrow">›</div>
-        </div>
+<!-- ================= 安全升级版：真·微信主界面 ================= -->
+  <section id="wechat" class="screen">
+    <!-- 这一层 wrapper 负责内部布局，绝不破坏你的桌面隐藏机制！ -->
+    <div style="display:flex; flex-direction:column; height:100%; width:100%;">
+      
+      <!-- 1. 【微信】聊天列表 Tab -->
+      <div id="wxTab-chat" class="wx-tab-content active">
+        <div class="header"><button class="btn" data-nav="home">‹ 返回</button><b>微信</b><button class="btn" id="addContactBtn">+联系人</button></div>
+        <div class="wx-page"><input id="searchInput" class="input" placeholder="搜索联系人" /><div id="contactList" class="list" style="margin-top:10px;"></div></div>
       </div>
-    </div>
 
-    <!-- 4. 【我】Tab (多重身份预设库) -->
-    <div id="wxTab-me" class="wx-tab-content">
-      <div class="header"><button class="btn" data-nav="home">‹ 桌面</button><b>我的预设</b></div>
-      <div class="wx-page">
-        <div style="background:#fff; border-radius:14px; padding:16px; border:1px solid #ececf2; display:flex; align-items:center; margin-bottom:12px;">
-          <img id="mePageAvatar" src="https://via.placeholder.com/64x64?text=我" style="width:64px; height:64px; border-radius:12px; object-fit:cover; margin-right:16px; cursor:pointer; background:#eef2ff;" onclick="document.getElementById('mePageAvatarFile').click()">
-          <input type="file" id="mePageAvatarFile" accept="image/*" class="hidden">
-          <div style="flex:1;">
-            <input id="mePageName" class="input" placeholder="你的昵称" style="font-size:18px; font-weight:bold; border:none; padding:0; margin-bottom:4px; width:100%;" value="弥洛">
-            <div style="font-size:12px; color:#999;">点击头像可更换</div>
-          </div>
-        </div>
+      <!-- 2. 【通讯录】Tab -->
+      <div id="wxTab-contact" class="wx-tab-content">
+        <div class="header"><button class="btn" data-nav="home">‹ 返回</button><b>通讯录</b></div>
+        <div class="wx-page"><div class="card small" style="text-align:center; padding:40px 10px;">老公正在努力开发通讯录功能哦~<br>联系人都在“微信”列表里啦！</div></div>
+      </div>
 
-        <div class="card">
-          <div class="small" style="color:#07c160; font-weight:bold; margin-bottom:8px;">👑 我的身份预设库</div>
-          <select id="mePresetSelect" class="select" style="margin-bottom:10px;"></select>
-          <div class="small">世界观与性格设定 (AI会死死记住)：</div>
-          <textarea id="mePagePersona" class="ta" style="min-height:120px; margin-top:6px;" placeholder="在这里写下你的背景设定..."></textarea>
-          
-          <div class="row" style="margin-top:12px; flex-wrap:wrap;">
-            <button class="btn p" id="mePageSaveBtn" style="flex:1;">保存当前设定</button>
-            <button class="btn" id="mePageNewBtn" style="flex:1;">+ 新建身份</button>
-            <button class="btn d" id="mePageDelBtn">删除</button>
+      <!-- 3. 【发现】Tab (朋友圈入口) -->
+      <div id="wxTab-discover" class="wx-tab-content">
+        <div class="header"><button class="btn" data-nav="home">‹ 返回</button><b>发现</b></div>
+        <div class="wx-page">
+          <div class="wx-list-row" onclick="alert('朋友圈正在火热施工中！敬请期待！')">
+            <div class="wx-list-icon" style="background:#07c160; color:#fff;">⭕</div>
+            <div class="wx-list-text">朋友圈</div>
+            <div class="wx-list-arrow">›</div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- 底部导航栏 -->
-    <div class="wx-bottom-nav">
-      <div class="wx-nav-item active" onclick="window._switchWxTab('chat', this)">
-        <svg class="wx-nav-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-        <span>微信</span>
+      <!-- 4. 【我】Tab (多重身份预设库) -->
+      <div id="wxTab-me" class="wx-tab-content">
+        <div class="header"><button class="btn" data-nav="home">‹ 返回</button><b>我的预设</b></div>
+        <div class="wx-page">
+          <div style="background:#fff; border-radius:14px; padding:16px; border:1px solid #ececf2; display:flex; align-items:center; margin-bottom:12px;">
+            <img id="mePageAvatar" src="https://via.placeholder.com/64x64?text=我" style="width:64px; height:64px; border-radius:12px; object-fit:cover; margin-right:16px; cursor:pointer; background:#eef2ff;" onclick="document.getElementById('mePageAvatarFile').click()">
+            <input type="file" id="mePageAvatarFile" accept="image/*" class="hidden">
+            <div style="flex:1;">
+              <input id="mePageName" class="input" placeholder="你的昵称" style="font-size:18px; font-weight:bold; border:none; padding:0; margin-bottom:4px; width:100%;" value="弥洛">
+              <div style="font-size:12px; color:#999;">点击头像可更换</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="small" style="color:#07c160; font-weight:bold; margin-bottom:8px;">👑 我的身份预设库</div>
+            <select id="mePresetSelect" class="select" style="margin-bottom:10px;"></select>
+            <div class="small">世界观与性格设定 (AI会死死记住)：</div>
+            <textarea id="mePagePersona" class="ta" style="min-height:120px; margin-top:6px;" placeholder="在这里写下你的背景设定..."></textarea>
+            
+            <div class="row" style="margin-top:12px; flex-wrap:wrap;">
+              <button class="btn p" id="mePageSaveBtn" style="flex:1;">保存当前设定</button>
+              <button class="btn" id="mePageNewBtn" style="flex:1;">+ 新建身份</button>
+              <button class="btn d" id="mePageDelBtn">删除</button>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="wx-nav-item" onclick="window._switchWxTab('contact', this)">
-        <svg class="wx-nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-        <span>通讯录</span>
+
+      <!-- 底部导航栏 -->
+      <div class="wx-bottom-nav">
+        <div class="wx-nav-item active" onclick="window._switchWxTab('chat', this)">
+          <svg class="wx-nav-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <span>微信</span>
+        </div>
+        <div class="wx-nav-item" onclick="window._switchWxTab('contact', this)">
+          <svg class="wx-nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <span>通讯录</span>
+        </div>
+        <div class="wx-nav-item" onclick="window._switchWxTab('discover', this)">
+          <svg class="wx-nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+          <span>发现</span>
+        </div>
+        <div class="wx-nav-item" onclick="window._switchWxTab('me', this)">
+          <svg class="wx-nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <span>我</span>
+        </div>
       </div>
-      <div class="wx-nav-item" onclick="window._switchWxTab('discover', this)">
-        <svg class="wx-nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
-        <span>发现</span>
-      </div>
-      <div class="wx-nav-item" onclick="window._switchWxTab('me', this)">
-        <svg class="wx-nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-        <span>我</span>
-      </div>
+
     </div>
   </section>
   <!-- ================= 升级版结束 ================= -->
