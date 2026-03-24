@@ -1172,16 +1172,7 @@ window._callReject=()=>{
 };
 window._callHangup=()=>endCall();
 
-$('callSendBtn').onclick=()=>{
-  const t=clean($('callInput').value);if(!t||!callState.active) return;
-  callState.callMsgs.push({role:'user',text:t});
-  callRenderMsgs();
-  $('callInput').value='';
-  callSendToAi(t);
-};
-$('callInput').addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('callSendBtn').click();}
-});
+
   let lpTimer=null,lpStartX=0,lpStartY=0;
   let meAvatarDraft='',roleAvatarDraft='';
   let favSelectMode=false,favSelected=new Set(),favNowTimer=null;
@@ -2834,6 +2825,16 @@ $('stickerBtn').onclick=(e)=>{
   $('stickerSheet').classList.toggle('hidden');
   if(!$('stickerSheet').classList.contains('hidden')) stRenderSheet();
 };
+    $('callSendBtn').onclick=()=>{
+  const t=clean($('callInput').value);if(!t||!callState.active) return;
+  callState.callMsgs.push({role:'user',text:t});
+  callRenderMsgs();
+  $('callInput').value='';
+  callSendToAi(t);
+};
+$('callInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('callSendBtn').click();}
+});
 $('stickerManageBtn').onclick=(e)=>{ e.stopPropagation(); stMgrOpen(); };
 $('stCloseMgrBtn').onclick=stMgrClose;
 
