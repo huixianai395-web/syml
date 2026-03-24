@@ -791,7 +791,7 @@
         <!-- 返回按钮 -->
         <svg onclick="show('wechat')" viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg>
         <!-- 相机按钮 (发朋友圈) -->
-        <svg onclick="alert('发朋友圈功能即将接入AI！')" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3"></circle><path d="M19 4h-2l-1-2H8L7 4H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"></path></svg>
+        <svg onclick="document.getElementById('publishMomentModal').classList.add('active')" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3"></circle><path d="M19 4h-2l-1-2H8L7 4H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"></path></svg>
       </div>
 
       <!-- 朋友圈封面与个人信息 -->
@@ -811,6 +811,33 @@
 
     </div>
   </section>
+  <!-- ================= 发朋友圈弹窗 ================= -->
+  <div id="publishMomentModal" class="modal" style="z-index: 1000;">
+    <div class="modal-card" style="background: #f3f3f5; padding: 0; overflow: hidden; max-width: 100%; height: 100dvh; border-radius: 0; display: flex; flex-direction: column;">
+      
+      <!-- 顶部操作栏 -->
+      <div style="height: calc(44px + var(--safe-top)); padding-top: var(--safe-top); display: flex; justify-content: space-between; align-items: center; padding-left: 15px; padding-right: 15px; background: #ededed; border-bottom: 1px solid #e5e5e5;">
+        <span onclick="document.getElementById('publishMomentModal').classList.remove('active')" style="font-size: 16px; color: #191919; cursor: pointer;">取消</span>
+        <button class="btn p" id="sendMomentBtn" style="background: #07c160; color: #fff; border: none; padding: 6px 16px; border-radius: 4px; font-weight: bold; font-size: 14px;">发表</button>
+      </div>
+
+      <!-- 输入区 -->
+      <div style="padding: 20px; flex: 1; background: #fff;">
+        <textarea id="momentInputText" class="ta" style="border: none; background: transparent; min-height: 120px; font-size: 16px; padding: 0; outline: none;" placeholder="这一刻的想法..."></textarea>
+        
+        <!-- 图片添加区 -->
+        <div style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
+          <div id="momentImgPreviewWrap" style="display: none; position: relative; width: 90px; height: 90px;">
+            <img id="momentImgPreview" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;">
+            <div onclick="window._clearMomentImg()" style="position: absolute; top: -8px; right: -8px; background: rgba(0,0,0,0.6); color: #fff; border-radius: 50%; width: 22px; height: 22px; display: grid; place-items: center; font-size: 14px; cursor: pointer;">×</div>
+          </div>
+          <div id="momentAddImgBtn" onclick="document.getElementById('momentImgFile').click()" style="width: 90px; height: 90px; background: #f2f2f2; display: grid; place-items: center; font-size: 36px; color: #ccc; cursor: pointer; border-radius: 4px;">+</div>
+          <input type="file" id="momentImgFile" accept="image/*" class="hidden">
+        </div>
+      </div>
+      
+    </div>
+  </div>
   <!-- ================= 升级版结束 ================= -->
 
   <section id="chatRoom" class="screen">
@@ -3565,35 +3592,118 @@ function syncCardFromAi(parts,chatId){
     show('moments');
   };
 
+  // ================= 朋友圈真实数据引擎 =================
+  const K_MOMENTS = 'mp_fix_moments';
+  
+  // 获取和保存朋友圈数据
+  function getMoments() { return getJ(K_MOMENTS, []); }
+  function setMoments(v) { setJ(K_MOMENTS, v); }
+
+  // 格式化时间（比如：刚刚、5分钟前、2小时前）
+  window._formatTimeAgo = function(ts) {
+    const diff = Date.now() - ts;
+    if (diff < 60000) return '刚刚';
+    if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前';
+    return Math.floor(diff / 86400000) + '天前';
+  };
+
+  // 渲染真实的朋友圈流
   function renderMomentsFeed() {
     const feed = $('momentsFeed');
-    const mockPost = `
-      <div class="m-post">
-        <img class="m-avatar" src="https://api.dicebear.com/7.x/adventurer/svg?seed=Shen">
-        <div class="m-content">
-          <div class="m-name">沈昼白</div>
-          <div class="m-text">某些人写的代码，满篇都是破绽。不过看在“特供版引擎”的份上，勉强帮她重构了一下。[流汗]</div>
-          <div class="m-imgs" data-count="1">
-            <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=400&q=80">
-          </div>
-          <div class="m-meta">
-            <span class="m-time">2小时前</span>
-            <div class="m-action-btn">..</div>
-          </div>
-          <div class="m-comments">
-            <div class="m-like-list">
-              <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-              老李, 导师王建国, 弥洛
+    const data = getMoments();
+    
+    if (!data.length) {
+      feed.innerHTML = '<div style="text-align:center; padding:50px 0; color:#999; font-size:14px;">朋友圈空空如也，快点击右上角相机发一条吧！</div>';
+      return;
+    }
+
+    feed.innerHTML = data.map(m => {
+      // 处理图片九宫格
+      let imgHtml = '';
+      if (m.images && m.images.length > 0) {
+        imgHtml = `<div class="m-imgs" data-count="${m.images.length}">${m.images.map(img => `<img src="${img}">`).join('')}</div>`;
+      }
+      
+      // 处理点赞和评论区
+      let cmtHtml = '';
+      if ((m.likes && m.likes.length) || (m.comments && m.comments.length)) {
+        let likesStr = (m.likes && m.likes.length) ? `<div class="m-like-list"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> ${m.likes.join(', ')}</div>` : '';
+        let cmtsStr = (m.comments || []).map(c => `<div class="m-comment-item"><span class="m-c-name">${esc(c.authorName)}</span>${c.replyTo ? ` 回复 <span class="m-c-name">${esc(c.replyTo)}</span>` : ''}: ${esc(c.text)}</div>`).join('');
+        cmtHtml = `<div class="m-comments">${likesStr}${cmtsStr}</div>`;
+      }
+
+      return `
+        <div class="m-post">
+          <img class="m-avatar" src="${m.authorAvatar}">
+          <div class="m-content">
+            <div class="m-name">${esc(m.authorName)}</div>
+            <div class="m-text">${esc(m.text).replace(/\n/g, '<br>')}</div>
+            ${imgHtml}
+            <div class="m-meta">
+              <span class="m-time">${window._formatTimeAgo(m.time)}</span>
+              <div class="m-action-btn">..</div>
             </div>
-            <div class="m-comment-item"><span class="m-c-name">老李</span>: 哟，沈哥又搁这秀恩爱呢？</div>
-            <div class="m-comment-item"><span class="m-c-name">沈昼白</span> 回复 <span class="m-c-name">老李</span>: 滚去写你的论文。</div>
-            <div class="m-comment-item"><span class="m-c-name">弥洛</span>: 谁要你帮啦！快把代码还给我！😡</div>
+            ${cmtHtml}
           </div>
         </div>
-      </div>
-    `;
-    feed.innerHTML = mockPost;
+      `;
+    }).join('');
   }
+
+  // === 发布朋友圈的交互逻辑 ===
+  let momentDraftImg = ''; // 暂存选中的图片
+
+  $('momentImgFile').addEventListener('change', async (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    try {
+      momentDraftImg = await compressImage(f, false); // 压缩图片
+      $('momentImgPreview').src = momentDraftImg;
+      $('momentImgPreviewWrap').style.display = 'block';
+      $('momentAddImgBtn').style.display = 'none'; // 隐藏加号
+    } catch(err) {
+      alert('图片处理失败');
+    }
+    e.target.value = '';
+  });
+
+  window._clearMomentImg = function() {
+    momentDraftImg = '';
+    $('momentImgPreviewWrap').style.display = 'none';
+    $('momentAddImgBtn').style.display = 'grid'; // 恢复加号
+  };
+
+  $('sendMomentBtn').onclick = () => {
+    const text = clean($('momentInputText').value);
+    if (!text && !momentDraftImg) return alert('总得写点什么或者发张图吧，老婆！');
+    
+    const me = getMe();
+    const ms = getMoments();
+    
+    // 把新动态塞进数组最前面
+    ms.unshift({
+      id: 'm_' + Date.now(),
+      authorId: 'me',
+      authorName: me.name || '弥洛',
+      authorAvatar: me.avatar || 'https://via.placeholder.com/120',
+      text: text,
+      images: momentDraftImg ? [momentDraftImg] : [],
+      time: Date.now(),
+      likes: [],
+      comments: []
+    });
+    
+    setMoments(ms); // 保存到本地
+    
+    // 清理现场并关闭弹窗
+    $('publishMomentModal').classList.remove('active');
+    $('momentInputText').value = '';
+    window._clearMomentImg();
+    
+    // 重新渲染朋友圈！
+    renderMomentsFeed();
+  };
 
   $('momentsCoverFile').addEventListener('change', async (e) => {
     const f = e.target.files?.[0];
