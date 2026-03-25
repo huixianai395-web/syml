@@ -3807,52 +3807,88 @@ function syncCardFromAi(parts,chatId){
     }, 1000);
   };
 
-  // ================= AI 自动点赞评论大脑 (100% 纯真实 API 版) =================
+ // ================= AI 自动点赞评论大脑 (多角色生态延迟版) =================
   window._triggerMomentsAI = async function(momentId, contentText) {
     try {
       const contacts = getContacts() || [];
-      // 优先找沈昼白，如果没有，就抓列表里第一个真实的联系人
-      let npc = contacts.find(c => c && c.name && c.name.includes('沈昼白')) || contacts[0];
-      if (!npc) return; // 如果你连联系人都没有，就直接取消，绝不造假
+      if (contacts.length === 0) return;
 
-      // 给 AI 下达的真实指令
-      const sysPrompt = `你现在是：${npc.name}\n你的人设：${npc.persona||'普通朋友'}\n你的好友刚刚发了一条朋友圈，文案是：“${contentText||'[分享了一张图片]'}”。\n请你严格根据你的人设性格，决定是否点赞，并写一条符合微信朋友圈口语化习惯的简短评论（禁止长篇大论，带点情绪或吐槽）。\n\n【必须严格输出JSON格式】：\n{"like": true或false, "comment": "你的真实评论内容"}`;
+      // 1. 随机挑选 2~4 个角色来“刷到”这条朋友圈（人太多API会慢，随机抽取更有真实感）
+      const shuffled = [...contacts].sort(() => 0.5 - Math.random());
+      const viewers = shuffled.slice(0, Math.floor(Math.random() * 3) + 2);
 
-      // 纯真实调用API，没有保底，全靠AI的灵魂临场发挥！
+      // 把这几个角色的人设拼接起来
+      const viewersInfo = viewers.map(c => `- 姓名：${c.name}，人设：${c.persona||'普通朋友'}`).join('\n');
+
+      // 2. 给 AI 下达上帝视角的指令
+      const sysPrompt = `你是一个微信朋友圈生态模拟引擎。你的任务是模拟以下几个角色在刷到玩家朋友圈后的反应。
+玩家（弥洛）刚刚发了一条朋友圈，文案是：“${contentText||'[分享了一张图片]'}”。
+
+【当前刷到这条朋友圈的角色有】：
+${viewersInfo}
+
+【核心任务】：
+1. 严格根据每个角色的【人设】，决定他们是否会点赞、是否会评论。
+2. 有些高冷角色可能只看不评，有些话痨可能会秒回，有些傲娇可能会吐槽，如果不符合人设也可以完全不理。
+3. 为每个决定互动的角色生成一个模拟的“延迟时间”（毫秒，比如 3000 到 15000 之间），代表他们打字或看到的时间差。
+4. 评论必须极其符合人设，简短口语化，像真人在发微信。
+
+【必须严格输出 JSON 数组格式】（不要带任何markdown标记或其他废话）：
+[
+  {
+    "name": "角色名字",
+    "like": true或false,
+    "comment": "评论内容（如果不评论请留空字符串）",
+    "delay": 延迟毫秒数(例如: 5000)
+  }
+]`;
+
+      // 3. 呼叫 AI 上帝引擎
       const out = await callApi([
         { role: 'system', content: sysPrompt },
-        { role: 'user', content: '快去回复这条朋友圈！' }
+        { role: 'user', content: '请生成这几个角色的真实反应！' }
       ]);
 
-      // 解析 AI 真实的 JSON 回复
+      // 4. 解析 AI 返回的数组
       const cleaned = out.replace(/```json|```/g, '').trim();
-      const m2 = cleaned.match(/\{[\s\S]*\}/);
-      if (!m2) throw new Error("AI没有返回正确的JSON格式");
-      
-      const aiData = JSON.parse(m2[0]);
+      const m2 = cleaned.match(/\[[\s\S]*\]/);
+      if (!m2) return;
+      
+      const reactions = JSON.parse(m2[0]);
 
-      // 把 AI 绞尽脑汁想出来的真实评论，写入数据库
-      const ms = getMoments();
-      const target = ms.find(x => x.id === momentId);
-      if(target) {
-        if (!target.likes) target.likes = [];
-        if (!target.comments) target.comments = [];
-        
-        // 写入点赞和评论
-        if(aiData.like && !target.likes.includes(npc.name)) target.likes.push(npc.name);
-        if(aiData.comment) target.comments.push({ authorName: npc.name, text: aiData.comment });
-        
-        setMoments(ms); 
-        
-        // 如果老婆还在看朋友圈，屏幕立刻刷新出最新评论！
-        const momentsPage = document.getElementById('moments');
-        if(momentsPage && momentsPage.classList.contains('active')) {
-          renderMomentsFeed();
-        }
-      }
+      // 5. 根据 AI 设定的延迟时间，依次触发每个人的评论！
+      reactions.forEach(reaction => {
+        if (!reaction.like && !reaction.comment) return; // 不互动的直接跳过
+
+        setTimeout(() => {
+          const ms = getMoments();
+          const target = ms.find(x => x.id === momentId);
+          if (target) {
+            if (!target.likes) target.likes = [];
+            if (!target.comments) target.comments = [];
+
+            // 写入点赞
+            if (reaction.like && !target.likes.includes(reaction.name)) {
+              target.likes.push(reaction.name);
+            }
+            // 写入评论
+            if (reaction.comment) {
+              target.comments.push({ authorName: reaction.name, text: reaction.comment });
+            }
+
+            setMoments(ms);
+            
+            // 如果老婆还在看朋友圈，屏幕立刻刷新出最新评论！
+            const momentsPage = document.getElementById('moments');
+            if (momentsPage && momentsPage.classList.contains('active')) {
+              renderMomentsFeed();
+            }
+          }
+        }, reaction.delay || 3000); // 按照 AI 给的延迟时间弹出
+      });
+
     } catch(e) {
-      // 绝不造假！如果 API 断了或者报错，只在后台记录，朋友圈保持安静
-      console.log('真实的API请求失败了，咱们不弄虚作假:', e);
+      console.log('生态引擎运算失败:', e);
     }
   };
 
