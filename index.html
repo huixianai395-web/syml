@@ -830,9 +830,9 @@
       </div>
 
       <!-- 👇新增：朋友圈底部评论输入框👇 -->
-      <div id="momentsCommentBar" style="display:none; position:fixed; bottom:0; left:0; width:100%; padding:10px; background:#f7f7f7; border-top:1px solid #ddd; z-index:10000; align-items:center; gap:8px; padding-bottom:calc(10px + var(--safe-bottom));">
-        <input id="mCommentInput" style="flex:1; height:36px; border-radius:4px; border:none; padding:0 10px; outline:none; font-size:14px;" placeholder="评论...">
-        <button onclick="window._sendMomentComment()" style="background:#07c160; color:#fff; border:none; border-radius:4px; padding:0 15px; height:36px; font-weight:bold; font-size:14px;">发送</button>
+      <div id="momentsCommentBar" style="display:none; position:fixed; bottom:0; left:0; width:100%; padding:10px; background:#f7f7f7; border-top:1px solid #ddd; z-index:10000; align-items:center; gap:8px; padding-bottom:calc(10px + var(--safe-bottom)); box-sizing:border-box;">
+        <input id="mCommentInput" style="flex:1; height:36px; border-radius:4px; border:none; padding:0 10px; outline:none; font-size:16px;" placeholder="评论...">
+        <button onclick="window._sendMomentComment()" style="background:#07c160; color:#fff; border:none; border-radius:4px; padding:0 15px; height:36px; font-weight:bold; font-size:16px; flex-shrink:0;">发送</button>
       </div>
       <!-- 👆新增结束👆 -->
 
@@ -3745,7 +3745,34 @@ window._sendMomentComment = async function() {
     setTimeout(() => { window._replyMomentCommentAI(mid, targetNPC, text); }, 1500);
   }
 };
+// ================= 新增：处理老婆发朋友圈选照片的神经中枢 =================
+  let momentDraftImg = '';
+  const mImgFile = document.getElementById('momentImgFile');
+  if(mImgFile) {
+    mImgFile.addEventListener('change', async (e) => {
+      const f = e.target.files?.[0];
+      if(!f) return;
+      try {
+        // 调用咱们完美的压缩引擎
+        momentDraftImg = await compressImage(f);
+        document.getElementById('momentImgPreview').src = momentDraftImg;
+        document.getElementById('momentImgPreviewWrap').style.display = 'block';
+        document.getElementById('momentAddImgBtn').style.display = 'none';
+      } catch(err) { 
+        alert('图片处理失败：' + err.message); 
+      } finally { 
+        e.target.value = ''; 
+      }
+    });
+  }
 
+  // 点击右上角叉叉清除图片
+  window._clearMomentImg = function() {
+    momentDraftImg = '';
+    document.getElementById('momentImgPreview').src = '';
+    document.getElementById('momentImgPreviewWrap').style.display = 'none';
+    document.getElementById('momentAddImgBtn').style.display = 'grid';
+  };
 // ================= 老婆发朋友圈 =================
 window._publishMyMoment = function() {
   const text = $('momentInputText').value.trim();
