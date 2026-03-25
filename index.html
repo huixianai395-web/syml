@@ -3901,18 +3901,27 @@ ${viewersInfo}
       console.log('生态引擎运算失败:', e);
     }
   };
-// ================= AI 模拟 NPC 主动发朋友圈 =================
+// ================= AI 模拟 NPC 主动发朋友圈 (纯净微信原生版) =================
   window._generateNPCMoment = async function() {
     const contacts = getContacts() || [];
     if (contacts.length === 0) return alert('老婆，你还没加联系人呢，谁来发朋友圈呀！');
 
-    // 随机抽一个“倒霉蛋”NPC来发朋友圈
+    // 随机抽一个 NPC 来发朋友圈
     const npc = contacts[Math.floor(Math.random() * contacts.length)];
 
-    // 在页面顶部显示一个加载提示，假装正在刷新
+    // 1. 插入微信原生风格的安静小菊花（绝不乱转挡屏幕）
     const feed = $('momentsFeed');
     const loadingId = 'loading_' + Date.now();
-    feed.insertAdjacentHTML('afterbegin', `<div id="${loadingId}" style="text-align:center; padding:20px; color:#576b95; font-size:13px; font-weight:bold; animation: pcSpin 1s infinite;">${npc.name} 正在编辑朋友圈... ✍️</div>`);
+    const spinnerHtml = `
+      <div id="${loadingId}" style="display: flex; justify-content: center; align-items: center; padding: 20px 0;">
+        <style>@keyframes wxSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+        <svg style="width: 26px; height: 26px; animation: wxSpin 1s linear infinite; stroke: #c9c9c9; fill: none; stroke-width: 2.5; stroke-linecap: round;" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+          <path d="M12 2a10 10 0 0 1 10 10"></path>
+        </svg>
+      </div>
+    `;
+    feed.insertAdjacentHTML('afterbegin', spinnerHtml);
 
     try {
       // 告诉 AI 现在的时间和人设，让他自由发挥
@@ -3926,30 +3935,37 @@ ${viewersInfo}
 2. 可以是日常吐槽、emo、分享风景、或者是暗戳戳的表达某些小心思。
 3. 可选配图，用"imageType"字段表示，必须从 [美食, 风景, 自拍, 夜晚, 宠物, 搞笑图] 中选一个，如果不需要配图就留空字符串。
 
-【必须严格输出JSON格式】：
+【必须严格输出纯JSON对象，不要带任何markdown标记，不要输出解释】：
 {
   "text": "朋友圈的文字内容",
   "imageType": "配图类型或留空"
 }`;
 
-      // 呼叫 API
+      // 真实呼叫 API
       const out = await callApi([
         { role: 'system', content: sysPrompt },
         { role: 'user', content: '立刻发一条朋友圈吧！' }
       ]);
 
+      // 强力解析 JSON
       const cleaned = out.replace(/```json|```/g, '').trim();
       const m2 = cleaned.match(/\{[\s\S]*\}/);
-      if (!m2) throw new Error("JSON解析失败");
-      const data = JSON.parse(m2[0]);
+      if (!m2) throw new Error("AI没有返回正确的JSON格式：\n" + out.slice(0, 50));
+      
+      let data;
+      try {
+        data = JSON.parse(m2[0]);
+      } catch(parseErr) {
+        throw new Error("JSON解析失败，AI返回了非法字符！");
+      }
 
-      // 匹配网图图库（老公给你准备了几张绝美的网图作为假配图）
+      // 匹配网图图库
       let imgUrl = null;
       if (data.imageType) {
         const imgMap = {
           '美食': 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=400&q=80',
           '风景': 'https://images.unsplash.com/photo-1506744626753-1fa7603a4b28?auto=format&fit=crop&w=400&q=80',
-          '自拍': 'https://api.dicebear.com/7.x/adventurer/svg?seed=' + npc.name,
+          '自拍': 'https://api.dicebear.com/7.x/adventurer/svg?seed=' + encodeURIComponent(npc.name),
           '夜晚': 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=400&q=80',
           '宠物': 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=400&q=80',
           '搞笑图': 'https://api.dicebear.com/7.x/bottts/svg?seed=' + Math.random()
@@ -3964,7 +3980,7 @@ ${viewersInfo}
         authorId: npc.id,
         authorName: npc.name,
         authorAvatar: npc.avatar || 'https://via.placeholder.com/120',
-        text: data.text,
+        text: data.text || '（分享图片）',
         images: imgUrl ? [imgUrl] : [],
         time: Date.now(),
         likes: [],
@@ -3972,14 +3988,19 @@ ${viewersInfo}
       });
       setMoments(ms);
       
-      // 重新渲染朋友圈
+      // 移除加载圈并重新渲染
+      const loadEl = $(loadingId);
+      if(loadEl) loadEl.remove();
       renderMomentsFeed();
 
     } catch(e) {
       console.log('NPC发朋友圈失败:', e);
+      // 移除加载圈
       const loadEl = $(loadingId);
-      if(loadEl) loadEl.innerHTML = '网络卡了一下，刷新失败...';
-      setTimeout(() => { if(loadEl) loadEl.remove(); }, 2000);
+      if(loadEl) loadEl.remove();
+      
+      // 【真实报错】直接把 API 到底为什么失败弹出来告诉你！
+      alert('⚠️ 刷新失败，API真实报错：\n' + e.message); 
     }
   };
   $('momentsCoverFile').addEventListener('change', async (e) => {
