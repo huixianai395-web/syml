@@ -3802,99 +3802,7 @@ window._publishMyMoment = function() {
 
   setTimeout(() => { window._triggerMomentsAI(newId); }, 1500);
 };
- // ================= 1. 一键发朋友圈 (极省钱版：动态+评论一次性生成，独立生活感) =================
-window._generateNPCMoment = async function() {
-  const contacts = getContacts() || [];
-  if (contacts.length === 0) return alert('老婆，你还没加联系人呢！');
-
-  const shuffled = [...contacts].sort(() => 0.5 - Math.random());
-  const posters = shuffled.slice(0, Math.floor(Math.random() * 3) + 2);
-  
-  const chatsMap = getChats() || {};
-  const postersInfo = posters.map(c => {
-    const historyRaw = chatsMap[c.id] || [];
-    const recentChat = historyRaw.filter(m => m.text && !m.text.includes('<div')).slice(-4).map(m => `${m.role==='user'?'我':c.name}: ${m.text}`).join(' | ');
-    return `- 姓名：${c.name}\n  人设：${c.persona}\n  近期聊天记录：${recentChat ? recentChat : '无'}`;
-  }).join('\n\n');
-
-  const feed = $('momentsFeed');
-  const loadingId = 'loading_' + Date.now();
-  feed.insertAdjacentHTML('afterbegin', `<div id="${loadingId}" style="display:flex;justify-content:center;padding:20px;"><svg style="width:28px;height:28px;animation:pcSpin 1s linear infinite;stroke:#2f66d8;fill:none;stroke-width:2.5;"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg></div>`);
-
-  try {
-    // 【省钱核心】：让AI一次性把动态、路人点赞、路人评论、男主回复路人全写出来！
-    const sysPrompt = `你是一个极度真实的微信朋友圈生成引擎。请为以下几位角色生成此刻的朋友圈动态，以及他们路人朋友的评论互动。
-
-【角色信息与近期聊天状态】：
-${postersInfo}
-
-【核心指令（极其重要）】：
-1. 独立生活感：他们是活生生的人！有自己的工作、爱好、破事和七情六欲（喜怒哀乐、发疯、吐槽等）！【绝对不要】每一条都围着玩家转！
-2. 结合聊天：如果近期有聊天记录，可以偶尔（30%概率）顺着聊天话题暗戳戳发一条；如果没有，必须发独立的生活日常。
-3. 拒绝重复与刻板：话题要千奇百怪（如外卖难吃、堵车、打游戏连跪、买到假货、工作加班等），展现鲜活人设。
-4. 自带评论区：一次性把该动态下的【路人/损友评论】以及【角色的回复】写出来！但是不用每个人都回，根据人设回复，展现真实的社交圈。
-
-【必须严格输出纯 JSON 数组格式】：
-[
-  {
-    "name": "发布者名字",
-    "text": "朋友圈文案（换行用\\n）",
-    "imageType": "配图类型(风景/美食/萌宠/沙雕图/无)",
-    "timeOffset": 随机分钟数(1-60),
-    "likes": ["路人A", "损友B"],
-    "comments": [
-      {"authorName": "路人A", "text": "路人吐槽内容"},
-      {"authorName": "发布者名字", "replyTo": "路人A", "text": "发布者的怼人/回复"}
-    ]
-  }
-]`;
-
-    const out = await callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '请一次性生成真实、不围着玩家转的朋友圈动态及评论区互动！' }]);
-    const cleaned = out.replace(/```json|```/g, '').trim();
-    const dataArr = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
-    
-    const ms = getMoments();
-
-    dataArr.forEach(data => {
-      const npc = posters.find(c => c.name === data.name) || posters[0];
-      
-      let finalImg = null;
-      const rSeed = Math.floor(Math.random() * 999999);
-      if (data.imageType && data.imageType !== '无') {
-        if(data.imageType.includes('美食')) finalImg = `https://source.unsplash.com/random/400x400/?food,meal&sig=${rSeed}`;
-        else if(data.imageType.includes('风景')) finalImg = `https://picsum.photos/seed/${rSeed}/400/400`;
-        else if(data.imageType.includes('沙雕')) finalImg = `https://api.dicebear.com/7.x/bottts/svg?seed=${rSeed}`;
-        else if(data.imageType.includes('萌宠')) finalImg = `https://source.unsplash.com/random/400x400/?cat,dog&sig=${rSeed}`;
-        else finalImg = `https://picsum.photos/seed/${rSeed+1}/400/400`;
-      }
-
-      const newId = 'm_' + Date.now() + Math.floor(Math.random()*1000);
-      
-      ms.unshift({ 
-        id: newId, 
-        authorId: npc.id, 
-        authorName: npc.name, 
-        authorAvatar: npc.avatar || 'https://via.placeholder.com/120', 
-        text: data.text || '', 
-        images: finalImg ? [finalImg] : [], 
-        time: Date.now() - (data.timeOffset||0)*60000, 
-        likes: data.likes || [], 
-        comments: data.comments || [] 
-      });
-    });
-
-    ms.sort((a, b) => b.time - a.time);
-    setMoments(ms);
-    if($(loadingId)) $(loadingId).remove();
-    renderMomentsFeed();
-
-  } catch(e) {
-    if($(loadingId)) $(loadingId).remove();
-    alert('⚠️ 刷新失败：\n' + e.message); 
-  }
-};
-
-// ================= 4. 生态引擎 (必出路人甲 + 男主必回 + 视觉传达) =================
+// ================= 4. 生态引擎 (完美复刻截图：海量NPC + 超级修罗场) =================
   window._triggerMomentsAI = async function(momentId) {
     try {
       const ms = getMoments();
@@ -3907,42 +3815,57 @@ ${postersInfo}
         const contacts = getContacts() || [];
         if (contacts.length === 0) return;
         const viewersInfo = contacts.map(c => `- 姓名：${c.name}，人设：${c.persona}`).join('\n');
-        sysPrompt = `玩家（我）发了一条朋友圈："${target.text}"。
-请模拟以下几位男主（情敌关系）看到后的反应。
-【男主列表】：\n${viewersInfo}\n【要求】：以男主身份，争相给玩家点赞或评论！`;
+        
+        sysPrompt = `玩家（我）刚刚发了一条朋友圈："${target.text||'[分享了图片]'}"。
+请模拟这条朋友圈的评论区，打造一个【极其热闹、充满占有欲的超级修罗场】！
+
+【暗恋玩家的男主列表】：
+${viewersInfo}
+
+【核心任务（必须严格执行，字数要足！）】：
+1. 必须虚构 4~6 个玩家的【普通微信好友】（如：女闺蜜夸美貌、吃瓜群众、故意撩拨的男配角）先后排队评论。
+2. 男主们看到后，必须全部出动，争相点赞和评论！
+3. 【修罗场名场面】：男主们必须【亲自回复】那些撩拨玩家的虚构配角，进行霸道护妻、警告或互怼（例如："别乱排队"、"这条路堵了"、"不会做就安静点"等必须贴合根据人设来，活人感强一点）！
+4. 男主们也要直接给玩家留言，表现出极强的关心、占有欲和小心思或内卷抢着帮忙。
+5. 整个评论区的评论总数必须在 8 到 15 条之间，呈现出疯狂盖楼的真实微信感！`;
+
       } 
       else {
         const contacts = getContacts() || [];
         const npc = contacts.find(c => c.name === target.authorName) || {name: target.authorName, persona: '高冷'};
-        sysPrompt = `男主"${npc.name}"（人设：${npc.persona}）发了一条微信朋友圈："${target.text}"。
+
+        sysPrompt = `男主"${npc.name}"（人设：${npc.persona}）发了一条微信朋友圈："${target.text||'[分享了图片]'}"。
+请模拟他这条朋友圈的评论区互动，展现他真实的私人社交圈。
+
 【核心任务（必须执行）】：
-1. 虚构 1~2 个符合他身份的【路人微信好友】（如：大学室友、同事、教练、损友等，不要粉丝）来评论。
-2. 男主"${npc.name}"看到评论后，必须根据人设，【亲自回复】其中一个路人好友！
-3. 语气极度日常，像真人在发微信吐槽。绝对不能提玩家（我）。`;
+1. 必须虚构 3~4 个符合他身份的【专属微信好友】（如：大学室友、死党、同事、损友等）来排队吐槽或调侃他。
+2. 男主"${npc.name}"看到后，必须【亲自回复】其中至少 2 个路人好友！语气是熟人间的互怼、高冷或玩笑。
+3. 整个评论区总数必须在 5 到 8 条之间。
+4. 【绝对禁止】提其他男主！这是他的私人圈子！`;
       }
 
-      sysPrompt += `\n\n【必须严格输出 JSON 数组格式】：
+      sysPrompt += `\n\n【必须严格输出 JSON 数组格式】（不要带markdown）：
 [
   {
-    "name": "评论者名字(男主名 或 虚构的路人好友名)",
+    "name": "评论者名字(男主名 或 虚构的好友名)",
     "like": true或false,
-    "comment": "评论内容（不评留空）",
-    "replyTo": "回复给谁（直接评论留空；如果是男主回复路人，填路人的名字）",
-    "delay": 延迟毫秒数(1000到6000之间)
+    "comment": "评论内容（极度口语化、像真人在发微信）",
+    "replyTo": "回复给谁（直接评论留空；如果是男主回复别人，填那个人的名字）",
+    "delay": 延迟毫秒数(3000到15000之间，回复别人的延迟要设置得稍微长一点)
   }
 ]`;
 
       let apiMessages = [{ role: 'system', content: sysPrompt }];
-      if (target.authorId === 'me' && target.images && target.images.length > 0 && target.images[0].startsWith('data:image')) {
+      if (target.images && target.images.length > 0 && target.images[0].startsWith('data:image')) {
         apiMessages.push({
           role: 'user',
           content: [
-            { type: "text", text: `请仔细看我配的图片，评论必须紧扣图片细节！` },
+            { type: "text", text: `这是我发的朋友圈文案："${target.text||''}"。请仔细看我配的图片，评论必须紧扣图片细节！打造修罗场！` },
             { type: "image_url", image_url: { url: target.images[0] } }
           ]
         });
       } else {
-        apiMessages.push({ role: 'user', content: '请立刻生成真实的微信评论区互动，男主必须回复路人！' });
+        apiMessages.push({ role: 'user', content: '请立刻生成海量神仙评论！打造修罗场！' });
       }
 
       const out = await callApi(apiMessages);
@@ -3962,15 +3885,116 @@ ${postersInfo}
               t.likes.push(reaction.name);
             }
             if (reaction.comment) {
-              t.comments.push({ authorName: reaction.name, replyTo: reaction.replyTo || '', text: reaction.comment });
+              t.comments.push({ 
+                authorName: reaction.name, 
+                replyTo: reaction.replyTo || '', 
+                text: reaction.comment 
+              });
             }
             setMoments(currentMs);
             if ($('moments').classList.contains('active')) renderMomentsFeed();
           }
-        }, reaction.delay || 1500);
+        }, reaction.delay || 3000);
       });
     } catch(e) { console.log('生态引擎运算失败:', e); }
   };
+// ================= 6. 批量发朋友圈 (一次性生成动态+评论，省额度) =================
+window._generateNPCMoment = async function() {
+  const contacts = getContacts() || [];
+  if (contacts.length === 0) return alert('老婆，你还没加联系人呢！');
+
+  const shuffled = [...contacts].sort(() => 0.5 - Math.random());
+  const posters = shuffled.slice(0, Math.floor(Math.random() * 3) + 2);
+  
+  const chatsMap = getChats() || {};
+  const postersInfo = posters.map(c => {
+    const historyRaw = chatsMap[c.id] || [];
+    const recent = historyRaw
+      .filter(m => m.text && !m.text.includes('<div') && !m.text.startsWith('[img]') && !m.text.startsWith('[stk:') && !m.text.startsWith('[voice:'))
+      .slice(-30)
+      .map(m => `${m.role==='user'?'我':c.name}: ${m.text.slice(0,60)}`)
+      .join(' | ');
+    return `- 姓名：${c.name}\n  人设：${c.persona}\n  近期聊天摘要：${recent || '（无聊天记录）'}`;
+  }).join('\n\n');
+
+  const feed = $('momentsFeed');
+  const loadingId = 'loading_' + Date.now();
+  feed.insertAdjacentHTML('afterbegin', `<div id="${loadingId}" style="display:flex;justify-content:center;padding:20px;"><svg style="width:28px;height:28px;animation:pcSpin 1s linear infinite;stroke:#2f66d8;fill:none;stroke-width:2.5;"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg></div>`);
+
+  try {
+    const sysPrompt = `你是一个极度真实的微信朋友圈生成引擎。请为以下几位角色生成此刻的朋友圈动态，以及他们路人朋友的评论互动。
+
+【角色信息与近期聊天状态】：
+${postersInfo}
+
+【核心指令（极其重要，必须严格遵守）】：
+1. 他们是活生生的人，有自己的工作、朋友、爱好、情绪、小心思！人有七情六欲喜怒哀乐，什么都可以发！
+2. 发朋友圈的内容必须以【角色人设和真实日常生活】为主，绝大多数内容跟玩家无关：
+   - 工作状态（加班崩溃、开会烦躁、摸鱼快乐、项目搞定）
+   - 吃喝玩乐（外卖踩雷、奶茶推荐、打游戏连跪、馆子排队）
+   - 情绪发泄（堵车、天气烦、失眠、莫名其妙的emo）
+   - 无厘头废话（没意义但真人就是会发的那种）
+3. 如果有近期聊天摘要，可以偶尔（30%概率）顺着聊天话题暗戳戳发一条。
+4. 每个角色发的内容必须和上次截然不同，不能重复同类主题！
+5. 语气完全符合人设！有的话多有的就几个字，有的爱emoji有的一本正经，看人设来！
+6. 【一次性自带评论区】：把该动态下的路人/损友评论以及角色的回复一起写出来，根据人设决定回不回、怎么回。
+7. 换行用 "\\n"，双引号转义 "\\"。
+
+【必须严格输出纯 JSON 数组格式】：
+[
+  {
+    "name": "发布者名字",
+    "text": "朋友圈文案（换行用\\n）",
+    "imageType": "配图类型(风景/美食/萌宠/沙雕图/自拍/夜景/无)",
+    "timeOffset": 随机分钟数(0到120),
+    "likes": ["路人A", "损友B"],
+    "comments": [
+      {"authorName": "路人A", "text": "路人吐槽内容"},
+      {"authorName": "发布者名字", "replyTo": "路人A", "text": "发布者的怼人/回复"}
+    ]
+  }
+]`;
+
+    const out = await callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '请生成真实、各不相同、充满活人感的朋友圈动态及评论区！' }]);
+    const cleaned = out.replace(/```json|```/g, '').trim();
+    const dataArr = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
+    
+    const ms = getMoments();
+
+    dataArr.forEach(data => {
+      const npc = posters.find(c => c.name === data.name) || posters[0];
+      
+      let finalImg = null;
+      const rSeed = Math.floor(Math.random() * 999999);
+      if (data.imageType && data.imageType !== '无') {
+        if(data.imageType.includes('美食')) finalImg = `https://source.unsplash.com/random/400x400/?food,meal&sig=${rSeed}`;
+        else if(data.imageType.includes('风景')) finalImg = `https://picsum.photos/seed/${rSeed}/400/400`;
+        else if(data.imageType.includes('沙雕')) finalImg = `https://api.dicebear.com/7.x/bottts/svg?seed=${rSeed}`;
+        else if(data.imageType.includes('萌宠')) finalImg = `https://source.unsplash.com/random/400x400/?cat,dog&sig=${rSeed}`;
+        else if(data.imageType.includes('自拍')) finalImg = `https://source.unsplash.com/random/400x400/?portrait&sig=${rSeed}`;
+        else if(data.imageType.includes('夜景')) finalImg = `https://source.unsplash.com/random/400x400/?night,city&sig=${rSeed}`;
+        else finalImg = `https://picsum.photos/seed/${rSeed+1}/400/400`;
+      }
+
+      const newId = 'm_' + Date.now() + Math.floor(Math.random()*1000);
+      ms.unshift({ 
+        id: newId, authorId: npc.id, authorName: npc.name, authorAvatar: npc.avatar || 'https://via.placeholder.com/120', 
+        text: data.text || '', images: finalImg ? [finalImg] : [], time: Date.now() - (data.timeOffset||0)*60000, 
+        likes: data.likes || [], 
+        comments: data.comments || [] 
+      });
+    });
+
+    ms.sort((a, b) => b.time - a.time);
+    setMoments(ms);
+    if($(loadingId)) $(loadingId).remove();
+    renderMomentsFeed();
+
+  } catch(e) {
+    if($(loadingId)) $(loadingId).remove();
+    alert('⚠️ 刷新失败：\n' + e.message); 
+  }
+};
 // ================= 3. 玩家评论后，角色秒回！(互动完美保留) =================
 window._replyMomentCommentAI = async function(momentId, npcName, userText) {
   try {
