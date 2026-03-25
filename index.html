@@ -3778,7 +3778,38 @@ function syncCardFromAi(parts,chatId){
     setTimeout(() => { window._triggerMomentsAI(newId); }, 1500);
   };
 
-  // ================= 4. 生态引擎 (完美隔离男主与路人NPC) =================
+ // ================= 修复：老婆自己发朋友圈的终极函数 =================
+  window._publishMyMoment = function() {
+    const text = $('momentInputText').value.trim();
+    if (!text && typeof momentDraftImg === 'undefined' && !momentDraftImg) return alert('总得写点什么或者发张图吧，老婆！');
+   
+    const me = getMe();
+    const ms = getMoments();
+    const newId = 'm_' + Date.now();
+   
+    ms.unshift({
+      id: newId,
+      authorId: 'me',
+      authorName: me.name || '我',
+      authorAvatar: me.avatar || 'https://via.placeholder.com/120',
+      text: text,
+      images: (typeof momentDraftImg !== 'undefined' && momentDraftImg) ? [momentDraftImg] : [],
+      time: Date.now(),
+      likes: [],
+      comments: []
+    });
+   
+    setMoments(ms); 
+    $('publishMomentModal').classList.remove('active');
+    $('momentInputText').value = '';
+    if(window._clearMomentImg) window._clearMomentImg();
+    renderMomentsFeed(); 
+
+    // 发完之后，唤醒男主们来当舔狗！
+    setTimeout(() => { window._triggerMomentsAI(newId); }, 1500);
+  };
+
+  // ================= 4. 生态引擎 (真·微信私密社交圈版) =================
   window._triggerMomentsAI = async function(momentId) {
     try {
       const ms = getMoments();
@@ -3787,7 +3818,7 @@ function syncCardFromAi(parts,chatId){
 
       let sysPrompt = "";
 
-      // 【情境A】：如果是老婆(我)发的朋友圈
+      // 【情境A】：如果是老婆(我)发的朋友圈，男主们变身修罗场
       if (target.authorId === 'me') {
         const contacts = getContacts() || [];
         if (contacts.length === 0) return;
@@ -3800,31 +3831,39 @@ ${viewersInfo}
 【要求】：他们必须以男主的身份，争相给玩家点赞或评论！`;
 
       } 
-      // 【情境B】：如果是男主发的朋友圈
+      // 【情境B】：如果是男主发的朋友圈，他的【专属微信好友】评论 + 男主亲自回复！
       else {
-        sysPrompt = `男主“${target.authorName}”刚刚发了一条朋友圈：“${target.text||'[分享了图片]'}”。
-【核心任务】：请你虚构 1~3 个符合他身份的“背景路人甲”（例如：大学室友、经纪人、队友、亲戚等）来给他评论或点赞。
-【绝对禁止】：严禁使用其他男主的名字来评论！因为他们是情敌，绝不会互相点赞！`;
+        const contacts = getContacts() || [];
+        const npc = contacts.find(c => c.name === target.authorName) || {name: target.authorName, persona: '高冷'};
+
+        sysPrompt = `男主“${npc.name}”（人设：${npc.persona}）发了一条微信朋友圈：“${target.text||'[分享了图片]'}”。
+请模拟他这条微信朋友圈的评论区互动。
+【核心任务】：
+1. 这是私密微信朋友圈，不是微博！请虚构 1~2 个符合他身份的【微信私列好友】（例如：大学室友、经纪人、死党、同事、亲戚等，绝对不能是粉丝或陌生人）来给他评论或点赞。
+2. 男主“${npc.name}”看到这些好友的评论后，必须根据他的人设，【亲自回复】其中一个好友！
+3. 语气必须是熟人之间的微信吐槽或日常交流，极度生活化。
+4. 【绝对禁止】出现玩家（我）或其他男主的名字！只能是他自己的专属社交圈好友！`;
       }
 
       sysPrompt += `\n\n【必须严格输出 JSON 数组格式】（不要带markdown）：
 [
   {
-    "name": "互动者名字(男主名 或 虚构的路人甲名)",
+    "name": "评论者名字(男主名 或 虚构的好友名)",
     "like": true或false,
     "comment": "评论内容（不评留空，简短口语化）",
-    "delay": 延迟毫秒数(3000到10000之间)
+    "replyTo": "回复给谁（直接评论留空；如果是男主回复好友，填那个好友的名字）",
+    "delay": 延迟毫秒数(3000到12000之间，男主回复好友的延迟要设置得比好友长一点)
   }
 ]`;
 
       let userMsgContent = target.images && target.images.length > 0 
-        ? [{ type: "text", text: "请生成真实的评论反应！(请看上方附带的图片，结合图片吐槽！)" }, { type: "image_url", image_url: { url: target.images[0] } }]
-        : "请生成真实的评论反应！";
+        ? [{ type: "text", text: "请生成真实的微信互动！(请看上方附带的图片，结合图片吐槽！)" }, { type: "image_url", image_url: { url: target.images[0] } }]
+        : "请生成真实的微信评论互动！";
 
       const out = await callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: userMsgContent }]);
       const cleaned = out.replace(/```json|```/g, '').trim();
       const m2 = cleaned.match(/\[[\s\S]*\]/);
-      if (!m2) throw new Error("解析失败");
+      if (!m2) return;
       
       const reactions = JSON.parse(m2[0]);
 
@@ -3834,18 +3873,25 @@ ${viewersInfo}
           const currentMs = getMoments();
           const t = currentMs.find(x => x.id === momentId);
           if (t) {
-            if (reaction.like && !t.likes.includes(reaction.name)) t.likes.push(reaction.name);
-            if (reaction.comment) t.comments.push({ authorName: reaction.name, text: reaction.comment });
+            if (reaction.like && !t.likes.includes(reaction.name) && reaction.name !== target.authorName) {
+              t.likes.push(reaction.name);
+            }
+            if (reaction.comment) {
+              t.comments.push({ 
+                authorName: reaction.name, 
+                replyTo: reaction.replyTo || '', 
+                text: reaction.comment 
+              });
+            }
             setMoments(currentMs);
             if ($('moments').classList.contains('active')) renderMomentsFeed();
           }
         }, reaction.delay || 3000);
       });
-    } catch(e) { 
-      console.log('生态引擎运算失败:', e); 
-    }
+    } catch(e) { console.log('生态引擎运算失败:', e); }
   };
-  // ================= 5. NPC 针对老婆的评论回嘴 (盖楼) =================
+
+  // ================= 5. 玩家评论后，角色秒回！(针对人设自由回复) =================
   window._replyMomentCommentAI = async function(momentId, npcName, userText) {
     try {
       const contacts = getContacts();
@@ -3858,18 +3904,18 @@ ${viewersInfo}
       const me = getMe();
 
       const sysPrompt = `你现在是：${npc.name}。人设：${npc.persona}。
-当前是在一条朋友圈（发布者：${target.authorName}，内容：“${target.text}”）的评论区。
-玩家（${me.name||'我'}）刚刚回复了你的评论，对你说：“${userText}”。
-请你根据人设，立刻在评论区回怼/回复玩家。
+当前是在一条朋友圈（发布者：${target.authorName}，文案：“${target.text}”）的微信评论区。
+玩家（${me.name||'我'}）刚刚对你说：“${userText}”。
+请你根据人设，立刻在评论区回复玩家。语气要自然口语化，符合你的性格（傲娇/腹黑/温柔等），自由发挥，把玩家当做特别关注的人！
 
 【必须严格输出纯 JSON 对象格式】：
 {
-  "comment": "你的回复内容（口语化、简短，符合人设）"
+  "comment": "你的回复内容"
 }`;
 
       const out = await callApi([
         { role: 'system', content: sysPrompt },
-        { role: 'user', content: '快去回复玩家！' }
+        { role: 'user', content: '老婆评论你了，快去回她！' }
       ]);
 
       const cleaned = out.replace(/```json|```/g, '').trim();
