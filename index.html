@@ -846,7 +846,7 @@
       <!-- 顶部操作栏 -->
       <div style="height: calc(44px + var(--safe-top)); padding-top: var(--safe-top); display: flex; justify-content: space-between; align-items: center; padding-left: 15px; padding-right: 15px; background: #ededed; border-bottom: 1px solid #e5e5e5;">
         <span onclick="document.getElementById('publishMomentModal').classList.remove('active')" style="font-size: 16px; color: #191919; cursor: pointer;">取消</span>
-        <button class="btn p" id="sendMomentBtn" style="background: #07c160; color: #fff; border: none; padding: 6px 16px; border-radius: 4px; font-weight: bold; font-size: 14px;">发表</button>
+        <button class="btn p" onclick="window._publishMyMoment()" style="background: #07c160; color: #fff; border: none; padding: 6px 16px; border-radius: 4px; font-weight: bold; font-size: 14px;">发表</button>
       </div>
 
       <!-- 输入区 -->
@@ -3746,45 +3746,80 @@ function syncCardFromAi(parts,chatId){
       setTimeout(() => { window._replyMomentCommentAI(mid, targetNPC, text); }, 1500);
     }
   };
- // ================= 4. 生态引擎 (看图视觉版 + 强制保底互动) =================
+// ================= 修复：老婆自己发朋友圈的终极函数 =================
+  window._publishMyMoment = function() {
+    const text = $('momentInputText').value.trim();
+    // momentDraftImg 是之前存图片的变量
+    if (!text && typeof momentDraftImg === 'undefined' && !momentDraftImg) return alert('总得写点什么或者发张图吧，老婆！');
+   
+    const me = getMe();
+    const ms = getMoments();
+    const newId = 'm_' + Date.now();
+   
+    ms.unshift({
+      id: newId,
+      authorId: 'me',
+      authorName: me.name || '我',
+      authorAvatar: me.avatar || 'https://via.placeholder.com/120',
+      text: text,
+      images: (typeof momentDraftImg !== 'undefined' && momentDraftImg) ? [momentDraftImg] : [],
+      time: Date.now(),
+      likes: [],
+      comments: []
+    });
+   
+    setMoments(ms); 
+    $('publishMomentModal').classList.remove('active');
+    $('momentInputText').value = '';
+    if(window._clearMomentImg) window._clearMomentImg();
+    renderMomentsFeed(); 
+
+    // 发完之后，唤醒男主们来当舔狗！
+    setTimeout(() => { window._triggerMomentsAI(newId); }, 1500);
+  };
+
+  // ================= 4. 生态引擎 (完美隔离男主与路人NPC) =================
   window._triggerMomentsAI = async function(momentId) {
     try {
       const ms = getMoments();
       const target = ms.find(x => x.id === momentId);
       if(!target) return;
 
-      const contacts = getContacts() || [];
-      const viewersPool = contacts.filter(c => c.name !== target.authorName);
-      if (viewersPool.length === 0) return;
+      let sysPrompt = "";
 
-      const shuffled = [...viewersPool].sort(() => 0.5 - Math.random());
-      const viewers = shuffled.slice(0, Math.floor(Math.random() * 3) + 2);
-      const viewersInfo = viewers.map(c => `- 姓名：${c.name}，人设：${c.persona||'普通人'}`).join('\n');
-
-      const sysPrompt = `你是一个微信朋友圈生态模拟引擎。
-发布者（${target.authorName}）刚刚发了一条朋友圈，文案是：“${target.text||'[分享了图片]'}”。
-
-【当前刷到这条朋友圈的角色有】：
+      // 【情境A】：如果是老婆(我)发的朋友圈
+      if (target.authorId === 'me') {
+        const contacts = getContacts() || [];
+        if (contacts.length === 0) return;
+        const viewersInfo = contacts.map(c => `- 姓名：${c.name}，人设：${c.persona}`).join('\n');
+        
+        sysPrompt = `玩家（我）刚刚发了一条朋友圈：“${target.text||'[分享了图片]'}”。
+请模拟以下几位男主（情敌关系，不知道彼此存在）看到后的反应。
+【男主列表】：
 ${viewersInfo}
+【要求】：他们必须以男主的身份，争相给玩家点赞或评论！`;
 
-【核心任务】：
-1. 严格根据每个角色的【人设】，决定他们是否会点赞、是否会评论。
-2. 为每个决定互动的角色生成一个延迟时间（毫秒，3000到12000之间）。
-3. 评论必须符合人设，简短口语化，像真人在发微信。
+      } 
+      // 【情境B】：如果是男主发的朋友圈
+      else {
+        sysPrompt = `男主“${target.authorName}”刚刚发了一条朋友圈：“${target.text||'[分享了图片]'}”。
+【核心任务】：请你虚构 1~3 个符合他身份的“背景路人甲”（例如：大学室友、经纪人、队友、亲戚等）来给他评论或点赞。
+【绝对禁止】：严禁使用其他男主的名字来评论！因为他们是情敌，绝不会互相点赞！`;
+      }
 
-【必须严格输出 JSON 数组格式】（不要带markdown）：
+      sysPrompt += `\n\n【必须严格输出 JSON 数组格式】（不要带markdown）：
 [
   {
-    "name": "角色名字",
+    "name": "互动者名字(男主名 或 虚构的路人甲名)",
     "like": true或false,
-    "comment": "评论内容（不评留空）",
-    "delay": 延迟毫秒数
+    "comment": "评论内容（不评留空，简短口语化）",
+    "delay": 延迟毫秒数(3000到10000之间)
   }
 ]`;
 
       let userMsgContent = target.images && target.images.length > 0 
-        ? [{ type: "text", text: "请生成反应！(请务必看上方附带的图片，结合图片细节吐槽！)" }, { type: "image_url", image_url: { url: target.images[0] } }]
-        : "请生成这几个角色的真实反应！";
+        ? [{ type: "text", text: "请生成真实的评论反应！(请看上方附带的图片，结合图片吐槽！)" }, { type: "image_url", image_url: { url: target.images[0] } }]
+        : "请生成真实的评论反应！";
 
       const out = await callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: userMsgContent }]);
       const cleaned = out.replace(/```json|```/g, '').trim();
@@ -3807,21 +3842,7 @@ ${viewersInfo}
         }, reaction.delay || 3000);
       });
     } catch(e) { 
-      console.log('生态引擎运算失败，触发保底点赞:', e); 
-      // 【保底机制】：如果API卡了，强制让一个随机好友点赞，绝不冷场！
-      setTimeout(() => {
-        const ms2 = getMoments();
-        const t2 = ms2.find(x => x.id === momentId);
-        const contacts2 = getContacts() || [];
-        if(t2 && contacts2.length > 0) {
-          const randomC = contacts2[Math.floor(Math.random() * contacts2.length)];
-          if(randomC.name !== t2.authorName && !t2.likes.includes(randomC.name)) {
-            t2.likes.push(randomC.name);
-            setMoments(ms2);
-            if ($('moments').classList.contains('active')) renderMomentsFeed();
-          }
-        }
-      }, 4000);
+      console.log('生态引擎运算失败:', e); 
     }
   };
   // ================= 5. NPC 针对老婆的评论回嘴 (盖楼) =================
