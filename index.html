@@ -3631,7 +3631,7 @@ function syncCardFromAi(parts,chatId){
   function renderMomentsFeed() {
     const feed = $('momentsFeed');
     const data = getMoments();
-    
+    
     if (!data.length) {
       feed.innerHTML = '<div style="text-align:center; padding:50px 0; color:#999; font-size:14px;">朋友圈空空如也，快点击右上角相机发一条吧！</div>';
       return;
@@ -3640,9 +3640,10 @@ function syncCardFromAi(parts,chatId){
     feed.innerHTML = data.map(m => {
       let imgHtml = '';
       if (m.images && m.images.length > 0) {
-        imgHtml = `<div class="m-imgs" data-count="${m.images.length}">${m.images.map(img => `<img src="${img}">`).join('')}</div>`;
+        // 加了 onerror，如果图片加载失败，直接悄悄隐藏，假装没发图！
+        imgHtml = `<div class="m-imgs" data-count="${m.images.length}">${m.images.map(img => `<img src="${img}" onerror="this.style.display='none'">`).join('')}</div>`;
       }
-      
+      
       let cmtHtml = '';
       if ((m.likes && m.likes.length) || (m.comments && m.comments.length)) {
         let likesStr = (m.likes && m.likes.length) ? `<div class="m-like-list"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> ${m.likes.join(', ')}</div>` : '';
@@ -3650,12 +3651,15 @@ function syncCardFromAi(parts,chatId){
         cmtHtml = `<div class="m-comments">${likesStr}${cmtsStr}</div>`;
       }
 
+      // 完美修复爆代码 \n 的问题！
+      let safeText = esc(m.text).replace(/\\n/g, '<br>').replace(/\n/g, '<br>');
+
       return `
         <div class="m-post">
           <img class="m-avatar" src="${m.authorAvatar}">
           <div class="m-content">
             <div class="m-name">${esc(m.authorName)}</div>
-            <div class="m-text">${esc(m.text).replace(/\n/g, '<br>')}</div>
+            <div class="m-text">${safeText}</div>
             ${imgHtml}
             <div class="m-meta">
               <span class="m-time">${window._formatTimeAgo(m.time)}</span>
@@ -3901,15 +3905,16 @@ ${viewersInfo}
       console.log('生态引擎运算失败:', e);
     }
   };
-// ================= AI 模拟 NPC 主动发朋友圈 (纯净微信原生版) =================
+// ================= AI 模拟 NPC 主动发朋友圈 (纯净微信批量刷新版) =================
   window._generateNPCMoment = async function() {
     const contacts = getContacts() || [];
     if (contacts.length === 0) return alert('老婆，你还没加联系人呢，谁来发朋友圈呀！');
 
-    // 随机抽一个 NPC 来发朋友圈
-    const npc = contacts[Math.floor(Math.random() * contacts.length)];
+    // 1. 随机挑选 2~4 个角色来同时发朋友圈（模拟真实的下拉刷新流）
+    const shuffled = [...contacts].sort(() => 0.5 - Math.random());
+    const posters = shuffled.slice(0, Math.floor(Math.random() * 3) + 2);
+    const postersInfo = posters.map(c => `- 姓名：${c.name}，人设：${c.persona||'普通人'}`).join('\n');
 
-    // 1. 插入微信原生风格的安静小菊花（绝不乱转挡屏幕）
     const feed = $('momentsFeed');
     const loadingId = 'loading_' + Date.now();
     const spinnerHtml = `
@@ -3924,85 +3929,19 @@ ${viewersInfo}
     feed.insertAdjacentHTML('afterbegin', spinnerHtml);
 
     try {
-      // 告诉 AI 现在的时间和人设，让他自由发挥
-      const sysPrompt = `你是一个微信朋友圈模拟器。请根据以下角色的人设，生成一条他/她此刻会发的朋友圈。
-角色名称：${npc.name}
-角色人设：${npc.persona || '普通人'}
+      const sysPrompt = `你是一个微信朋友圈模拟器。请根据以下几位角色的人设，分别生成他们此刻发的一条朋友圈动态。
 当前时间：${getSysTimeStr()}
 
+【本次发朋友圈的角色列表】：
+${postersInfo}
+
 【核心要求】：
-1. 绝对符合人设，语气自然，像活人在发微信。
-2. 可以是日常吐槽、emo、分享风景、或者是暗戳戳的表达某些小心思。
+1. 绝对符合每个人的人设，语气自然，像活人在发微信。
+2. 可以是日常吐槽、emo、分享风景、或者是暗戳戳的小心思。
 3. 可选配图，用"imageType"字段表示，必须从 [美食, 风景, 自拍, 夜晚, 宠物, 搞笑图] 中选一个，如果不需要配图就留空字符串。
+4. 文字如果需要换行，请直接输出实际的换行，不要输出\\n。
 
-【必须严格输出纯JSON对象，不要带任何markdown标记，不要输出解释】：
-{
-  "text": "朋友圈的文字内容",
-  "imageType": "配图类型或留空"
-}`;
-
-      // 真实呼叫 API
-      const out = await callApi([
-        { role: 'system', content: sysPrompt },
-        { role: 'user', content: '立刻发一条朋友圈吧！' }
-      ]);
-
-      // 强力解析 JSON
-      const cleaned = out.replace(/```json|```/g, '').trim();
-      const m2 = cleaned.match(/\{[\s\S]*\}/);
-      if (!m2) throw new Error("AI没有返回正确的JSON格式：\n" + out.slice(0, 50));
-      
-      let data;
-      try {
-        data = JSON.parse(m2[0]);
-      } catch(parseErr) {
-        throw new Error("JSON解析失败，AI返回了非法字符！");
-      }
-
-      // 匹配网图图库
-      let imgUrl = null;
-      if (data.imageType) {
-        const imgMap = {
-          '美食': 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=400&q=80',
-          '风景': 'https://images.unsplash.com/photo-1506744626753-1fa7603a4b28?auto=format&fit=crop&w=400&q=80',
-          '自拍': 'https://api.dicebear.com/7.x/adventurer/svg?seed=' + encodeURIComponent(npc.name),
-          '夜晚': 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=400&q=80',
-          '宠物': 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=400&q=80',
-          '搞笑图': 'https://api.dicebear.com/7.x/bottts/svg?seed=' + Math.random()
-        };
-        imgUrl = imgMap[data.imageType] || imgMap['风景'];
-      }
-
-      // 把这条 NPC 的朋友圈塞进数据库
-      const ms = getMoments();
-      ms.unshift({
-        id: 'm_' + Date.now(),
-        authorId: npc.id,
-        authorName: npc.name,
-        authorAvatar: npc.avatar || 'https://via.placeholder.com/120',
-        text: data.text || '（分享图片）',
-        images: imgUrl ? [imgUrl] : [],
-        time: Date.now(),
-        likes: [],
-        comments: []
-      });
-      setMoments(ms);
-      
-      // 移除加载圈并重新渲染
-      const loadEl = $(loadingId);
-      if(loadEl) loadEl.remove();
-      renderMomentsFeed();
-
-    } catch(e) {
-      console.log('NPC发朋友圈失败:', e);
-      // 移除加载圈
-      const loadEl = $(loadingId);
-      if(loadEl) loadEl.remove();
-      
-      // 【真实报错】直接把 API 到底为什么失败弹出来告诉你！
-      alert('⚠️ 刷新失败，API真实报错：\n' + e.message); 
-    }
-  };
+【必须严格输出JSON数组格式，不要带任何markdown标记
   $('momentsCoverFile').addEventListener('change', async (e) => {
     const f = e.target.files?.[0];
     if(!f) return;
