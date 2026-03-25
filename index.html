@@ -3709,6 +3709,19 @@ function syncCardFromAi(parts,chatId){
   // 点击屏幕其他地方隐藏评论框
   $('momentsScroll').addEventListener('touchstart', () => { $('momentsCommentBar').style.display = 'none'; }, {passive: true});
 
+  // ================= 3. 唤起评论与发送 (修复没人理老婆的Bug) =================
+  window._openMomentComment = function(momentId, replyToName = '') {
+    window._currentCmtMid = momentId;
+    window._currentCmtReplyTo = replyToName;
+    const bar = $('momentsCommentBar');
+    const inp = $('mCommentInput');
+    bar.style.display = 'flex';
+    inp.placeholder = replyToName ? `回复 ${replyToName}:` : '评论...';
+    inp.focus();
+  };
+
+  $('momentsScroll').addEventListener('touchstart', () => { $('momentsCommentBar').style.display = 'none'; }, {passive: true});
+
   window._sendMomentComment = async function() {
     const text = $('mCommentInput').value.trim();
     if(!text) return;
@@ -3726,13 +3739,14 @@ function syncCardFromAi(parts,chatId){
     $('mCommentInput').value = '';
     renderMomentsFeed();
 
-    // 【盖楼互动】如果老婆回复了某个NPC，唤醒那个NPC来回嘴！
-    if(replyTo && replyTo !== (me.name || '我')) {
-      setTimeout(() => { window._replyMomentCommentAI(mid, replyTo, text); }, 1000);
+    // 【终极修复】：如果 replyTo 是空（说明老婆直接点了..评论），那就强行把目标设为发朋友圈的那个NPC！
+    const targetNPC = replyTo ? replyTo : target.authorName;
+    
+    if(targetNPC !== (me.name || '我')) {
+      setTimeout(() => { window._replyMomentCommentAI(mid, targetNPC, text); }, 1500);
     }
   };
-
-  // ================= 4. 生态引擎 (看图视觉版 + NPC互相评论) =================
+ // ================= 4. 生态引擎 (看图视觉版 + 强制保底互动) =================
   window._triggerMomentsAI = async function(momentId) {
     try {
       const ms = getMoments();
@@ -3740,7 +3754,6 @@ function syncCardFromAi(parts,chatId){
       if(!target) return;
 
       const contacts = getContacts() || [];
-      // 过滤掉发朋友圈的人自己
       const viewersPool = contacts.filter(c => c.name !== target.authorName);
       if (viewersPool.length === 0) return;
 
@@ -3756,8 +3769,8 @@ ${viewersInfo}
 
 【核心任务】：
 1. 严格根据每个角色的【人设】，决定他们是否会点赞、是否会评论。
-2. 为每个决定互动的角色生成一个延迟时间（毫秒，3000到15000之间）。
-3. 评论必须符合人设，简短口语化。
+2. 为每个决定互动的角色生成一个延迟时间（毫秒，3000到12000之间）。
+3. 评论必须符合人设，简短口语化，像真人在发微信。
 
 【必须严格输出 JSON 数组格式】（不要带markdown）：
 [
@@ -3769,25 +3782,15 @@ ${viewersInfo}
   }
 ]`;
 
-      // 【视觉多模态注入】如果带了图片，把图片发给 AI！
-      let userMsgContent;
-      if (target.images && target.images.length > 0) {
-        userMsgContent = [
-          { type: "text", text: "请生成这几个角色的真实反应！(请务必睁大眼睛看上方附带的图片，结合图片里的视觉细节进行吐槽或评论！)" },
-          { type: "image_url", image_url: { url: target.images[0] } }
-        ];
-      } else {
-        userMsgContent = "请生成这几个角色的真实反应！";
-      }
+      let userMsgContent = target.images && target.images.length > 0 
+        ? [{ type: "text", text: "请生成反应！(请务必看上方附带的图片，结合图片细节吐槽！)" }, { type: "image_url", image_url: { url: target.images[0] } }]
+        : "请生成这几个角色的真实反应！";
 
-      const out = await callApi([
-        { role: 'system', content: sysPrompt },
-        { role: 'user', content: userMsgContent }
-      ]);
-
+      const out = await callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: userMsgContent }]);
       const cleaned = out.replace(/```json|```/g, '').trim();
       const m2 = cleaned.match(/\[[\s\S]*\]/);
-      if (!m2) return;
+      if (!m2) throw new Error("解析失败");
+      
       const reactions = JSON.parse(m2[0]);
 
       reactions.forEach(reaction => {
@@ -3803,9 +3806,24 @@ ${viewersInfo}
           }
         }, reaction.delay || 3000);
       });
-    } catch(e) { console.log('生态引擎运算失败:', e); }
+    } catch(e) { 
+      console.log('生态引擎运算失败，触发保底点赞:', e); 
+      // 【保底机制】：如果API卡了，强制让一个随机好友点赞，绝不冷场！
+      setTimeout(() => {
+        const ms2 = getMoments();
+        const t2 = ms2.find(x => x.id === momentId);
+        const contacts2 = getContacts() || [];
+        if(t2 && contacts2.length > 0) {
+          const randomC = contacts2[Math.floor(Math.random() * contacts2.length)];
+          if(randomC.name !== t2.authorName && !t2.likes.includes(randomC.name)) {
+            t2.likes.push(randomC.name);
+            setMoments(ms2);
+            if ($('moments').classList.contains('active')) renderMomentsFeed();
+          }
+        }
+      }, 4000);
+    }
   };
-
   // ================= 5. NPC 针对老婆的评论回嘴 (盖楼) =================
   window._replyMomentCommentAI = async function(momentId, npcName, userText) {
     try {
@@ -3850,34 +3868,43 @@ ${viewersInfo}
     } catch(e) { console.log('盖楼回复失败:', e); }
   };
 
-  // ================= 6. 批量发朋友圈 (发完后触发 NPC 互相评论) =================
+ // ================= 6. 批量发朋友圈 (防复读 + 强制配图 + 丝滑转圈) =================
   window._generateNPCMoment = async function() {
     const contacts = getContacts() || [];
     if (contacts.length === 0) return alert('老婆，你还没加联系人呢，谁来发朋友圈呀！');
 
     const shuffled = [...contacts].sort(() => 0.5 - Math.random());
     const posters = shuffled.slice(0, Math.floor(Math.random() * 3) + 2);
-    const topics = ['刚刚发生的无厘头小事', '工作/学习上的吐槽', '分享美食', '深夜感悟', '爱好日常', '简短废话', '暗戳戳吃醋'];
+    
+    // 【防复读神器】：获取最近发过的 5 条朋友圈内容，警告 AI 绝对不许重复！
+    const recentMs = getMoments().slice(0, 5).map(m => m.text).join(' | ');
+
+    const topics = ['刚刚发生的离谱小事', '工作/学习上的无语瞬间', '发一张好看的自拍', '深夜emo感悟', '买到了奇怪的东西', '一句无厘头的废话', '暗戳戳表达占有欲'];
     const postersInfo = posters.map(c => `- 姓名：${c.name} \n  人设：${c.persona} \n  ★强制主题：【${topics[Math.floor(Math.random() * topics.length)]}】`).join('\n\n');
 
     const feed = $('momentsFeed');
     const loadingId = 'loading_' + Date.now();
-    feed.insertAdjacentHTML('afterbegin', `<div id="${loadingId}" style="display:flex;justify-content:center;padding:20px;"><svg style="width:26px;height:26px;animation:wxSpin 1s linear infinite;stroke:#c9c9c9;fill:none;stroke-width:2.5;"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg></div>`);
+    // 【修复转圈】：使用已经定义好的 pcSpin 动画，绝对丝滑！
+    feed.insertAdjacentHTML('afterbegin', `<div id="${loadingId}" style="display:flex;justify-content:center;padding:20px;"><svg style="width:28px;height:28px;animation:pcSpin 1s linear infinite;stroke:#2f66d8;fill:none;stroke-width:2.5;"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg></div>`);
 
     try {
       const sysPrompt = `你是一个微信朋友圈模拟器。请根据以下几位角色的人设和【强制要求的主题】，分别生成他们此刻发的一条朋友圈动态。
 【本次发朋友圈的角色及主题分配】：
 ${postersInfo}
 
+【防复读绝对警告！！！】：
+刚才朋友圈里已经发过这些内容了：“${recentMs}”。
+你本次生成的内容，【绝对禁止】再提到类似的狗、食物、或事情！必须发全新的、完全无关的事情！违者系统崩溃！
+
 【核心要求】：
-1. 绝对符合人设，语气自然。极度口语化，严禁像写日记。
-2. 严禁以时间词开头！严禁撞梗！
-3. 换行必须用 "\\n"，双引号转义 "\\""。
+1. 绝对符合人设，语气极度口语化，严禁像写日记。
+2. 【强制配图】："imageType" 字段必须从 [美食, 风景, 自拍, 夜晚, 宠物, 搞笑图] 中选一个最合适的，【绝对不许留空】！
+3. 严禁以时间词开头！严禁撞梗！换行必须用 "\\n"，双引号转义 "\\""。
 
 【必须严格输出纯 JSON 数组格式】：
-[{"name": "名字", "text": "内容", "imageType": "配图类型或留空", "timeOffset": 随机分钟数}]`;
+[{"name": "名字", "text": "内容", "imageType": "配图类型", "timeOffset": 随机分钟数}]`;
 
-      const out = await callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '生成朋友圈！' }]);
+      const out = await callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '生成朋友圈！必须配图！绝对不许重复！' }]);
       const cleaned = out.replace(/```json|```/g, '').trim();
       const dataArr = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
       
@@ -3886,20 +3913,25 @@ ${postersInfo}
 
       dataArr.forEach(data => {
         const npc = posters.find(c => c.name === data.name) || posters[0];
-        let imgUrl = null;
-        if (data.imageType) {
-          const imgMap = {
-            '美食': 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=400&q=80',
-            '风景': 'https://images.unsplash.com/photo-1506744626753-1fa7603a4b28?auto=format&fit=crop&w=400&q=80',
-            '自拍': 'https://api.dicebear.com/7.x/adventurer/svg?seed=' + encodeURIComponent(npc.name),
-            '夜晚': 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=400&q=80',
-            '宠物': 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=400&q=80'
-          };
-          imgUrl = imgMap[data.imageType] || imgMap['风景'];
-        }
+        
+        // 强制图库匹配
+        const imgMap = {
+          '美食': 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=400&q=80',
+          '风景': 'https://images.unsplash.com/photo-1506744626753-1fa7603a4b28?auto=format&fit=crop&w=400&q=80',
+          '自拍': 'https://api.dicebear.com/7.x/adventurer/svg?seed=' + encodeURIComponent(npc.name + Date.now()),
+          '夜晚': 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=400&q=80',
+          '宠物': 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=400&q=80',
+          '搞笑图': 'https://api.dicebear.com/7.x/bottts/svg?seed=' + Math.random()
+        };
+        // 哪怕AI乱写，也强行给一张风景图保底
+        let finalImg = imgMap[data.imageType] || imgMap['风景'];
+
         const newId = 'm_' + Date.now() + Math.floor(Math.random()*1000);
         newIds.push(newId);
-        ms.unshift({ id: newId, authorId: npc.id, authorName: npc.name, authorAvatar: npc.avatar || 'https://via.placeholder.com/120', text: data.text || '', images: imgUrl ? [imgUrl] : [], time: Date.now() - (data.timeOffset||0)*60000, likes: [], comments: [] });
+        ms.unshift({ 
+          id: newId, authorId: npc.id, authorName: npc.name, authorAvatar: npc.avatar || 'https://via.placeholder.com/120', 
+          text: data.text || '', images: [finalImg], time: Date.now() - (data.timeOffset||0)*60000, likes: [], comments: [] 
+        });
       });
 
       ms.sort((a, b) => b.time - a.time);
@@ -3907,8 +3939,8 @@ ${postersInfo}
       if($(loadingId)) $(loadingId).remove();
       renderMomentsFeed();
 
-      // 【核心生态联动】：NPC发完朋友圈后，触发其他NPC去给他点赞评论！
-      setTimeout(() => { newIds.forEach(id => window._triggerMomentsAI(id)); }, 2000);
+      // 发完后触发 NPC 互相评论
+      setTimeout(() => { newIds.forEach(id => window._triggerMomentsAI(id)); }, 2500);
 
     } catch(e) {
       if($(loadingId)) $(loadingId).remove();
