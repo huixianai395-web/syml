@@ -3894,92 +3894,83 @@ ${postersInfo}
   }
 };
 
-// ================= 2. 老婆发朋友圈触发的生态 (视觉传达 + 极致雄竞修罗场) =================
-window._triggerMomentsAI = async function(momentId) {
-  try {
-    const ms = getMoments();
-    const target = ms.find(x => x.id === momentId);
-    if(!target || target.authorId !== 'me') return; // 只处理“我”发的朋友圈
+// ================= 4. 生态引擎 (必出路人甲 + 男主必回 + 视觉传达) =================
+  window._triggerMomentsAI = async function(momentId) {
+    try {
+      const ms = getMoments();
+      const target = ms.find(x => x.id === momentId);
+      if(!target) return;
 
-    const contacts = getContacts() || [];
-    if (contacts.length === 0) return;
-    const viewersInfo = contacts.map(c => `- 姓名：${c.name}，人设：${c.persona}`).join('\n');
-    
-    // 【核心修复：注入“雄竞、吃瓜、修罗场”灵魂剧本！】
-    const sysPrompt = `玩家（我）刚刚发了一条朋友圈。
-【男主列表】：\n${viewersInfo}\n
-【剧本与人设要求（极度重要）】：
-这是一场朋友圈的“大型修罗场”与“狂欢”！你需要导演一出 8~12条评论的连续剧大戏！
-1. 角色分配：
-   - 男主们：极其双标！对玩家极度关注、占有欲强、争宠、严重内卷（雄竞）。会根据自身人设（霸总、毒舌、傲娇、绿茶小狗等）疯狂表现自己，抢夺玩家的注意力。
-   - 虚构路人（NPC）：随机生成 2~3 个路人（如林骁、周妍、许嘉树等朋友/同事），他们负责前排起哄、抢答、或者吃瓜，然后被男主们无情拆台或回怼。
-2. 互动剧本（必须发生）：
-   - 男主之间必须互相拉踩、阴阳怪气、争风吃醋。
-   - 男主会回复路人，宣誓主权或让他们闭嘴（比如路人说“我会”，男主回“你连锅都端不稳边去”；路人夸好看，男主回“看一眼得了”）。
-   - 路人最后可能会发“惹不起我撤了”、“评论区太卷了”之类的吃瓜感言。
-3. 语气：极度口语化，带点网络梗，像真实的微信损友群，短句为主！绝对不要像AI！
-4. 视觉关联：仔细看玩家发的配图和文案！所有的争执、表现和互怼，必须围绕【图片里的细节】和【文案】展开！
+      let sysPrompt = "";
 
-【必须严格输出 JSON 数组格式】：
+      if (target.authorId === 'me') {
+        const contacts = getContacts() || [];
+        if (contacts.length === 0) return;
+        const viewersInfo = contacts.map(c => `- 姓名：${c.name}，人设：${c.persona}`).join('\n');
+        sysPrompt = `玩家（我）发了一条朋友圈："${target.text}"。
+请模拟以下几位男主（情敌关系）看到后的反应。
+【男主列表】：\n${viewersInfo}\n【要求】：以男主身份，争相给玩家点赞或评论！`;
+      } 
+      else {
+        const contacts = getContacts() || [];
+        const npc = contacts.find(c => c.name === target.authorName) || {name: target.authorName, persona: '高冷'};
+        sysPrompt = `男主"${npc.name}"（人设：${npc.persona}）发了一条微信朋友圈："${target.text}"。
+【核心任务（必须执行）】：
+1. 虚构 1~2 个符合他身份的【路人微信好友】（如：大学室友、同事、教练、损友等，不要粉丝）来评论。
+2. 男主"${npc.name}"看到评论后，必须根据人设，【亲自回复】其中一个路人好友！
+3. 语气极度日常，像真人在发微信吐槽。绝对不能提玩家（我）。`;
+      }
+
+      sysPrompt += `\n\n【必须严格输出 JSON 数组格式】：
 [
   {
-    "name": "评论者名字(男主名 或 虚构路人名)",
+    "name": "评论者名字(男主名 或 虚构的路人好友名)",
     "like": true或false,
     "comment": "评论内容（不评留空）",
-    "replyTo": "回复给谁（直接评论留空；如果是回复某人的评论，填那个人的名字）",
-    "delay": 模拟真实回复的时间差（填 1000, 3000, 5000, 7000 这种递增的毫秒数，制造先后顺序）
+    "replyTo": "回复给谁（直接评论留空；如果是男主回复路人，填路人的名字）",
+    "delay": 延迟毫秒数(1000到6000之间)
   }
 ]`;
 
-    let apiMessages = [{ role: 'system', content: sysPrompt }];
+      let apiMessages = [{ role: 'system', content: sysPrompt }];
+      if (target.authorId === 'me' && target.images && target.images.length > 0 && target.images[0].startsWith('data:image')) {
+        apiMessages.push({
+          role: 'user',
+          content: [
+            { type: "text", text: `请仔细看我配的图片，评论必须紧扣图片细节！` },
+            { type: "image_url", image_url: { url: target.images[0] } }
+          ]
+        });
+      } else {
+        apiMessages.push({ role: 'user', content: '请立刻生成真实的微信评论区互动，男主必须回复路人！' });
+      }
 
-    // 【视觉传达】：如果有照片，传给 GPT-4o 识别！
-    if (target.images && target.images.length > 0 && target.images[0].startsWith('data:image')) {
-      apiMessages.push({
-        role: 'user',
-        content: [
-          { type: "text", text: `这是我发的朋友圈文案：“${target.text}”。请仔细看我配的图片！你们的修罗场互怼必须紧扣图片里的细节！` },
-          { type: "image_url", image_url: { url: target.images[0] } }
-        ]
+      const out = await callApi(apiMessages);
+      const cleaned = out.replace(/```json|```/g, '').trim();
+      const m2 = cleaned.match(/\[[\s\S]*\]/);
+      if (!m2) return;
+      
+      const reactions = JSON.parse(m2[0]);
+
+      reactions.forEach(reaction => {
+        if (!reaction.like && !reaction.comment) return;
+        setTimeout(() => {
+          const currentMs = getMoments();
+          const t = currentMs.find(x => x.id === momentId);
+          if (t) {
+            if (reaction.like && !t.likes.includes(reaction.name) && reaction.name !== target.authorName) {
+              t.likes.push(reaction.name);
+            }
+            if (reaction.comment) {
+              t.comments.push({ authorName: reaction.name, replyTo: reaction.replyTo || '', text: reaction.comment });
+            }
+            setMoments(currentMs);
+            if ($('moments').classList.contains('active')) renderMomentsFeed();
+          }
+        }, reaction.delay || 1500);
       });
-    } else {
-      apiMessages.push({ role: 'user', content: `我的朋友圈文案：“${target.text}”。快来评论区卷起来吧！` });
-    }
-
-    const out = await callApi(apiMessages);
-    const cleaned = out.replace(/```json|```/g, '').trim();
-    const m2 = cleaned.match(/\[[\s\S]*\]/);
-    if (!m2) return;
-    
-    const reactions = JSON.parse(m2[0]);
-
-    // 强制按时间顺序渲染，制造“正在激烈讨论”的视觉效果
-    reactions.forEach((reaction, index) => {
-      if (!reaction.like && !reaction.comment) return;
-      // 如果 AI 没有给递增的 delay，我们强行给它算一个递增的延迟，保证评论一句句弹出来
-      const delayTime = reaction.delay > 500 ? reaction.delay : (index * 2000 + 1500); 
-
-      setTimeout(() => {
-        const currentMs = getMoments();
-        const t = currentMs.find(x => x.id === momentId);
-        if (t) {
-          if (reaction.like && !t.likes.includes(reaction.name) && reaction.name !== target.authorName) {
-            t.likes.push(reaction.name);
-          }
-          if (reaction.comment) {
-            t.comments.push({ 
-              authorName: reaction.name, 
-              replyTo: reaction.replyTo || '', 
-              text: reaction.comment 
-            });
-          }
-          setMoments(currentMs);
-          if ($('moments').classList.contains('active')) renderMomentsFeed();
-        }
-      }, delayTime);
-    });
-  } catch(e) { console.log('视觉修罗场引擎运算失败:', e); }
-};
+    } catch(e) { console.log('生态引擎运算失败:', e); }
+  };
 // ================= 3. 玩家评论后，角色秒回！(互动完美保留) =================
 window._replyMomentCommentAI = async function(momentId, npcName, userText) {
   try {
