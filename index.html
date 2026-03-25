@@ -3832,7 +3832,7 @@ ${postersInfo}
 1. 独立生活感：他们是活生生的人！有自己的工作、爱好、破事和七情六欲（喜怒哀乐、发疯、吐槽等）！【绝对不要】每一条都围着玩家转！
 2. 结合聊天：如果近期有聊天记录，可以偶尔（30%概率）顺着聊天话题暗戳戳发一条；如果没有，必须发独立的生活日常。
 3. 拒绝重复与刻板：话题要千奇百怪（如外卖难吃、堵车、打游戏连跪、买到假货、工作加班等），展现鲜活人设。
-4. 自带评论区：一次性把该动态下的【路人/损友评论】以及【角色的回复】写出来！展现真实的社交圈。
+4. 自带评论区：一次性把该动态下的【路人/损友评论】以及【角色的回复】写出来！但是不用每个人都回，根据人设回复，展现真实的社交圈。
 
 【必须严格输出纯 JSON 数组格式】：
 [
@@ -3894,7 +3894,7 @@ ${postersInfo}
   }
 };
 
-// ================= 2. 老婆发朋友圈触发的生态 (视觉传达 + 路人互怼修罗场) =================
+// ================= 2. 老婆发朋友圈触发的生态 (视觉传达 + 极致雄竞修罗场) =================
 window._triggerMomentsAI = async function(momentId) {
   try {
     const ms = getMoments();
@@ -3905,22 +3905,29 @@ window._triggerMomentsAI = async function(momentId) {
     if (contacts.length === 0) return;
     const viewersInfo = contacts.map(c => `- 姓名：${c.name}，人设：${c.persona}`).join('\n');
     
-    // 【核心修复】：强烈要求加入路人，并且男主必须互相回复/怼路人，制造修罗场！
-    const sysPrompt = `玩家（我）发了一条朋友圈。
+    // 【核心修复：注入“雄竞、吃瓜、修罗场”灵魂剧本！】
+    const sysPrompt = `玩家（我）刚刚发了一条朋友圈。
 【男主列表】：\n${viewersInfo}\n
-【核心要求】：
-1. 必须有男主来点赞或评论（争风吃醋、关心、吐槽等）。
-2. 必须虚构 1~2 个玩家的【路人微信好友】（比如闺蜜、同事、路人甲等）也来评论。
-3. 重点：男主们看到路人的评论，或者看到其他男主的评论，可以在评论区【互相回复 / 互怼】（使用 replyTo 字段）！制造真实的社交修罗场氛围！
+【剧本与人设要求（极度重要）】：
+这是一场朋友圈的“大型修罗场”与“狂欢”！你需要导演一出 8~12条评论的连续剧大戏！
+1. 角色分配：
+   - 男主们：极其双标！对玩家极度关注、占有欲强、争宠、严重内卷（雄竞）。会根据自身人设（霸总、毒舌、傲娇、绿茶小狗等）疯狂表现自己，抢夺玩家的注意力。
+   - 虚构路人（NPC）：随机生成 2~3 个路人（如林骁、周妍、许嘉树等朋友/同事），他们负责前排起哄、抢答、或者吃瓜，然后被男主们无情拆台或回怼。
+2. 互动剧本（必须发生）：
+   - 男主之间必须互相拉踩、阴阳怪气、争风吃醋。
+   - 男主会回复路人，宣誓主权或让他们闭嘴（比如路人说“我会”，男主回“你连锅都端不稳边去”；路人夸好看，男主回“看一眼得了”）。
+   - 路人最后可能会发“惹不起我撤了”、“评论区太卷了”之类的吃瓜感言。
+3. 语气：极度口语化，带点网络梗，像真实的微信损友群，短句为主！绝对不要像AI！
+4. 视觉关联：仔细看玩家发的配图和文案！所有的争执、表现和互怼，必须围绕【图片里的细节】和【文案】展开！
 
 【必须严格输出 JSON 数组格式】：
 [
   {
-    "name": "评论者名字(男主名 或 虚构的路人名)",
+    "name": "评论者名字(男主名 或 虚构路人名)",
     "like": true或false,
     "comment": "评论内容（不评留空）",
     "replyTo": "回复给谁（直接评论留空；如果是回复某人的评论，填那个人的名字）",
-    "delay": 1500
+    "delay": 模拟真实回复的时间差（填 1000, 3000, 5000, 7000 这种递增的毫秒数，制造先后顺序）
   }
 ]`;
 
@@ -3931,12 +3938,12 @@ window._triggerMomentsAI = async function(momentId) {
       apiMessages.push({
         role: 'user',
         content: [
-          { type: "text", text: `这是我发的朋友圈文案：“${target.text}”。请仔细看我配的图片！评论必须紧扣图片里的细节（夸照片、吐槽背景、或注意到了什么小细节）！` },
+          { type: "text", text: `这是我发的朋友圈文案：“${target.text}”。请仔细看我配的图片！你们的修罗场互怼必须紧扣图片里的细节！` },
           { type: "image_url", image_url: { url: target.images[0] } }
         ]
       });
     } else {
-      apiMessages.push({ role: 'user', content: `我的朋友圈文案：“${target.text}”` });
+      apiMessages.push({ role: 'user', content: `我的朋友圈文案：“${target.text}”。快来评论区卷起来吧！` });
     }
 
     const out = await callApi(apiMessages);
@@ -3946,17 +3953,19 @@ window._triggerMomentsAI = async function(momentId) {
     
     const reactions = JSON.parse(m2[0]);
 
-    reactions.forEach(reaction => {
+    // 强制按时间顺序渲染，制造“正在激烈讨论”的视觉效果
+    reactions.forEach((reaction, index) => {
       if (!reaction.like && !reaction.comment) return;
+      // 如果 AI 没有给递增的 delay，我们强行给它算一个递增的延迟，保证评论一句句弹出来
+      const delayTime = reaction.delay > 500 ? reaction.delay : (index * 2000 + 1500); 
+
       setTimeout(() => {
         const currentMs = getMoments();
         const t = currentMs.find(x => x.id === momentId);
         if (t) {
-          // 处理点赞
           if (reaction.like && !t.likes.includes(reaction.name) && reaction.name !== target.authorName) {
             t.likes.push(reaction.name);
           }
-          // 处理评论和互相回复
           if (reaction.comment) {
             t.comments.push({ 
               authorName: reaction.name, 
@@ -3967,11 +3976,10 @@ window._triggerMomentsAI = async function(momentId) {
           setMoments(currentMs);
           if ($('moments').classList.contains('active')) renderMomentsFeed();
         }
-      }, reaction.delay || 1500);
+      }, delayTime);
     });
-  } catch(e) { console.log('视觉生态引擎运算失败:', e); }
+  } catch(e) { console.log('视觉修罗场引擎运算失败:', e); }
 };
-
 // ================= 3. 玩家评论后，角色秒回！(互动完美保留) =================
 window._replyMomentCommentAI = async function(momentId, npcName, userText) {
   try {
