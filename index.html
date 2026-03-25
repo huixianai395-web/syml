@@ -3905,23 +3905,30 @@ ${viewersInfo}
       console.log('生态引擎运算失败:', e);
     }
   };
-// ================= AI 模拟 NPC 主动发朋友圈 (纯净微信批量刷新 + 防重复灵感版) =================
+// ================= AI 模拟 NPC 主动发朋友圈 (带真实冷却时间防刷版) =================
+  // 记录上一次成功刷新的时间
+  window._lastMomentRefreshTime = window._lastMomentRefreshTime || 0;
+
   window._generateNPCMoment = async function() {
+    const now = Date.now();
+    // 【核心机制】：如果距离上次刷新不到 60 秒，直接温柔提示，不呼叫 API！
+    if (now - window._lastMomentRefreshTime < 60000) {
+      return alert('👀 朋友圈暂时没有新动态哦，朋友们都在忙呢，过一两分钟再来刷刷看吧~');
+    }
+
     const contacts = getContacts() || [];
-    if (contacts.length === 0) return alert('老婆，你还没加联系人呢，谁来发朋友圈呀！');
+    if (contacts.length === 0) return alert('老婆，你还没加联系人呢！');
 
-    // 1. 随机挑选 2~4 个角色来同时发朋友圈
+    // 每次随机出 1~2 条动态（细水长流，绝不掏空 API 钱包）
     const shuffled = [...contacts].sort(() => 0.5 - Math.random());
-    const posters = shuffled.slice(0, Math.floor(Math.random() * 3) + 2);
+    const posters = shuffled.slice(0, Math.floor(Math.random() * 2) + 1); 
 
-    // 【核心升级】：准备一个“灵感扭蛋机”，强迫 AI 发完全不同的话题！
     const topics = [
       '刚刚发生的无厘头小事', '工作/学习上的狠狠吐槽', '分享一顿美食或一杯喝的',
       '突然的emo或深夜感悟', '运动、游戏或爱好日常', '买到了奇怪的东西',
       '极其简短的废话（比如“饿了”“好困”“无语”）', '暗戳戳地表达对某人的思念或吃醋'
     ];
 
-    // 给每个被选中的角色，强行分配一个不同的话题
     const postersInfo = posters.map(c => {
       const randomTopic = topics[Math.floor(Math.random() * topics.length)];
       return `- 姓名：${c.name} \n  人设：${c.persona||'普通人'} \n  ★强制要求的主题：【${randomTopic}】`;
@@ -3947,13 +3954,12 @@ ${viewersInfo}
 【本次发朋友圈的角色及主题分配】：
 ${postersInfo}
 
-【核心要求（必须严格遵守）】：
+【核心要求】：
 1. 绝对符合每个人的人设，语气自然，像活人在发微信。
-2. 极度口语化、碎片化！可以是几个字，也可以是两三行，但【严禁像写日记或作文】。
-3. 【防同质化警告】：严禁以“今天下午”、“上午”、“刚刚”等时间词开头！每个人必须有独特的切入点！
-4. 【防串联警告】：这几个人是独立发朋友圈的，严禁让他们撞梗！（比如绝不能两个人都提到同一条狗、同一种饮料或同一件事）。
-5. 配图用"imageType"字段，必须从 [美食, 风景, 自拍, 夜晚, 宠物, 搞笑图] 中选，如果不适合配图就坚决留空！
-6. 换行必须用 "\\n"，绝不能在JSON里直接按回车！字符串里如有双引号必须转义 "\\""！
+2. 极度口语化、碎片化！【防同质化警告】：严禁以“今天下午”、“上午”、“刚刚”等时间词开头！
+3. 【防串联警告】：这几个人是独立发朋友圈的，严禁让他们撞梗！
+4. 配图用"imageType"字段，必须从 [美食, 风景, 自拍, 夜晚, 宠物, 搞笑图] 中选，如果不适合配图坚决留空。
+5. 换行必须用 "\\n"，绝不能在JSON里直接按回车！如果有双引号必须转义 "\\""！
 
 【必须严格输出纯 JSON 数组格式，不要输出多余解释】：
 [
@@ -3961,7 +3967,7 @@ ${postersInfo}
     "name": "角色A的名字",
     "text": "朋友圈文字内容（必须符合分配给他的主题）",
     "imageType": "配图类型或留空",
-    "timeOffset": 随机的分钟数(如 2 表示2分钟前)
+    "timeOffset": 随机分钟数(如 2 表示2分钟前)
   }
 ]`;
 
@@ -3972,14 +3978,13 @@ ${postersInfo}
 
       const cleaned = out.replace(/```json|```/g, '').trim();
       const m2 = cleaned.match(/\[[\s\S]*\]/);
-      if (!m2) throw new Error("AI没有返回正确的JSON数组格式\n" + out.slice(0, 50));
+      if (!m2) throw new Error("AI格式错误");
       
       const dataArr = JSON.parse(m2[0]);
       const ms = getMoments();
 
       dataArr.forEach(data => {
         const npc = posters.find(c => c.name === data.name) || posters[0];
-        
         let imgUrl = null;
         if (data.imageType) {
           const imgMap = {
@@ -3994,7 +3999,6 @@ ${postersInfo}
         }
 
         const offset = (data.timeOffset || Math.floor(Math.random() * 45)) * 60 * 1000;
-        
         ms.unshift({
           id: 'm_' + Date.now() + Math.floor(Math.random()*1000),
           authorId: npc.id,
@@ -4008,10 +4012,12 @@ ${postersInfo}
         });
       });
 
-      // 按时间重新排序，确保最新的在最上面
       ms.sort((a, b) => b.time - a.time);
       setMoments(ms);
       
+      // 成功后，记录这次刷新的时间！
+      window._lastMomentRefreshTime = Date.now();
+
       const loadEl = $(loadingId);
       if(loadEl) loadEl.remove();
       renderMomentsFeed();
