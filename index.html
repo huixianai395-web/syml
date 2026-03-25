@@ -3905,7 +3905,7 @@ ${viewersInfo}
       console.log('生态引擎运算失败:', e);
     }
   };
-// ================= AI 模拟 NPC 主动发朋友圈 (纯净微信批量刷新版) =================
+// ================= AI 模拟 NPC 主动发朋友圈 (纯净微信批量刷新 + 防重复灵感版) =================
   window._generateNPCMoment = async function() {
     const contacts = getContacts() || [];
     if (contacts.length === 0) return alert('老婆，你还没加联系人呢，谁来发朋友圈呀！');
@@ -3913,7 +3913,19 @@ ${viewersInfo}
     // 1. 随机挑选 2~4 个角色来同时发朋友圈
     const shuffled = [...contacts].sort(() => 0.5 - Math.random());
     const posters = shuffled.slice(0, Math.floor(Math.random() * 3) + 2);
-    const postersInfo = posters.map(c => `- 姓名：${c.name}，人设：${c.persona||'普通人'}`).join('\n');
+
+    // 【核心升级】：准备一个“灵感扭蛋机”，强迫 AI 发完全不同的话题！
+    const topics = [
+      '刚刚发生的无厘头小事', '工作/学习上的狠狠吐槽', '分享一顿美食或一杯喝的',
+      '突然的emo或深夜感悟', '运动、游戏或爱好日常', '买到了奇怪的东西',
+      '极其简短的废话（比如“饿了”“好困”“无语”）', '暗戳戳地表达对某人的思念或吃醋'
+    ];
+
+    // 给每个被选中的角色，强行分配一个不同的话题
+    const postersInfo = posters.map(c => {
+      const randomTopic = topics[Math.floor(Math.random() * topics.length)];
+      return `- 姓名：${c.name} \n  人设：${c.persona||'普通人'} \n  ★强制要求的主题：【${randomTopic}】`;
+    }).join('\n\n');
 
     const feed = $('momentsFeed');
     const loadingId = 'loading_' + Date.now();
@@ -3929,28 +3941,30 @@ ${viewersInfo}
     feed.insertAdjacentHTML('afterbegin', spinnerHtml);
 
     try {
-      const sysPrompt = `你是一个微信朋友圈模拟器。请根据以下几位角色的人设，分别生成他们此刻发的一条朋友圈动态。
+      const sysPrompt = `你是一个微信朋友圈模拟器。请根据以下几位角色的人设和【强制要求的主题】，分别生成他们此刻发的一条朋友圈动态。
 当前时间：${getSysTimeStr()}
 
-【本次发朋友圈的角色列表】：
+【本次发朋友圈的角色及主题分配】：
 ${postersInfo}
 
-【核心要求】：
+【核心要求（必须严格遵守）】：
 1. 绝对符合每个人的人设，语气自然，像活人在发微信。
-2. 可以是日常吐槽、emo、分享风景、或者是暗戳戳的小心思。
-3. 可选配图，用"imageType"字段表示，必须从 [美食, 风景, 自拍, 夜晚, 宠物, 搞笑图] 中选一个，如果不需要配图就留空字符串。
-4. 【致命警告】：文字如果需要换行，必须使用 "\\n" 来表示！绝对禁止在 JSON 字符串里直接按回车换行！
-5. 【致命警告】：文字内部如果有双引号，必须使用 "\\\"" 进行转义！
+2. 极度口语化、碎片化！可以是几个字，也可以是两三行，但【严禁像写日记或作文】。
+3. 【防同质化警告】：严禁以“今天下午”、“上午”、“刚刚”等时间词开头！每个人必须有独特的切入点！
+4. 【防串联警告】：这几个人是独立发朋友圈的，严禁让他们撞梗！（比如绝不能两个人都提到同一条狗、同一种饮料或同一件事）。
+5. 配图用"imageType"字段，必须从 [美食, 风景, 自拍, 夜晚, 宠物, 搞笑图] 中选，如果不适合配图就坚决留空！
+6. 换行必须用 "\\n"，绝不能在JSON里直接按回车！字符串里如有双引号必须转义 "\\""！
 
-【必须严格输出纯 JSON 数组格式，不要带任何 markdown 标记，不要输出多余解释】：
+【必须严格输出纯 JSON 数组格式，不要输出多余解释】：
 [
   {
     "name": "角色A的名字",
-    "text": "朋友圈文字内容（换行请用\\n）",
+    "text": "朋友圈文字内容（必须符合分配给他的主题）",
     "imageType": "配图类型或留空",
-    "timeOffset": 随机的分钟数(比如 2 表示2分钟前，15表示15分钟前)
+    "timeOffset": 随机的分钟数(如 2 表示2分钟前)
   }
 ]`;
+
       const out = await callApi([
         { role: 'system', content: sysPrompt },
         { role: 'user', content: '立刻生成这几个人的朋友圈！' }
@@ -3964,7 +3978,6 @@ ${postersInfo}
       const ms = getMoments();
 
       dataArr.forEach(data => {
-        // 找到对应的 NPC
         const npc = posters.find(c => c.name === data.name) || posters[0];
         
         let imgUrl = null;
@@ -3980,7 +3993,6 @@ ${postersInfo}
           imgUrl = imgMap[data.imageType] || imgMap['风景'];
         }
 
-        // 计算时间差
         const offset = (data.timeOffset || Math.floor(Math.random() * 45)) * 60 * 1000;
         
         ms.unshift({
