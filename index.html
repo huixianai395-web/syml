@@ -3803,87 +3803,87 @@ window._publishMyMoment = function() {
   setTimeout(() => { window._triggerMomentsAI(newId); }, 1500);
 };
 // ================= 4. 生态引擎 (完美复刻截图：海量NPC + 超级修罗场) =================
-window._triggerMomentsAI = async function(momentId) {
-try {
-const ms = getMoments();
-const target = ms.find(x => x.id === momentId);
-if(!target) return;
+  window._triggerMomentsAI = async function(momentId) {
+    try {
+      const ms = getMoments();
+      const target = ms.find(x => x.id === momentId);
+      if(!target) return;
 
-  let sysPrompt = "";
+      let sysPrompt = "";
 
-  if (target.authorId === 'me') {
-    const contacts = getContacts() || [];
-    if (contacts.length === 0) return;
-    const viewersInfo = contacts.map(c => `- 姓名：${c.name}，人设：${c.persona}`).join('\n');
-    
-    sysPrompt = `玩家（我）刚刚发了一条朋友圈："${target.text||'[分享了图片]'}"。
-
-
+      if (target.authorId === 'me') {
+        const contacts = getContacts() || [];
+        if (contacts.length === 0) return;
+        const viewersInfo = contacts.map(c => `- 姓名：${c.name}，人设：${c.persona}`).join('\n');
+        
+        sysPrompt = `玩家（我）刚刚发了一条朋友圈："${target.text||'[分享了图片]'}”。
 请模拟这条朋友圈的评论区，打造一个【极其热闹、充满占有欲的超级修罗场】！
 【暗恋玩家的男主列表】：
 ${viewersInfo}
 【核心任务（必须严格执行，字数要足！）】：
-	1.	必须虚构 4~6 个玩家的【普通微信好友】（如：女闺蜜夸美貌、吃瓜群众、故意撩拨的男配角）和男主们穿插排队评论回复。
-	2.	男主们看到后，根据贴合人设进行赞和评论！
-	3.	【修罗场名场面】：男主们必须【亲自回复】那些撩拨玩家的虚构配角，进行霸道护妻、警告或互怼（例如：“别乱排队”、“这条路堵了”、“不会做就安静点”等必须贴合根据人设来，活人感强一点）！
-	4.	男主们也要直接给玩家留言，表现出极强的关心、占有欲和小心思或内卷抢着帮忙。
-	5.	整个评论区的评论总数必须在 8 到 14条之间，呈现出疯狂盖楼的真实微信感！`;
-}
-else {
-const contacts = getContacts() || [];
-const npc = contacts.find(c => c.name === target.authorName) || {name: target.authorName, persona: ‘高冷’};
+1. 必须虚构 4~6 个玩家的【普通微信好友】（如：女闺蜜夸美貌、吃瓜群众、故意撩拨的男配角）和男主们穿插排队评论回复。
+2. 男主们看到后，根据贴合人设进行赞和评论！
+3. 【修罗场名场面】：男主们必须【亲自回复】那些撩拨玩家的虚构配角，进行霸道护妻、警告或互怼（例如：“别乱排队”、“这条路堵了”、“不会做就安静点”等必须贴合根据人设来，活人感强一点）！
+4. 男主们也要直接给玩家留言，表现出极强的关心、占有欲和小心思或内卷抢着帮忙。
+5. 整个评论区的评论总数必须在 8 到 14条之间，呈现出疯狂盖楼的真实微信感！`;
+      }
+      else {
+        const contacts = getContacts() || [];
+        const npc = contacts.find(c => c.name === target.authorName) || {name: target.authorName, persona: '高冷'};
 
- sysPrompt = `男主"${npc.name}"（人设：${npc.persona}）发了一条微信朋友圈："${target.text||'[分享了图片]'}"。
-
-
+        sysPrompt = `男主"${npc.name}"（人设：${npc.persona}）发了一条微信朋友圈："${target.text||'[分享了图片]'}”。
 请模拟他这条朋友圈的评论区互动，展现他真实的私人社交圈。
 【核心任务（必须执行）】：
-	1.	必须虚构 3~4 个符合他身份的【专属微信好友】（如：大学室友、死党、同事、损友等）来排队吐槽或调侃他。
-	2.	男主”${npc.name}“看到后，必须【亲自回复】其中至少 2 个路人好友！语气是熟人间的互怼、高冷或玩笑。
-	3.	整个评论区总数必须在 5 到 8 条之间。
-	4.	【绝对禁止】提其他男主！这是他的私人圈子！`;
-}
-sysPrompt += \n\n【必须严格输出 JSON 数组格式】（不要带markdown）： [   { "name": "评论者名字(男主名 或 虚构的好友名)", "like": true或false, "comment": "评论内容（极度口语化、像真人在发微信）", "replyTo": "回复给谁（直接评论留空；如果是男主回复别人，填那个人的名字）", "delay": 延迟毫秒数(3000到15000之间，回复别人的延迟要设置得稍微长一点)   } ];
-let apiMessages = [{ role: ‘system’, content: sysPrompt }];
-if (target.images && target.images.length > 0 && target.images[0].startsWith(‘data:image’)) {
-apiMessages.push({
-role: ‘user’,
-content: [
-{ type: “text”, text: 这是我发的朋友圈文案："${target.text||''}"。请仔细看我配的图片，评论必须紧扣图片细节！打造修罗场！ },
-{ type: “image_url”, image_url: { url: target.images[0] } }
-]
-});
-} else {
-apiMessages.push({ role: ‘user’, content: ‘请立刻生成海量神仙评论！打造修罗场！’ });
-}
-const out = await callApi(apiMessages);
-const cleaned = out.replace(/json|/g, ‘’).trim();
-const m2 = cleaned.match(/[[\s\S]*]/);
-if (!m2) return;
-const reactions = JSON.parse(m2[0]);
-reactions.forEach(reaction => {
-if (!reaction.like && !reaction.comment) return;
-setTimeout(() => {
-const currentMs = getMoments();
-const t = currentMs.find(x => x.id === momentId);
-if (t) {
-if (reaction.like && !t.likes.includes(reaction.name) && reaction.name !== target.authorName) {
-t.likes.push(reaction.name);
-}
-if (reaction.comment) {
-t.comments.push({
-authorName: reaction.name,
-replyTo: reaction.replyTo || ‘’,
-text: reaction.comment
-});
-}
-setMoments(currentMs);
-if ($(‘moments’).classList.contains(‘active’)) renderMomentsFeed();
-}
-}, reaction.delay || 3000);
-});
-} catch(e) { console.log(‘生态引擎运算失败:’, e); }
-};
+1. 必须虚构 3~4 个符合他身份的【专属微信好友】（如：大学室友、死党、同事、损友等）来排队吐槽或调侃他。
+2. 男主"${npc.name}"看到后，必须【亲自回复】其中至少 2 个路人好友！语气是熟人间的互怼、高冷或玩笑。
+3. 整个评论区总数必须在 5 到 8 条之间。
+4. 【绝对禁止】提其他男主！这是他的私人圈子！`;
+      }
+
+      sysPrompt += `\n\n【必须严格输出 JSON 数组格式】（不要带markdown）：\n[\n  {\n    "name": "评论者名字(男主名 或 虚构的好友名)",\n    "like": true或false,\n    "comment": "评论内容（极度口语化、像真人在发微信）",\n    "replyTo": "回复给谁（直接评论留空；如果是男主回复别人，填那个人的名字）",\n    "delay": 延迟毫秒数(3000到15000之间，回复别人的延迟要设置得稍微长一点)\n  }\n]`;
+
+      let apiMessages = [{ role: 'system', content: sysPrompt }];
+      if (target.images && target.images.length > 0 && target.images[0].startsWith('data:image')) {
+        apiMessages.push({
+          role: 'user',
+          content: [
+            { type: "text", text: `这是我发的朋友圈文案："${target.text||''}"。请仔细看我配的图片，评论必须紧扣图片细节！打造修罗场！` },
+            { type: "image_url", image_url: { url: target.images[0] } }
+          ]
+        });
+      } else {
+        apiMessages.push({ role: 'user', content: '请立刻生成海量神仙评论！打造修罗场！' });
+      }
+
+      const out = await callApi(apiMessages);
+      const cleaned = out.replace(/```json|```/g, '').trim();
+      const m2 = cleaned.match(/\[[\s\S]*\]/);
+      if (!m2) return;
+      const reactions = JSON.parse(m2[0]);
+
+      reactions.forEach(reaction => {
+        if (!reaction.like && !reaction.comment) return;
+        setTimeout(() => {
+          const currentMs = getMoments();
+          const t = currentMs.find(x => x.id === momentId);
+          if (t) {
+            if (reaction.like && !t.likes.includes(reaction.name) && reaction.name !== target.authorName) {
+              t.likes.push(reaction.name);
+            }
+            if (reaction.comment) {
+              t.comments.push({
+                authorName: reaction.name,
+                replyTo: reaction.replyTo || '',
+                text: reaction.comment
+              });
+            }
+            setMoments(currentMs);
+            if ($('moments').classList.contains('active')) renderMomentsFeed();
+          }
+        }, reaction.delay || 3000);
+      });
+    } catch(e) { console.log('生态引擎运算失败:', e); }
+  };
 // ================= 6. 批量发朋友圈 (一次性生成动态+评论，省额度) =================
 window._generateNPCMoment = async function() {
   const contacts = getContacts() || [];
