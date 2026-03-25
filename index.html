@@ -3910,7 +3910,7 @@ ${viewersInfo}
     const contacts = getContacts() || [];
     if (contacts.length === 0) return alert('老婆，你还没加联系人呢，谁来发朋友圈呀！');
 
-    // 1. 随机挑选 2~4 个角色来同时发朋友圈（模拟真实的下拉刷新流）
+    // 1. 随机挑选 2~4 个角色来同时发朋友圈
     const shuffled = [...contacts].sort(() => 0.5 - Math.random());
     const posters = shuffled.slice(0, Math.floor(Math.random() * 3) + 2);
     const postersInfo = posters.map(c => `- 姓名：${c.name}，人设：${c.persona||'普通人'}`).join('\n');
@@ -3941,7 +3941,76 @@ ${postersInfo}
 3. 可选配图，用"imageType"字段表示，必须从 [美食, 风景, 自拍, 夜晚, 宠物, 搞笑图] 中选一个，如果不需要配图就留空字符串。
 4. 文字如果需要换行，请直接输出实际的换行，不要输出\\n。
 
-【必须严格输出JSON数组格式，不要带任何markdown标记
+【必须严格输出JSON数组格式，不要带任何markdown标记，不要输出多余解释】：
+[
+  {
+    "name": "角色A的名字",
+    "text": "朋友圈文字内容",
+    "imageType": "配图类型或留空",
+    "timeOffset": 随机的分钟数(比如 2 表示2分钟前，15表示15分钟前)
+  }
+]`;
+
+      const out = await callApi([
+        { role: 'system', content: sysPrompt },
+        { role: 'user', content: '立刻生成这几个人的朋友圈！' }
+      ]);
+
+      const cleaned = out.replace(/```json|```/g, '').trim();
+      const m2 = cleaned.match(/\[[\s\S]*\]/);
+      if (!m2) throw new Error("AI没有返回正确的JSON数组格式\n" + out.slice(0, 50));
+      
+      const dataArr = JSON.parse(m2[0]);
+      const ms = getMoments();
+
+      dataArr.forEach(data => {
+        // 找到对应的 NPC
+        const npc = posters.find(c => c.name === data.name) || posters[0];
+        
+        let imgUrl = null;
+        if (data.imageType) {
+          const imgMap = {
+            '美食': 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=400&q=80',
+            '风景': 'https://images.unsplash.com/photo-1506744626753-1fa7603a4b28?auto=format&fit=crop&w=400&q=80',
+            '自拍': 'https://api.dicebear.com/7.x/adventurer/svg?seed=' + encodeURIComponent(npc.name),
+            '夜晚': 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=400&q=80',
+            '宠物': 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=400&q=80',
+            '搞笑图': 'https://api.dicebear.com/7.x/bottts/svg?seed=' + Math.random()
+          };
+          imgUrl = imgMap[data.imageType] || imgMap['风景'];
+        }
+
+        // 计算时间差
+        const offset = (data.timeOffset || Math.floor(Math.random() * 45)) * 60 * 1000;
+        
+        ms.unshift({
+          id: 'm_' + Date.now() + Math.floor(Math.random()*1000),
+          authorId: npc.id,
+          authorName: npc.name,
+          authorAvatar: npc.avatar || 'https://via.placeholder.com/120',
+          text: data.text || '（分享图片）',
+          images: imgUrl ? [imgUrl] : [],
+          time: Date.now() - offset,
+          likes: [],
+          comments: []
+        });
+      });
+
+      // 按时间重新排序，确保最新的在最上面
+      ms.sort((a, b) => b.time - a.time);
+      setMoments(ms);
+      
+      const loadEl = $(loadingId);
+      if(loadEl) loadEl.remove();
+      renderMomentsFeed();
+
+    } catch(e) {
+      console.log('批量刷新朋友圈失败:', e);
+      const loadEl = $(loadingId);
+      if(loadEl) loadEl.remove();
+      alert('⚠️ 刷新失败：\n' + e.message); 
+    }
+  };
   $('momentsCoverFile').addEventListener('change', async (e) => {
     const f = e.target.files?.[0];
     if(!f) return;
