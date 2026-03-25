@@ -1903,6 +1903,33 @@ if(after){
   }
   return out;
     }
+  function fixDanglingCommaBubbles(parts){
+  const out=[];
+  for(let i=0;i<parts.length;i++){
+    let cur=String(parts[i]||'').trim();
+    if(!cur) continue;
+    const isCard=isHtmlDoc(cur)||isHtmlFrag(cur)
+      ||/^\[(stk|voice|call):/i.test(cur)
+      ||/^<div class="card-/.test(cur);
+    if(isCard){out.push(cur);continue;}
+    const halfEnd=/[，、；：,]$/;
+    if(halfEnd.test(cur)&&i<parts.length-1){
+      let next=String(parts[i+1]||'').trim();
+      const nextIsCard=isHtmlDoc(next)||isHtmlFrag(next)
+        ||/^\[(stk|voice|call):/i.test(next)
+        ||/^<div class="card-/.test(next);
+      if(!nextIsCard){
+        cur=cur.replace(halfEnd,'');
+        out.push(cur+next);
+        i++;
+        continue;
+      }
+    }
+    if(halfEnd.test(cur)){cur=cur.replace(halfEnd,'。');}
+    out.push(cur);
+  }
+  return out;
+  }
   function enforceCountRange(parts,min,max){let arr=[...(parts||[])].filter(Boolean);max=Math.max(1,max);if(arr.length>max){const keep=arr.slice(0,max-1),tail=arr.slice(max-1).join(' ');return [...keep,tail];}return arr;}
 
   async function emitAiSequential(parts,targetId,mode){
@@ -2186,8 +2213,10 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
       if(st.mode==='offline') parts=[clean(out)||'...'];
 else{
   if(out.includes('【状态栏】')){parts=[clean(out)||'...'];}
+    
   else{parts=splitAiBubbles(out); parts=mergeCodeBubbles(parts); parts=splitLongBubbles(parts,30);parts=extractCardBubbles(parts); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);}
 }
+      parts=fixDanglingCommaBubbles(parts);
       parts=parts.filter(p=>isHtmlFrag(p)?true:p.trim().length>0);
       for(let pi=parts.length-1;pi>=0;pi--){
   const pp=parts[pi].trim();
