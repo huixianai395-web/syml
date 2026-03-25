@@ -3709,107 +3709,73 @@ function syncCardFromAi(parts,chatId){
   // 点击屏幕其他地方隐藏评论框
   $('momentsScroll').addEventListener('touchstart', () => { $('momentsCommentBar').style.display = 'none'; }, {passive: true});
 
-  // ================= 3. 唤起评论与发送 (修复没人理老婆的Bug) =================
-  window._openMomentComment = function(momentId, replyToName = '') {
-    window._currentCmtMid = momentId;
-    window._currentCmtReplyTo = replyToName;
-    const bar = $('momentsCommentBar');
-    const inp = $('mCommentInput');
-    bar.style.display = 'flex';
-    inp.placeholder = replyToName ? `回复 ${replyToName}:` : '评论...';
-    inp.focus();
-  };
+ // ================= 3. 唤起评论与发送 =================
+window._openMomentComment = function(momentId, replyToName = '') {
+  window._currentCmtMid = momentId;
+  window._currentCmtReplyTo = replyToName;
+  const bar = $('momentsCommentBar');
+  const inp = $('mCommentInput');
+  bar.style.display = 'flex';
+  inp.placeholder = replyToName ? `回复 ${replyToName}:` : '评论...';
+  inp.focus();
+};
 
-  $('momentsScroll').addEventListener('touchstart', () => { $('momentsCommentBar').style.display = 'none'; }, {passive: true});
+$('momentsScroll').addEventListener('touchstart', () => { $('momentsCommentBar').style.display = 'none'; }, {passive: true});
 
-  window._sendMomentComment = async function() {
-    const text = $('mCommentInput').value.trim();
-    if(!text) return;
-    const mid = window._currentCmtMid;
-    const replyTo = window._currentCmtReplyTo;
-    const ms = getMoments();
-    const target = ms.find(x => x.id === mid);
-    if(!target) return;
+window._sendMomentComment = async function() {
+  const text = $('mCommentInput').value.trim();
+  if(!text) return;
+  const mid = window._currentCmtMid;
+  const replyTo = window._currentCmtReplyTo;
+  const ms = getMoments();
+  const target = ms.find(x => x.id === mid);
+  if(!target) return;
 
-    const me = getMe();
-    target.comments.push({ authorName: me.name || '我', replyTo: replyTo, text: text });
-    setMoments(ms);
-    
-    $('momentsCommentBar').style.display = 'none';
-    $('mCommentInput').value = '';
-    renderMomentsFeed();
+  const me = getMe();
+  target.comments.push({ authorName: me.name || '我', replyTo: replyTo, text: text });
+  setMoments(ms);
+  
+  $('momentsCommentBar').style.display = 'none';
+  $('mCommentInput').value = '';
+  renderMomentsFeed();
 
-    // 【终极修复】：如果 replyTo 是空（说明老婆直接点了..评论），那就强行把目标设为发朋友圈的那个NPC！
-    const targetNPC = replyTo ? replyTo : target.authorName;
-    
-    if(targetNPC !== (me.name || '我')) {
-      setTimeout(() => { window._replyMomentCommentAI(mid, targetNPC, text); }, 1500);
-    }
-  };
-// ================= 修复：老婆自己发朋友圈的终极函数 =================
-  window._publishMyMoment = function() {
-    const text = $('momentInputText').value.trim();
-    // momentDraftImg 是之前存图片的变量
-    if (!text && typeof momentDraftImg === 'undefined' && !momentDraftImg) return alert('总得写点什么或者发张图吧，老婆！');
-   
-    const me = getMe();
-    const ms = getMoments();
-    const newId = 'm_' + Date.now();
-   
-    ms.unshift({
-      id: newId,
-      authorId: 'me',
-      authorName: me.name || '我',
-      authorAvatar: me.avatar || 'https://via.placeholder.com/120',
-      text: text,
-      images: (typeof momentDraftImg !== 'undefined' && momentDraftImg) ? [momentDraftImg] : [],
-      time: Date.now(),
-      likes: [],
-      comments: []
-    });
-   
-    setMoments(ms); 
-    $('publishMomentModal').classList.remove('active');
-    $('momentInputText').value = '';
-    if(window._clearMomentImg) window._clearMomentImg();
-    renderMomentsFeed(); 
+  const targetNPC = replyTo ? replyTo : target.authorName;
+  
+  if(targetNPC !== (me.name || '我')) {
+    setTimeout(() => { window._replyMomentCommentAI(mid, targetNPC, text); }, 1500);
+  }
+};
 
-    // 发完之后，唤醒男主们来当舔狗！
-    setTimeout(() => { window._triggerMomentsAI(newId); }, 1500);
-  };
+// ================= 老婆发朋友圈 =================
+window._publishMyMoment = function() {
+  const text = $('momentInputText').value.trim();
+  if (!text && typeof momentDraftImg === 'undefined' && !momentDraftImg) return alert('总得写点什么或者发张图吧，老婆！');
+ 
+  const me = getMe();
+  const ms = getMoments();
+  const newId = 'm_' + Date.now();
+ 
+  ms.unshift({
+    id: newId,
+    authorId: 'me',
+    authorName: me.name || '我',
+    authorAvatar: me.avatar || 'https://via.placeholder.com/120',
+    text: text,
+    images: (typeof momentDraftImg !== 'undefined' && momentDraftImg) ? [momentDraftImg] : [],
+    time: Date.now(),
+    likes: [],
+    comments: []
+  });
+ 
+  setMoments(ms); 
+  $('publishMomentModal').classList.remove('active');
+  $('momentInputText').value = '';
+  if(window._clearMomentImg) window._clearMomentImg();
+  renderMomentsFeed(); 
 
- // ================= 修复：老婆自己发朋友圈的终极函数 =================
-  window._publishMyMoment = function() {
-    const text = $('momentInputText').value.trim();
-    if (!text && typeof momentDraftImg === 'undefined' && !momentDraftImg) return alert('总得写点什么或者发张图吧，老婆！');
-   
-    const me = getMe();
-    const ms = getMoments();
-    const newId = 'm_' + Date.now();
-   
-    ms.unshift({
-      id: newId,
-      authorId: 'me',
-      authorName: me.name || '我',
-      authorAvatar: me.avatar || 'https://via.placeholder.com/120',
-      text: text,
-      images: (typeof momentDraftImg !== 'undefined' && momentDraftImg) ? [momentDraftImg] : [],
-      time: Date.now(),
-      likes: [],
-      comments: []
-    });
-   
-    setMoments(ms); 
-    $('publishMomentModal').classList.remove('active');
-    $('momentInputText').value = '';
-    if(window._clearMomentImg) window._clearMomentImg();
-    renderMomentsFeed(); 
-
-    // 发完之后，唤醒男主们来当舔狗！
-    setTimeout(() => { window._triggerMomentsAI(newId); }, 1500);
-  };
-
-  // ================= 4. 生态引擎 (真·微信私密社交圈版) =================
+  setTimeout(() => { window._triggerMomentsAI(newId); }, 1500);
+};
+  // ================= 4. 生态引擎 (必出路人甲 + 男主必回) =================
   window._triggerMomentsAI = async function(momentId) {
     try {
       const ms = getMoments();
@@ -3818,49 +3784,36 @@ function syncCardFromAi(parts,chatId){
 
       let sysPrompt = "";
 
-      // 【情境A】：如果是老婆(我)发的朋友圈，男主们变身修罗场
       if (target.authorId === 'me') {
         const contacts = getContacts() || [];
         if (contacts.length === 0) return;
         const viewersInfo = contacts.map(c => `- 姓名：${c.name}，人设：${c.persona}`).join('\n');
-        
-        sysPrompt = `玩家（我）刚刚发了一条朋友圈：“${target.text||'[分享了图片]'}”。
-请模拟以下几位男主（情敌关系，不知道彼此存在）看到后的反应。
-【男主列表】：
-${viewersInfo}
-【要求】：他们必须以男主的身份，争相给玩家点赞或评论！`;
-
+        sysPrompt = `玩家（我）发了一条朋友圈：“${target.text}”。
+请模拟以下几位男主（情敌关系）看到后的反应。
+【男主列表】：\n${viewersInfo}\n【要求】：以男主身份，争相给玩家点赞或评论！`;
       } 
-      // 【情境B】：如果是男主发的朋友圈，他的【专属微信好友】评论 + 男主亲自回复！
       else {
         const contacts = getContacts() || [];
         const npc = contacts.find(c => c.name === target.authorName) || {name: target.authorName, persona: '高冷'};
-
-        sysPrompt = `男主“${npc.name}”（人设：${npc.persona}）发了一条微信朋友圈：“${target.text||'[分享了图片]'}”。
-请模拟他这条微信朋友圈的评论区互动。
-【核心任务】：
-1. 这是私密微信朋友圈，不是微博！请虚构 1~2 个符合他身份的【微信私列好友】（例如：大学室友、经纪人、死党、同事、亲戚等，绝对不能是粉丝或陌生人）来给他评论或点赞。
-2. 男主“${npc.name}”看到这些好友的评论后，必须根据他的人设，【亲自回复】其中一个好友！
-3. 语气必须是熟人之间的微信吐槽或日常交流，极度生活化。
-4. 【绝对禁止】出现玩家（我）或其他男主的名字！只能是他自己的专属社交圈好友！`;
+        sysPrompt = `男主“${npc.name}”（人设：${npc.persona}）发了一条微信朋友圈：“${target.text}”。
+【核心任务（必须执行）】：
+1. 虚构 1~2 个符合他身份的【路人微信好友】（如：大学室友、同事、教练、损友等，不要粉丝）来评论。
+2. 男主“${npc.name}”看到评论后，必须根据人设，【亲自回复】其中一个路人好友！
+3. 语气极度日常，像真人在发微信吐槽。绝对不能提玩家（我）。`;
       }
 
-      sysPrompt += `\n\n【必须严格输出 JSON 数组格式】（不要带markdown）：
+      sysPrompt += `\n\n【必须严格输出 JSON 数组格式】：
 [
   {
-    "name": "评论者名字(男主名 或 虚构的好友名)",
+    "name": "评论者名字(男主名 或 虚构的路人好友名)",
     "like": true或false,
-    "comment": "评论内容（不评留空，简短口语化）",
-    "replyTo": "回复给谁（直接评论留空；如果是男主回复好友，填那个好友的名字）",
-    "delay": 延迟毫秒数(3000到12000之间，男主回复好友的延迟要设置得比好友长一点)
+    "comment": "评论内容（不评留空）",
+    "replyTo": "回复给谁（直接评论留空；如果是男主回复路人，填路人的名字）",
+    "delay": 延迟毫秒数(1000到6000之间)
   }
 ]`;
 
-      let userMsgContent = target.images && target.images.length > 0 
-        ? [{ type: "text", text: "请生成真实的微信互动！(请看上方附带的图片，结合图片吐槽！)" }, { type: "image_url", image_url: { url: target.images[0] } }]
-        : "请生成真实的微信评论互动！";
-
-      const out = await callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: userMsgContent }]);
+      const out = await callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '请立刻生成真实的微信评论区互动，男主必须回复路人！' }]);
       const cleaned = out.replace(/```json|```/g, '').trim();
       const m2 = cleaned.match(/\[[\s\S]*\]/);
       if (!m2) return;
@@ -3877,16 +3830,12 @@ ${viewersInfo}
               t.likes.push(reaction.name);
             }
             if (reaction.comment) {
-              t.comments.push({ 
-                authorName: reaction.name, 
-                replyTo: reaction.replyTo || '', 
-                text: reaction.comment 
-              });
+              t.comments.push({ authorName: reaction.name, replyTo: reaction.replyTo || '', text: reaction.comment });
             }
             setMoments(currentMs);
             if ($('moments').classList.contains('active')) renderMomentsFeed();
           }
-        }, reaction.delay || 3000);
+        }, reaction.delay || 1500);
       });
     } catch(e) { console.log('生态引擎运算失败:', e); }
   };
@@ -3935,43 +3884,42 @@ ${viewersInfo}
     } catch(e) { console.log('盖楼回复失败:', e); }
   };
 
- // ================= 6. 批量发朋友圈 (防复读 + 强制配图 + 丝滑转圈) =================
+// ================= 6. 批量发朋友圈 (结合聊天记录 + 独立生活圈 + 绝对去重图库) =================
   window._generateNPCMoment = async function() {
     const contacts = getContacts() || [];
-    if (contacts.length === 0) return alert('老婆，你还没加联系人呢，谁来发朋友圈呀！');
+    if (contacts.length === 0) return alert('老婆，你还没加联系人呢！');
 
     const shuffled = [...contacts].sort(() => 0.5 - Math.random());
     const posters = shuffled.slice(0, Math.floor(Math.random() * 3) + 2);
     
-    // 【防复读神器】：获取最近发过的 5 条朋友圈内容，警告 AI 绝对不许重复！
-    const recentMs = getMoments().slice(0, 5).map(m => m.text).join(' | ');
-
-    const topics = ['刚刚发生的离谱小事', '工作/学习上的无语瞬间', '发一张好看的自拍', '深夜emo感悟', '买到了奇怪的东西', '一句无厘头的废话', '暗戳戳表达占有欲'];
-    const postersInfo = posters.map(c => `- 姓名：${c.name} \n  人设：${c.persona} \n  ★强制主题：【${topics[Math.floor(Math.random() * topics.length)]}】`).join('\n\n');
+    // 【核心升级 1：提取最近的聊天记录】
+    const chatsMap = getChats() || {};
+    const postersInfo = posters.map(c => {
+      const historyRaw = chatsMap[c.id] || [];
+      const recentChat = historyRaw.filter(m => m.text && !m.text.includes('<div')).slice(-4).map(m => `${m.role==='user'?'我':c.name}: ${m.text}`).join(' | ');
+      return `- 姓名：${c.name}\n  人设：${c.persona}\n  近期与玩家的聊天记录：${recentChat ? recentChat : '（无聊天记录，请发自己独立的生活日常）'}`;
+    }).join('\n\n');
 
     const feed = $('momentsFeed');
     const loadingId = 'loading_' + Date.now();
-    // 【修复转圈】：使用已经定义好的 pcSpin 动画，绝对丝滑！
     feed.insertAdjacentHTML('afterbegin', `<div id="${loadingId}" style="display:flex;justify-content:center;padding:20px;"><svg style="width:28px;height:28px;animation:pcSpin 1s linear infinite;stroke:#2f66d8;fill:none;stroke-width:2.5;"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg></div>`);
 
     try {
-      const sysPrompt = `你是一个微信朋友圈模拟器。请根据以下几位角色的人设和【强制要求的主题】，分别生成他们此刻发的一条朋友圈动态。
-【本次发朋友圈的角色及主题分配】：
+      const sysPrompt = `你是一个极度真实的微信朋友圈生成引擎。请为以下几位角色生成此刻的朋友圈动态。
+
+【角色信息与近期聊天状态】：
 ${postersInfo}
 
-【防复读绝对警告！！！】：
-刚才朋友圈里已经发过这些内容了：“${recentMs}”。
-你本次生成的内容，【绝对禁止】再提到类似的狗、食物、或事情！必须发全新的、完全无关的事情！违者系统崩溃！
-
-【核心要求】：
-1. 绝对符合人设，语气极度口语化，严禁像写日记。
-2. 【强制配图】："imageType" 字段必须从 [美食, 风景, 自拍, 夜晚, 宠物, 搞笑图] 中选一个最合适的，【绝对不许留空】！
-3. 严禁以时间词开头！严禁撞梗！换行必须用 "\\n"，双引号转义 "\\""。
+【核心指令（极其重要）】：
+1. 他们是活生生的人，有自己的工作、爱好和朋友！【绝对不要】每一条都围着玩家转！
+2. 如果有聊天记录，可以顺着聊天的话题暗戳戳发一条；如果没有聊天记录，必须发【独立的生活日常】（比如：吐槽外卖难吃、工作加班发疯、路上堵车、买到假货、打游戏连跪、或者就一句无厘头的废话）。
+3. 语气极度口语化！多用标点符号，少长篇大论，拒绝做作的文艺腔！
+4. 换行用 "\\n"，双引号转义 "\\""。
 
 【必须严格输出纯 JSON 数组格式】：
-[{"name": "名字", "text": "内容", "imageType": "配图类型", "timeOffset": 随机分钟数}]`;
+[{"name": "名字", "text": "内容", "imageType": "配图类型(风景/美食/萌宠/沙雕图/无)", "timeOffset": 随机分钟数}]`;
 
-      const out = await callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '生成朋友圈！必须配图！绝对不许重复！' }]);
+      const out = await callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '请生成真实、不重复、不围着玩家转的日常朋友圈！' }]);
       const cleaned = out.replace(/```json|```/g, '').trim();
       const dataArr = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
       
@@ -3981,23 +3929,22 @@ ${postersInfo}
       dataArr.forEach(data => {
         const npc = posters.find(c => c.name === data.name) || posters[0];
         
-        // 强制图库匹配
-        const imgMap = {
-          '美食': 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=400&q=80',
-          '风景': 'https://images.unsplash.com/photo-1506744626753-1fa7603a4b28?auto=format&fit=crop&w=400&q=80',
-          '自拍': 'https://api.dicebear.com/7.x/adventurer/svg?seed=' + encodeURIComponent(npc.name + Date.now()),
-          '夜晚': 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=400&q=80',
-          '宠物': 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=400&q=80',
-          '搞笑图': 'https://api.dicebear.com/7.x/bottts/svg?seed=' + Math.random()
-        };
-        // 哪怕AI乱写，也强行给一张风景图保底
-        let finalImg = imgMap[data.imageType] || imgMap['风景'];
+        // 【核心升级 2：图片绝对去重机制】加入随机种子，保证每张图都不一样！
+        let finalImg = null;
+        const rSeed = Math.floor(Math.random() * 999999);
+        if (data.imageType && data.imageType !== '无') {
+          if(data.imageType.includes('美食')) finalImg = `https://source.unsplash.com/random/400x400/?food,meal&sig=${rSeed}`;
+          else if(data.imageType.includes('风景')) finalImg = `https://picsum.photos/seed/${rSeed}/400/400`;
+          else if(data.imageType.includes('沙雕')) finalImg = `https://api.dicebear.com/7.x/bottts/svg?seed=${rSeed}`;
+          else if(data.imageType.includes('萌宠')) finalImg = `https://source.unsplash.com/random/400x400/?cat,dog&sig=${rSeed}`;
+          else finalImg = `https://picsum.photos/seed/${rSeed+1}/400/400`;
+        }
 
         const newId = 'm_' + Date.now() + Math.floor(Math.random()*1000);
         newIds.push(newId);
         ms.unshift({ 
           id: newId, authorId: npc.id, authorName: npc.name, authorAvatar: npc.avatar || 'https://via.placeholder.com/120', 
-          text: data.text || '', images: [finalImg], time: Date.now() - (data.timeOffset||0)*60000, likes: [], comments: [] 
+          text: data.text || '', images: finalImg ? [finalImg] : [], time: Date.now() - (data.timeOffset||0)*60000, likes: [], comments: [] 
         });
       });
 
@@ -4006,7 +3953,7 @@ ${postersInfo}
       if($(loadingId)) $(loadingId).remove();
       renderMomentsFeed();
 
-      // 发完后触发 NPC 互相评论
+      // 发完后必定触发 NPC 的朋友圈熟人生态
       setTimeout(() => { newIds.forEach(id => window._triggerMomentsAI(id)); }, 2500);
 
     } catch(e) {
