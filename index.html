@@ -1332,9 +1332,18 @@
       <button class="btn" onclick="changeReaderFont(-1)">A-</button>
     </div>
   </div>
+
   <div class="page" id="readerPage">
-    <div class="card" id="readerCard" style="line-height:1.9;font-size:17px;color:#2b2b2b;">
-      <div id="readerContent" style="white-space:pre-wrap;"></div>
+    <div class="card" id="readerCard">
+      <div id="readerContent"></div>
+    </div>
+
+    <div class="card" id="readerPager" style="padding:10px 14px;">
+      <div class="row" style="justify-content:space-between;">
+        <button class="btn" onclick="prevStudyPage()">上一页</button>
+        <div class="small" id="readerPageInfo">第 1 页 / 共 1 页</div>
+        <button class="btn" onclick="nextStudyPage()">下一页</button>
+      </div>
     </div>
   </div>
   </section>
@@ -3074,6 +3083,7 @@ document.addEventListener('click',e=>{
     }
     const K_STUDY='mp_fix_study_books';
 let readerFontSize=17,readerDarkMode=false;
+let readerPages=[],readerPageIndex=0,readerCurrentBookId=null;
 
 function getStudyData(){
   try{
@@ -3197,6 +3207,59 @@ window._openCurrentStudyBook=function(){
     });
   }
 })();
+    function splitBookIntoPages(text){
+  const cleanText=String(text||'').replace(/\r/g,'').trim();
+  if(!cleanText) return [''];
+
+  const pageSize=readerFontSize<=14 ? 520 : readerFontSize>=20 ? 300 : 380;
+  const paras=cleanText.split(/\n\s*\n+/).map(p=>p.trim()).filter(Boolean);
+
+  let pages=[],buf='';
+
+  paras.forEach(function(p){
+    const block=p + '\n\n';
+    if((buf + block).length > pageSize && buf){
+      pages.push(buf.trim());
+      buf=block;
+    }else{
+      buf += block;
+    }
+  });
+
+  if(buf.trim()) pages.push(buf.trim());
+  return pages.length ? pages : [''];
+}
+
+function renderStudyPage(){
+  const c=document.getElementById('readerContent');
+  const info=document.getElementById('readerPageInfo');
+  const text=readerPages[readerPageIndex] || '';
+
+  if(c){
+    const parts=text.split(/\n\s*\n+/).map(function(p){ return p.trim(); }).filter(Boolean);
+    c.innerHTML=parts.map(function(p){
+      return '<p style="margin:0 0 .72em;">'+p.replace(/\n/g,'<br>')+'</p>';
+    }).join('');
+  }
+
+  if(info){
+    info.textContent='第 '+(readerPageIndex+1)+' 页 / 共 '+readerPages.length+' 页';
+  }
+}
+
+window.prevStudyPage=function(){
+  if(readerPageIndex>0){
+    readerPageIndex--;
+    renderStudyPage();
+  }
+};
+
+window.nextStudyPage=function(){
+  if(readerPageIndex<readerPages.length-1){
+    readerPageIndex++;
+    renderStudyPage();
+  }
+};
 window.openStudyReader=function(bookId){
   const data=getStudyData();
   const book=data.books.find(function(b){
@@ -3207,27 +3270,19 @@ window.openStudyReader=function(bookId){
   data.currentBookId=bookId;
   setStudyData(data);
 
+  readerCurrentBookId=bookId;
+  readerPageIndex=0;
+  readerPages=splitBookIntoPages(book.content);
+
   var t=document.getElementById('readerBookTitle');
-  var c=document.getElementById('readerContent');
-
   if(t) t.textContent=book.title;
-if(c){
-  var text = String(book.content || '').replace(/\r/g,'');
-  var parts = text.split(/\n\s*\n+/).map(function(p){
-    return p.trim();
-  }).filter(Boolean);
 
-  c.innerHTML = parts.map(function(p){
-    return '<p style="margin:0 0 .72em;">' + p.replace(/\n/g,'<br>') + '</p>';
-  }).join('');
-}
-
-  readerFontSize=17;
-  readerDarkMode=false;
   applyReaderStyle();
   renderStudyHome();
+  renderStudyPage();
   show('studyReader');
 };
+
 
 function applyReaderStyle(){
   var card=document.getElementById('readerCard');
@@ -3259,9 +3314,17 @@ function applyReaderStyle(){
 
 window.changeReaderFont=function(d){
   readerFontSize=Math.max(12,Math.min(24,readerFontSize+d));
-  applyReaderStyle();
-};
 
+  const data=getStudyData();
+  const book=data.books.find(function(b){ return b.id===readerCurrentBookId; });
+  if(book){
+    readerPages=splitBookIntoPages(book.content);
+    readerPageIndex=Math.min(readerPageIndex, readerPages.length-1);
+  }
+
+  applyReaderStyle();
+  renderStudyPage();
+};
 window.toggleReaderTheme=function(){
   readerDarkMode=!readerDarkMode;
   applyReaderStyle();
