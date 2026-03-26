@@ -49,7 +49,11 @@
     .icon{text-align:center;cursor:pointer}
     .ibox{width:62px;height:62px;margin:0 auto 6px;border-radius:16px;display:grid;place-items:center;background:rgba(255,255,255,.28);border:1px solid rgba(255,255,255,.45);font-size:27px;transition:transform .12s ease;}
     .icon:active .ibox{transform:scale(.88)}.lab{font-size:12px;text-shadow:0 1px 2px rgba(0,0,0,.25)}
-
+    .ibox-book{
+  background:linear-gradient(145deg,rgba(255,248,240,.38),rgba(214,229,255,.22));
+  border:1px solid rgba(255,255,255,.5);
+  box-shadow:0 6px 18px rgba(40,60,120,.16);
+    }
     .list{display:flex;flex-direction:column;gap:8px}
     .item{background:#fff;border:1px solid #ececf2;border-radius:12px;padding:10px;display:flex;gap:10px;align-items:center;}
     .avatar{width:44px;height:44px;border-radius:12px;object-fit:cover;background:#eef2ff;flex-shrink:0}
@@ -699,6 +703,10 @@
         <div class="icon" data-nav="api"><div class="ibox">🔑</div><div class="lab">API</div></div>
         <div class="icon" data-nav="fontCenter"><div class="ibox">🔤</div><div class="lab">字体</div></div>
         <div class="icon" id="phoneCheckIcon"><div class="ibox">🔍</div><div class="lab">查手机</div></div>
+        <div class="icon" onclick="if(typeof renderStudyHome==='function'){show('study');renderStudyHome();}">
+  <div class="ibox ibox-book">📖</div>
+  <div class="lab">书房</div>
+        </div>
       </div>
     </div>
   </section>
@@ -1137,6 +1145,39 @@
         </div>
       </div>
     </div>
+  </section>
+  <section id="study" class="screen">
+  <div class="header">
+    <button class="btn" data-nav="home">&#8249; 返回</button>
+    <b>书房</b>
+  </div>
+  <div class="page" id="studyPage">
+    <div class="card" id="studyContinueCard">
+      <div class="small">继续阅读</div>
+      <div style="margin-top:8px;font-size:18px;font-weight:700;" id="studyContinueTitle">还没有在读的书</div>
+      <div class="small" style="margin-top:6px;" id="studyContinueMeta">先打开一本书吧</div>
+    </div>
+    <div class="card">
+      <div class="small">我的藏书</div>
+      <div id="studyShelf" style="margin-top:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;"></div>
+    </div>
+  </div>
+  </section>
+  <section id="studyReader" class="screen">
+  <div class="header">
+    <button class="btn" onclick="show('study');renderStudyHome()">&#8249; 返回</button>
+    <b id="readerBookTitle">阅读中</b>
+    <div class="row" style="gap:6px;">
+      <button class="btn" id="readerThemeBtn" onclick="toggleReaderTheme()">夜间</button>
+      <button class="btn" onclick="changeReaderFont(1)">A+</button>
+      <button class="btn" onclick="changeReaderFont(-1)">A-</button>
+    </div>
+  </div>
+  <div class="page" id="readerPage">
+    <div class="card" id="readerCard" style="line-height:1.9;font-size:17px;color:#2b2b2b;">
+      <div id="readerContent" style="white-space:pre-wrap;"></div>
+    </div>
+  </div>
   </section>
 <!-- ===== 查手机页面 ===== -->
   <section id="phoneCheck" class="screen">
@@ -2868,6 +2909,15 @@ document.addEventListener('click',e=>{
 
       $('pcResultPage').innerHTML = apps.map((a,i) => '<div class="pc-app" id="pcApp'+i+'"><div class="pc-app-hd" onclick="this.parentElement.classList.toggle(\'open\')"><div class="pc-app-icon" style="background:'+a.bg+';">'+a.icon+'</div><div class="pc-app-info"><div class="pc-app-name">'+esc(a.name)+'</div><div class="pc-app-desc">'+esc(a.desc)+'</div></div><div class="pc-app-arrow">›</div></div><div class="pc-app-body">'+a.body+'</div></div>').join('');
     }
+    const K_STUDY='mp_fix_study_books';
+let readerFontSize=17,readerDarkMode=false;
+function getStudyData(){try{const r=JSON.parse(localStorage.getItem(K_STUDY)||'null');if(r)return r;}catch(e){}const init={currentBookId:null,books:[{id:'book_1',title:'月亮与代码',author:'试读本',cover:'linear-gradient(160deg,#4a667c,#283b49)',content:'夜里四点，窗外的路灯斜斜照进来。\n我一直觉得，真正舒服的阅读，不该只是把字堆在屏幕上。\n\n书架最好有一点木头的温度。'},{id:'book_2',title:'春山来信',author:'小说',cover:'linear-gradient(160deg,#6f8046,#435227)',content:'春天最先抵达的不是花，是风。\n\n她把信写得很慢，像怕每个字落下去都会惊动什么。'}]};localStorage.setItem(K_STUDY,JSON.stringify(init));return init;}
+function setStudyData(v){localStorage.setItem(K_STUDY,JSON.stringify(v));}
+function renderStudyHome(){const data=getStudyData();const shelf=document.getElementById('studyShelf');const current=data.books.find(function(b){return b.id===data.currentBookId;});const t=document.getElementById('studyContinueTitle');const m=document.getElementById('studyContinueMeta');if(t)t.textContent=current?current.title:'还没有在读的书';if(m)m.textContent=current?'作者：'+current.author:'先打开一本书吧';if(!shelf)return;shelf.innerHTML=data.books.map(function(book){return '<div onclick="openStudyReader(\''+book.id+'\')" style="cursor:pointer;"><div style="height:120px;border-radius:14px;background:'+book.cover+';box-shadow:0 8px 18px rgba(0,0,0,.14);"></div><div style="margin-top:6px;font-size:13px;font-weight:600;color:#222;">'+book.title+'</div><div style="font-size:11px;color:#888;">'+book.author+'</div></div>';}).join('');}
+function openStudyReader(bookId){const data=getStudyData();const book=data.books.find(function(b){return b.id===bookId;});if(!book)return;data.currentBookId=bookId;setStudyData(data);var t=document.getElementById('readerBookTitle');var c=document.getElementById('readerContent');if(t)t.textContent=book.title;if(c)c.textContent=book.content;readerFontSize=17;readerDarkMode=false;applyReaderStyle();renderStudyHome();show('studyReader');}
+function applyReaderStyle(){var card=document.getElementById('readerCard');var page=document.getElementById('readerPage');if(card)card.style.fontSize=readerFontSize+'px';if(readerDarkMode){if(page)page.style.background='#1a1a1a';if(card){card.style.background='#2a2a2a';card.style.color='#d4c9b0';}}else{if(page)page.style.background='';if(card){card.style.background='';card.style.color='#2b2b2b';}}var btn=document.getElementById('readerThemeBtn');if(btn)btn.textContent=readerDarkMode?'白天':'夜间';}
+function changeReaderFont(d){readerFontSize=Math.max(12,Math.min(24,readerFontSize+d));applyReaderStyle();}
+function toggleReaderTheme(){readerDarkMode=!readerDarkMode;applyReaderStyle();}
     // ===== 查手机模块结束 ===== // ================= 表情包（贴纸）模块（0触发API，仅入聊天） =================
 function stickerDefaultState(){
   return { active:'default', groups:[{id:'default',name:'默认',stickers:[]}] };
