@@ -706,61 +706,25 @@
   padding:7px 12px;
 }
 #readerPage{
-  padding:12px 10px 18px!important;
-  overflow:hidden!important;
+  padding:18px 14px 22px!important;
   transition:background .25s ease;
 }
-
-#readerTopMeta{
-  height:26px;
-  display:flex;
-  justify-content:flex-end;
-  align-items:center;
-  padding:0 6px 8px;
-}
-
-#readerPageInfo{
-  font-size:12px;
-  color:#9aa3b2;
-  background:rgba(255,255,255,.45);
-  border:1px solid rgba(220,225,236,.7);
-  border-radius:999px;
-  padding:4px 10px;
-  backdrop-filter:blur(8px);
-}
-
-#readerViewport{
-  width:100%;
-  overflow-x:auto;
-  overflow-y:hidden;
-  scroll-snap-type:x mandatory;
-  -webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
-}
-
-#readerViewport::-webkit-scrollbar{
-  display:none;
-}
-
-#readerTrack{
-  display:flex;
-  gap:14px;
-}
-
-.reader-sheet{
-  flex:0 0 100%;
-  scroll-snap-align:start;
-  border-radius:22px;
-  padding:22px 20px 26px;
-  line-height:1.86;
-  min-height:calc(100dvh - 170px);
-  box-sizing:border-box;
+#readerCard{
+  max-width:100%;
+  margin:0 auto;
+  border-radius:22px!important;
+  padding:22px 20px 26px!important;
+  line-height:1.86!important;
+  letter-spacing:.2px;
   transition:background .25s ease,color .25s ease,border-color .25s ease,box-shadow .25s ease;
 }
-
-.reader-sheet p{
-  margin:0 0 .72em;
+#readerContent{
+  white-space:pre-wrap;
+  font-size:17px;
 }
+    #readerContent p{
+  text-indent:0;
+    }
     #study .page{
   background:linear-gradient(180deg,#f7f8fc,#f1f4fb);
   padding:14px;
@@ -1356,7 +1320,7 @@
     </div>
   </div>
 
-  <input type="file" id="studyFileInput" accept=".txt,text/plain" class="hidden" onchange="if(this.files&&this.files[0]) importStudyTxtFile(this.files[0]); this.value='';">
+  <input type="file" id="studyFileInput" accept=".txt,text/plain" class="hidden">
   </section>
   <section id="studyReader" class="screen">
   <div class="header">
@@ -1368,15 +1332,10 @@
       <button class="btn" onclick="changeReaderFont(-1)">A-</button>
     </div>
   </div>
-
   <div class="page" id="readerPage">
-  <div id="readerTopMeta">
-    <span id="readerPageInfo">1 / 1</span>
-  </div>
-
-  <div id="readerViewport">
-    <div id="readerTrack"></div>
-  </div>
+    <div class="card" id="readerCard" style="line-height:1.9;font-size:17px;color:#2b2b2b;">
+      <div id="readerContent" style="white-space:pre-wrap;"></div>
+    </div>
   </div>
   </section>
 <!-- ===== 查手机页面 ===== -->
@@ -2458,7 +2417,7 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
       if(st.mode==='offline') parts=[clean(out)||'...'];
 else{
   if(out.includes('【状态栏】')){parts=[clean(out)||'...'];}
-    
+    
   else{parts=splitAiBubbles(out); parts=mergeCodeBubbles(parts); parts=splitLongBubbles(parts,30);parts=extractCardBubbles(parts); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);}
 }
       parts=fixDanglingCommaBubbles(parts);
@@ -3115,7 +3074,6 @@ document.addEventListener('click',e=>{
     }
     const K_STUDY='mp_fix_study_books';
 let readerFontSize=17,readerDarkMode=false;
-let readerPages=[],readerCurrentBookId=null;
 
 function getStudyData(){
   try{
@@ -3223,6 +3181,22 @@ window.renderStudyHome=function(){
   }).join('');
 };
 
+window._openCurrentStudyBook=function(){
+  const data=getStudyData();
+  if(data.currentBookId){
+    openStudyReader(data.currentBookId);
+  }
+};
+(function(){
+  var input=document.getElementById('studyFileInput');
+  if(input){
+    input.addEventListener('change',function(e){
+      var file=e.target.files && e.target.files[0];
+      if(file) importStudyTxtFile(file);
+      e.target.value='';
+    });
+  }
+})();
 window.openStudyReader=function(bookId){
   const data=getStudyData();
   const book=data.books.find(function(b){
@@ -3233,119 +3207,51 @@ window.openStudyReader=function(bookId){
   data.currentBookId=bookId;
   setStudyData(data);
 
-  readerCurrentBookId=bookId;
-  readerPages=splitBookIntoPages(book.content);
-
   var t=document.getElementById('readerBookTitle');
+  var c=document.getElementById('readerContent');
+
   if(t) t.textContent=book.title;
-
-  applyReaderStyle();
-  renderStudyHome();
-  show('studyReader');
-
-  setTimeout(function(){
-    renderStudyPages();
-  },0);
-};
-    function splitBookIntoPages(text){
-  const cleanText=String(text||'').replace(/\r/g,'').trim();
-  if(!cleanText) return [''];
-
-  const pageSize =
-    readerFontSize <= 14 ? 900 :
-    readerFontSize >= 20 ? 520 :
-    680;
-
-  const paras=cleanText.split(/\n\s*\n+/).map(function(p){
+if(c){
+  var text = String(book.content || '').replace(/\r/g,'');
+  var parts = text.split(/\n\s*\n+/).map(function(p){
     return p.trim();
   }).filter(Boolean);
 
-  let pages=[],buf='';
-
-  paras.forEach(function(p){
-    const block=p+'\n\n';
-    if((buf+block).length>pageSize && buf){
-      pages.push(buf.trim());
-      buf=block;
-    }else{
-      buf+=block;
-    }
-  });
-
-  if(buf.trim()) pages.push(buf.trim());
-  return pages.length?pages:[''];
-}
-
-function renderStudyPages(){
-  const track=document.getElementById('readerTrack');
-  const info=document.getElementById('readerPageInfo');
-  if(!track) return;
-
-  track.innerHTML=readerPages.map(function(pageText,idx){
-    const parts=pageText.split(/\n\s*\n+/).map(function(p){
-      return p.trim();
-    }).filter(Boolean);
-
-    const html=parts.map(function(p){
-      return '<p>'+p.replace(/\n/g,'<br>')+'</p>';
-    }).join('');
-
-    return '<div class="reader-sheet" data-page="'+idx+'">'+html+'</div>';
+  c.innerHTML = parts.map(function(p){
+    return '<p style="margin:0 0 .72em;">' + p.replace(/\n/g,'<br>') + '</p>';
   }).join('');
-
-  applyReaderThemeToSheets();
-
-  if(info){
-    info.textContent='1 / '+readerPages.length;
-  }
-
-  const viewport=document.getElementById('readerViewport');
-  if(viewport){
-    viewport.scrollLeft=0;
-  }
 }
 
-function updateReaderPageInfo(){
-  const viewport=document.getElementById('readerViewport');
-  const info=document.getElementById('readerPageInfo');
-  if(!viewport || !info) return;
+  readerFontSize=17;
+  readerDarkMode=false;
+  applyReaderStyle();
+  renderStudyHome();
+  show('studyReader');
+};
 
-  const width=viewport.clientWidth || 1;
-  const page=Math.round(viewport.scrollLeft / width) + 1;
-  info.textContent=page+' / '+readerPages.length;
-}
+function applyReaderStyle(){
+  var card=document.getElementById('readerCard');
+  var page=document.getElementById('readerPage');
 
-function applyReaderThemeToSheets(){
-  document.querySelectorAll('.reader-sheet').forEach(function(card){
-    if(readerDarkMode){
+  if(card) card.style.fontSize=readerFontSize+'px';
+
+  if(readerDarkMode){
+    if(page) page.style.background='linear-gradient(180deg,#1f2126,#17181c)';
+    if(card){
       card.style.background='linear-gradient(180deg,#2b2a27,#23221f)';
       card.style.color='#eee7da';
       card.style.border='1px solid rgba(255,255,255,.08)';
       card.style.boxShadow='0 18px 40px rgba(0,0,0,.22)';
-    }else{
+    }
+  }else{
+    if(page) page.style.background='linear-gradient(180deg,#f3f5fb,#eceff8)';
+    if(card){
       card.style.background='linear-gradient(180deg,#fffdf8,#f7f2e8)';
       card.style.color='#2e2a25';
       card.style.border='1px solid rgba(210,218,235,.7)';
       card.style.boxShadow='0 14px 32px rgba(81,95,135,.10)';
     }
-    card.style.fontSize=readerFontSize+'px';
-  });
-}
-
-
-
-
-
-function applyReaderStyle(){
-  var page=document.getElementById('readerPage');
-
-  if(readerDarkMode){
-    if(page) page.style.background='linear-gradient(180deg,#1f2126,#17181c)';
-  }else{
-    if(page) page.style.background='linear-gradient(180deg,#f3f5fb,#eceff8)';
   }
-
-  applyReaderThemeToSheets();
 
   var btn=document.getElementById('readerThemeBtn');
   if(btn) btn.textContent=readerDarkMode?'白天':'夜间';
@@ -3353,30 +3259,13 @@ function applyReaderStyle(){
 
 window.changeReaderFont=function(d){
   readerFontSize=Math.max(12,Math.min(24,readerFontSize+d));
-
-  const data=getStudyData();
-  const book=data.books.find(function(b){
-    return b.id===readerCurrentBookId;
-  });
-
-  if(book){
-    readerPages=splitBookIntoPages(book.content);
-    renderStudyPages();
-  }
-
   applyReaderStyle();
 };
+
 window.toggleReaderTheme=function(){
   readerDarkMode=!readerDarkMode;
   applyReaderStyle();
 };
-    (function(){
-  document.addEventListener('scroll', function(e){
-    if(e.target && e.target.id==='readerViewport'){
-      updateReaderPageInfo();
-    }
-  }, true);
-})();
     // ===== 查手机模块结束 ===== // ================= 表情包（贴纸）模块（0触发API，仅入聊天） =================
 function stickerDefaultState(){
   return { active:'default', groups:[{id:'default',name:'默认',stickers:[]}] };
@@ -4193,7 +4082,7 @@ function syncCardFromAi(parts,chatId){
       if (m.images && m.images.length > 0) {
         imgHtml = `<div class="m-imgs" data-count="${m.images.length}">${m.images.map(img => `<img src="${img}" onerror="this.style.display='none'">`).join('')}</div>`;
       }
-      
+      
       let cmtHtml = '';
       if ((m.likes && m.likes.length) || (m.comments && m.comments.length)) {
         let likesStr = (m.likes && m.likes.length) ? `<div class="m-like-list"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> ${m.likes.join(', ')}</div>` : '';
@@ -4272,13 +4161,13 @@ window._sendMomentComment = async function() {
   const me = getMe();
   target.comments.push({ authorName: me.name || '我', replyTo: replyTo, text: text });
   setMoments(ms);
-  
+  
   $('momentsCommentBar').style.display = 'none';
   $('mCommentInput').value = '';
   renderMomentsFeed();
 
   const targetNPC = replyTo ? replyTo : target.authorName;
-  
+  
   if(targetNPC !== (me.name || '我')) {
     setTimeout(() => { window._replyMomentCommentAI(mid, targetNPC, text); }, 1500);
   }
@@ -4296,10 +4185,10 @@ window._sendMomentComment = async function() {
         document.getElementById('momentImgPreview').src = momentDraftImg;
         document.getElementById('momentImgPreviewWrap').style.display = 'block';
         document.getElementById('momentAddImgBtn').style.display = 'none';
-      } catch(err) { 
-        alert('图片处理失败：' + err.message); 
-      } finally { 
-        e.target.value = ''; 
+      } catch(err) { 
+        alert('图片处理失败：' + err.message); 
+      } finally { 
+        e.target.value = ''; 
       }
     });
   }
@@ -4315,11 +4204,11 @@ window._sendMomentComment = async function() {
 window._publishMyMoment = function() {
   const text = $('momentInputText').value.trim();
   if (!text && typeof momentDraftImg === 'undefined' && !momentDraftImg) return alert('总得写点什么或者发张图吧，老婆！');
- 
+ 
   const me = getMe();
   const ms = getMoments();
   const newId = 'm_' + Date.now();
- 
+ 
   ms.unshift({
     id: newId,
     authorId: 'me',
@@ -4331,12 +4220,12 @@ window._publishMyMoment = function() {
     likes: [],
     comments: []
   });
- 
-  setMoments(ms); 
+ 
+  setMoments(ms); 
   $('publishMomentModal').classList.remove('active');
   $('momentInputText').value = '';
   if(window._clearMomentImg) window._clearMomentImg();
-  renderMomentsFeed(); 
+  renderMomentsFeed(); 
 
   setTimeout(() => { window._triggerMomentsAI(newId); }, 1500);
 };
@@ -4353,7 +4242,7 @@ window._publishMyMoment = function() {
         const contacts = getContacts() || [];
         if (contacts.length === 0) return;
         const viewersInfo = contacts.map(c => `- 姓名：${c.name}，人设：${c.persona}`).join('\n');
-        
+        
         sysPrompt = `玩家（我）刚刚发了一条朋友圈："${target.text||'[分享了图片]'}”。
 请模拟这条朋友圈的评论区，打造一个【极其热闹、充满占有欲的超级修罗场】！
 【根据人设和玩家互动的男主列表】：
@@ -4429,7 +4318,7 @@ window._generateNPCMoment = async function() {
 
   const shuffled = [...contacts].sort(() => 0.5 - Math.random());
   const posters = shuffled.slice(0, Math.floor(Math.random() * 3) + 2);
-  
+  
   const chatsMap = getChats() || {};
   const postersInfo = posters.map(c => {
     const historyRaw = chatsMap[c.id] || [];
@@ -4482,12 +4371,12 @@ ${postersInfo}
     const out = await callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '请生成真实、各不相同、充满活人感的朋友圈动态及评论区！' }]);
     const cleaned = out.replace(/```json|```/g, '').trim();
     const dataArr = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
-    
+    
     const ms = getMoments();
 
     dataArr.forEach(data => {
       const npc = posters.find(c => c.name === data.name) || posters[0];
-      
+      
       let finalImg = null;
       const rSeed = Math.floor(Math.random() * 999999);
       if (data.imageType && data.imageType !== '无') {
@@ -4501,11 +4390,11 @@ ${postersInfo}
       }
 
       const newId = 'm_' + Date.now() + Math.floor(Math.random()*1000);
-      ms.unshift({ 
-        id: newId, authorId: npc.id, authorName: npc.name, authorAvatar: npc.avatar || 'https://via.placeholder.com/120', 
-        text: data.text || '', images: finalImg ? [finalImg] : [], time: Date.now() - (data.timeOffset||0)*60000, 
-        likes: data.likes || [], 
-        comments: data.comments || [] 
+      ms.unshift({ 
+        id: newId, authorId: npc.id, authorName: npc.name, authorAvatar: npc.avatar || 'https://via.placeholder.com/120', 
+        text: data.text || '', images: finalImg ? [finalImg] : [], time: Date.now() - (data.timeOffset||0)*60000, 
+        likes: data.likes || [], 
+        comments: data.comments || [] 
       });
     });
 
@@ -4516,7 +4405,7 @@ ${postersInfo}
 
   } catch(e) {
     if($(loadingId)) $(loadingId).remove();
-    alert('⚠️ 刷新失败：\n' + e.message); 
+    alert('⚠️ 刷新失败：\n' + e.message); 
   }
 };
 // ================= 3. 玩家评论后，角色秒回！(互动完美保留) =================
