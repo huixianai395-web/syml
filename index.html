@@ -714,7 +714,7 @@
   margin:0 auto;
   border-radius:22px!important;
   padding:22px 20px 26px!important;
-  line-height:2.05!important;
+  line-height:1.86!important;
   letter-spacing:.2px;
   transition:background .25s ease,color .25s ease,border-color .25s ease,box-shadow .25s ease;
 }
@@ -722,6 +722,9 @@
   white-space:pre-wrap;
   font-size:17px;
 }
+    #readerContent p{
+  text-indent:0;
+    }
     #study .page{
   background:linear-gradient(180deg,#f7f8fc,#f1f4fb);
   padding:14px;
@@ -3208,7 +3211,16 @@ window.openStudyReader=function(bookId){
   var c=document.getElementById('readerContent');
 
   if(t) t.textContent=book.title;
-if(c) c.innerHTML = book.content.split('\n\n').map(p=>'<p style="margin:0 0 1.15em;">'+p.replace(/\n/g,'<br>')+'</p>').join('');
+if(c){
+  var text = String(book.content || '').replace(/\r/g,'');
+  var parts = text.split(/\n\s*\n+/).map(function(p){
+    return p.trim();
+  }).filter(Boolean);
+
+  c.innerHTML = parts.map(function(p){
+    return '<p style="margin:0 0 .72em;">' + p.replace(/\n/g,'<br>') + '</p>';
+  }).join('');
+}
 
   readerFontSize=17;
   readerDarkMode=false;
