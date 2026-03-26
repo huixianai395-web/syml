@@ -3332,58 +3332,8 @@ function applyReaderThemeToSheets(){
   });
 }
 
-function renderStudyPage(){
-  const c=document.getElementById('readerContent');
-  const info=document.getElementById('readerPageInfo');
-  const text=readerPages[readerPageIndex] || '';
 
-  if(c){
-    const parts=text.split(/\n\s*\n+/).map(function(p){ return p.trim(); }).filter(Boolean);
-    c.innerHTML=parts.map(function(p){
-      return '<p style="margin:0 0 .72em;">'+p.replace(/\n/g,'<br>')+'</p>';
-    }).join('');
-  }
 
-  if(info){
-    info.textContent='第 '+(readerPageIndex+1)+' 页 / 共 '+readerPages.length+' 页';
-  }
-}
-
-window.prevStudyPage=function(){
-  if(readerPageIndex>0){
-    readerPageIndex--;
-    renderStudyPage();
-  }
-};
-
-window.nextStudyPage=function(){
-  if(readerPageIndex<readerPages.length-1){
-    readerPageIndex++;
-    renderStudyPage();
-  }
-};
-window.openStudyReader=function(bookId){
-  const data=getStudyData();
-  const book=data.books.find(function(b){
-    return b.id===bookId;
-  });
-  if(!book) return;
-
-  data.currentBookId=bookId;
-  setStudyData(data);
-
-  readerCurrentBookId=bookId;
-  readerPageIndex=0;
-  readerPages=splitBookIntoPages(book.content);
-
-  var t=document.getElementById('readerBookTitle');
-  if(t) t.textContent=book.title;
-
-  applyReaderStyle();
-  renderStudyHome();
-  renderStudyPage();
-  show('studyReader');
-};
 
 
 function applyReaderStyle(){
