@@ -3103,7 +3103,53 @@ function getStudyData(){
 function setStudyData(v){
   localStorage.setItem(K_STUDY,JSON.stringify(v));
 }
+function randomStudyCover(){
+  const arr=[
+    'linear-gradient(160deg,#4a667c,#283b49)',
+    'linear-gradient(160deg,#6f8046,#435227)',
+    'linear-gradient(160deg,#8b4c35,#5c2d1f)',
+    'linear-gradient(160deg,#7a5f8e,#4b365b)',
+    'linear-gradient(160deg,#516b8b,#30445e)',
+    'linear-gradient(160deg,#7b8f4e,#536329)'
+  ];
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+    window.importStudyTxtFile=function(file){
+  if(!file) return;
 
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const text=String(e.target.result||'').trim();
+    if(!text){
+      alert('这本书是空的。');
+      return;
+    }
+
+    const data=getStudyData();
+    const rawName=file.name||'未命名文本';
+    const title=rawName.replace(/\.[^.]+$/,'') || '未命名文本';
+
+    const newBook={
+      id:'book_'+Date.now(),
+      title:title,
+      author:'本地导入',
+      cover:randomStudyCover(),
+      content:text
+    };
+
+    data.books.unshift(newBook);
+    data.currentBookId=newBook.id;
+    setStudyData(data);
+    renderStudyHome();
+    alert('导入成功：'+title);
+  };
+
+  reader.onerror=function(){
+    alert('读取文件失败。');
+  };
+
+  reader.readAsText(file,'utf-8');
+};
 window.renderStudyHome=function(){
   const data=getStudyData();
   const shelf=document.getElementById('studyShelf');
@@ -3138,7 +3184,16 @@ window._openCurrentStudyBook=function(){
     openStudyReader(data.currentBookId);
   }
 };
-
+(function(){
+  var input=document.getElementById('studyFileInput');
+  if(input){
+    input.addEventListener('change',function(e){
+      var file=e.target.files && e.target.files[0];
+      if(file) importStudyTxtFile(file);
+      e.target.value='';
+    });
+  }
+})();
 window.openStudyReader=function(bookId){
   const data=getStudyData();
   const book=data.books.find(function(b){
