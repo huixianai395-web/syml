@@ -706,25 +706,61 @@
   padding:7px 12px;
 }
 #readerPage{
-  padding:18px 14px 22px!important;
+  padding:12px 10px 18px!important;
+  overflow:hidden!important;
   transition:background .25s ease;
 }
-#readerCard{
-  max-width:100%;
-  margin:0 auto;
-  border-radius:22px!important;
-  padding:22px 20px 26px!important;
-  line-height:1.86!important;
-  letter-spacing:.2px;
+
+#readerTopMeta{
+  height:26px;
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  padding:0 6px 8px;
+}
+
+#readerPageInfo{
+  font-size:12px;
+  color:#9aa3b2;
+  background:rgba(255,255,255,.45);
+  border:1px solid rgba(220,225,236,.7);
+  border-radius:999px;
+  padding:4px 10px;
+  backdrop-filter:blur(8px);
+}
+
+#readerViewport{
+  width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+
+#readerViewport::-webkit-scrollbar{
+  display:none;
+}
+
+#readerTrack{
+  display:flex;
+  gap:14px;
+}
+
+.reader-sheet{
+  flex:0 0 100%;
+  scroll-snap-align:start;
+  border-radius:22px;
+  padding:22px 20px 26px;
+  line-height:1.86;
+  min-height:calc(100dvh - 170px);
+  box-sizing:border-box;
   transition:background .25s ease,color .25s ease,border-color .25s ease,box-shadow .25s ease;
 }
-#readerContent{
-  white-space:pre-wrap;
-  font-size:17px;
+
+.reader-sheet p{
+  margin:0 0 .72em;
 }
-    #readerContent p{
-  text-indent:0;
-    }
     #study .page{
   background:linear-gradient(180deg,#f7f8fc,#f1f4fb);
   padding:14px;
@@ -1334,17 +1370,13 @@
   </div>
 
   <div class="page" id="readerPage">
-    <div class="card" id="readerCard">
-      <div id="readerContent"></div>
-    </div>
+  <div id="readerTopMeta">
+    <span id="readerPageInfo">1 / 1</span>
+  </div>
 
-    <div class="card" id="readerPager" style="padding:10px 14px;">
-      <div class="row" style="justify-content:space-between;">
-        <button class="btn" onclick="prevStudyPage()">上一页</button>
-        <div class="small" id="readerPageInfo">第 1 页 / 共 1 页</div>
-        <button class="btn" onclick="nextStudyPage()">下一页</button>
-      </div>
-    </div>
+  <div id="readerViewport">
+    <div id="readerTrack"></div>
+  </div>
   </div>
   </section>
 <!-- ===== 查手机页面 ===== -->
@@ -3083,7 +3115,7 @@ document.addEventListener('click',e=>{
     }
     const K_STUDY='mp_fix_study_books';
 let readerFontSize=17,readerDarkMode=false;
-let readerPages=[],readerPageIndex=0,readerCurrentBookId=null;
+let readerPages=[],readerCurrentBookId=null;
 
 function getStudyData(){
   try{
@@ -3191,43 +3223,113 @@ window.renderStudyHome=function(){
   }).join('');
 };
 
-window._openCurrentStudyBook=function(){
+window.openStudyReader=function(bookId){
   const data=getStudyData();
-  if(data.currentBookId){
-    openStudyReader(data.currentBookId);
-  }
+  const book=data.books.find(function(b){
+    return b.id===bookId;
+  });
+  if(!book) return;
+
+  data.currentBookId=bookId;
+  setStudyData(data);
+
+  readerCurrentBookId=bookId;
+  readerPages=splitBookIntoPages(book.content);
+
+  var t=document.getElementById('readerBookTitle');
+  if(t) t.textContent=book.title;
+
+  applyReaderStyle();
+  renderStudyHome();
+  show('studyReader');
+
+  setTimeout(function(){
+    renderStudyPages();
+  },0);
 };
-(function(){
-  var input=document.getElementById('studyFileInput');
-  if(input){
-    input.addEventListener('change',function(e){
-      var file=e.target.files && e.target.files[0];
-      if(file) importStudyTxtFile(file);
-      e.target.value='';
-    });
-  }
-})();
     function splitBookIntoPages(text){
   const cleanText=String(text||'').replace(/\r/g,'').trim();
   if(!cleanText) return [''];
 
-  const pageSize=readerFontSize<=14 ? 520 : readerFontSize>=20 ? 300 : 380;
-  const paras=cleanText.split(/\n\s*\n+/).map(p=>p.trim()).filter(Boolean);
+  const pageSize =
+    readerFontSize <= 14 ? 900 :
+    readerFontSize >= 20 ? 520 :
+    680;
+
+  const paras=cleanText.split(/\n\s*\n+/).map(function(p){
+    return p.trim();
+  }).filter(Boolean);
 
   let pages=[],buf='';
 
   paras.forEach(function(p){
-    const block=p + '\n\n';
-    if((buf + block).length > pageSize && buf){
+    const block=p+'\n\n';
+    if((buf+block).length>pageSize && buf){
       pages.push(buf.trim());
       buf=block;
     }else{
-      buf += block;
+      buf+=block;
     }
   });
 
   if(buf.trim()) pages.push(buf.trim());
-  return pages.length ? pages : [''];
+  return pages.length?pages:[''];
+}
+
+function renderStudyPages(){
+  const track=document.getElementById('readerTrack');
+  const info=document.getElementById('readerPageInfo');
+  if(!track) return;
+
+  track.innerHTML=readerPages.map(function(pageText,idx){
+    const parts=pageText.split(/\n\s*\n+/).map(function(p){
+      return p.trim();
+    }).filter(Boolean);
+
+    const html=parts.map(function(p){
+      return '<p>'+p.replace(/\n/g,'<br>')+'</p>';
+    }).join('');
+
+    return '<div class="reader-sheet" data-page="'+idx+'">'+html+'</div>';
+  }).join('');
+
+  applyReaderThemeToSheets();
+
+  if(info){
+    info.textContent='1 / '+readerPages.length;
+  }
+
+  const viewport=document.getElementById('readerViewport');
+  if(viewport){
+    viewport.scrollLeft=0;
+  }
+}
+
+function updateReaderPageInfo(){
+  const viewport=document.getElementById('readerViewport');
+  const info=document.getElementById('readerPageInfo');
+  if(!viewport || !info) return;
+
+  const width=viewport.clientWidth || 1;
+  const page=Math.round(viewport.scrollLeft / width) + 1;
+  info.textContent=page+' / '+readerPages.length;
+}
+
+function applyReaderThemeToSheets(){
+  document.querySelectorAll('.reader-sheet').forEach(function(card){
+    if(readerDarkMode){
+      card.style.background='linear-gradient(180deg,#2b2a27,#23221f)';
+      card.style.color='#eee7da';
+      card.style.border='1px solid rgba(255,255,255,.08)';
+      card.style.boxShadow='0 18px 40px rgba(0,0,0,.22)';
+    }else{
+      card.style.background='linear-gradient(180deg,#fffdf8,#f7f2e8)';
+      card.style.color='#2e2a25';
+      card.style.border='1px solid rgba(210,218,235,.7)';
+      card.style.boxShadow='0 14px 32px rgba(81,95,135,.10)';
+    }
+    card.style.fontSize=readerFontSize+'px';
+  });
 }
 
 function renderStudyPage(){
@@ -3285,28 +3387,15 @@ window.openStudyReader=function(bookId){
 
 
 function applyReaderStyle(){
-  var card=document.getElementById('readerCard');
   var page=document.getElementById('readerPage');
-
-  if(card) card.style.fontSize=readerFontSize+'px';
 
   if(readerDarkMode){
     if(page) page.style.background='linear-gradient(180deg,#1f2126,#17181c)';
-    if(card){
-      card.style.background='linear-gradient(180deg,#2b2a27,#23221f)';
-      card.style.color='#eee7da';
-      card.style.border='1px solid rgba(255,255,255,.08)';
-      card.style.boxShadow='0 18px 40px rgba(0,0,0,.22)';
-    }
   }else{
     if(page) page.style.background='linear-gradient(180deg,#f3f5fb,#eceff8)';
-    if(card){
-      card.style.background='linear-gradient(180deg,#fffdf8,#f7f2e8)';
-      card.style.color='#2e2a25';
-      card.style.border='1px solid rgba(210,218,235,.7)';
-      card.style.boxShadow='0 14px 32px rgba(81,95,135,.10)';
-    }
   }
+
+  applyReaderThemeToSheets();
 
   var btn=document.getElementById('readerThemeBtn');
   if(btn) btn.textContent=readerDarkMode?'白天':'夜间';
@@ -3316,19 +3405,28 @@ window.changeReaderFont=function(d){
   readerFontSize=Math.max(12,Math.min(24,readerFontSize+d));
 
   const data=getStudyData();
-  const book=data.books.find(function(b){ return b.id===readerCurrentBookId; });
+  const book=data.books.find(function(b){
+    return b.id===readerCurrentBookId;
+  });
+
   if(book){
     readerPages=splitBookIntoPages(book.content);
-    readerPageIndex=Math.min(readerPageIndex, readerPages.length-1);
+    renderStudyPages();
   }
 
   applyReaderStyle();
-  renderStudyPage();
 };
 window.toggleReaderTheme=function(){
   readerDarkMode=!readerDarkMode;
   applyReaderStyle();
 };
+    (function(){
+  document.addEventListener('scroll', function(e){
+    if(e.target && e.target.id==='readerViewport'){
+      updateReaderPageInfo();
+    }
+  }, true);
+})();
     // ===== 查手机模块结束 ===== // ================= 表情包（贴纸）模块（0触发API，仅入聊天） =================
 function stickerDefaultState(){
   return { active:'default', groups:[{id:'default',name:'默认',stickers:[]}] };
