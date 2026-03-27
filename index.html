@@ -3199,70 +3199,120 @@ window._openCurrentStudyBook=function(){
     });
   }
 })();
-// 在 script 标签最外层先声明一个变量存我们的书本实例
 let myBook = null;
 
-// 然后把原本的 openStudyReader 替换成这个升级版：
+function escHtml(s=''){
+  return s.replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+}
+
+function smartPaginate(rawText, opt){
+  const text = String(rawText||'').replace(/\r/g,'');
+  const paras = text.split(/\n{2,}/).map(x=>x.trim()).filter(Boolean);
+
+  const probe = document.createElement('div');
+  probe.style.cssText = `
+    position:fixed; left:-99999px; top:0; visibility:hidden; z-index:-1;
+    width:${opt.innerW}px; height:${opt.innerH}px; overflow:hidden;
+    font-size:${opt.fontSize}px; line-height:${opt.lineHeight};
+    white-space:pre-wrap; word-break:break-word;
+  `;
+  document.body.appendChild(probe);
+
+  const pages = [];
+  let cur = '';
+
+  const pushPage = ()=>{ pages.push(cur.trim()); cur=''; };
+
+  for(const p of paras){
+    const candidate = cur ? (cur + '\n\n' + p) : p;
+    probe.textContent = candidate;
+    if(probe.scrollHeight <= opt.innerH){
+      cur = candidate;
+      continue;
+    }
+
+    // 当前页放不下：先把已有内容入页
+    if(cur) pushPage();
+
+    // 段落过长：按句子继续切
+    const sents = p.match(/[^。！？!?；;…]+[。！？!?；;…]?/g) || [p];
+    let block = '';
+    for(const s of sents){
+      const c2 = block ? block + s : s;
+      probe.textContent = c2;
+      if(probe.scrollHeight <= opt.innerH){
+        block = c2;
+      }else{
+        if(block){ pages.push(block.trim()); block=''; }
+        // 极端长句兜底按字符切
+        let tmp = '';
+        for(const ch of s){
+          const c3 = tmp + ch;
+          probe.textContent = c3;
+          if(probe.scrollHeight <= opt.innerH) tmp = c3;
+          else{ if(tmp) pages.push(tmp.trim()); tmp = ch; }
+        }
+        block = tmp;
+      }
+    }
+    cur = block;
+  }
+
+  if(cur.trim()) pages.push(cur.trim());
+  probe.remove();
+  return pages;
+}
+
 window.openStudyReader = function(bookId){
   const data = getStudyData();
-  const book = data.books.find(b => b.id === bookId);
+  const book = data.books.find(b=>b.id===bookId);
   if(!book) return;
 
   data.currentBookId = bookId;
   setStudyData(data);
+  document.getElementById('readerBookTitle').textContent = book.title;
 
-  var t = document.getElementById('readerBookTitle');
-  if(t) t.textContent = book.title;
-
-  // 1. 准备大干一场：清理旧的书本
   const container = document.getElementById('bookContainer');
-  container.innerHTML = ''; 
-  if(myBook) {
-    myBook.destroy();
-    myBook = null;
-  }
+  container.innerHTML = '';
+  if(myBook){ myBook.destroy(); myBook = null; }
 
-  // 2. 核心魔法：把长文字切成一页一页的
-  // （这里为了简单演示，我们按大概的字数来切分，宝宝以后可以根据屏幕高度微调这个数值哦）
-  const charsPerPage = 350; // 每页大概放350个字
-  const text = String(book.content || '').replace(/\r/g,'');
-  let pagesHtml = '';
-  
-  for(let i = 0; i < text.length; i += charsPerPage) {
-    const pageText = text.substring(i, i + charsPerPage);
-    // 给每一页加上精美的纸张背景和内边距
-    pagesHtml += `
-      <div class="page-content" style="background-color: #fdfaf3; padding: 20px; box-sizing: border-box; overflow: hidden; box-shadow: inset 0 0 10px rgba(0,0,0,0.02);">
-        <div style="font-size: 17px; line-height: 1.9; color: #2b2b2b; text-align: justify; text-indent: 2em; white-space: pre-wrap;">${pageText}</div>
-        <div style="position: absolute; bottom: 10px; width: 100%; text-align: center; font-size: 12px; color: #999; left: 0;">- ${i/charsPerPage + 1} -</div>
+  const app = document.getElementById('app');
+  const pageW = app.offsetWidth - 12;
+  const pageH = app.offsetHeight - 110;
+  const pad = 22;
+
+  const pages = smartPaginate(book.content, {
+    innerW: pageW - pad*2,
+    innerH: pageH - pad*2 - 24,
+    fontSize: 18,
+    lineHeight: 1.9
+  });
+
+  container.innerHTML = pages.map((txt,i)=>`
+    <div class="page-content" style="position:relative;width:100%;height:100%;background:#fdfaf3;overflow:hidden;">
+      <div style="padding:${pad}px;white-space:pre-wrap;word-break:break-word;font-size:18px;line-height:1.9;color:#2b2b2b;text-align:justify;text-indent:2em;">
+${escHtml(txt)}
       </div>
-    `;
-  }
-  container.innerHTML = pagesHtml;
+      <div style="position:absolute;left:0;right:0;bottom:10px;text-align:center;font-size:12px;color:#999;">- ${i+1} -</div>
+    </div>
+  `).join('');
 
   show('studyReader');
 
-  // 3. 召唤翻页引擎！
-  // 等待页面显示出来后，初始化 3D 翻页效果
-  setTimeout(() => {
-    // 获取屏幕宽度来决定书本大小
-    const screenW = document.getElementById('app').offsetWidth;
-    const screenH = document.getElementById('app').offsetHeight - 80; // 减去头部高度
-
+  setTimeout(()=>{
     myBook = new St.PageFlip(container, {
-      width: screenW, // 单页宽度
-      height: screenH, // 单页高度
-      size: "fixed",  // 固定尺寸
-      drawShadow: true, // 开启绝美的阴影！
-      showCover: true,  // 是否有硬壳封面
-      usePortrait: true, // 手机竖屏模式（单页显示）
-      maxShadowOpacity: 0.3
+      width: pageW,
+      height: pageH,
+      size: "fixed",
+      showCover: false,
+      usePortrait: true,
+      drawShadow: true,
+      maxShadowOpacity: 0.22,
+      mobileScrollSupport: false
     });
-
-    myBook.loadFromHTML(document.querySelectorAll('.page-content'));
-  }, 100);
+    myBook.loadFromHTML(container.querySelectorAll('.page-content'));
+  }, 60);
 };
-
 function applyReaderStyle(){
   var card=document.getElementById('readerCard');
   var page=document.getElementById('readerPage');
