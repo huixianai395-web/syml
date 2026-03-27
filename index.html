@@ -3222,7 +3222,9 @@ window._openCurrentStudyBook=function(){
   }
 })();
 let readerState = { bookId:null, page:0, fontSize:18, dark:false, pages:[], turning:false };
-
+let readerTapLock = false;
+let readerReflowLock = false;
+let lastFlipAt = 0;
 function escHtml(s=''){
   return String(s).replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
 }
@@ -3295,48 +3297,62 @@ function renderCurrent(){
   $('readerShade').style.background='transparent';
 }
 
-function doFlip(dir){ // dir: 1 next, -1 prev
-  if(readerState.turning) return;
-  const from=readerState.page, to=from+dir;
-  if(to<0 || to>=readerState.pages.length) return;
+function doFlip(dir){
+  const now = performance.now();
+  if(readerState.turning || readerTapLock) return;
+  if(now - lastFlipAt < 320) return; // 防抖，避免“砰砰砰”
+  lastFlipAt = now;
 
-  readerState.turning=true;
-  const turn=$('pageTurn'), under=$('pageUnder'), shade=$('readerShade');
+  const from = readerState.page, to = from + dir;
+  if(to < 0 || to >= readerState.pages.length) return;
 
-  const fromHtml=pageHTML(readerState.pages[from], from);
-  const toHtml=pageHTML(readerState.pages[to], to);
+  readerState.turning = true;
+  readerTapLock = true;
 
-  if(dir===1){ // next: 左侧书脊翻向右
+  const turn = $('pageTurn'), under = $('pageUnder'), shade = $('readerShade');
+  const fromHtml = pageHTML(readerState.pages[from], from);
+  const toHtml   = pageHTML(readerState.pages[to], to);
+
+  if(dir===1){
     turn.style.transformOrigin='left center';
-    turn.innerHTML=fromHtml;
-    under.innerHTML=toHtml;
+    turn.innerHTML = fromHtml;
+    under.innerHTML = toHtml;
   }else{
     turn.style.transformOrigin='right center';
-    turn.innerHTML=fromHtml;
-    under.innerHTML=toHtml;
+    turn.innerHTML = fromHtml;
+    under.innerHTML = toHtml;
   }
 
   turn.style.display='block';
   under.style.display='block';
-  turn.style.pointerEvents='none';
+  shade.style.background='transparent';
 
-  const dur=360;
-  const start=performance.now();
+  const dur = 620; // 之前360太快，这里放慢
+  const start = performance.now();
 
-  function frame(now){
-    const p=Math.min(1,(now-start)/dur);
-    const ease=1-Math.pow(1-p,3);
-
-    const deg = dir===1 ? (-180*ease) : (180*ease);
-    turn.style.transform=`perspective(1200px) rotateY(${deg}deg)`;
-    shade.style.background=`linear-gradient(to right, rgba(0,0,0,${0.10*(1-ease)}), transparent 45%)`;
-
-    if(p<1){ requestAnimationFrame(frame); return; }
-
-    readerState.page=to;
-    renderCurrent();
-    readerState.turning=false;
+  function easeInOutCubic(x){
+    return x < 0.5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3)/2;
   }
+
+  function frame(t){
+    const p = Math.min(1, (t - start)/dur);
+    const e = easeInOutCubic(p);
+
+    const deg = dir===1 ? (-180*e) : (180*e);
+    turn.style.transform = `perspective(1400px) rotateY(${deg}deg)`;
+    shade.style.background = `linear-gradient(to right, rgba(0,0,0,${0.06*(1-e)}), transparent 45%)`;
+
+    if(p < 1){
+      requestAnimationFrame(frame);
+      return;
+    }
+
+    readerState.page = to;
+    renderCurrent();
+    readerState.turning = false;
+    setTimeout(()=>{ readerTapLock = false; }, 80);
+  }
+
   requestAnimationFrame(frame);
 }
 
@@ -3344,20 +3360,32 @@ function bindReaderGesture(){
   const host=$('flipHost');
   let sx=0, sy=0, moving=false;
 
-  host.onpointerdown=(e)=>{ if(readerState.turning) return; sx=e.clientX; sy=e.clientY; moving=true; };
+  host.onpointerdown=(e)=>{
+    if(readerState.turning || readerReflowLock) return;
+    sx=e.clientX; sy=e.clientY; moving=true;
+  };
+
   host.onpointerup=(e)=>{
     if(!moving) return;
     const dx=e.clientX-sx, dy=e.clientY-sy;
     moving=false;
-    if(Math.abs(dx)<26 || Math.abs(dx)<Math.abs(dy)) return;
+    if(Math.abs(dx)<30 || Math.abs(dx)<Math.abs(dy)) return;
     if(dx<0) doFlip(1); else doFlip(-1);
   };
+
   host.onpointercancel=()=>{ moving=false; };
 
-  $('tapPrev').onclick=(e)=>{ e.stopPropagation(); doFlip(-1); };
-  $('tapNext').onclick=(e)=>{ e.stopPropagation(); doFlip(1); };
+  $('tapPrev').onclick=(e)=>{
+    e.stopPropagation();
+    if(readerReflowLock) return;
+    doFlip(-1);
+  };
+  $('tapNext').onclick=(e)=>{
+    e.stopPropagation();
+    if(readerReflowLock) return;
+    doFlip(1);
+  };
 }
-
 window.openStudyReader=function(bookId){
   const data=getStudyData();
   const b=data.books.find(x=>x.id===bookId); if(!b) return;
@@ -3375,10 +3403,27 @@ window.openStudyReader=function(bookId){
   }));
 };
 
-window.changeReaderFont=function(delta){
-  readerState.fontSize=Math.max(14,Math.min(24,readerState.fontSize+delta));
-  rebuildPages();
-  renderCurrent();
+window.changeReaderFont = function(delta){
+  if(readerReflowLock || readerState.turning) return;
+  readerReflowLock = true;
+
+  const next = Math.max(14, Math.min(22, readerState.fontSize + delta));
+  if(next === readerState.fontSize){
+    readerReflowLock = false;
+    return;
+  }
+
+  readerState.fontSize = next;
+
+  // 记住当前页附近位置，避免跳页
+  const oldPage = readerState.page;
+
+  requestAnimationFrame(()=>{
+    rebuildPages();
+    readerState.page = Math.min(oldPage, Math.max(0, readerState.pages.length - 1));
+    renderCurrent();
+    setTimeout(()=>{ readerReflowLock = false; }, 120);
+  });
 };
 
 window.toggleReaderTheme=function(){
