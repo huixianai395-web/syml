@@ -827,6 +827,21 @@
   font-size:12px;
   color:#8c95ab;
 }
+    #readerPage{
+  background:#eef2fb;
+}
+#readerPage.dark{
+  background:#0f1320 !important;
+}
+#bookContainer .page-content{
+  backface-visibility:hidden;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+#tapPrev,#tapNext{
+  pointer-events:auto;
+}
+#tapPrev:focus,#tapNext:focus{outline:none;}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
@@ -1333,14 +1348,13 @@
       <button class="btn" onclick="changeReaderFont(-1)">A-</button>
     </div>
   </div>
-  <div class="page" id="readerPage" style="overflow: hidden; display: flex; justify-content: center; align-items: center; touch-action: none;">
-    <!-- 这是我们的实体书容器 -->
-    <div id="bookContainer">
-      <!-- 动态生成的书页会塞到这里面 -->
-    </div>
-    <div id="bookContainer"></div>
-<div id="tapPrev" style="position:absolute;left:0;top:0;bottom:0;width:34%;z-index:6;"></div>
-<div id="tapNext" style="position:absolute;right:0;top:0;bottom:0;width:34%;z-index:6;"></div>
+  <div class="page" id="readerPage"
+     style="overflow:hidden;display:flex;justify-content:center;align-items:center;touch-action:pan-y;position:relative;">
+  <div id="bookContainer" style="width:100%;height:100%;"></div>
+
+  <!-- 点击热区（仅点击，不拦截拖动） -->
+  <button id="tapPrev" style="position:absolute;left:0;top:0;bottom:0;width:32%;z-index:6;background:transparent;border:none;"></button>
+  <button id="tapNext" style="position:absolute;right:0;top:0;bottom:0;width:32%;z-index:6;background:transparent;border:none;"></button>
   </div>
   </section>
 <!-- ===== 查手机页面 ===== -->
@@ -3203,33 +3217,48 @@ window._openCurrentStudyBook=function(){
   }
 })();
 let myBook = null;
-let readerState = { fontSize: 17, dark: false, page: 0, opening: false, bookId: null };
+let readerState = {
+  fontSize: 18,
+  dark: false,
+  page: 0,
+  bookId: null,
+  busy: false
+};
 
-function escHtml(s=''){return s.replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));}
+function escHtml(s=''){
+  return String(s).replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+}
 
 function smartPaginateByHeight(text, width, height, fontSize, lineHeight){
   const paras = String(text||'').replace(/\r/g,'').split(/\n{2,}/).map(x=>x.trim()).filter(Boolean);
   const probe = document.createElement('div');
-  probe.style.cssText = `position:fixed;left:-99999px;top:0;visibility:hidden;width:${width}px;height:${height}px;overflow:hidden;
-    font-size:${fontSize}px;line-height:${lineHeight};white-space:pre-wrap;word-break:break-word;`;
+  probe.style.cssText = `
+    position:fixed;left:-99999px;top:0;visibility:hidden;z-index:-1;
+    width:${width}px;height:${height}px;overflow:hidden;
+    font-size:${fontSize}px;line-height:${lineHeight};
+    white-space:pre-wrap;word-break:break-word;
+  `;
   document.body.appendChild(probe);
 
   const pages=[]; let cur='';
   const push=()=>{ if(cur.trim()) pages.push(cur.trim()); cur=''; };
 
   for(const p of paras){
-    const tryText = cur ? cur + '\n\n' + p : p;
-    probe.textContent = tryText;
-    if(probe.scrollHeight <= height){ cur = tryText; continue; }
+    const t = cur ? cur + '\n\n' + p : p;
+    probe.textContent = t;
+    if(probe.scrollHeight <= height){ cur=t; continue; }
     if(cur) push();
 
     const sents = p.match(/[^。！？!?；;…]+[。！？!?；;…]?/g) || [p];
     let block='';
     for(const s of sents){
-      const t = block ? block + s : s;
-      probe.textContent = t;
-      if(probe.scrollHeight <= height) block = t;
-      else { if(block.trim()) pages.push(block.trim()); block = s; }
+      const tt = block ? block + s : s;
+      probe.textContent = tt;
+      if(probe.scrollHeight <= height) block = tt;
+      else{
+        if(block.trim()) pages.push(block.trim());
+        block = s;
+      }
     }
     cur = block;
   }
@@ -3238,69 +3267,138 @@ function smartPaginateByHeight(text, width, height, fontSize, lineHeight){
   return pages.length ? pages : [''];
 }
 
-function destroyBookSafe(){
-  if(myBook){ try{ myBook.destroy(); }catch(e){} }
-  myBook = null;
+function destroyBook(){
+  if(myBook){
+    try{ myBook.destroy(); }catch(e){}
+    myBook = null;
+  }
 }
 
-let __renderLock = false;
+function buildPages(book){
+  const app = document.getElementById('app');
+  const pageW = app.offsetWidth - 8;
+  const pageH = app.offsetHeight - 102;
 
-function renderCurrentBook(){
-  if(__renderLock) return;
-  __renderLock = true;
-  try{
-    const data=getStudyData(), book=data.books.find(b=>b.id===readerState.bookId); if(!book) return;
-    const app=$('app');
-    const pageW=app.offsetWidth-8, pageH=app.offsetHeight-102;
-    const pad=14, fs=readerState.fontSize, lh=1.72; // 更密实
+  const pad = 12;              // 更密
+  const fs  = readerState.fontSize;
+  const lh  = 1.62;            // 更密
+  const innerW = pageW - pad*2;
+  const innerH = pageH - pad*2 - 8;
 
-    const bg=readerState.dark?'#161a24':'#fdfaf3';
-    const color=readerState.dark?'#dce5ff':'#2b2b2b';
-    $('readerPage').style.background = readerState.dark?'#0f1320':'#eef2fb';
-    $('readerThemeBtn').textContent = readerState.dark?'白天':'夜间';
+  const bg = readerState.dark ? '#161b27' : '#fdfaf3';
+  const fg = readerState.dark ? '#dbe4ff' : '#2b2b2b';
+  const pn = readerState.dark ? '#7e8db5' : '#999';
 
-    const pages=smartPaginateByHeight(book.content,pageW-pad*2,pageH-pad*2-14,fs,lh);
-    const container=$('bookContainer');
-    container.innerHTML=pages.map((txt,i)=>`
-      <div class="page-content" style="position:relative;width:100%;height:100%;background:${bg};overflow:hidden;">
-        <div style="padding:${pad}px;white-space:pre-wrap;word-break:break-word;font-size:${fs}px;line-height:${lh};color:${color};text-align:justify;text-indent:2em;">${escHtml(txt)}</div>
-        <div style="position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:12px;color:${readerState.dark?'#7f8fb8':'#999'};">- ${i+1} -</div>
-      </div>`).join('');
+  const pages = smartPaginateByHeight(book.content, innerW, innerH, fs, lh);
 
-    if(myBook){ try{ readerState.page = myBook.getCurrentPageIndex?.() ?? readerState.page; }catch(e){} try{ myBook.destroy(); }catch(e){} }
-    myBook=new St.PageFlip(container,{width:pageW,height:pageH,size:'fixed',usePortrait:true,showCover:false,drawShadow:true,maxShadowOpacity:.14,mobileScrollSupport:false,flippingTime:360,swipeDistance:12});
-    myBook.loadFromHTML(container.querySelectorAll('.page-content'));
+  const container = document.getElementById('bookContainer');
+  container.innerHTML = pages.map((txt,i)=>`
+    <div class="page-content" style="position:relative;width:100%;height:100%;background:${bg};overflow:hidden;">
+      <div style="padding:${pad}px;font-size:${fs}px;line-height:${lh};color:${fg};white-space:pre-wrap;word-break:break-word;text-align:justify;text-indent:2em;">
+${escHtml(txt)}
+      </div>
+      <div style="position:absolute;left:0;right:0;bottom:6px;text-align:center;font-size:11px;color:${pn};">- ${i+1} -</div>
+    </div>
+  `).join('');
 
-    const maxIdx=Math.max(0,pages.length-1);
-    readerState.page=Math.min(readerState.page,maxIdx);
-    try{ myBook.turnToPage(readerState.page); }catch(e){}
-    myBook.on('flip',e=>readerState.page=e.data);
-  }finally{ __renderLock=false; }
+  return {pageW,pageH,pagesCount:pages.length};
 }
+
+function applyReaderShellTheme(){
+  const page = document.getElementById('readerPage');
+  page.classList.toggle('dark', !!readerState.dark);
+  document.getElementById('readerThemeBtn').textContent = readerState.dark ? '白天' : '夜间';
+}
+
+function bindTapZones(){
+  const prev = document.getElementById('tapPrev');
+  const next = document.getElementById('tapNext');
+
+  prev.onclick = (e)=>{
+    e.stopPropagation();
+    if(!myBook || readerState.busy) return;
+    myBook.flipPrev();
+  };
+  next.onclick = (e)=>{
+    e.stopPropagation();
+    if(!myBook || readerState.busy) return;
+    myBook.flipNext();
+  };
+}
+
+function renderCurrentBook(keepPage=true){
+  const data = getStudyData();
+  const book = data.books.find(b=>b.id===readerState.bookId);
+  if(!book) return;
+
+  applyReaderShellTheme();
+  const {pageW,pageH,pagesCount} = buildPages(book);
+
+  const targetPage = keepPage ? Math.min(readerState.page, Math.max(0,pagesCount-1)) : 0;
+
+  destroyBook();
+  myBook = new St.PageFlip(document.getElementById('bookContainer'), {
+    width: pageW,
+    height: pageH,
+    size: "fixed",
+    showCover: false,
+    usePortrait: true,
+    drawShadow: true,
+    maxShadowOpacity: 0.18,
+    flippingTime: 420,
+    mobileScrollSupport: true, // 手势翻页关键
+    swipeDistance: 16,
+    clickEventForward: true
+  });
+
+  myBook.loadFromHTML(document.querySelectorAll('#bookContainer .page-content'));
+  try{ myBook.turnToPage(targetPage); }catch(e){}
+
+  myBook.on('flip', e=>{
+    readerState.page = e.data;
+    readerState.busy = false;
+  });
+  myBook.on('changeState', e=>{
+    // e.data: 'read' / 'flipping' / 'fold_corner'
+    readerState.busy = (e.data !== 'read');
+  });
+
+  bindTapZones();
+}
+
 window.openStudyReader = function(bookId){
-  if(readerState.opening) return;
-  readerState.opening = true;
-  readerState.bookId = bookId;
-
   const data = getStudyData();
   const book = data.books.find(b=>b.id===bookId);
-  if(!book){ readerState.opening=false; return; }
-  data.currentBookId = bookId; setStudyData(data);
+  if(!book) return;
+
+  readerState.bookId = bookId;
+  readerState.page = 0;
   document.getElementById('readerBookTitle').textContent = book.title;
 
+  data.currentBookId = bookId;
+  setStudyData(data);
+
   show('studyReader');
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    renderCurrentBook();
-    readerState.opening = false;
-  }));
+  requestAnimationFrame(()=>requestAnimationFrame(()=>renderCurrentBook(false)));
 };
 
-window.changeReaderFont = d => { readerState.fontSize=Math.max(14,Math.min(24,readerState.fontSize+d)); renderCurrentBook(); };
-window.toggleReaderTheme = () => { readerState.dark=!readerState.dark; renderCurrentBook(); };
-window.closeStudyReader = () => { if(myBook){try{myBook.destroy()}catch(e){} myBook=null;} $('bookContainer').innerHTML=''; show('study'); renderStudyHome(); };
+window.changeReaderFont = function(delta){
+  readerState.fontSize = Math.max(14, Math.min(24, readerState.fontSize + delta));
+  renderCurrentBook(true);
+};
 
-$('tapPrev').onclick = e => { e.stopPropagation(); if(myBook) myBook.flipPrev(); };
-$('tapNext').onclick = e => { e.stopPropagation(); if(myBook) myBook.flipNext(); };
+window.toggleReaderTheme = function(){
+  readerState.dark = !readerState.dark;
+  renderCurrentBook(true);
+};
+
+window.closeStudyReader = function(){
+  destroyBook();
+  const c = document.getElementById('bookContainer');
+  if(c) c.innerHTML = '';
+  show('study');
+  renderStudyHome();
+};
     // ===== 查手机模块结束 ===== // ================= 表情包（贴纸）模块（0触发API，仅入聊天） =================
 function stickerDefaultState(){
   return { active:'default', groups:[{id:'default',name:'默认',stickers:[]}] };
