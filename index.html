@@ -1338,6 +1338,9 @@
     <div id="bookContainer">
       <!-- 动态生成的书页会塞到这里面 -->
     </div>
+    <div id="bookContainer"></div>
+<div id="tapPrev" style="position:absolute;left:0;top:0;bottom:0;width:34%;z-index:6;"></div>
+<div id="tapNext" style="position:absolute;right:0;top:0;bottom:0;width:34%;z-index:6;"></div>
   </div>
   </section>
 <!-- ===== 查手机页面 ===== -->
@@ -3240,67 +3243,40 @@ function destroyBookSafe(){
   myBook = null;
 }
 
+let __renderLock = false;
+
 function renderCurrentBook(){
-  const data = getStudyData();
-  const book = data.books.find(b=>b.id===readerState.bookId);
-  if(!book) return;
+  if(__renderLock) return;
+  __renderLock = true;
+  try{
+    const data=getStudyData(), book=data.books.find(b=>b.id===readerState.bookId); if(!book) return;
+    const app=$('app');
+    const pageW=app.offsetWidth-8, pageH=app.offsetHeight-102;
+    const pad=14, fs=readerState.fontSize, lh=1.72; // 更密实
 
-  const app = document.getElementById('app');
-  const pageW = app.offsetWidth - 12;
-  const pageH = app.offsetHeight - 110;
-  const pad = 22;
+    const bg=readerState.dark?'#161a24':'#fdfaf3';
+    const color=readerState.dark?'#dce5ff':'#2b2b2b';
+    $('readerPage').style.background = readerState.dark?'#0f1320':'#eef2fb';
+    $('readerThemeBtn').textContent = readerState.dark?'白天':'夜间';
 
-  const bg = readerState.dark ? '#171a22' : '#fdfaf3';
-  const color = readerState.dark ? '#d9deea' : '#2b2b2b';
-  const pageNoColor = readerState.dark ? '#7f8aa3' : '#999';
+    const pages=smartPaginateByHeight(book.content,pageW-pad*2,pageH-pad*2-14,fs,lh);
+    const container=$('bookContainer');
+    container.innerHTML=pages.map((txt,i)=>`
+      <div class="page-content" style="position:relative;width:100%;height:100%;background:${bg};overflow:hidden;">
+        <div style="padding:${pad}px;white-space:pre-wrap;word-break:break-word;font-size:${fs}px;line-height:${lh};color:${color};text-align:justify;text-indent:2em;">${escHtml(txt)}</div>
+        <div style="position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:12px;color:${readerState.dark?'#7f8fb8':'#999'};">- ${i+1} -</div>
+      </div>`).join('');
 
-  const pages = smartPaginateByHeight(
-    book.content,
-    pageW - pad*2,
-    pageH - pad*2 - 24,
-    readerState.fontSize,
-    1.9
-  );
+    if(myBook){ try{ readerState.page = myBook.getCurrentPageIndex?.() ?? readerState.page; }catch(e){} try{ myBook.destroy(); }catch(e){} }
+    myBook=new St.PageFlip(container,{width:pageW,height:pageH,size:'fixed',usePortrait:true,showCover:false,drawShadow:true,maxShadowOpacity:.14,mobileScrollSupport:false,flippingTime:360,swipeDistance:12});
+    myBook.loadFromHTML(container.querySelectorAll('.page-content'));
 
-  const container = document.getElementById('bookContainer');
-  container.innerHTML = pages.map((txt,i)=>`
-    <div class="page-content" style="position:relative;width:100%;height:100%;background:${bg};overflow:hidden;">
-      <div style="padding:${pad}px;white-space:pre-wrap;word-break:break-word;font-size:${readerState.fontSize}px;line-height:1.9;color:${color};text-align:justify;text-indent:2em;">
-${escHtml(txt)}
-      </div>
-      <div style="position:absolute;left:0;right:0;bottom:10px;text-align:center;font-size:12px;color:${pageNoColor};">- ${i+1} -</div>
-    </div>
-  `).join('');
-
-  destroyBookSafe();
-  myBook = new St.PageFlip(container, {
-    width: pageW,
-    height: pageH,
-    size: "fixed",
-    usePortrait: true,
-    showCover: false,
-    drawShadow: true,
-    maxShadowOpacity: 0.18,
-    mobileScrollSupport: false,
-    flippingTime: 420,
-    swipeDistance: 18
-  });
-  myBook.loadFromHTML(container.querySelectorAll('.page-content'));
-  const target = Math.min(readerState.page, pages.length-1);
-  if(target >= 0) myBook.turnToPage(target);
-  myBook.on('flip', (e)=>{ readerState.page = e.data; });
-
-  // 轻点翻页（右半下一页，左半上一页）
-  const host = document.getElementById('readerPage');
-  host.onclick = (ev)=>{
-    if(!myBook) return;
-    const rect = host.getBoundingClientRect();
-    const x = ev.clientX - rect.left;
-    if(x > rect.width * 0.5) myBook.flipNext();
-    else myBook.flipPrev();
-  };
+    const maxIdx=Math.max(0,pages.length-1);
+    readerState.page=Math.min(readerState.page,maxIdx);
+    try{ myBook.turnToPage(readerState.page); }catch(e){}
+    myBook.on('flip',e=>readerState.page=e.data);
+  }finally{ __renderLock=false; }
 }
-
 window.openStudyReader = function(bookId){
   if(readerState.opening) return;
   readerState.opening = true;
@@ -3319,23 +3295,12 @@ window.openStudyReader = function(bookId){
   }));
 };
 
-window.changeReaderFont = function(delta){
-  readerState.fontSize = Math.max(14, Math.min(24, readerState.fontSize + delta));
-  renderCurrentBook(); // 关键：重分页
-};
+window.changeReaderFont = d => { readerState.fontSize=Math.max(14,Math.min(24,readerState.fontSize+d)); renderCurrentBook(); };
+window.toggleReaderTheme = () => { readerState.dark=!readerState.dark; renderCurrentBook(); };
+window.closeStudyReader = () => { if(myBook){try{myBook.destroy()}catch(e){} myBook=null;} $('bookContainer').innerHTML=''; show('study'); renderStudyHome(); };
 
-window.toggleReaderTheme = function(){
-  readerState.dark = !readerState.dark;
-  document.getElementById('readerThemeBtn').textContent = readerState.dark ? '白天' : '夜间';
-  renderCurrentBook(); // 关键：重渲染，避免夜间黑屏字看不见
-};
-
-window.closeStudyReader = function(){
-  destroyBookSafe();
-  document.getElementById('bookContainer').innerHTML = '';
-  show('study');
-  renderStudyHome();
-};
+$('tapPrev').onclick = e => { e.stopPropagation(); if(myBook) myBook.flipPrev(); };
+$('tapNext').onclick = e => { e.stopPropagation(); if(myBook) myBook.flipNext(); };
     // ===== 查手机模块结束 ===== // ================= 表情包（贴纸）模块（0触发API，仅入聊天） =================
 function stickerDefaultState(){
   return { active:'default', groups:[{id:'default',name:'默认',stickers:[]}] };
