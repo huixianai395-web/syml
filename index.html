@@ -829,6 +829,7 @@
 }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
 </head>
 <body>
 <div id="app">
@@ -1332,9 +1333,10 @@
       <button class="btn" onclick="changeReaderFont(-1)">A-</button>
     </div>
   </div>
-  <div class="page" id="readerPage">
-    <div class="card" id="readerCard" style="line-height:1.9;font-size:17px;color:#2b2b2b;">
-      <div id="readerContent" style="white-space:pre-wrap;"></div>
+  <div class="page" id="readerPage" style="overflow: hidden; display: flex; justify-content: center; align-items: center; touch-action: none;">
+    <!-- 这是我们的实体书容器 -->
+    <div id="bookContainer">
+      <!-- 动态生成的书页会塞到这里面 -->
     </div>
   </div>
   </section>
@@ -3197,36 +3199,68 @@ window._openCurrentStudyBook=function(){
     });
   }
 })();
-window.openStudyReader=function(bookId){
-  const data=getStudyData();
-  const book=data.books.find(function(b){
-    return b.id===bookId;
-  });
+// 在 script 标签最外层先声明一个变量存我们的书本实例
+let myBook = null;
+
+// 然后把原本的 openStudyReader 替换成这个升级版：
+window.openStudyReader = function(bookId){
+  const data = getStudyData();
+  const book = data.books.find(b => b.id === bookId);
   if(!book) return;
 
-  data.currentBookId=bookId;
+  data.currentBookId = bookId;
   setStudyData(data);
 
-  var t=document.getElementById('readerBookTitle');
-  var c=document.getElementById('readerContent');
+  var t = document.getElementById('readerBookTitle');
+  if(t) t.textContent = book.title;
 
-  if(t) t.textContent=book.title;
-if(c){
-  var text = String(book.content || '').replace(/\r/g,'');
-  var parts = text.split(/\n\s*\n+/).map(function(p){
-    return p.trim();
-  }).filter(Boolean);
+  // 1. 准备大干一场：清理旧的书本
+  const container = document.getElementById('bookContainer');
+  container.innerHTML = ''; 
+  if(myBook) {
+    myBook.destroy();
+    myBook = null;
+  }
 
-  c.innerHTML = parts.map(function(p){
-    return '<p style="margin:0 0 .72em;">' + p.replace(/\n/g,'<br>') + '</p>';
-  }).join('');
-}
+  // 2. 核心魔法：把长文字切成一页一页的
+  // （这里为了简单演示，我们按大概的字数来切分，宝宝以后可以根据屏幕高度微调这个数值哦）
+  const charsPerPage = 350; // 每页大概放350个字
+  const text = String(book.content || '').replace(/\r/g,'');
+  let pagesHtml = '';
+  
+  for(let i = 0; i < text.length; i += charsPerPage) {
+    const pageText = text.substring(i, i + charsPerPage);
+    // 给每一页加上精美的纸张背景和内边距
+    pagesHtml += `
+      <div class="page-content" style="background-color: #fdfaf3; padding: 20px; box-sizing: border-box; overflow: hidden; box-shadow: inset 0 0 10px rgba(0,0,0,0.02);">
+        <div style="font-size: 17px; line-height: 1.9; color: #2b2b2b; text-align: justify; text-indent: 2em; white-space: pre-wrap;">${pageText}</div>
+        <div style="position: absolute; bottom: 10px; width: 100%; text-align: center; font-size: 12px; color: #999; left: 0;">- ${i/charsPerPage + 1} -</div>
+      </div>
+    `;
+  }
+  container.innerHTML = pagesHtml;
 
-  readerFontSize=17;
-  readerDarkMode=false;
-  applyReaderStyle();
-  renderStudyHome();
   show('studyReader');
+
+  // 3. 召唤翻页引擎！
+  // 等待页面显示出来后，初始化 3D 翻页效果
+  setTimeout(() => {
+    // 获取屏幕宽度来决定书本大小
+    const screenW = document.getElementById('app').offsetWidth;
+    const screenH = document.getElementById('app').offsetHeight - 80; // 减去头部高度
+
+    myBook = new St.PageFlip(container, {
+      width: screenW, // 单页宽度
+      height: screenH, // 单页高度
+      size: "fixed",  // 固定尺寸
+      drawShadow: true, // 开启绝美的阴影！
+      showCover: true,  // 是否有硬壳封面
+      usePortrait: true, // 手机竖屏模式（单页显示）
+      maxShadowOpacity: 0.3
+    });
+
+    myBook.loadFromHTML(document.querySelectorAll('.page-content'));
+  }, 100);
 };
 
 function applyReaderStyle(){
