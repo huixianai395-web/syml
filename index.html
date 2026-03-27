@@ -3225,6 +3225,8 @@ let readerState = { bookId:null, page:0, fontSize:18, dark:false, pages:[], turn
 let readerTapLock = false;
 let readerReflowLock = false;
 let lastFlipAt = 0;
+let fontReflowTimer = null;
+let pendingFontSize = null;
 function escHtml(s=''){
   return String(s).replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
 }
@@ -3266,7 +3268,12 @@ function pageHTML(txt, idx){
   const pn=readerState.dark?'#7e8db5':'#999';
   const pad=12, lh=1.62, fs=readerState.fontSize;
 
-  return `<div style="position:absolute;inset:0;background:${bg};overflow:hidden;">
+  return `<div style="position:absolute;inset:0;background:${bg};
+background-image:
+  radial-gradient(rgba(0,0,0,0.018) 0.45px, transparent 0.45px),
+  linear-gradient(180deg, rgba(255,255,255,0.06), rgba(0,0,0,0.02));
+background-size: 3px 3px, 100% 100%;
+overflow:hidden;">
     <div style="padding:${pad}px;font-size:${fs}px;line-height:${lh};color:${fg};white-space:pre-wrap;word-break:break-word;text-align:justify;text-indent:2em;">${escHtml(txt)}</div>
     <div style="position:absolute;left:0;right:0;bottom:6px;text-align:center;font-size:11px;color:${pn};">- ${idx+1} -</div>
   </div>`;
@@ -3299,8 +3306,8 @@ function renderCurrent(){
 
 function doFlip(dir){
   const now = performance.now();
-  if(readerState.turning || readerTapLock) return;
-  if(now - lastFlipAt < 320) return; // 防抖，避免“砰砰砰”
+  if(readerState.turning || readerTapLock || readerReflowLock) return;
+  if(now - lastFlipAt < 320) return;
   lastFlipAt = now;
 
   const from = readerState.page, to = from + dir;
@@ -3310,37 +3317,57 @@ function doFlip(dir){
   readerTapLock = true;
 
   const turn = $('pageTurn'), under = $('pageUnder'), shade = $('readerShade');
+
   const fromHtml = pageHTML(readerState.pages[from], from);
   const toHtml   = pageHTML(readerState.pages[to], to);
 
-  if(dir===1){
-    turn.style.transformOrigin='left center';
-    turn.innerHTML = fromHtml;
-    under.innerHTML = toHtml;
+  turn.innerHTML = fromHtml;
+  under.innerHTML = toHtml;
+
+  // 关键：模拟“薄纸”而不是“木板”
+  turn.style.transformStyle = 'preserve-3d';
+  turn.style.backfaceVisibility = 'hidden';
+  turn.style.willChange = 'transform, filter, box-shadow';
+  turn.style.filter = 'brightness(1)';
+  turn.style.boxShadow = 'none';
+
+  if(dir === 1){
+    turn.style.transformOrigin = 'left center';
+    shade.style.background = 'linear-gradient(to right, rgba(0,0,0,0.05), transparent 42%)';
   }else{
-    turn.style.transformOrigin='right center';
-    turn.innerHTML = fromHtml;
-    under.innerHTML = toHtml;
+    turn.style.transformOrigin = 'right center';
+    shade.style.background = 'linear-gradient(to left, rgba(0,0,0,0.05), transparent 42%)';
   }
 
   turn.style.display='block';
   under.style.display='block';
-  shade.style.background='transparent';
 
-  const dur = 620; // 之前360太快，这里放慢
+  // 比之前更自然：慢一点、柔一点、轻微弹性
+  const dur = 680;
   const start = performance.now();
 
-  function easeInOutCubic(x){
-    return x < 0.5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3)/2;
-  }
+  function easeOutQuart(x){ return 1 - Math.pow(1 - x, 4); }
 
   function frame(t){
-    const p = Math.min(1, (t - start)/dur);
-    const e = easeInOutCubic(p);
+    const p = Math.min(1, (t - start) / dur);
+    const e = easeOutQuart(p);
 
-    const deg = dir===1 ? (-180*e) : (180*e);
-    turn.style.transform = `perspective(1400px) rotateY(${deg}deg)`;
-    shade.style.background = `linear-gradient(to right, rgba(0,0,0,${0.06*(1-e)}), transparent 45%)`;
+    const deg = dir === 1 ? (-170 * e) : (170 * e); // 不转满180，避免“硬板翻折”
+    const bend = 1 + 0.05 * Math.sin(Math.PI * p);   // 中段微弯曲错觉
+    const bright = 1 - 0.08 * Math.sin(Math.PI * p);
+
+    turn.style.transform = `perspective(1800px) rotateY(${deg}deg) scaleY(${bend})`;
+    turn.style.filter = `brightness(${bright})`;
+
+    // 阴影跟着翻页渐变，不突兀
+    const sh = 0.12 * Math.sin(Math.PI * p);
+    if(dir === 1){
+      shade.style.background = `linear-gradient(to right, rgba(0,0,0,${sh.toFixed(3)}), transparent 45%)`;
+      turn.style.boxShadow = `-8px 0 18px rgba(0,0,0,${(sh*0.7).toFixed(3)})`;
+    }else{
+      shade.style.background = `linear-gradient(to left, rgba(0,0,0,${sh.toFixed(3)}), transparent 45%)`;
+      turn.style.boxShadow = `8px 0 18px rgba(0,0,0,${(sh*0.7).toFixed(3)})`;
+    }
 
     if(p < 1){
       requestAnimationFrame(frame);
@@ -3350,12 +3377,11 @@ function doFlip(dir){
     readerState.page = to;
     renderCurrent();
     readerState.turning = false;
-    setTimeout(()=>{ readerTapLock = false; }, 80);
+    setTimeout(()=>{ readerTapLock = false; }, 90);
   }
 
   requestAnimationFrame(frame);
 }
-
 function bindReaderGesture(){
   const host=$('flipHost');
   let sx=0, sy=0, moving=false;
@@ -3404,26 +3430,30 @@ window.openStudyReader=function(bookId){
 };
 
 window.changeReaderFont = function(delta){
-  if(readerReflowLock || readerState.turning) return;
-  readerReflowLock = true;
+  const next = Math.max(14, Math.min(22, (pendingFontSize ?? readerState.fontSize) + delta));
+  pendingFontSize = next;
 
-  const next = Math.max(14, Math.min(22, readerState.fontSize + delta));
-  if(next === readerState.fontSize){
-    readerReflowLock = false;
-    return;
-  }
+  // 先给用户“即时反馈”
+  const btnText = next + 'px';
+  // 可选：你若有显示字号的小区域可以同步显示；没有也没关系
+  // document.getElementById('readerFontHint')?.textContent = btnText;
 
-  readerState.fontSize = next;
+  // 合并重排：180ms内连点只重排一次
+  if(fontReflowTimer) clearTimeout(fontReflowTimer);
+  fontReflowTimer = setTimeout(()=>{
+    if(readerState.turning) return; // 翻页中不重排，避免卡死
+    readerReflowLock = true;
 
-  // 记住当前页附近位置，避免跳页
-  const oldPage = readerState.page;
+    const oldPage = readerState.page;
+    readerState.fontSize = pendingFontSize ?? readerState.fontSize;
 
-  requestAnimationFrame(()=>{
-    rebuildPages();
-    readerState.page = Math.min(oldPage, Math.max(0, readerState.pages.length - 1));
-    renderCurrent();
-    setTimeout(()=>{ readerReflowLock = false; }, 120);
-  });
+    requestAnimationFrame(()=>{
+      rebuildPages();
+      readerState.page = Math.min(oldPage, Math.max(0, readerState.pages.length - 1));
+      renderCurrent();
+      readerReflowLock = false;
+    });
+  }, 180);
 };
 
 window.toggleReaderTheme=function(){
