@@ -2414,10 +2414,10 @@ const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),glo
       note: st.meNote !== undefined ? st.meNote : globalMe.note
     };
     const t=clean($('chatInput').value);
-if (t && !isMetaLine(t)) pushUser(t);
+if(t) pushUser(t);
     $('chatInput').value='';resetInputH(); if(currentId===chatId) renderChat();
 
-    const arr = getChatArr(currentId).filter(m => m?.text && !isMetaLine(m.text));
+    const arr = getChatArr(currentId);
     if(!hist.length) return;
     setTyping(chatId,true);
 
