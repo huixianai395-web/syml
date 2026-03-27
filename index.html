@@ -3227,6 +3227,11 @@ let readerReflowLock = false;
 let lastFlipAt = 0;
 let fontReflowTimer = null;
 let pendingFontSize = null;
+const FLIP_CFG = {
+  duration: 920,      // 从680提到920，明显更从容
+  maxAngle: 148,      // 从170降到148，减少木板硬折
+  curl: 0.14          // 卷页感强度
+};
 function escHtml(s=''){
   return String(s).replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
 }
@@ -3307,7 +3312,7 @@ function renderCurrent(){
 function doFlip(dir){
   const now = performance.now();
   if(readerState.turning || readerTapLock || readerReflowLock) return;
-  if(now - lastFlipAt < 320) return;
+  if(now - lastFlipAt < 420) return; // 再拉开连点节流，防砰砰感
   lastFlipAt = now;
 
   const from = readerState.page, to = from + dir;
@@ -3317,56 +3322,50 @@ function doFlip(dir){
   readerTapLock = true;
 
   const turn = $('pageTurn'), under = $('pageUnder'), shade = $('readerShade');
-
   const fromHtml = pageHTML(readerState.pages[from], from);
   const toHtml   = pageHTML(readerState.pages[to], to);
 
   turn.innerHTML = fromHtml;
   under.innerHTML = toHtml;
-
-  // 关键：模拟“薄纸”而不是“木板”
-  turn.style.transformStyle = 'preserve-3d';
-  turn.style.backfaceVisibility = 'hidden';
-  turn.style.willChange = 'transform, filter, box-shadow';
-  turn.style.filter = 'brightness(1)';
-  turn.style.boxShadow = 'none';
-
-  if(dir === 1){
-    turn.style.transformOrigin = 'left center';
-    shade.style.background = 'linear-gradient(to right, rgba(0,0,0,0.05), transparent 42%)';
-  }else{
-    turn.style.transformOrigin = 'right center';
-    shade.style.background = 'linear-gradient(to left, rgba(0,0,0,0.05), transparent 42%)';
-  }
-
   turn.style.display='block';
   under.style.display='block';
+  turn.style.backfaceVisibility='hidden';
+  turn.style.transformStyle='preserve-3d';
 
-  // 比之前更自然：慢一点、柔一点、轻微弹性
-  const dur = 680;
+  if(dir===1){
+    turn.style.transformOrigin='left center';
+  }else{
+    turn.style.transformOrigin='right center';
+  }
+
+  const dur = FLIP_CFG.duration;
+  const maxA = FLIP_CFG.maxAngle;
+  const curlK = FLIP_CFG.curl;
   const start = performance.now();
 
-  function easeOutQuart(x){ return 1 - Math.pow(1 - x, 4); }
+  const ease = x => 0.5 - 0.5 * Math.cos(Math.PI * x); // 更自然的正弦缓动
 
   function frame(t){
     const p = Math.min(1, (t - start) / dur);
-    const e = easeOutQuart(p);
+    const e = ease(p);
 
-    const deg = dir === 1 ? (-170 * e) : (170 * e); // 不转满180，避免“硬板翻折”
-    const bend = 1 + 0.05 * Math.sin(Math.PI * p);   // 中段微弯曲错觉
-    const bright = 1 - 0.08 * Math.sin(Math.PI * p);
+    // 角度不打满 + 中段卷曲增强
+    const angle = (dir===1 ? -1 : 1) * (maxA * e);
+    const curl = 1 + curlK * Math.sin(Math.PI * p);      // 纸张中段鼓起
+    const skew = (dir===1 ? -1 : 1) * (2.6 * Math.sin(Math.PI * p)); // 轻微斜切像页角受力
+    const bright = 1 - 0.10 * Math.sin(Math.PI * p);
 
-    turn.style.transform = `perspective(1800px) rotateY(${deg}deg) scaleY(${bend})`;
+    turn.style.transform =
+      `perspective(2200px) rotateY(${angle}deg) scaleY(${curl}) skewY(${skew}deg)`;
     turn.style.filter = `brightness(${bright})`;
 
-    // 阴影跟着翻页渐变，不突兀
-    const sh = 0.12 * Math.sin(Math.PI * p);
-    if(dir === 1){
-      shade.style.background = `linear-gradient(to right, rgba(0,0,0,${sh.toFixed(3)}), transparent 45%)`;
-      turn.style.boxShadow = `-8px 0 18px rgba(0,0,0,${(sh*0.7).toFixed(3)})`;
+    const sh = 0.11 * Math.sin(Math.PI * p);
+    if(dir===1){
+      shade.style.background = `linear-gradient(to right, rgba(0,0,0,${sh.toFixed(3)}), transparent 48%)`;
+      turn.style.boxShadow = `-10px 0 20px rgba(0,0,0,${(sh*0.65).toFixed(3)})`;
     }else{
-      shade.style.background = `linear-gradient(to left, rgba(0,0,0,${sh.toFixed(3)}), transparent 45%)`;
-      turn.style.boxShadow = `8px 0 18px rgba(0,0,0,${(sh*0.7).toFixed(3)})`;
+      shade.style.background = `linear-gradient(to left, rgba(0,0,0,${sh.toFixed(3)}), transparent 48%)`;
+      turn.style.boxShadow = `10px 0 20px rgba(0,0,0,${(sh*0.65).toFixed(3)})`;
     }
 
     if(p < 1){
@@ -3377,7 +3376,7 @@ function doFlip(dir){
     readerState.page = to;
     renderCurrent();
     readerState.turning = false;
-    setTimeout(()=>{ readerTapLock = false; }, 90);
+    setTimeout(()=>{ readerTapLock = false; }, 120);
   }
 
   requestAnimationFrame(frame);
@@ -3395,7 +3394,7 @@ function bindReaderGesture(){
     if(!moving) return;
     const dx=e.clientX-sx, dy=e.clientY-sy;
     moving=false;
-    if(Math.abs(dx)<30 || Math.abs(dx)<Math.abs(dy)) return;
+    if(Math.abs(dx)<22 || Math.abs(dx) < Math.abs(dy)*1.15) return;
     if(dx<0) doFlip(1); else doFlip(-1);
   };
 
