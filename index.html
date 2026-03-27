@@ -3228,9 +3228,15 @@ let lastFlipAt = 0;
 let fontReflowTimer = null;
 let pendingFontSize = null;
 const FLIP_CFG = {
-  duration: 920,      // 从680提到920，明显更从容
+  duration: 560,      // 从680提到920，明显更从容
   maxAngle: 148,      // 从170降到148，减少木板硬折
   curl: 0.14          // 卷页感强度
+};
+    let dragState = {
+  active:false,
+  dir:0,         // 1 下一页（右边缘往左拖）/ -1 上一页（左边缘往右拖）
+  startX:0,
+  progress:0
 };
 function escHtml(s=''){
   return String(s).replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
@@ -3312,7 +3318,7 @@ function renderCurrent(){
 function doFlip(dir){
   const now = performance.now();
   if(readerState.turning || readerTapLock || readerReflowLock) return;
-  if(now - lastFlipAt < 420) return; // 再拉开连点节流，防砰砰感
+  if(now - lastFlipAt < 360) return; // 再拉开连点节流，防砰砰感
   lastFlipAt = now;
 
   const from = readerState.page, to = from + dir;
@@ -3382,34 +3388,145 @@ function doFlip(dir){
   requestAnimationFrame(frame);
 }
 function bindReaderGesture(){
-  const host=$('flipHost');
-  let sx=0, sy=0, moving=false;
+  const host = $('flipHost');
+  const EDGE = 0.22;      // 左右边缘热区 22%
+  const COMMIT = 0.33;    // 松手超过33%就翻页
+  const W = () => host.clientWidth || 1;
 
-  host.onpointerdown=(e)=>{
+  const turn = $('pageTurn');
+  const under = $('pageUnder');
+  const shade = $('readerShade');
+
+  function beginDrag(dir, x){
+    if(readerState.turning || readerTapLock || readerReflowLock) return false;
+    const from = readerState.page, to = from + dir;
+    if(to < 0 || to >= readerState.pages.length) return false;
+
+    dragState.active = true;
+    dragState.dir = dir;
+    dragState.startX = x;
+    dragState.progress = 0;
+
+    turn.innerHTML = pageHTML(readerState.pages[from], from);
+    under.innerHTML = pageHTML(readerState.pages[to], to);
+
+    turn.style.display='block';
+    under.style.display='block';
+    turn.style.transformStyle='preserve-3d';
+    turn.style.backfaceVisibility='hidden';
+    turn.style.willChange='transform, filter, box-shadow';
+
+    if(dir===1){
+      turn.style.transformOrigin='left center';
+      shade.style.background='linear-gradient(to right, rgba(0,0,0,0.03), transparent 50%)';
+    }else{
+      turn.style.transformOrigin='right center';
+      shade.style.background='linear-gradient(to left, rgba(0,0,0,0.03), transparent 50%)';
+    }
+    return true;
+  }
+
+  function drawByProgress(p){
+    // p: 0~1
+    const dir = dragState.dir;
+    const maxA = 142;
+    const angle = (dir===1?-1:1) * (maxA * p);
+    const curl  = 1 + 0.11 * Math.sin(Math.PI * p);
+    const skew  = (dir===1?-1:1) * (2.2 * Math.sin(Math.PI * p));
+    const light = 1 - 0.07 * Math.sin(Math.PI * p);
+    const sh    = 0.10 * Math.sin(Math.PI * p);
+
+    turn.style.transform = `perspective(2200px) rotateY(${angle}deg) scaleY(${curl}) skewY(${skew}deg)`;
+    turn.style.filter = `brightness(${light})`;
+    if(dir===1){
+      shade.style.background=`linear-gradient(to right, rgba(0,0,0,${sh.toFixed(3)}), transparent 48%)`;
+      turn.style.boxShadow = `-10px 0 18px rgba(0,0,0,${(sh*0.62).toFixed(3)})`;
+    }else{
+      shade.style.background=`linear-gradient(to left, rgba(0,0,0,${sh.toFixed(3)}), transparent 48%)`;
+      turn.style.boxShadow = `10px 0 18px rgba(0,0,0,${(sh*0.62).toFixed(3)})`;
+    }
+  }
+
+  function endDrag(commit){
+    if(!dragState.active) return;
+    const from = readerState.page;
+    const to = from + dragState.dir;
+    const p0 = dragState.progress;
+    const p1 = commit ? 1 : 0;
+    const dur = commit ? 220 : 180;
+    const t0 = performance.now();
+
+    readerState.turning = true;
+
+    function ease(x){ return 1 - Math.pow(1-x,3); }
+
+    function anim(t){
+      const k = Math.min(1,(t-t0)/dur);
+      const e = ease(k);
+      const p = p0 + (p1-p0)*e;
+      drawByProgress(p);
+      if(k<1){ requestAnimationFrame(anim); return; }
+
+      if(commit){
+        readerState.page = to;
+      }
+      renderCurrent();
+      readerState.turning = false;
+      dragState.active = false;
+      dragState.progress = 0;
+      dragState.dir = 0;
+      readerTapLock = false;
+    }
+    requestAnimationFrame(anim);
+  }
+
+  host.onpointerdown = (e)=>{
     if(readerState.turning || readerReflowLock) return;
-    sx=e.clientX; sy=e.clientY; moving=true;
+    const x = e.clientX;
+    const rect = host.getBoundingClientRect();
+    const localX = x - rect.left;
+    const w = W();
+
+    // 左右边缘触发卷页，不固定右下角
+    if(localX >= w*(1-EDGE)){
+      if(beginDrag(1, x)){ host.setPointerCapture?.(e.pointerId); e.preventDefault(); }
+    }else if(localX <= w*EDGE){
+      if(beginDrag(-1, x)){ host.setPointerCapture?.(e.pointerId); e.preventDefault(); }
+    }
   };
 
-  host.onpointerup=(e)=>{
-    if(!moving) return;
-    const dx=e.clientX-sx, dy=e.clientY-sy;
-    moving=false;
-    if(Math.abs(dx)<22 || Math.abs(dx) < Math.abs(dy)*1.15) return;
-    if(dx<0) doFlip(1); else doFlip(-1);
+  host.onpointermove = (e)=>{
+    if(!dragState.active) return;
+    const dx = e.clientX - dragState.startX;
+    const w = W();
+    let p = 0;
+
+    if(dragState.dir===1){
+      // 下一页：向左拖 dx为负
+      p = Math.max(0, Math.min(1, (-dx)/(w*0.72)));
+    }else{
+      // 上一页：向右拖 dx为正
+      p = Math.max(0, Math.min(1, (dx)/(w*0.72)));
+    }
+
+    dragState.progress = p;
+    drawByProgress(p);
+    e.preventDefault();
   };
 
-  host.onpointercancel=()=>{ moving=false; };
+  host.onpointerup = (e)=>{
+    if(!dragState.active) return;
+    const commit = dragState.progress >= COMMIT;
+    endDrag(commit);
+  };
 
-  $('tapPrev').onclick=(e)=>{
-    e.stopPropagation();
-    if(readerReflowLock) return;
-    doFlip(-1);
+  host.onpointercancel = ()=>{
+    if(dragState.active) endDrag(false);
   };
-  $('tapNext').onclick=(e)=>{
-    e.stopPropagation();
-    if(readerReflowLock) return;
-    doFlip(1);
-  };
+
+  // 中间轻点快速翻页仍保留
+  $('tapPrev').onclick = (e)=>{ e.stopPropagation(); if(!dragState.active && !readerReflowLock) doFlip(-1); };
+  $('tapNext').onclick = (e)=>{ e.stopPropagation(); if(!dragState.active && !readerReflowLock) doFlip(1); };
 }
 window.openStudyReader=function(bookId){
   const data=getStudyData();
