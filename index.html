@@ -1,5 +1,7 @@
 
 
+
+
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -2400,10 +2402,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 `fatal_pattern: {"messages":...}→BLOCK`,
     ].join('\n');
   }
-function isMetaLine(s=''){
-  const x = String(s).trim();
-  return /^\[(线上聊天回复|线下RP回复)\]\s*现在是/.test(x);
-}
+
   async function sendMsg(){
     if(!currentId) return;
 const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),globalMe=getMe();
@@ -2413,11 +2412,10 @@ const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),glo
       persona: st.mePersona !== undefined ? st.mePersona : globalMe.persona,
       note: st.meNote !== undefined ? st.meNote : globalMe.note
     };
-    const t=clean($('chatInput').value);
-if(t) pushUser(t);
+    const t=clean($('chatInput').value); if(t) pushUser(t);
     $('chatInput').value='';resetInputH(); if(currentId===chatId) renderChat();
 
-    const arr = getChatArr(currentId);
+    const hist=getChatArr(chatId).filter(x=>x.text && !x.hiddenForAi).slice(-(st.contextLen||30));
     if(!hist.length) return;
     setTyping(chatId,true);
 
