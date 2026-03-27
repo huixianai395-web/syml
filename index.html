@@ -1325,7 +1325,7 @@
   </section>
   <section id="studyReader" class="screen">
   <div class="header">
-    <button class="btn" onclick="show('study');renderStudyHome()">&#8249; 返回</button>
+    <button class="btn" onclick="closeStudyReader()">&#8249; 返回</button>
     <b id="readerBookTitle">阅读中</b>
     <div class="row" style="gap:6px;">
       <button class="btn" id="readerThemeBtn" onclick="toggleReaderTheme()">夜间</button>
@@ -2326,7 +2326,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       `【输出格式铁律】：
 1. 只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}
 2. 本次回复的条数由你完全根据人设的立体性格、心理波动和当前语境自由发挥（拒绝刻板，气泡条数可多可少）。
-3. 每条消息≤23字为佳，绝对禁止超过35字。像真人发微信，短句+标点。
+3. 每条消息≤30字为佳，绝对禁止超过40字。像真人发微信，短句+标点。
 4. 【代码防粘连绝对规则】：凡是回复中包含HTML代码，必须遵守以下全部要求：a)代码必须是以<!DOCTYPE html>开头的完整文档，禁止发片段；b)整个HTML文档必须作为一个完整字符串放在JSON数组的一条里，禁止拆分成多条；c)禁止添加任何markdown标记如\`\`\`html；d)代码前后的对话文字必须和代码分开，各自独立一条。
 5. 遇到代码输出时，结构必须严格切分为：["代码前的铺垫", "html代码块", "代码后的互动"]。`,
 `6. messages数组里的每一条都只能是角色说的话（纯对话文本），严禁混入任何动作描写、心理描写、场景描写、旁白叙述。`,
@@ -2420,7 +2420,7 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
 else{
   if(out.includes('【状态栏】')){parts=[clean(out)||'...'];}
     
-  else{parts=splitAiBubbles(out); parts=mergeCodeBubbles(parts); parts=splitLongBubbles(parts,30);parts=extractCardBubbles(parts); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);}
+  else{parts=splitAiBubbles(out); parts=mergeCodeBubbles(parts); parts=splitLongBubbles(parts,37);parts=extractCardBubbles(parts); if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);}
 }
       parts=fixDanglingCommaBubbles(parts);
       parts=parts.filter(p=>isHtmlFrag(p)?true:p.trim().length>0);
@@ -3200,157 +3200,141 @@ window._openCurrentStudyBook=function(){
   }
 })();
 let myBook = null;
+let readerState = { fontSize: 17, dark: false, page: 0, opening: false, bookId: null };
 
-function escHtml(s=''){
-  return s.replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
-}
+function escHtml(s=''){return s.replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));}
 
-function smartPaginate(rawText, opt){
-  const text = String(rawText||'').replace(/\r/g,'');
-  const paras = text.split(/\n{2,}/).map(x=>x.trim()).filter(Boolean);
-
+function smartPaginateByHeight(text, width, height, fontSize, lineHeight){
+  const paras = String(text||'').replace(/\r/g,'').split(/\n{2,}/).map(x=>x.trim()).filter(Boolean);
   const probe = document.createElement('div');
-  probe.style.cssText = `
-    position:fixed; left:-99999px; top:0; visibility:hidden; z-index:-1;
-    width:${opt.innerW}px; height:${opt.innerH}px; overflow:hidden;
-    font-size:${opt.fontSize}px; line-height:${opt.lineHeight};
-    white-space:pre-wrap; word-break:break-word;
-  `;
+  probe.style.cssText = `position:fixed;left:-99999px;top:0;visibility:hidden;width:${width}px;height:${height}px;overflow:hidden;
+    font-size:${fontSize}px;line-height:${lineHeight};white-space:pre-wrap;word-break:break-word;`;
   document.body.appendChild(probe);
 
-  const pages = [];
-  let cur = '';
-
-  const pushPage = ()=>{ pages.push(cur.trim()); cur=''; };
+  const pages=[]; let cur='';
+  const push=()=>{ if(cur.trim()) pages.push(cur.trim()); cur=''; };
 
   for(const p of paras){
-    const candidate = cur ? (cur + '\n\n' + p) : p;
-    probe.textContent = candidate;
-    if(probe.scrollHeight <= opt.innerH){
-      cur = candidate;
-      continue;
-    }
+    const tryText = cur ? cur + '\n\n' + p : p;
+    probe.textContent = tryText;
+    if(probe.scrollHeight <= height){ cur = tryText; continue; }
+    if(cur) push();
 
-    // 当前页放不下：先把已有内容入页
-    if(cur) pushPage();
-
-    // 段落过长：按句子继续切
     const sents = p.match(/[^。！？!?；;…]+[。！？!?；;…]?/g) || [p];
-    let block = '';
+    let block='';
     for(const s of sents){
-      const c2 = block ? block + s : s;
-      probe.textContent = c2;
-      if(probe.scrollHeight <= opt.innerH){
-        block = c2;
-      }else{
-        if(block){ pages.push(block.trim()); block=''; }
-        // 极端长句兜底按字符切
-        let tmp = '';
-        for(const ch of s){
-          const c3 = tmp + ch;
-          probe.textContent = c3;
-          if(probe.scrollHeight <= opt.innerH) tmp = c3;
-          else{ if(tmp) pages.push(tmp.trim()); tmp = ch; }
-        }
-        block = tmp;
-      }
+      const t = block ? block + s : s;
+      probe.textContent = t;
+      if(probe.scrollHeight <= height) block = t;
+      else { if(block.trim()) pages.push(block.trim()); block = s; }
     }
     cur = block;
   }
-
-  if(cur.trim()) pages.push(cur.trim());
+  push();
   probe.remove();
-  return pages;
+  return pages.length ? pages : [''];
 }
 
-window.openStudyReader = function(bookId){
+function destroyBookSafe(){
+  if(myBook){ try{ myBook.destroy(); }catch(e){} }
+  myBook = null;
+}
+
+function renderCurrentBook(){
   const data = getStudyData();
-  const book = data.books.find(b=>b.id===bookId);
+  const book = data.books.find(b=>b.id===readerState.bookId);
   if(!book) return;
-
-  data.currentBookId = bookId;
-  setStudyData(data);
-  document.getElementById('readerBookTitle').textContent = book.title;
-
-  const container = document.getElementById('bookContainer');
-  container.innerHTML = '';
-  if(myBook){ myBook.destroy(); myBook = null; }
 
   const app = document.getElementById('app');
   const pageW = app.offsetWidth - 12;
   const pageH = app.offsetHeight - 110;
   const pad = 22;
 
-  const pages = smartPaginate(book.content, {
-    innerW: pageW - pad*2,
-    innerH: pageH - pad*2 - 24,
-    fontSize: 18,
-    lineHeight: 1.9
-  });
+  const bg = readerState.dark ? '#171a22' : '#fdfaf3';
+  const color = readerState.dark ? '#d9deea' : '#2b2b2b';
+  const pageNoColor = readerState.dark ? '#7f8aa3' : '#999';
 
+  const pages = smartPaginateByHeight(
+    book.content,
+    pageW - pad*2,
+    pageH - pad*2 - 24,
+    readerState.fontSize,
+    1.9
+  );
+
+  const container = document.getElementById('bookContainer');
   container.innerHTML = pages.map((txt,i)=>`
-    <div class="page-content" style="position:relative;width:100%;height:100%;background:#fdfaf3;overflow:hidden;">
-      <div style="padding:${pad}px;white-space:pre-wrap;word-break:break-word;font-size:18px;line-height:1.9;color:#2b2b2b;text-align:justify;text-indent:2em;">
+    <div class="page-content" style="position:relative;width:100%;height:100%;background:${bg};overflow:hidden;">
+      <div style="padding:${pad}px;white-space:pre-wrap;word-break:break-word;font-size:${readerState.fontSize}px;line-height:1.9;color:${color};text-align:justify;text-indent:2em;">
 ${escHtml(txt)}
       </div>
-      <div style="position:absolute;left:0;right:0;bottom:10px;text-align:center;font-size:12px;color:#999;">- ${i+1} -</div>
+      <div style="position:absolute;left:0;right:0;bottom:10px;text-align:center;font-size:12px;color:${pageNoColor};">- ${i+1} -</div>
     </div>
   `).join('');
 
-  show('studyReader');
+  destroyBookSafe();
+  myBook = new St.PageFlip(container, {
+    width: pageW,
+    height: pageH,
+    size: "fixed",
+    usePortrait: true,
+    showCover: false,
+    drawShadow: true,
+    maxShadowOpacity: 0.18,
+    mobileScrollSupport: false,
+    flippingTime: 420,
+    swipeDistance: 18
+  });
+  myBook.loadFromHTML(container.querySelectorAll('.page-content'));
+  const target = Math.min(readerState.page, pages.length-1);
+  if(target >= 0) myBook.turnToPage(target);
+  myBook.on('flip', (e)=>{ readerState.page = e.data; });
 
-  setTimeout(()=>{
-    myBook = new St.PageFlip(container, {
-      width: pageW,
-      height: pageH,
-      size: "fixed",
-      showCover: false,
-      usePortrait: true,
-      drawShadow: true,
-      maxShadowOpacity: 0.22,
-      mobileScrollSupport: false
-    });
-    myBook.loadFromHTML(container.querySelectorAll('.page-content'));
-  }, 60);
-};
-function applyReaderStyle(){
-  var card=document.getElementById('readerCard');
-  var page=document.getElementById('readerPage');
-  var content=document.getElementById('readerContent');
-
-  if(card) card.style.fontSize=readerFontSize+'px';
-  if(content) content.style.fontSize=readerFontSize+'px';
-
-  if(readerDarkMode){
-    if(page) page.style.background='linear-gradient(180deg,#1f2126,#17181c)';
-    if(card){
-      card.style.background='linear-gradient(180deg,#2b2a27,#23221f)';
-      card.style.color='#eee7da';
-      card.style.border='1px solid rgba(255,255,255,.08)';
-      card.style.boxShadow='0 18px 40px rgba(0,0,0,.22)';
-    }
-  }else{
-    if(page) page.style.background='linear-gradient(180deg,#f3f5fb,#eceff8)';
-    if(card){
-      card.style.background='linear-gradient(180deg,#fffdf8,#f7f2e8)';
-      card.style.color='#2e2a25';
-      card.style.border='1px solid rgba(210,218,235,.7)';
-      card.style.boxShadow='0 14px 32px rgba(81,95,135,.10)';
-    }
-  }
-
-  var btn=document.getElementById('readerThemeBtn');
-  if(btn) btn.textContent=readerDarkMode?'白天':'夜间';
+  // 轻点翻页（右半下一页，左半上一页）
+  const host = document.getElementById('readerPage');
+  host.onclick = (ev)=>{
+    if(!myBook) return;
+    const rect = host.getBoundingClientRect();
+    const x = ev.clientX - rect.left;
+    if(x > rect.width * 0.5) myBook.flipNext();
+    else myBook.flipPrev();
+  };
 }
 
-window.changeReaderFont=function(d){
-  readerFontSize=Math.max(12,Math.min(24,readerFontSize+d));
-  applyReaderStyle();
+window.openStudyReader = function(bookId){
+  if(readerState.opening) return;
+  readerState.opening = true;
+  readerState.bookId = bookId;
+
+  const data = getStudyData();
+  const book = data.books.find(b=>b.id===bookId);
+  if(!book){ readerState.opening=false; return; }
+  data.currentBookId = bookId; setStudyData(data);
+  document.getElementById('readerBookTitle').textContent = book.title;
+
+  show('studyReader');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    renderCurrentBook();
+    readerState.opening = false;
+  }));
 };
 
-window.toggleReaderTheme=function(){
-  readerDarkMode=!readerDarkMode;
-  applyReaderStyle();
+window.changeReaderFont = function(delta){
+  readerState.fontSize = Math.max(14, Math.min(24, readerState.fontSize + delta));
+  renderCurrentBook(); // 关键：重分页
+};
+
+window.toggleReaderTheme = function(){
+  readerState.dark = !readerState.dark;
+  document.getElementById('readerThemeBtn').textContent = readerState.dark ? '白天' : '夜间';
+  renderCurrentBook(); // 关键：重渲染，避免夜间黑屏字看不见
+};
+
+window.closeStudyReader = function(){
+  destroyBookSafe();
+  document.getElementById('bookContainer').innerHTML = '';
+  show('study');
+  renderStudyHome();
 };
     // ===== 查手机模块结束 ===== // ================= 表情包（贴纸）模块（0触发API，仅入聊天） =================
 function stickerDefaultState(){
@@ -4315,7 +4299,7 @@ window._publishMyMoment = function() {
 
   setTimeout(() => { window._triggerMomentsAI(newId); }, 1500);
 };
-// ================= 4. 生态引擎 (完美复刻截图：海量NPC + 超级修罗场) =================
+// ================= 4. 生态引擎 (完美复刻截图：海量NPC ) =================
   window._triggerMomentsAI = async function(momentId) {
     try {
       const ms = getMoments();
@@ -4334,11 +4318,11 @@ window._publishMyMoment = function() {
 【根据人设和玩家互动的男主列表】：
 ${viewersInfo}
 【核心任务（必须严格执行，字数要足！）】：
-1. 必须虚构 1～3个玩家的【普通微信好友】（如：女闺蜜夸美貌、吃瓜群众、朋友等）和男主们穿插排队评论回复，点赞速度前后位置看男主人设决定，回复也一定要极度贴合人设。
-2. 男主们看到后，根据贴合人设进行赞和评论！
-3. 男主们也可以【亲自回复】那些玩家的虚构配角，必须贴合根据人设来，活人感强一点）！
-4. 男主们也要看自己的人设给玩家留言或者点赞，一定要一切符合人设。
-5. 整个评论区的评论总数必须在 8到 10条之间，呈现出真实的微信感！`;
+1. 必须虚构 1～3个玩家的【普通微信好友】（如：女闺蜜、朋友等）和男主们穿插排队评论回复，点赞速度前后位置看男主人设决定，回复也一定要极度贴合人设。
+
+2. 男主们也可以看人设偶尔【亲自回复】那些玩家的虚构配角，必须贴合根据人设来，活人感强一点）！
+3. 男主们也要看自己的人设给玩家留言或者点赞，一定要一切符合人设。
+4. 整个评论区的评论总数必须在 8到 10条之间，呈现出真实的微信感！`;
       }
       else {
         const contacts = getContacts() || [];
