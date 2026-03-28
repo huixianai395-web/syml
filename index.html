@@ -5308,6 +5308,26 @@ window.renderNotesList = function(){
     `;
   }).join('');
 };
+  // 【终极唤醒引擎】：带上 window. 官方头衔，绝对不会再失联！
+window.toggleNotes = function(){
+  const drawer = document.getElementById('notesDrawer');
+  const overlay = document.getElementById('notesOverlay');
+  if(!drawer || !overlay) return;
+
+  const isOpen = drawer.style.right === '0px';
+  if(isOpen){
+    drawer.style.right = '-320px';
+    overlay.style.opacity = '0';
+    setTimeout(()=> overlay.style.display = 'none', 300);
+  } else {
+    // 【神级修复】：强制呼叫全局的新员工，并且完美读取外挂内存，绝不报错！
+    if(window.renderNotesList) window.renderNotesList();
+    overlay.style.display = 'block';
+    overlay.offsetWidth;
+    overlay.style.opacity = '1';
+    drawer.style.right = '0px';
+  }
+};
   })();
 
   </script>
