@@ -1393,7 +1393,7 @@
   </div>
     <!-- 绝美右侧笔记抽屉 -->
   <div id="notesOverlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.4);z-index:99;display:none;opacity:0;transition:opacity 0.3s;" onclick="toggleNotes()"></div>
-  <div id="notesDrawer" style="position:absolute;top:0;bottom:0;right:-320px;width:260px;background:rgba(255,255,255,0.92);backdrop-filter:blur(24px) saturate(150%);border-left:1px solid rgba(255,255,255,0.6);z-index:100;transition:right 0.35s cubic-bezier(0.32, 0.72, 0, 1);overflow-y:auto;padding:20px 14px;box-shadow: -10px 0 30px rgba(47,102,216,0.08);">
+  <div id="notesDrawer" style="position:absolute;top:0;bottom:0;right:-320px;width:260px;background:rgba(255,255,255,0.92);backdrop-filter:blur(24px) saturate(150%);border-left:1px solid rgba(255,255,255,0.6);z-index:100;transition:right 0.35s cubic-bezier(0.32, 0.72, 0, 1);overflow-y:auto;padding:20px 14px;box-shadow: -10px 0 30px rgba(47,102,216,0.08); outline:none; -webkit-tap-highlight-color:transparent;">
     <div style="font-size:18px;font-weight:bold;margin-bottom:16px;color:#d87093;padding-left:6px;display:flex;justify-content:space-between;align-items:center;">
       <span>我的笔记 📝</span>
       <span style="font-size:12px;color:#888;font-weight:normal;cursor:pointer;" onclick="toggleNotes()">关闭 ✕</span>
@@ -1412,7 +1412,7 @@
      <!-- 【神级修复】：极其暴力的透明覆盖法，专治 Safari 各种不服！ -->
      <div style="position:relative; width:32px; height:32px; border-radius:50%; background:conic-gradient(red, yellow, lime, aqua, blue, magenta, red); border:2px solid #fff; box-shadow:0 2px 8px rgba(0,0,0,0.15); display:grid; place-items:center; font-size:16px; color:#fff; font-weight:bold; overflow:hidden;">
        +
-       <input type="color" onchange="changeReaderBg(this.value, false)" style="position:absolute; inset:-10px; width:200%; height:200%; opacity:0; cursor:pointer;">
+       <input type="color" oninput="changeReaderBg(this.value, false, false)" onchange="changeReaderBg(this.value, false, false)" style="position:absolute; inset:-10px; width:200%; height:200%; opacity:0; cursor:pointer;">
      </div>
   </div>
   </section>
@@ -3695,29 +3695,7 @@ window.changeReaderFont = function(delta){
   renderCurrent();
 };
 
-// 【神级修复】：覆盖旧的换肤引擎，让背景色也存入外挂硬盘！
-window.changeReaderBg = function(colorHex, isDark){
-  readerState.dark = isDark;
-  readerState.customBg = colorHex;
-  
-  // 【重点】：存入外挂硬盘，永久记忆！
-  const data = getStudyData();
-  data.customBg = colorHex;
-  data.isDark = isDark;
-  setStudyData(data);
-  
-  const drawers = [document.getElementById('tocDrawer'), document.getElementById('notesDrawer')];
-  drawers.forEach(drawer => {
-    if(drawer) {
-      drawer.style.background = isDark ? 'rgba(28, 33, 43, 0.92)' : 'rgba(255,255,255,0.92)';
-      drawer.style.color = isDark ? '#dbe4ff' : '#22304a';
-    }
-  });
 
-  const pal = document.getElementById('bgPalette');
-  if(pal) pal.style.display = 'none';
-  renderCurrent(); 
-};
 
 // 【终极拦截】：打开书本时，自动读取外挂硬盘里的偏好！
 const oldOpenStudyReader = window.openStudyReader;
@@ -3737,11 +3715,18 @@ window.toggleBgPalette = function(){
   if(pal) pal.style.display = pal.style.display === 'none' ? 'flex' : 'none';
 };
 
-// 核心换肤引擎（极其纯净，拒绝死循环！）
-window.changeReaderBg = function(colorHex, isDark){
+// 【终极纯净版】：彻底干掉分身，唯一指定换肤引擎！融合外挂内存！
+window.changeReaderBg = function(colorHex, isDark, hidePalette = true){
   readerState.dark = isDark;
   readerState.customBg = colorHex;
   
+  // 【外挂内存核心】：死死记住老婆大人的绝美审美！
+  const data = getStudyData();
+  data.customBg = colorHex;
+  data.isDark = isDark;
+  setStudyData(data); // 静默双写，永久封存！
+  
+  // 让抽屉也跟着变色，拯救强迫症！
   const drawers = [document.getElementById('tocDrawer'), document.getElementById('notesDrawer')];
   drawers.forEach(drawer => {
     if(drawer) {
@@ -3750,9 +3735,13 @@ window.changeReaderBg = function(colorHex, isDark){
     }
   });
 
-  const pal = document.getElementById('bgPalette');
-  if(pal) pal.style.display = 'none';
-  renderCurrent(); // 直接呼叫底层画板，魔法瞬间生效！
+  // 只有点击固定颜色时才隐藏面板，滑动彩虹取色器时不隐藏！
+  if(hidePalette){
+    const pal = document.getElementById('bgPalette');
+    if(pal) pal.style.display = 'none';
+  }
+  
+  renderCurrent(); // 瞬间重绘，魔法生效！
 };
 
 // 唤醒右侧笔记抽屉
@@ -5269,27 +5258,36 @@ window._replyMomentCommentAI = async function(momentId, npcName, userText) {
     finally { e.target.value = ''; }
   });
   })();
-  // 【全新神级雷达】：全书地毯式搜索文字，瞬间跳页！
+// 【全新降维打击雷达】：去掉所有空格和换行进行硬核匹配，跨页也能瞬间抓出来！
 window.jumpToHighlightText = function(text){
   if(!text) return;
-  const target = escHtml(text);
+  // 暴力去除所有空格、换行，进行极其纯粹的文本比对！
+  const target = text.replace(/\s+/g, '');
   let foundPage = -1;
   
-  // 在当前动态计算的分页数组里，一页一页找！
   for(let i = 0; i < readerState.pages.length; i++){
-    if(escHtml(readerState.pages[i]).includes(target)){
+    const pageText = escHtml(readerState.pages[i]).replace(/\s+/g, '');
+    if(pageText.includes(target)){
       foundPage = i;
       break;
     }
   }
   
   if(foundPage !== -1){
-    toggleNotes(); // 优雅地关掉笔记抽屉
-    jumpToPage(foundPage); // 瞬间飞跃到那一页！
+    // 优雅地关掉笔记抽屉
+    const drawer = document.getElementById('notesDrawer');
+    if(drawer) drawer.style.right = '-320px';
+    const overlay = document.getElementById('notesOverlay');
+    if(overlay) { overlay.style.opacity = '0'; setTimeout(()=> overlay.style.display = 'none', 300); }
+    
+    // 瞬间飞跃到那一页！
+    jumpToPage(foundPage); 
   } else {
-    alert('老婆，这段字可能跨页了或者被改字号挤跑了，雷达暂时找不到它啦！');
+    alert('老婆，这段字可能跨了很长很长的页，雷达被彻底干扰啦！');
   }
 };
+  
+  
 
 // 【升级版】：给笔记列表的每一个卡片，都装上点击跃迁的魔法！
 window.renderNotesList = function(){
