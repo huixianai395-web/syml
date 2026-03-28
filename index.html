@@ -1398,13 +1398,19 @@
     <div id="notesList" style="display:flex;flex-direction:column;gap:12px;"></div>
   </div>
 
-  <!-- 沉浸式底部背景调色盘 -->
+  <!-- 沉浸式底部背景调色盘（加入彩虹自定义取色器！） -->
   <div id="bgPalette" style="display:none; position:fixed; bottom:calc(40px + var(--safe-bottom)); left:50%; transform:translateX(-50%); background:rgba(255,255,255,0.95); backdrop-filter:blur(20px); border-radius:999px; box-shadow:0 12px 40px rgba(47,102,216,0.15); border:1px solid rgba(255,255,255,0.8); z-index:9999; padding:10px 16px; gap:16px; align-items:center;">
      <div onclick="changeReaderBg('#fdfaf3', false)" style="width:32px;height:32px;border-radius:50%;background:#fdfaf3;border:2px solid #e5e0d8;cursor:pointer;box-shadow:inset 0 2px 4px rgba(0,0,0,0.05);" title="羊皮纸"></div>
      <div onclick="changeReaderBg('#e8f0e4', false)" style="width:32px;height:32px;border-radius:50%;background:#e8f0e4;border:2px solid #cce0c4;cursor:pointer;box-shadow:inset 0 2px 4px rgba(0,0,0,0.05);" title="护眼绿"></div>
      <div onclick="changeReaderBg('#fdf0f3', false)" style="width:32px;height:32px;border-radius:50%;background:#fdf0f3;border:2px solid #f0d8dd;cursor:pointer;box-shadow:inset 0 2px 4px rgba(0,0,0,0.05);" title="樱花粉"></div>
      <div style="width:1px; height:20px; background:rgba(0,0,0,0.1);"></div>
      <div onclick="changeReaderBg('#161b27', true)" style="width:32px;height:32px;border-radius:50%;background:#161b27;border:2px solid #444;cursor:pointer;box-shadow:inset 0 2px 4px rgba(0,0,0,0.5);" title="极客黑"></div>
+     
+     <!-- 【新增】：无积极客调色盘！ -->
+     <label style="width:32px;height:32px;border-radius:50%;background:conic-gradient(red, yellow, lime, aqua, blue, magenta, red);border:2px solid #fff;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.15);display:grid;place-items:center;font-size:16px;color:#fff;font-weight:bold;text-shadow:0 1px 2px rgba(0,0,0,0.5);" title="自定义颜色">
+       <input type="color" style="display:none;" onchange="changeReaderBg(this.value, false)">
+       +
+     </label>
   </div>
   </section>
 <!-- ===== 查手机页面 ===== -->
@@ -3651,6 +3657,75 @@ window.openStudyReader=function(bookId){
     renderCurrent();
     bindReaderGesture();
   }));
+};
+    // 【神级修复】：补全丢失的目录神经元！
+window.toggleToc = function(){
+  const drawer = document.getElementById('tocDrawer');
+  const overlay = document.getElementById('tocOverlay');
+  if(!drawer || !overlay) return;
+  const isOpen = drawer.style.left === '0px';
+  if(isOpen){
+    drawer.style.left = '-280px';
+    overlay.style.opacity = '0';
+    setTimeout(()=> overlay.style.display = 'none', 300);
+  } else {
+    renderTocList(); 
+    overlay.style.display = 'block';
+    overlay.offsetWidth; 
+    overlay.style.opacity = '1';
+    drawer.style.left = '0px';
+  }
+};
+
+// 【神级修复】：字号调节引擎，并存入外挂硬盘！
+window.changeReaderFont = function(delta){
+  // 限制字号在 12 到 36 之间，防止撑爆屏幕
+  readerState.fontSize = Math.max(12, Math.min(36, readerState.fontSize + delta));
+  
+  // 【重点】：存入外挂硬盘，永久记忆！
+  const data = getStudyData();
+  data.readerFontSize = readerState.fontSize;
+  setStudyData(data);
+  
+  // 字号变了，必须重新计算整本书的分页！
+  rebuildPages(); 
+  renderCurrent();
+};
+
+// 【神级修复】：覆盖旧的换肤引擎，让背景色也存入外挂硬盘！
+window.changeReaderBg = function(colorHex, isDark){
+  readerState.dark = isDark;
+  readerState.customBg = colorHex;
+  
+  // 【重点】：存入外挂硬盘，永久记忆！
+  const data = getStudyData();
+  data.customBg = colorHex;
+  data.isDark = isDark;
+  setStudyData(data);
+  
+  const drawers = [document.getElementById('tocDrawer'), document.getElementById('notesDrawer')];
+  drawers.forEach(drawer => {
+    if(drawer) {
+      drawer.style.background = isDark ? 'rgba(28, 33, 43, 0.92)' : 'rgba(255,255,255,0.92)';
+      drawer.style.color = isDark ? '#dbe4ff' : '#22304a';
+    }
+  });
+
+  const pal = document.getElementById('bgPalette');
+  if(pal) pal.style.display = 'none';
+  renderCurrent(); 
+};
+
+// 【终极拦截】：打开书本时，自动读取外挂硬盘里的偏好！
+const oldOpenStudyReader = window.openStudyReader;
+window.openStudyReader = function(bookId){
+  const data = getStudyData();
+  // 读取存好的字号和背景
+  if(data.readerFontSize) readerState.fontSize = data.readerFontSize;
+  if(data.customBg) readerState.customBg = data.customBg;
+  if(data.isDark !== undefined) readerState.dark = data.isDark;
+  
+  oldOpenStudyReader(bookId); // 继续执行原来的打开逻辑
 };
 
 // 唤醒底部调色盘
