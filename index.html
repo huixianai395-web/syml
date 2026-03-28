@@ -3453,12 +3453,13 @@ function pageHTML(txt, idx){
            icon = `<sup style="color:#d87093; cursor:pointer; margin-left:3px; font-size:13px; filter:drop-shadow(0 1px 2px rgba(0,0,0,0.1));" onclick="event.stopPropagation(); showAnnotation('${escHtml(h.note)}')">💬</sup>`;
         }
         
-        htmlTxt = htmlTxt.split(safeHText).join(`<span style="${style} cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='${readerState.dark?'rgba(216,112,147,0.15)':'rgba(255,215,0,0.2)'}'" onmouseout="this.style.background='transparent'">${safeHText}</span>${icon}`);
+        // 【核心魔法】：注入 onclick 事件，阻止翻页，唤起删除！(用 decodeURIComponent 完美防单引号报错)
+        const hid = h.id || 0;
+        htmlTxt = htmlTxt.split(safeHText).join(`<span style="${style} cursor:pointer; transition:background 0.2s;" onclick="event.stopPropagation(); removeHighlight(${hid}, decodeURIComponent('${encodeURIComponent(h.text)}'))" onmouseover="this.style.background='${readerState.dark?'rgba(216,112,147,0.15)':'rgba(255,215,0,0.2)'}'" onmouseout="this.style.background='transparent'">${safeHText}</span>${icon}`);
       }
     });
   }
 
-  // 【终极防乱跑锁】：外层 pointer-events: none，内层恢复 auto！
   return `<div style="position:absolute;inset:0;background:${bg};
 background-image:
   radial-gradient(rgba(0,0,0,0.018) 0.45px, transparent 0.45px),
@@ -3772,26 +3773,31 @@ window.addBookmark = function(){
     renderTocList(); 
   }
 };
-  let currentSelectedText = ''; // 隐形记忆芯片（只留这一个！）
+  let currentSelectedText = ''; 
+let selectionTimeout = null; // 【神级防抖计时器】
 
-// 监听系统选区，召唤底部固定菜单！
+// 监听系统选区，加入防抖，允许老婆自由拖动光标扩充选区！
 document.addEventListener('selectionchange', () => {
   const reader = document.getElementById('studyReader');
   if(reader && reader.classList.contains('active')){
-    const sel = window.getSelection();
-    currentSelectedText = sel.toString().trim();
-    const bar = document.getElementById('readerSelectionBar');
+    clearTimeout(selectionTimeout); // 只要手指在拖，就取消重置
     
-    // 选中的字数在 1 到 200 之间才显示菜单，防误触
-    if(currentSelectedText.length > 0 && currentSelectedText.length < 200){ 
-      bar.style.display = 'flex';
-    } else {
-      bar.style.display = 'none';
-    }
+    selectionTimeout = setTimeout(() => {
+      const sel = window.getSelection();
+      currentSelectedText = sel.toString().trim();
+      const bar = document.getElementById('readerSelectionBar');
+      
+      // 等手指彻底停下400毫秒后，菜单才优雅浮现！
+      if(currentSelectedText.length > 0 && currentSelectedText.length < 200){ 
+        bar.style.display = 'flex';
+      } else {
+        bar.style.display = 'none';
+      }
+    }, 400); 
   }
 });
 
-// 瞬间抓取，存入硬盘！
+// 瞬间抓取，存入硬盘，并打上唯一时间戳 ID！
 window.addHighlight = function(type){
   const text = currentSelectedText; 
   if(!text) return;
@@ -3810,14 +3816,32 @@ window.addHighlight = function(type){
   const book = data.books.find(b => b.id === readerState.bookId);
   if(book){
     if(!book.highlights) book.highlights = [];
-    book.highlights.push({ text, type, note });
+    // 【核心】：加上 id: Date.now()，给每段划线发个身份证！
+    book.highlights.push({ id: Date.now(), text, type, note });
     setStudyData(data);
   }
   
-  // 清空选区，隐藏菜单，并触发重新渲染
   window.getSelection().removeAllRanges();
   document.getElementById('readerSelectionBar').style.display = 'none';
   renderCurrent(); 
+};
+
+// 【全新神级功能】：点击文字，优雅删除高亮/划线/批注！
+window.removeHighlight = function(hid, fallbackText){
+  if(!confirm('老婆，确定要取消这段高亮/划线/批注吗？')) return;
+  
+  const data = getStudyData();
+  const book = data.books.find(b => b.id === readerState.bookId);
+  if(book && book.highlights){
+    if(hid) {
+      book.highlights = book.highlights.filter(h => h.id !== hid);
+    } else {
+      // 兼容你刚才测试时存下的没有ID的老数据
+      book.highlights = book.highlights.filter(h => h.text !== fallbackText);
+    }
+    setStudyData(data);
+    renderCurrent(); // 瞬间重绘，魔法解除！
+  }
 };
 
 // 查看批注弹窗
