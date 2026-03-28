@@ -3254,9 +3254,10 @@ function smartPaginateByHeight(text, width, height, fs, lh){
   document.body.appendChild(probe);
 
   const out=[]; 
-  const chapters=[]; // 新增：用来装目录的篮子！
+  const chapters=[]; 
   // 新增：识别章节的正则魔法！
-  const chapReg=/^\s*(?:第[零一二三四五六七八九十百千\d]+[章节回卷部篇]\s*.*|[正序楔引]子|[Pp]reface|[Cc]hapter\s*\d+)/;
+  // 终极兼容版正则：兼容“第X章”、纯数字带点“1. ”、“(1) ”、“番外”、“楔子”等等！
+  const chapReg = /^\s*(?:第\s*[零一二三四五六七八九十百千两\d]+\s*[章节回卷部篇]\s*.*|[正序楔引]子|番外|后记|[Pp]reface|[Cc]hapter\s*\d+|[\(【\[]?\d+[\)\]】]?\s*[、.]?\s+.*)/;
 
   let cur='';
   const push=()=>{ if(cur.trim()) out.push(cur.trim()); cur=''; };
@@ -3491,7 +3492,30 @@ window.closeStudyReader=function(){
   const drawer = document.getElementById('tocDrawer');
   const overlay = document.getElementById('tocOverlay');
   const isOpen = drawer.style.left === '0px';
+  window.toggleToc = function(){
+  const drawer = document.getElementById('tocDrawer');
+  const overlay = document.getElementById('tocOverlay');
+  const isOpen = drawer.style.left === '0px';
   
+  if(isOpen){
+    drawer.style.left = '-280px';
+    overlay.style.opacity = '0';
+    setTimeout(()=> overlay.style.display = 'none', 300);
+  } else {
+    renderTocList(); 
+    
+    // 【新增】：审美拯救计划！根据夜间模式动态调整抽屉颜色！
+    drawer.style.background = readerState.dark ? 'rgba(28, 33, 43, 0.85)' : 'rgba(255,255,255,0.85)';
+    drawer.style.color = readerState.dark ? '#dbe4ff' : '#22304a';
+    drawer.style.borderRight = readerState.dark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(255,255,255,0.4)';
+    drawer.querySelector('div').style.color = readerState.dark ? '#dbe4ff' : '#22304a'; // 标题颜色同步
+    
+    overlay.style.display = 'block';
+    overlay.offsetWidth; 
+    overlay.style.opacity = '1';
+    drawer.style.left = '0px';
+  }
+};
   if(isOpen){
     drawer.style.left = '-280px';
     overlay.style.opacity = '0';
