@@ -3186,19 +3186,51 @@ function randomStudyCover(){
 
   reader.readAsText(file,'utf-8');
 };
-window.removeStudyBook = function(bookId){
-  if(!confirm('确定要从书房彻底删除这本书吗？')) return;
-  const data = getStudyData();
-  data.books = data.books.filter(b => b.id !== bookId);
-  if(data.currentBookId === bookId) data.currentBookId = null; // 如果删的是正在读的，清空进度
-  setStudyData(data);
+// 新增：书房多选管理的全局状态
+window.studyManageMode = false;
+window.studySelectedBooks = new Set();
+
+window.toggleStudyManage = function(){
+  window.studyManageMode = !window.studyManageMode;
+  window.studySelectedBooks.clear();
   renderStudyHome();
+};
+
+window.toggleStudyBookSelect = function(id){
+  if(window.studySelectedBooks.has(id)) window.studySelectedBooks.delete(id);
+  else window.studySelectedBooks.add(id);
+  renderStudyHome();
+};
+
+window.deleteSelectedStudyBooks = function(){
+  if(window.studySelectedBooks.size === 0) return;
+  if(!confirm(`确定要彻底删除选中的 ${window.studySelectedBooks.size} 本书吗？`)) return;
+  
+  const data = getStudyData();
+  data.books = data.books.filter(b => !window.studySelectedBooks.has(b.id));
+  if(window.studySelectedBooks.has(data.currentBookId)) data.currentBookId = null;
+  setStudyData(data);
+  
+  window.toggleStudyManage(); // 删完自动退出管理模式
 };
 
 window.renderStudyHome=function(){
   const data=getStudyData();
   const shelf=document.getElementById('studyShelf');
   const current=data.books.find(b=>b.id===data.currentBookId);
+
+  // 动态修改顶部 Header，加入“管理”按钮
+  const header = document.querySelector('#study .header');
+  if(header){
+    header.innerHTML = `
+      <button class="btn" onclick="show('home')">‹ 返回</button>
+      <b>书房</b>
+      <div style="display:flex; gap:8px;">
+        <button class="btn" onclick="toggleStudyManage()">${window.studyManageMode ? '取消' : '管理'}</button>
+        ${!window.studyManageMode ? `<button class="btn" onclick="document.getElementById('studyFileInput').click()">导入</button>` : ''}
+      </div>
+    `;
+  }
 
   const t=document.getElementById('studyContinueTitle');
   const m=document.getElementById('studyContinueMeta');
@@ -3210,21 +3242,41 @@ window.renderStudyHome=function(){
 
   if(!shelf) return;
 
+  // 渲染书架（加入选中状态的 UI 变化）
   shelf.innerHTML=data.books.map(function(book){
+    const isSel = window.studyManageMode && window.studySelectedBooks.has(book.id);
     return `
-      <div class="study-book" style="position:relative;">
-        <div class="study-book-cover" style="background:${book.cover};" onclick="openStudyReader('${book.id}')"></div>
+      <div class="study-book" style="position:relative; transition: transform 0.2s;" 
+           onclick="${window.studyManageMode ? `toggleStudyBookSelect('${book.id}')` : `openStudyReader('${book.id}')`}">
+        <div class="study-book-cover" style="background:${book.cover}; ${isSel ? 'border: 3px solid #2f66d8; opacity:0.8; transform:scale(0.96);' : ''}; transition: all 0.2s;"></div>
         <div class="study-book-title">${escHtml(book.title)}</div>
         <div class="study-book-author">${escHtml(book.author)}</div>
         
-        <!-- 新增：右上角悬浮的毛玻璃删除小按钮！ -->
-        <div onclick="removeStudyBook('${book.id}')" 
-             style="position:absolute; top:8px; right:8px; width:26px; height:26px; background:rgba(0,0,0,0.25); border-radius:50%; color:#fff; display:grid; place-items:center; font-size:16px; cursor:pointer; backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,0.2);">
-          ×
-        </div>
+        ${window.studyManageMode ? `
+          <div style="position:absolute; top:8px; right:8px; width:24px; height:24px; border-radius:50%; border:2px solid ${isSel ? '#2f66d8' : '#fff'}; background:${isSel ? '#2f66d8' : 'rgba(0,0,0,0.3)'}; color:#fff; display:grid; place-items:center; font-size:14px; box-shadow:0 2px 6px rgba(0,0,0,0.2); transition: all 0.2s;">
+            ${isSel ? '✓' : ''}
+          </div>
+        ` : ''}
       </div>
     `;
   }).join('');
+
+  // 动态渲染底部的多选操作栏
+  let batchBar = document.getElementById('studyBatchBar');
+  if(window.studyManageMode){
+    if(!batchBar){
+      batchBar = document.createElement('div');
+      batchBar.id = 'studyBatchBar';
+      batchBar.style.cssText = 'position:absolute; bottom:0; left:0; right:0; background:rgba(255,255,255,0.95); backdrop-filter:blur(14px); padding:12px 20px; border-top:1px solid #eef2fb; display:flex; justify-content:space-between; align-items:center; z-index:100; box-shadow:0 -4px 20px rgba(47,102,216,0.08); padding-bottom:calc(12px + var(--safe-bottom));';
+      document.getElementById('study').appendChild(batchBar);
+    }
+    batchBar.innerHTML = `
+      <div style="font-size:14px; color:#555;">已选择 <b style="color:#2f66d8; font-size:16px;">${window.studySelectedBooks.size}</b> 本</div>
+      <button class="btn d" onclick="deleteSelectedStudyBooks()" style="padding:8px 24px; border-radius:999px; font-weight:bold; background:#e74c3c; color:#fff; border:none; ${window.studySelectedBooks.size===0 ? 'opacity:0.5; pointer-events:none;' : 'box-shadow:0 4px 12px rgba(231,76,60,0.3);'}">删除选中</button>
+    `;
+  } else {
+    if(batchBar) batchBar.remove();
+  }
 };
 window._openCurrentStudyBook=function(){
   const data=getStudyData();
@@ -3549,7 +3601,6 @@ window.renderTocList = function(){
   const book = data.books.find(b => b.id === readerState.bookId) || {};
   const bookmarks = book.bookmarks || [];
 
-  // 绝美进度条
   let html = `
     <div style="margin-bottom:20px; padding: 14px 12px; background: ${readerState.dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'}; border-radius: 12px; border: 1px solid ${readerState.dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'};">
       <div style="display:flex; justify-content:space-between; font-size:12px; color: ${readerState.dark ? '#a0aaba' : '#555'}; margin-bottom:10px; font-weight: 500;">
@@ -3563,7 +3614,6 @@ window.renderTocList = function(){
     </div>
   `;
 
-  // 书签渲染（新增优雅的专属删除按钮）
   if(bookmarks.length > 0){
      html += `<div style="font-size:12px; color:#8a93a8; margin: 10px 0 6px 6px;">我的书签</div>`;
      html += bookmarks.map((bm, idx) => `
@@ -3580,8 +3630,8 @@ window.renderTocList = function(){
      html += `<div style="height:1px; background:${readerState.dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}; margin: 10px 0;"></div>`;
   }
 
-  // 智能隐藏原生目录
-  if(readerState.chapters && readerState.chapters.length > 1){
+  // 【神级修复】：把门槛提高到 > 2，防止野生小说乱入！
+  if(readerState.chapters && readerState.chapters.length > 2){
     html += `<div style="font-size:12px; color:#8a93a8; margin: 0 0 6px 6px;">章节目录</div>`;
     html += readerState.chapters.map(ch => {
       const isCurrent = readerState.page >= ch.page && 
