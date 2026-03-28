@@ -1378,7 +1378,7 @@
      <div class="modal-card" style="background:#fffdf9; border:1px solid #f0ecd5; color:#5c4a3a; box-shadow: 0 10px 40px rgba(110,78,42,0.15);" onclick="event.stopPropagation()">
        <div style="font-size:12px; color:#a89070; margin-bottom:12px; font-weight:bold; letter-spacing:1px;">我的批注感悟</div>
        <div id="annotationText" style="font-size:15px; line-height:1.7; white-space:pre-wrap; text-align:justify;"></div>
-       <div style="margin-top:20px; text-align:right;"><button class="btn" style="background:#f0ecd5; color:#7b5f3a; font-weight:bold;" onpointerdown="event.stopPropagation()" onclick="event.stopPropagation(); document.getElementById('annotationModal').classList.remove('active')">合上便签</button></div>
+       <div style="margin-top:20px; text-align:right;"><button class="btn" style="background:#f0ecd5; color:#7b5f3a; font-weight:bold;" onclick="document.getElementById('annotationModal').classList.remove('active')">合上便签</button></div>
      </div>
   </div>
   </div>
@@ -3769,7 +3769,33 @@ window.toggleNotes = function(){
   }
 };
 
-  
+// 渲染笔记列表引擎（绝对安全版！）
+window.renderNotesList = function(){
+  const list = document.getElementById('notesList');
+  if(!list) return;
+  const data = getStudyData();
+  const book = data.books.find(b => b.id === readerState.bookId);
+  if(!book || !book.highlights || book.highlights.length === 0){
+    list.innerHTML = `<div style="text-align:center;color:#999;font-size:13px;margin-top:40px;">还没有做任何笔记哦<br>长按文字划线试试吧~</div>`;
+    return;
+  }
+
+  list.innerHTML = book.highlights.map(h => {
+    const isNote = h.type === 'note';
+    const tag = isNote ? `<span style="background:#fff8f0;color:#d87093;padding:2px 6px;border-radius:4px;font-size:10px;margin-bottom:6px;display:inline-block;border:1px solid #f0e0e5;">📝 批注</span>` : 
+                         `<span style="background:#f0f4ff;color:#2f66d8;padding:2px 6px;border-radius:4px;font-size:10px;margin-bottom:6px;display:inline-block;">✨ 高亮</span>`;
+    
+    return `
+      <div style="background:${readerState.dark ? 'rgba(255,255,255,0.05)' : '#fff'}; border:1px solid ${readerState.dark ? 'rgba(255,255,255,0.1)' : '#f0f0f5'}; border-radius:12px; padding:12px; box-shadow:0 4px 12px rgba(0,0,0,0.03);">
+        ${tag}
+        <div style="font-size:13px; color:${readerState.dark ? '#ccc' : '#555'}; line-height:1.6; border-left:3px solid ${isNote ? '#d87093' : '#2f66d8'}; padding-left:8px; margin-bottom:${h.note ? '8px' : '0'}; text-align:justify;">
+          ${escHtml(h.text)}
+        </div>
+        ${h.note ? `<div style="font-size:14px; color:${readerState.dark ? '#fff' : '#222'}; font-weight:500; line-height:1.5;">${escHtml(h.note)}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+};
 window.removeBookmark = function(index){
   if(!confirm('确定要删除这个书签吗？')) return;
   const data = getStudyData();
@@ -5274,11 +5300,11 @@ window.jumpToHighlightText = function(text){
   }
 };
 
-// 【终极跃迁版】：给笔记列表装上实体火箭按钮，绝对防瘫痪！
+// 【升级版】：给笔记列表的每一个卡片，都装上点击跃迁的魔法！
 window.renderNotesList = function(){
   const list = document.getElementById('notesList');
   if(!list) return;
-  const data = getStudyData(); // 【外挂内存】：安全读取！
+  const data = getStudyData(); // 【外挂内存】：从这里安全读取！
   const book = data.books.find(b => b.id === readerState.bookId);
   if(!book || !book.highlights || book.highlights.length === 0){
     list.innerHTML = `<div style="text-align:center;color:#999;font-size:13px;margin-top:40px;">还没有做任何笔记哦<br>长按文字划线试试吧~</div>`;
@@ -5290,43 +5316,19 @@ window.renderNotesList = function(){
     const tag = isNote ? `<span style="background:#fff8f0;color:#d87093;padding:2px 6px;border-radius:4px;font-size:10px;margin-bottom:6px;display:inline-block;border:1px solid #f0e0e5;">📝 批注</span>` : 
                          `<span style="background:#f0f4ff;color:#2f66d8;padding:2px 6px;border-radius:4px;font-size:10px;margin-bottom:6px;display:inline-block;">✨ 高亮</span>`;
     
-    // 【终极防护】：把文字里的危险符号全部安全转码，防止炸毁 onClick 神经元！
-    const safeText = encodeURIComponent(h.text).replace(/'/g, "%27");
-
     return `
-      <div style="background:${readerState.dark ? 'rgba(255,255,255,0.05)' : '#fff'}; border:1px solid ${readerState.dark ? 'rgba(255,255,255,0.1)' : '#f0f0f5'}; border-radius:12px; padding:12px; box-shadow:0 4px 12px rgba(0,0,0,0.03); margin-bottom: 10px; position: relative;">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-          ${tag}
-          <!-- 【实体火箭】：明确的按钮，绝对防拦截，一戳就飞！ -->
-          <button onclick="jumpToHighlightText(decodeURIComponent('${safeText}'))" style="background:${readerState.dark?'rgba(47,102,216,0.2)':'#e8f0ff'}; color:#2f66d8; border:none; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:bold; cursor:pointer; box-shadow:0 1px 3px rgba(47,102,216,0.1);">🚀 定位</button>
-        </div>
-        <div style="font-size:13px; color:${readerState.dark ? '#ccc' : '#555'}; line-height:1.6; border-left:3px solid ${isNote ? '#d87093' : '#2f66d8'}; padding-left:8px; margin-bottom:${h.note ? '8px' : '0'}; margin-top:6px; text-align:justify;">
+      <div onclick="jumpToHighlightText(decodeURIComponent('${encodeURIComponent(h.text)}'))" 
+           style="background:${readerState.dark ? 'rgba(255,255,255,0.05)' : '#fff'}; border:1px solid ${readerState.dark ? 'rgba(255,255,255,0.1)' : '#f0f0f5'}; border-radius:12px; padding:12px; box-shadow:0 4px 12px rgba(0,0,0,0.03); cursor:pointer; transition:transform 0.2s;"
+           onmousedown="this.style.transform='scale(0.97)'" 
+           onmouseup="this.style.transform='scale(1)'">
+        ${tag}
+        <div style="font-size:13px; color:${readerState.dark ? '#ccc' : '#555'}; line-height:1.6; border-left:3px solid ${isNote ? '#d87093' : '#2f66d8'}; padding-left:8px; margin-bottom:${h.note ? '8px' : '0'}; text-align:justify;">
           ${escHtml(h.text)}
         </div>
-        ${h.note ? `<div style="font-size:14px; color:${readerState.dark ? '#fff' : '#222'}; font-weight:500; line-height:1.5; margin-top:8px;">${escHtml(h.note)}</div>` : ''}
+        ${h.note ? `<div style="font-size:14px; color:${readerState.dark ? '#fff' : '#222'}; font-weight:500; line-height:1.5;">${escHtml(h.note)}</div>` : ''}
       </div>
     `;
   }).join('');
-};
-  // 【终极唤醒引擎】：带上 window. 官方头衔，绝对不会再失联！
-window.toggleNotes = function(){
-  const drawer = document.getElementById('notesDrawer');
-  const overlay = document.getElementById('notesOverlay');
-  if(!drawer || !overlay) return;
-
-  const isOpen = drawer.style.right === '0px';
-  if(isOpen){
-    drawer.style.right = '-320px';
-    overlay.style.opacity = '0';
-    setTimeout(()=> overlay.style.display = 'none', 300);
-  } else {
-    // 【神级修复】：强制呼叫全局的新员工，并且完美读取外挂内存，绝不报错！
-    if(window.renderNotesList) window.renderNotesList();
-    overlay.style.display = 'block';
-    overlay.offsetWidth;
-    overlay.style.opacity = '1';
-    drawer.style.right = '0px';
-  }
 };
   })();
 
