@@ -3106,87 +3106,63 @@ document.addEventListener('click',e=>{
       $('pcResultPage').innerHTML = apps.map((a,i) => '<div class="pc-app" id="pcApp'+i+'"><div class="pc-app-hd" onclick="this.parentElement.classList.toggle(\'open\')"><div class="pc-app-icon" style="background:'+a.bg+';">'+a.icon+'</div><div class="pc-app-info"><div class="pc-app-name">'+esc(a.name)+'</div><div class="pc-app-desc">'+esc(a.desc)+'</div></div><div class="pc-app-arrow">›</div></div><div class="pc-app-body">'+a.body+'</div></div>').join('');
     }
     const K_STUDY='mp_fix_study_books';
-let readerFontSize=17,readerDarkMode=false;
+let readerFontSize=17, readerDarkMode=false;
 
-function getStudyData(){
-  try{
-    const r=JSON.parse(localStorage.getItem(K_STUDY)||'null');
-    if(r) return r;
-  }catch(e){}
-  const init={
-    currentBookId:null,
-    books:[
-      {
-        id:'book_1',
-        title:'月亮与代码',
-        author:'试读本',
-        cover:'linear-gradient(160deg,#4a667c,#283b49)',
-        content:'夜里四点，窗外的路灯斜斜照进来。\n我一直觉得，真正舒服的阅读，不该只是把字堆在屏幕上。\n\n书架最好有一点木头的温度。'
-      },
-      {
-        id:'book_2',
-        title:'春山来信',
-        author:'小说',
-        cover:'linear-gradient(160deg,#6f8046,#435227)',
-        content:'春天最先抵达的不是花，是风。\n\n她把信写得很慢，像怕每个字落下去都会惊动什么。'
-      }
-    ]
-  };
-  localStorage.setItem(K_STUDY,JSON.stringify(init));
-  return init;
-}
+// 【神级架构】：内存桥接器，拒绝卡顿！
+let studyDataCache = null; 
 
-function setStudyData(v){
-  localStorage.setItem(K_STUDY,JSON.stringify(v));
-}
-function randomStudyCover(){
-  const arr=[
-    'linear-gradient(160deg,#4a667c,#283b49)',
-    'linear-gradient(160deg,#6f8046,#435227)',
-    'linear-gradient(160deg,#8b4c35,#5c2d1f)',
-    'linear-gradient(160deg,#7a5f8e,#4b365b)',
-    'linear-gradient(160deg,#516b8b,#30445e)',
-    'linear-gradient(160deg,#7b8f4e,#536329)'
-  ];
-  return arr[Math.floor(Math.random()*arr.length)];
-}
-    window.importStudyTxtFile=function(file){
-  if(!file) return;
-
-  const reader=new FileReader();
-  reader.onload=function(e){
-    const text=String(e.target.result||'').trim();
-    if(!text){
-      alert('这本书是空的。');
-      return;
+// 异步初始化外挂内存，并自动把老数据搬新家
+async function initStudyStorage(){
+  let val = await localforage.getItem(K_STUDY);
+  if(!val){
+    try{ val = JSON.parse(localStorage.getItem(K_STUDY)); }catch(e){}
+    if(val){
+      await localforage.setItem(K_STUDY, val); // 老数据无缝搬家
+    }else{
+      val = { currentBookId:null, books:[] };
     }
+  }
+  studyDataCache = val;
+  renderStudyHome(); // 数据就位，刷新书房！
+}
+initStudyStorage(); // 启动时立即执行！
 
-    const data=getStudyData();
-    const rawName=file.name||'未命名文本';
-    const title=rawName.replace(/\.[^.]+$/,'') || '未命名文本';
+// 光速内存读取
+function getStudyData(){
+  return studyDataCache || { currentBookId:null, books:[] };
+}
 
-    const newBook={
-      id:'book_'+Date.now(),
-      title:title,
-      author:'本地导入',
-      cover:randomStudyCover(),
-      content:text
-    };
+// 内存+外挂硬盘双写静默保存
+function setStudyData(v){
+  studyDataCache = v;
+  localforage.setItem(K_STUDY, v).catch(()=>{}); 
+}
 
-    data.books.unshift(newBook);
-    data.currentBookId=newBook.id;
-    setStudyData(data);
-    renderStudyHome();
-    alert('导入成功：'+title);
+// 重新加回绝美封面更换功能（高清大图随便塞！）
+window.changeStudyCover = function(bookId){
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async (e) => {
+    const f = e.target.files?.[0]; 
+    if(!f) return;
+    try {
+      const imgData = await compressImage(f, true); // 存高清大图！无惧配额！
+      const data = getStudyData();
+      const book = data.books.find(b => b.id === bookId);
+      if(book){
+        book.cover = `url(${imgData}) center/cover no-repeat`;
+        setStudyData(data);
+        renderStudyHome();
+        alert('🎉 外挂内存生效！绝美高清封面更换成功！');
+      }
+    } catch(err) { 
+      alert('封面更换失败啦宝宝：' + err.message); 
+    }
   };
-
-  reader.onerror=function(){
-    alert('读取文件失败。');
-  };
-
-  reader.readAsText(file,'utf-8');
+  input.click();
 };
-// 新增：书房多选管理的全局状态
+
 window.studyManageMode = false;
 window.studySelectedBooks = new Set();
 
@@ -3205,45 +3181,29 @@ window.toggleStudyBookSelect = function(id){
 window.deleteSelectedStudyBooks = function(){
   if(window.studySelectedBooks.size === 0) return;
   if(!confirm(`确定要彻底删除选中的 ${window.studySelectedBooks.size} 本书吗？`)) return;
-  
   const data = getStudyData();
   data.books = data.books.filter(b => !window.studySelectedBooks.has(b.id));
   if(window.studySelectedBooks.has(data.currentBookId)) data.currentBookId = null;
   setStudyData(data);
-  
-  window.toggleStudyManage(); // 删完自动退出管理模式
-};
-
-// 新增：唤起系统相册，为书籍更换绝美封面！
-window.changeStudyCover = function(bookId){
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*';
-  input.onchange = async (e) => {
-    const f = e.target.files?.[0]; 
-    if(!f) return;
-    try {
-      // 调用咱们之前写好的完美压缩引擎
-      const imgData = await compressImage(f, true); 
-      const data = getStudyData();
-      const book = data.books.find(b => b.id === bookId);
-      if(book){
-        book.cover = `url(${imgData}) center/cover no-repeat`;
-        setStudyData(data);
-        renderStudyHome();
-        alert('🎉 绝美封面更换成功！老婆的审美天下第一！');
-      }
-    } catch(err) { 
-      alert('封面更换失败啦宝宝：' + err.message); 
-    }
-  };
-  input.click();
+  window.toggleStudyManage(); 
 };
 
 window.renderStudyHome=function(){
   const data=getStudyData();
   const shelf=document.getElementById('studyShelf');
   const current=data.books.find(b=>b.id===data.currentBookId);
+
+  const header = document.querySelector('#study .header');
+  if(header){
+    header.innerHTML = `
+      <button class="btn" onclick="show('home')">‹ 返回</button>
+      <b>书房</b>
+      <div style="display:flex; gap:8px;">
+        <button class="btn" onclick="toggleStudyManage()">${window.studyManageMode ? '取消' : '管理'}</button>
+        ${!window.studyManageMode ? `<button class="btn" onclick="document.getElementById('studyFileInput').click()">导入</button>` : ''}
+      </div>
+    `;
+  }
 
   const t=document.getElementById('studyContinueTitle');
   const m=document.getElementById('studyContinueMeta');
@@ -3256,36 +3216,55 @@ window.renderStudyHome=function(){
   if(!shelf) return;
 
   shelf.innerHTML=data.books.map(function(book){
-    // 智能计算阅读进度
+    const isSel = window.studyManageMode && window.studySelectedBooks.has(book.id);
+    
+    // 阅读进度徽章
     let pctHtml = '';
     if(book.id === readerState.bookId && readerState.pages && readerState.pages.length > 0){
       const pct = Math.round((readerState.page + 1) / readerState.pages.length * 100);
       pctHtml = `<div style="position:absolute; bottom:8px; right:8px; background:rgba(255,255,255,0.85); backdrop-filter:blur(8px); color:#2f66d8; font-size:10px; font-weight:bold; padding:2px 6px; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">已读 ${pct}%</div>`;
     }
 
+    // 绝美悬浮换封面按钮（仅在管理模式下出现！）
+    let coverBtn = '';
+    if(window.studyManageMode){
+      coverBtn = `<div onclick="event.stopPropagation(); changeStudyCover('${book.id}')" style="position:absolute; bottom:8px; left:8px; background:rgba(255,255,255,0.9); backdrop-filter:blur(12px); color:#d87093; font-size:11px; font-weight:bold; padding:4px 8px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); cursor:pointer; transition:all 0.2s;">🖼️ 换封面</div>`;
+    }
+
     return `
-      <div class="study-book" style="position:relative;">
-        <div class="study-book-cover" style="background:${book.cover};" onclick="openStudyReader('${book.id}')">
-          ${pctHtml}
+      <div class="study-book" style="position:relative; transition: transform 0.2s;" 
+           onclick="${window.studyManageMode ? `toggleStudyBookSelect('${book.id}')` : `openStudyReader('${book.id}')`}">
+        <div class="study-book-cover" style="background:${book.cover}; ${isSel ? 'border: 3px solid #2f66d8; opacity:0.8; transform:scale(0.96);' : ''}; transition: all 0.2s;">
+          ${!window.studyManageMode ? pctHtml : ''}
+          ${coverBtn}
         </div>
         <div class="study-book-title">${escHtml(book.title)}</div>
         <div class="study-book-author">${escHtml(book.author)}</div>
         
-        <!-- 优雅的毛玻璃齿轮：点击展开管理菜单 -->
-        <div tabindex="0" style="position:absolute; top:8px; right:8px; width:28px; height:28px; background:rgba(0,0,0,0.25); border-radius:50%; color:#fff; display:grid; place-items:center; font-size:14px; cursor:pointer; backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,0.2); outline:none;"
-             onclick="const m=this.nextElementSibling; m.style.display=m.style.display==='block'?'none':'block';"
-             onblur="setTimeout(()=>this.nextElementSibling.style.display='none', 200)">
-          ⚙️
-        </div>
-        
-        <!-- 隐藏的绝美悬浮菜单 -->
-        <div style="display:none; position:absolute; top:40px; right:8px; background:rgba(255,255,255,0.95); backdrop-filter:blur(16px); border-radius:12px; box-shadow:0 8px 24px rgba(47,102,216,0.15); border:1px solid rgba(255,255,255,0.6); z-index:10; overflow:hidden; width:110px;">
-          <div onclick="changeStudyCover('${book.id}')" style="padding:10px 12px; font-size:13px; color:#2f66d8; font-weight:500; cursor:pointer; border-bottom:1px solid rgba(0,0,0,0.04);" onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background='transparent'">🖼️ 更换封面</div>
-          <div onclick="removeStudyBook('${book.id}')" style="padding:10px 12px; font-size:13px; color:#e74c3c; font-weight:500; cursor:pointer;" onmouseover="this.style.background='#fff0f0'" onmouseout="this.style.background='transparent'">🗑️ 删除书籍</div>
-        </div>
+        ${window.studyManageMode ? `
+          <div style="position:absolute; top:8px; right:8px; width:24px; height:24px; border-radius:50%; border:2px solid ${isSel ? '#2f66d8' : '#fff'}; background:${isSel ? '#2f66d8' : 'rgba(0,0,0,0.3)'}; color:#fff; display:grid; place-items:center; font-size:14px; box-shadow:0 2px 6px rgba(0,0,0,0.2); transition: all 0.2s;">
+            ${isSel ? '✓' : ''}
+          </div>
+        ` : ''}
       </div>
     `;
   }).join('');
+
+  let batchBar = document.getElementById('studyBatchBar');
+  if(window.studyManageMode){
+    if(!batchBar){
+      batchBar = document.createElement('div');
+      batchBar.id = 'studyBatchBar';
+      batchBar.style.cssText = 'position:absolute; bottom:0; left:0; right:0; background:rgba(255,255,255,0.95); backdrop-filter:blur(14px); padding:12px 20px; border-top:1px solid #eef2fb; display:flex; justify-content:space-between; align-items:center; z-index:100; box-shadow:0 -4px 20px rgba(47,102,216,0.08); padding-bottom:calc(12px + var(--safe-bottom));';
+      document.getElementById('study').appendChild(batchBar);
+    }
+    batchBar.innerHTML = `
+      <div style="font-size:14px; color:#555;">已选择 <b style="color:#2f66d8; font-size:16px;">${window.studySelectedBooks.size}</b> 本</div>
+      <button class="btn d" onclick="deleteSelectedStudyBooks()" style="padding:8px 24px; border-radius:999px; font-weight:bold; background:#e74c3c; color:#fff; border:none; ${window.studySelectedBooks.size===0 ? 'opacity:0.5; pointer-events:none;' : 'box-shadow:0 4px 12px rgba(231,76,60,0.3);'}">删除选中</button>
+    `;
+  } else {
+    if(batchBar) batchBar.remove();
+  }
 };
 window._openCurrentStudyBook=function(){
   const data=getStudyData();
