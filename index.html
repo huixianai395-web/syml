@@ -3792,19 +3792,19 @@ window.addBookmark = function(){
   let currentSelectedText = ''; 
 let selectionTimeout = null; // 【神级防抖计时器】
 
-// 监听系统选区，加入防抖，允许老婆自由拖动光标扩充选区！
+// 监听系统选区，加入防抖，并【彻底解除字数封印】！
 document.addEventListener('selectionchange', () => {
   const reader = document.getElementById('studyReader');
   if(reader && reader.classList.contains('active')){
-    clearTimeout(selectionTimeout); // 只要手指在拖，就取消重置
+    clearTimeout(selectionTimeout); 
     
     selectionTimeout = setTimeout(() => {
       const sel = window.getSelection();
       currentSelectedText = sel.toString().trim();
       const bar = document.getElementById('readerSelectionBar');
       
-      // 等手指彻底停下400毫秒后，菜单才优雅浮现！
-      if(currentSelectedText.length > 0 && currentSelectedText.length < 200){ 
+      // 【神级解封】：把 200 字的安全锁直接砸掉，拉高到 2000 字！老婆想划多长划多长！
+      if(currentSelectedText.length > 0 && currentSelectedText.length < 2000){ 
         bar.style.display = 'flex';
       } else {
         bar.style.display = 'none';
