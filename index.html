@@ -5294,15 +5294,7 @@ window.renderNotesList = function(){
     `;
   }).join('');
 };
-// ================================================================
-  })();
-
-  </script>
-  <div id="modalPreview" class="modal" onclick="this.classList.remove('active')">
-  <img id="previewModalImg" style="max-width:95%;max-height:90dvh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
-  </div>
-  <script>
-// 【主程专属·绝对防御级抽屉引擎】
+  // 【主程专属·绝对防御级抽屉引擎 - 完美接入外挂内存版】
 window.toggleNotes = function(){
   const drawer = document.getElementById('notesDrawer');
   const overlay = document.getElementById('notesOverlay');
@@ -5320,7 +5312,7 @@ window.toggleNotes = function(){
     overlay.style.opacity = '1';
     drawer.style.right = '0px';
     
-    // 然后再小心翼翼地把笔记摆进去，用 try-catch 死死护住！
+    // 然后再小心翼翼地把笔记摆进去，完美连通外挂内存！
     try {
       if(window.renderNotesList) window.renderNotesList(); 
     } catch(e) {
@@ -5332,6 +5324,8 @@ window.toggleNotes = function(){
 window.renderNotesList = function(){
   const list = document.getElementById('notesList');
   if(!list) return;
+  
+  // 【核心修复】：现在我们在保护罩内部了，终于可以抱紧外挂内存了！
   const data = getStudyData(); 
   const book = data.books.find(b => b.id === readerState.bookId);
   if(!book || !book.highlights || book.highlights.length === 0){
@@ -5346,7 +5340,6 @@ window.renderNotesList = function(){
       const tag = isNote ? `<span style="background:#fff8f0;color:#d87093;padding:2px 6px;border-radius:4px;font-size:10px;margin-bottom:6px;display:inline-block;border:1px solid #f0e0e5;">📝 批注</span>` : 
                            `<span style="background:#f0f4ff;color:#2f66d8;padding:2px 6px;border-radius:4px;font-size:10px;margin-bottom:6px;display:inline-block;">✨ 高亮</span>`;
       
-      // 【终极排雷】：就算遇到外星字符也绝对不准崩溃！
       let safeText = '';
       try { 
         safeText = encodeURIComponent(h.text || '').replace(/'/g, "%27"); 
@@ -5372,6 +5365,13 @@ window.renderNotesList = function(){
   });
   list.innerHTML = html;
 };
+// ================================================================
+  })();
+
   </script>
+  <div id="modalPreview" class="modal" onclick="this.classList.remove('active')">
+  <img id="previewModalImg" style="max-width:95%;max-height:90dvh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+  </div>
+  
 </body>
   </html>
