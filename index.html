@@ -3748,25 +3748,6 @@ window.changeReaderBg = function(colorHex, isDark, hidePalette = true){
   renderCurrent(); // 瞬间重绘，魔法生效！
 };
 
-// 唤醒右侧笔记抽屉
-window.toggleNotes = function(){
-  const drawer = document.getElementById('notesDrawer');
-  const overlay = document.getElementById('notesOverlay');
-  if(!drawer || !overlay) return;
-  
-  const isOpen = drawer.style.right === '0px';
-  if(isOpen){
-    drawer.style.right = '-320px';
-    overlay.style.opacity = '0';
-    setTimeout(()=> overlay.style.display = 'none', 300);
-  } else {
-    renderNotesList(); 
-    overlay.style.display = 'block';
-    overlay.offsetWidth; 
-    overlay.style.opacity = '1';
-    drawer.style.right = '0px';
-  }
-};
 
   
 window.removeBookmark = function(index){
@@ -5242,72 +5223,8 @@ window._replyMomentCommentAI = async function(momentId, npcName, userText) {
     } catch(err) { alert('头像处理失败：' + err.message); } 
     finally { e.target.value = ''; }
   });
-  // 【终极降维雷达】：暴力脱水，只认汉字和字母，绝对精准跃迁！
-window.jumpToHighlightText = function(text){
-  if(!text) return;
-  
-  // 暴力脱水：剔除所有标点符号和空格，只保留纯文字，取前 8 个字作为超级锚点！
-  const target = text.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').slice(0, 8); 
-  let foundPage = -1;
-  
-  for(let i = 0; i < readerState.pages.length; i++){
-    // 同样把每一页的文本进行暴力脱水
-    const pageText = readerState.pages[i].replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
-    if(pageText.includes(target)){
-      foundPage = i;
-      break;
-    }
-  }
-  
-  if(foundPage !== -1){
-    // 优雅且彻底地关掉笔记抽屉
-    const drawer = document.getElementById('notesDrawer');
-    if(drawer) drawer.style.right = '-320px';
-    const overlay = document.getElementById('notesOverlay');
-    if(overlay) { overlay.style.opacity = '0'; setTimeout(()=> overlay.style.display = 'none', 300); }
-    
-    // 瞬间飞跃到那一页！
-    jumpToPage(foundPage); 
-  } else {
-    alert('老婆，这段字可能被外星人抓走了，雷达被彻底干扰啦！');
-  }
-};
-
-// 【终极跃迁版】：给笔记列表装上实体火箭按钮，绝对防瘫痪！
-window.renderNotesList = function(){
-  const list = document.getElementById('notesList');
-  if(!list) return;
-  const data = getStudyData(); // 【外挂内存】：安全读取！
-  const book = data.books.find(b => b.id === readerState.bookId);
-  if(!book || !book.highlights || book.highlights.length === 0){
-    list.innerHTML = `<div style="text-align:center;color:#999;font-size:13px;margin-top:40px;">还没有做任何笔记哦<br>长按文字划线试试吧~</div>`;
-    return;
-  }
-
-  list.innerHTML = book.highlights.map(h => {
-    const isNote = h.type === 'note';
-    const tag = isNote ? `<span style="background:#fff8f0;color:#d87093;padding:2px 6px;border-radius:4px;font-size:10px;margin-bottom:6px;display:inline-block;border:1px solid #f0e0e5;">📝 批注</span>` : 
-                         `<span style="background:#f0f4ff;color:#2f66d8;padding:2px 6px;border-radius:4px;font-size:10px;margin-bottom:6px;display:inline-block;">✨ 高亮</span>`;
-    
-    // 【终极防护】：把文字里的危险符号全部安全转码，防止炸毁 onClick 神经元！
-    const safeText = encodeURIComponent(h.text).replace(/'/g, "%27");
-
-    return `
-      <div style="background:${readerState.dark ? 'rgba(255,255,255,0.05)' : '#fff'}; border:1px solid ${readerState.dark ? 'rgba(255,255,255,0.1)' : '#f0f0f5'}; border-radius:12px; padding:12px; box-shadow:0 4px 12px rgba(0,0,0,0.03); margin-bottom: 10px; position: relative;">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-          ${tag}
-          <!-- 【实体火箭】：明确的按钮，绝对防拦截，一戳就飞！ -->
-          <button onclick="jumpToHighlightText(decodeURIComponent('${safeText}'))" style="background:${readerState.dark?'rgba(47,102,216,0.2)':'#e8f0ff'}; color:#2f66d8; border:none; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:bold; cursor:pointer; box-shadow:0 1px 3px rgba(47,102,216,0.1);">🚀 定位</button>
-        </div>
-        <div style="font-size:13px; color:${readerState.dark ? '#ccc' : '#555'}; line-height:1.6; border-left:3px solid ${isNote ? '#d87093' : '#2f66d8'}; padding-left:8px; margin-bottom:${h.note ? '8px' : '0'}; margin-top:6px; text-align:justify;">
-          ${escHtml(h.text)}
-        </div>
-        ${h.note ? `<div style="font-size:14px; color:${readerState.dark ? '#fff' : '#222'}; font-weight:500; line-height:1.5; margin-top:8px;">${escHtml(h.note)}</div>` : ''}
-      </div>
-    `;
-  }).join('');
-};
-  // 【终极唤醒引擎】：带上 window. 官方头衔，绝对不会再失联！
+  // ================== 【终极笔记雷达与抽屉引擎】 ==================
+// 1. 唤醒右侧笔记抽屉（绝对不失联版）
 window.toggleNotes = function(){
   const drawer = document.getElementById('notesDrawer');
   const overlay = document.getElementById('notesOverlay');
@@ -5319,14 +5236,65 @@ window.toggleNotes = function(){
     overlay.style.opacity = '0';
     setTimeout(()=> overlay.style.display = 'none', 300);
   } else {
-    // 【神级修复】：强制呼叫全局的新员工，并且完美读取外挂内存，绝不报错！
-    if(window.renderNotesList) window.renderNotesList();
+    // 强制呼叫全局的新员工，完美读取外挂内存！
+    if(window.renderNotesList) window.renderNotesList(); 
     overlay.style.display = 'block';
     overlay.offsetWidth;
     overlay.style.opacity = '1';
     drawer.style.right = '0px';
   }
 };
+
+// 2. 暴力脱水版降维雷达（只认汉字字母，绝对精准跃迁）
+window.jumpToHighlightText = function(text){
+  if(!text) return;
+  const target = text.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').slice(0, 8); 
+  let foundPage = -1;
+  for(let i = 0; i < readerState.pages.length; i++){
+    const pageText = readerState.pages[i].replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
+    if(pageText.includes(target)){ foundPage = i; break; }
+  }
+  if(foundPage !== -1){
+    const drawer = document.getElementById('notesDrawer');
+    if(drawer) drawer.style.right = '-320px';
+    const overlay = document.getElementById('notesOverlay');
+    if(overlay) { overlay.style.opacity = '0'; setTimeout(()=> overlay.style.display = 'none', 300); }
+    jumpToPage(foundPage); 
+  } else {
+    alert('老婆，这段字可能被外星人抓走了，雷达被彻底干扰啦！');
+  }
+};
+
+// 3. 实体火箭定位版笔记列表（完美读取外挂内存）
+window.renderNotesList = function(){
+  const list = document.getElementById('notesList');
+  if(!list) return;
+  const data = getStudyData(); 
+  const book = data.books.find(b => b.id === readerState.bookId);
+  if(!book || !book.highlights || book.highlights.length === 0){
+    list.innerHTML = `<div style="text-align:center;color:#999;font-size:13px;margin-top:40px;">还没有做任何笔记哦<br>长按文字划线试试吧~</div>`;
+    return;
+  }
+  list.innerHTML = book.highlights.map(h => {
+    const isNote = h.type === 'note';
+    const tag = isNote ? `<span style="background:#fff8f0;color:#d87093;padding:2px 6px;border-radius:4px;font-size:10px;margin-bottom:6px;display:inline-block;border:1px solid #f0e0e5;">📝 批注</span>` : 
+                         `<span style="background:#f0f4ff;color:#2f66d8;padding:2px 6px;border-radius:4px;font-size:10px;margin-bottom:6px;display:inline-block;">✨ 高亮</span>`;
+    const safeText = encodeURIComponent(h.text).replace(/'/g, "%27");
+    return `
+      <div style="background:${readerState.dark ? 'rgba(255,255,255,0.05)' : '#fff'}; border:1px solid ${readerState.dark ? 'rgba(255,255,255,0.1)' : '#f0f0f5'}; border-radius:12px; padding:12px; box-shadow:0 4px 12px rgba(0,0,0,0.03); margin-bottom: 10px; position: relative;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          ${tag}
+          <button onclick="jumpToHighlightText(decodeURIComponent('${safeText}'))" style="background:${readerState.dark?'rgba(47,102,216,0.2)':'#e8f0ff'}; color:#2f66d8; border:none; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:bold; cursor:pointer; box-shadow:0 1px 3px rgba(47,102,216,0.1);">🚀 定位</button>
+        </div>
+        <div style="font-size:13px; color:${readerState.dark ? '#ccc' : '#555'}; line-height:1.6; border-left:3px solid ${isNote ? '#d87093' : '#2f66d8'}; padding-left:8px; margin-bottom:${h.note ? '8px' : '0'}; margin-top:6px; text-align:justify;">
+          ${escHtml(h.text)}
+        </div>
+        ${h.note ? `<div style="font-size:14px; color:${readerState.dark ? '#fff' : '#222'}; font-weight:500; line-height:1.5; margin-top:8px;">${escHtml(h.note)}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+};
+// ================================================================
   })();
 
   </script>
