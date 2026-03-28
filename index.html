@@ -3772,9 +3772,7 @@ window.addBookmark = function(){
     renderTocList(); 
   }
 };
-  let currentSelectedText = ''; // 隐形记忆芯片！
-
-let currentSelectedText = ''; 
+  let currentSelectedText = ''; // 隐形记忆芯片（只留这一个！）
 
 // 监听系统选区，召唤底部固定菜单！
 document.addEventListener('selectionchange', () => {
@@ -3784,6 +3782,7 @@ document.addEventListener('selectionchange', () => {
     currentSelectedText = sel.toString().trim();
     const bar = document.getElementById('readerSelectionBar');
     
+    // 选中的字数在 1 到 200 之间才显示菜单，防误触
     if(currentSelectedText.length > 0 && currentSelectedText.length < 200){ 
       bar.style.display = 'flex';
     } else {
@@ -3815,13 +3814,13 @@ window.addHighlight = function(type){
     setStudyData(data);
   }
   
+  // 清空选区，隐藏菜单，并触发重新渲染
   window.getSelection().removeAllRanges();
   document.getElementById('readerSelectionBar').style.display = 'none';
-  
   renderCurrent(); 
 };
 
-// 查看批注
+// 查看批注弹窗
 window.showAnnotation = function(noteText){
    document.getElementById('annotationText').textContent = noteText;
    document.getElementById('annotationModal').classList.add('active');
