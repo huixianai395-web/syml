@@ -3186,12 +3186,19 @@ function randomStudyCover(){
 
   reader.readAsText(file,'utf-8');
 };
+window.removeStudyBook = function(bookId){
+  if(!confirm('确定要从书房彻底删除这本书吗？')) return;
+  const data = getStudyData();
+  data.books = data.books.filter(b => b.id !== bookId);
+  if(data.currentBookId === bookId) data.currentBookId = null; // 如果删的是正在读的，清空进度
+  setStudyData(data);
+  renderStudyHome();
+};
+
 window.renderStudyHome=function(){
   const data=getStudyData();
   const shelf=document.getElementById('studyShelf');
-  const current=data.books.find(function(b){
-    return b.id===data.currentBookId;
-  });
+  const current=data.books.find(b=>b.id===data.currentBookId);
 
   const t=document.getElementById('studyContinueTitle');
   const m=document.getElementById('studyContinueMeta');
@@ -3205,10 +3212,12 @@ window.renderStudyHome=function(){
 
   shelf.innerHTML=data.books.map(function(book){
     return `
-      <div class="study-book" onclick="openStudyReader('${book.id}')">
+      <div class="study-book" 
+           onclick="openStudyReader('${book.id}')" 
+           oncontextmenu="removeStudyBook('${book.id}'); return false;">
         <div class="study-book-cover" style="background:${book.cover};"></div>
-        <div class="study-book-title">${book.title}</div>
-        <div class="study-book-author">${book.author}</div>
+        <div class="study-book-title">${escHtml(book.title)}</div>
+        <div class="study-book-author">${escHtml(book.author)}</div>
       </div>
     `;
   }).join('');
@@ -3517,6 +3526,17 @@ window.toggleToc = function(){
   }
 };
 
+window.removeBookmark = function(index){
+  if(!confirm('确定要删除这个书签吗？')) return;
+  const data = getStudyData();
+  const book = data.books.find(b => b.id === readerState.bookId);
+  if(book && book.bookmarks){
+    book.bookmarks.splice(index, 1);
+    setStudyData(data);
+    renderTocList(); // 删完立刻重新渲染抽屉，丝滑无缝！
+  }
+};
+
 window.renderTocList = function(){
   const list = document.getElementById('tocList');
   const total = readerState.pages.length || 1;
@@ -3526,7 +3546,7 @@ window.renderTocList = function(){
   const book = data.books.find(b => b.id === readerState.bookId) || {};
   const bookmarks = book.bookmarks || [];
 
-  // 1. 修复的丝滑进度条：拖动时只变数字，松手才跳转！
+  // 绝美进度条
   let html = `
     <div style="margin-bottom:20px; padding: 14px 12px; background: ${readerState.dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'}; border-radius: 12px; border: 1px solid ${readerState.dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'};">
       <div style="display:flex; justify-content:space-between; font-size:12px; color: ${readerState.dark ? '#a0aaba' : '#555'}; margin-bottom:10px; font-weight: 500;">
@@ -3540,12 +3560,13 @@ window.renderTocList = function(){
     </div>
   `;
 
-  // 2. 渲染老婆专属的自定义书签！
+  // 书签渲染（带长按删除功能）
   if(bookmarks.length > 0){
-     html += `<div style="font-size:12px; color:#8a93a8; margin: 10px 0 6px 6px;">我的书签</div>`;
-     html += bookmarks.map(bm => `
+     html += `<div style="font-size:12px; color:#8a93a8; margin: 10px 0 6px 6px;">我的书签 <span style="font-size:10px; opacity:0.6;">(长按删除)</span></div>`;
+     html += bookmarks.map((bm, idx) => `
         <div style="font-size:14px;color:#d87093;font-weight:bold;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:8px 6px;border-radius:8px;transition:background 0.2s;" 
              onclick="jumpToPage(${bm.page})"
+             oncontextmenu="removeBookmark(${idx}); return false;"
              onmouseover="this.style.background='rgba(216,112,147,0.08)'" 
              onmouseout="this.style.background='transparent'">
           ${escHtml(bm.title)}
@@ -3554,10 +3575,8 @@ window.renderTocList = function(){
      html += `<div style="height:1px; background:${readerState.dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}; margin: 10px 0;"></div>`;
   }
 
-  // 3. 渲染原生章节
-  if(!readerState.chapters || !readerState.chapters.length){
-    html += '<div style="color:#8a93a8;font-size:13px;padding:10px;text-align:center;">这篇文档没有原生章节名哦~</div>';
-  } else {
+  // 【神级逻辑】：只有原生章节大于1章时，才显示目录！否则彻底隐身！
+  if(readerState.chapters && readerState.chapters.length > 1){
     html += `<div style="font-size:12px; color:#8a93a8; margin: 0 0 6px 6px;">章节目录</div>`;
     html += readerState.chapters.map(ch => {
       const isCurrent = readerState.page >= ch.page && 
