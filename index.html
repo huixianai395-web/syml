@@ -3517,26 +3517,41 @@ window.toggleToc = function(){
 
 window.renderTocList = function(){
   const list = document.getElementById('tocList');
-  if(!readerState.chapters || !readerState.chapters.length){
-    list.innerHTML = '<div style="color:#8a93a8;font-size:13px;padding:10px;">没有解析到章节目录哦~</div>';
-    return;
-  }
+  const total = readerState.pages.length || 1;
+  const cur = readerState.page + 1;
   
-  list.innerHTML = readerState.chapters.map(ch => {
-    const isCurrent = readerState.page >= ch.page && 
-      (readerState.chapters.indexOf(ch) === readerState.chapters.length - 1 || readerState.page < readerState.chapters[readerState.chapters.indexOf(ch) + 1].page);
-    const color = isCurrent ? '#2f66d8' : (readerState.dark ? '#a0aaba' : '#555');
-    const fw = isCurrent ? 'bold' : 'normal';
-    
-    return `<div style="font-size:14px;color:${color};font-weight:${fw};cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:6px;border-radius:8px;" 
-                 onclick="jumpToPage(${ch.page})"
-                 onmouseover="this.style.background='rgba(47,102,216,0.08)'" 
-                 onmouseout="this.style.background='transparent'">
-              ${escHtml(ch.title)}
-            </div>`;
-  }).join('');
-};
+  // 审美拯救计划：新增绝美的全局进度条滑块！
+  let html = `
+    <div style="margin-bottom:20px; padding: 14px 12px; background: ${readerState.dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'}; border-radius: 12px; border: 1px solid ${readerState.dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'};">
+      <div style="display:flex; justify-content:space-between; font-size:12px; color: ${readerState.dark ? '#a0aaba' : '#555'}; margin-bottom:10px; font-weight: 500;">
+        <span>阅读进度：${cur} / ${total} 页</span>
+        <span style="color:#2f66d8;">${Math.round(cur/total*100)}%</span>
+      </div>
+      <input type="range" min="0" max="${total - 1}" value="${readerState.page}" 
+             oninput="jumpToPage(Number(this.value))" 
+             style="width:100%; accent-color:#2f66d8; cursor:pointer; height:4px; border-radius:2px;">
+    </div>
+  `;
 
+  if(!readerState.chapters || !readerState.chapters.length){
+    html += '<div style="color:#8a93a8;font-size:13px;padding:10px;text-align:center;">这篇文档没有解析到章节名哦~<br><span style="font-size:11px;opacity:0.6;">请使用上方滑块快进</span></div>';
+  } else {
+    html += readerState.chapters.map(ch => {
+      const isCurrent = readerState.page >= ch.page && 
+        (readerState.chapters.indexOf(ch) === readerState.chapters.length - 1 || readerState.page < readerState.chapters[readerState.chapters.indexOf(ch) + 1].page);
+      const color = isCurrent ? '#2f66d8' : (readerState.dark ? '#a0aaba' : '#555');
+      const fw = isCurrent ? 'bold' : 'normal';
+      
+      return `<div style="font-size:14px;color:${color};font-weight:${fw};cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:8px 6px;border-radius:8px;transition:background 0.2s;" 
+                   onclick="jumpToPage(${ch.page})"
+                   onmouseover="this.style.background='rgba(47,102,216,0.08)'" 
+                   onmouseout="this.style.background='transparent'">
+                ${escHtml(ch.title)}
+              </div>`;
+    }).join('');
+  }
+  list.innerHTML = html;
+};
 window.jumpToPage = function(pageNum){
   readerState.page = pageNum;
   toggleToc(); // 关抽屉
