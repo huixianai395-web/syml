@@ -3506,15 +3506,16 @@ function rebuildPages(){
 }
 
 function renderCurrent(){
-  const host=$('readerPage');
-  host.style.background = readerState.dark ? '#0f1320' : '#eef2fb';
-  $('readerThemeBtn').textContent = readerState.dark ? '白天' : '夜间';
+  const host = document.getElementById('readerPage');
+  // 原生支持自定义背景，彻底抛弃危险的递归！
+  host.style.background = readerState.customBg || (readerState.dark ? '#0f1320' : '#eef2fb');
+  if(document.getElementById('readerThemeBtn')) document.getElementById('readerThemeBtn').textContent = readerState.dark ? '白天' : '夜间';
 
   const cur = readerState.pages[readerState.page] || '';
-  $('pageStatic').innerHTML = pageHTML(cur, readerState.page);
-  $('pageTurn').style.display='none';
-  $('pageUnder').style.display='none';
-  $('readerShade').style.background='transparent';
+  document.getElementById('pageStatic').innerHTML = pageHTML(cur, readerState.page);
+  document.getElementById('pageTurn').style.display='none';
+  document.getElementById('pageUnder').style.display='none';
+  document.getElementById('readerShade').style.background='transparent';
 }
 
 function doFlip(dir){
@@ -3652,6 +3653,12 @@ window.openStudyReader=function(bookId){
   }));
 };
 
+// 唤醒底部调色盘
+window.toggleBgPalette = function(){
+  const pal = document.getElementById('bgPalette');
+  if(pal) pal.style.display = pal.style.display === 'none' ? 'flex' : 'none';
+};
+
 // 核心换肤引擎（极其纯净，拒绝死循环！）
 window.changeReaderBg = function(colorHex, isDark){
   readerState.dark = isDark;
@@ -3665,7 +3672,8 @@ window.changeReaderBg = function(colorHex, isDark){
     }
   });
 
-  document.getElementById('bgPalette').style.display = 'none';
+  const pal = document.getElementById('bgPalette');
+  if(pal) pal.style.display = 'none';
   renderCurrent(); // 直接呼叫底层画板，魔法瞬间生效！
 };
 
@@ -3673,9 +3681,9 @@ window.changeReaderBg = function(colorHex, isDark){
 window.toggleNotes = function(){
   const drawer = document.getElementById('notesDrawer');
   const overlay = document.getElementById('notesOverlay');
-  // 【神级修复】：藏得更深一点（-320px），不给它露尾巴的机会！
-  const isOpen = drawer.style.right === '0px';
+  if(!drawer || !overlay) return;
   
+  const isOpen = drawer.style.right === '0px';
   if(isOpen){
     drawer.style.right = '-320px';
     overlay.style.opacity = '0';
@@ -3687,6 +3695,34 @@ window.toggleNotes = function(){
     overlay.style.opacity = '1';
     drawer.style.right = '0px';
   }
+};
+
+// 渲染笔记列表引擎（绝对安全版！）
+window.renderNotesList = function(){
+  const list = document.getElementById('notesList');
+  if(!list) return;
+  const data = getStudyData();
+  const book = data.books.find(b => b.id === readerState.bookId);
+  if(!book || !book.highlights || book.highlights.length === 0){
+    list.innerHTML = `<div style="text-align:center;color:#999;font-size:13px;margin-top:40px;">还没有做任何笔记哦<br>长按文字划线试试吧~</div>`;
+    return;
+  }
+
+  list.innerHTML = book.highlights.map(h => {
+    const isNote = h.type === 'note';
+    const tag = isNote ? `<span style="background:#fff8f0;color:#d87093;padding:2px 6px;border-radius:4px;font-size:10px;margin-bottom:6px;display:inline-block;border:1px solid #f0e0e5;">📝 批注</span>` : 
+                         `<span style="background:#f0f4ff;color:#2f66d8;padding:2px 6px;border-radius:4px;font-size:10px;margin-bottom:6px;display:inline-block;">✨ 高亮</span>`;
+    
+    return `
+      <div style="background:${readerState.dark ? 'rgba(255,255,255,0.05)' : '#fff'}; border:1px solid ${readerState.dark ? 'rgba(255,255,255,0.1)' : '#f0f0f5'}; border-radius:12px; padding:12px; box-shadow:0 4px 12px rgba(0,0,0,0.03);">
+        ${tag}
+        <div style="font-size:13px; color:${readerState.dark ? '#ccc' : '#555'}; line-height:1.6; border-left:3px solid ${isNote ? '#d87093' : '#2f66d8'}; padding-left:8px; margin-bottom:${h.note ? '8px' : '0'}; text-align:justify;">
+          ${escHtml(h.text)}
+        </div>
+        ${h.note ? `<div style="font-size:14px; color:${readerState.dark ? '#fff' : '#222'}; font-weight:500; line-height:1.5;">${escHtml(h.note)}</div>` : ''}
+      </div>
+    `;
+  }).join('');
 };
 window.removeBookmark = function(index){
   if(!confirm('确定要删除这个书签吗？')) return;
@@ -5155,89 +5191,7 @@ window._replyMomentCommentAI = async function(momentId, npcName, userText) {
     finally { e.target.value = ''; }
   });
   })();
-  // 唤醒底部调色盘
-window.toggleBgPalette = function(){
-  const pal = document.getElementById('bgPalette');
-  pal.style.display = pal.style.display === 'none' ? 'flex' : 'none';
-};
-
-// 核心换肤引擎
-window.changeReaderBg = function(colorHex, isDark){
-  readerState.dark = isDark;
-  readerState.customBg = colorHex;
   
-  // 瞬间刷新当前页和主题色
-  const host = document.getElementById('readerPage');
-  host.style.background = colorHex;
-  
-  // 如果是夜间模式，让调色盘和抽屉也跟着变色
-  const drawers = [document.getElementById('tocDrawer'), document.getElementById('notesDrawer')];
-  drawers.forEach(drawer => {
-    if(drawer) {
-      drawer.style.background = isDark ? 'rgba(28, 33, 43, 0.92)' : 'rgba(255,255,255,0.92)';
-      drawer.style.color = isDark ? '#dbe4ff' : '#22304a';
-    }
-  });
-
-  document.getElementById('bgPalette').style.display = 'none';
-  renderCurrent(); 
-};
-
-// 重写 renderCurrent 适配自定义背景
-const oldRenderCurrent = window.renderCurrent;
-window.renderCurrent = function(){
-  oldRenderCurrent(); // 跑原来的逻辑
-  const host = document.getElementById('readerPage');
-  // 强行覆盖为你选的绝美背景色！
-  if(readerState.customBg) host.style.background = readerState.customBg; 
-};
-
-// 唤醒右侧笔记抽屉
-window.toggleNotes = function(){
-  const drawer = document.getElementById('notesDrawer');
-  const overlay = document.getElementById('notesOverlay');
-  const isOpen = drawer.style.right === '0px';
-  
-  if(isOpen){
-    drawer.style.right = '-280px';
-    overlay.style.opacity = '0';
-    setTimeout(()=> overlay.style.display = 'none', 300);
-  } else {
-    renderNotesList(); // 每次打开瞬间重绘最新笔记！
-    overlay.style.display = 'block';
-    overlay.offsetWidth; 
-    overlay.style.opacity = '1';
-    drawer.style.right = '0px';
-  }
-};
-
-// 渲染笔记列表引擎
-window.renderNotesList = function(){
-  const list = document.getElementById('notesList');
-  const data = getStudyData();
-  const book = data.books.find(b => b.id === readerState.bookId);
-  if(!book || !book.highlights || book.highlights.length === 0){
-    list.innerHTML = `<div style="text-align:center;color:#999;font-size:13px;margin-top:40px;">还没有做任何笔记哦<br>长按文字划线试试吧~</div>`;
-    return;
-  }
-
-  list.innerHTML = book.highlights.map(h => {
-    const isNote = h.type === 'note';
-    const tag = isNote ? `<span style="background:#fff8f0;color:#d87093;padding:2px 6px;border-radius:4px;font-size:10px;margin-bottom:6px;display:inline-block;border:1px solid #f0e0e5;">📝 批注</span>` : 
-                         `<span style="background:#f0f4ff;color:#2f66d8;padding:2px 6px;border-radius:4px;font-size:10px;margin-bottom:6px;display:inline-block;">✨ 高亮</span>`;
-    
-    return `
-      <div style="background:${readerState.dark ? 'rgba(255,255,255,0.05)' : '#fff'}; border:1px solid ${readerState.dark ? 'rgba(255,255,255,0.1)' : '#f0f0f5'}; border-radius:12px; padding:12px; box-shadow:0 4px 12px rgba(0,0,0,0.03);">
-        ${tag}
-        <div style="font-size:13px; color:${readerState.dark ? '#ccc' : '#555'}; line-height:1.6; border-left:3px solid ${isNote ? '#d87093' : '#2f66d8'}; padding-left:8px; margin-bottom:${h.note ? '8px' : '0'}; text-align:justify;">
-          ${escHtml(h.text)}
-        </div>
-        ${h.note ? `<div style="font-size:14px; color:${readerState.dark ? '#fff' : '#222'}; font-weight:500; line-height:1.5;">${escHtml(h.note)}</div>` : ''}
-      </div>
-    `;
-  }).join('');
-};
-</script>
   <div id="modalPreview" class="modal" onclick="this.classList.remove('active')">
   <img id="previewModalImg" style="max-width:95%;max-height:90dvh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
   </div>
