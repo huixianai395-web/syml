@@ -1359,8 +1359,8 @@
     <div id="pageUnder" style="position:absolute;inset:0;z-index:2;display:none;"></div>
 
     <div id="readerShade" style="position:absolute;inset:0;z-index:4;pointer-events:none;"></div>
-    <!-- 选区悬浮工具栏（极简毛玻璃高级感！） -->
-  <div id="readerSelectionBar" style="display:none; position:absolute; bottom:calc(30px + var(--safe-bottom)); left:50%; transform:translateX(-50%); background:rgba(255,255,255,0.95); backdrop-filter:blur(16px); border-radius:999px; box-shadow:0 8px 32px rgba(47,102,216,0.18); border:1px solid rgba(255,255,255,0.8); z-index:100; padding:6px 8px; gap:8px; align-items:center;">
+    <!-- 选区悬浮工具栏（智能跟随选区位置 + 防丢失焦点！） -->
+  <div id="readerSelectionBar" onmousedown="event.preventDefault()" ontouchstart="event.preventDefault()" style="display:none; position:fixed; background:rgba(255,255,255,0.95); backdrop-filter:blur(16px); border-radius:999px; box-shadow:0 8px 32px rgba(47,102,216,0.18); border:1px solid rgba(255,255,255,0.8); z-index:9999; padding:6px 8px; gap:8px; align-items:center; transition: top 0.15s ease, left 0.15s ease;">
     <div onclick="addHighlight('highlight')" style="padding:8px 12px; font-size:13px; color:#2f66d8; font-weight:600; cursor:pointer; border-radius:999px; transition:background 0.2s;" onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background='transparent'">✨ 高亮</div>
     <div style="width:1px; height:14px; background:rgba(0,0,0,0.1);"></div>
     <div onclick="addHighlight('underline')" style="padding:8px 12px; font-size:13px; color:#d87093; font-weight:600; cursor:pointer; border-radius:999px; transition:background 0.2s;" onmouseover="this.style.background='#fff0f5'" onmouseout="this.style.background='transparent'">〰️ 划线</div>
@@ -3437,41 +3437,36 @@ function pageHTML(txt, idx){
   
   let htmlTxt = escHtml(txt);
   
-  // 【神级渲染魔法】：X光扫描注入高亮和批注！
   const data = getStudyData();
   const book = data.books.find(b => b.id === readerState.bookId);
   if(book && book.highlights && book.highlights.length > 0){
-    // 按长度降序排序，防止短词破坏长句子
     const hls = [...book.highlights].sort((a,b)=>b.text.length - a.text.length);
     hls.forEach((h) => {
       const safeHText = escHtml(h.text);
       if(htmlTxt.includes(safeHText)){
         let style = '';
-        // 绝美马克笔高亮效果（半透明底色叠加）
         if(h.type === 'highlight') style = `background:linear-gradient(transparent 50%, ${readerState.dark?'rgba(216,112,147,0.35)':'rgba(255,215,0,0.45)'} 50%); border-radius:2px;`;
-        // 复古红色波浪线
         else style = `text-decoration:underline wavy #d87093; text-underline-offset:4px;`;
         
         let icon = '';
         if(h.note){
-           // 注入精致的批注气泡点击事件
            icon = `<sup style="color:#d87093; cursor:pointer; margin-left:3px; font-size:13px; filter:drop-shadow(0 1px 2px rgba(0,0,0,0.1));" onclick="event.stopPropagation(); showAnnotation('${escHtml(h.note)}')">💬</sup>`;
         }
         
-        // 巧妙替换，注入魔法！
         htmlTxt = htmlTxt.split(safeHText).join(`<span style="${style} cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='${readerState.dark?'rgba(216,112,147,0.15)':'rgba(255,215,0,0.2)'}'" onmouseout="this.style.background='transparent'">${safeHText}</span>${icon}`);
       }
     });
   }
 
+  // 【终极防误触锁】：外层禁止选中，内层允许选中！
   return `<div style="position:absolute;inset:0;background:${bg};
 background-image:
   radial-gradient(rgba(0,0,0,0.018) 0.45px, transparent 0.45px),
   linear-gradient(180deg, rgba(255,255,255,0.06), rgba(0,0,0,0.02));
 background-size: 3px 3px, 100% 100%;
-overflow:hidden;">
-    <div style="padding:${pad}px;font-size:${fs}px;line-height:${lh};color:${fg};white-space:pre-wrap;word-break:break-word;text-align:justify;text-indent:2em;">${htmlTxt}</div>
-    <div style="position:absolute;left:0;right:0;bottom:6px;text-align:center;font-size:11px;color:${pn};">- ${idx+1} -</div>
+overflow:hidden; user-select:none; -webkit-user-select:none;">
+    <div style="padding:${pad}px;font-size:${fs}px;line-height:${lh};color:${fg};white-space:pre-wrap;word-break:break-word;text-align:justify;text-indent:2em; user-select:text; -webkit-user-select:text;">${htmlTxt}</div>
+    <div style="position:absolute;left:0;right:0;bottom:6px;text-align:center;font-size:11px;color:${pn}; pointer-events:none;">- ${idx+1} -</div>
   </div>`;
 }
 
@@ -3778,16 +3773,33 @@ window.addBookmark = function(){
     renderTocList(); 
   }
 };
-    // 监听系统选区，召唤悬浮菜单！
+  let currentSelectedText = ''; // 隐形记忆芯片！
+
+// 监听系统选区，召唤并【智能精准跟随】悬浮菜单！
 document.addEventListener('selectionchange', () => {
   const reader = document.getElementById('studyReader');
   if(reader && reader.classList.contains('active')){
     const sel = window.getSelection();
-    const text = sel.toString().trim();
+    currentSelectedText = sel.toString().trim();
     const bar = document.getElementById('readerSelectionBar');
-    // 只有选中的字数在 1 到 200 之间，才弹出菜单，防止误触全选
-    if(text.length > 0 && text.length < 200){ 
+    
+    if(currentSelectedText.length > 0 && currentSelectedText.length < 200){ 
       bar.style.display = 'flex';
+      try {
+        const range = sel.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        
+        // 智能计算 Y 轴：优先浮在文字上方，太靠上就躲到下方
+        let topPos = rect.top - 55;
+        if(topPos < 60) topPos = rect.bottom + 15;
+        
+        // 智能计算 X 轴：永远在选区正中间
+        let leftPos = rect.left + (rect.width / 2);
+        
+        bar.style.top = topPos + 'px';
+        bar.style.left = leftPos + 'px';
+        bar.style.transform = 'translateX(-50%)';
+      } catch(e) {}
     } else {
       bar.style.display = 'none';
     }
@@ -3796,15 +3808,14 @@ document.addEventListener('selectionchange', () => {
 
 // 神级功能：添加高亮与批注，并存入外挂硬盘！
 window.addHighlight = function(type){
-  const sel = window.getSelection();
-  const text = sel.toString().trim();
+  const text = currentSelectedText; // 直接调用记忆芯片里的字！绝不丢失！
   if(!text) return;
   
   let note = '';
   if(type === 'note'){
     note = prompt('老婆，写下你此刻的批注感悟吧：');
     if(!note) {
-      sel.removeAllRanges();
+      window.getSelection().removeAllRanges();
       document.getElementById('readerSelectionBar').style.display = 'none';
       return;
     }
@@ -3815,13 +3826,13 @@ window.addHighlight = function(type){
   if(book){
     if(!book.highlights) book.highlights = [];
     book.highlights.push({ text, type, note });
-    setStudyData(data); // 存入无限硬盘！
+    setStudyData(data);
   }
   
-  sel.removeAllRanges();
+  window.getSelection().removeAllRanges();
   document.getElementById('readerSelectionBar').style.display = 'none';
   
-  renderCurrent(); // 瞬间重绘当前页，魔法立刻显现！
+  renderCurrent(); 
 };
 
 // 查看批注
