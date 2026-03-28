@@ -3255,17 +3255,22 @@ function smartPaginateByHeight(text, width, height, fs, lh){
 
   const out=[]; 
   const chapters=[]; 
-  // 新增：识别章节的正则魔法！
-  // 终极兼容版正则：兼容“第X章”、纯数字带点“1. ”、“(1) ”、“番外”、“楔子”等等！
-  const chapReg = /^\s*(?:第\s*[零一二三四五六七八九十百千两\d]+\s*[章节回卷部篇]\s*.*|[正序楔引]子|番外|后记|[Pp]reface|[Cc]hapter\s*\d+|[\(【\[]?\d+[\)\]】]?\s*[、.]?\s+.*)/;
+  
+  // 终极暴力正则：放宽了数字和空格的匹配
+  const chapReg = /^\s*(?:第\s*[零一二三四五六七八九十百千两\d]+\s*[章节回卷部篇]|第?\s*\d+\s*[章节回卷部篇]?|[正序楔引]子|番外|后记|[Pp]reface|[Cc]hapter\s*\d+|[\(【\[]?\d+[\)\]】]?\s*[、. ]?\s*.*)/i;
 
   let cur='';
   const push=()=>{ if(cur.trim()) out.push(cur.trim()); cur=''; };
 
   for(const p of paras){
-    // 新增：如果这行是章节标题，记下它的页码！
-    if(chapReg.test(p)){
-      chapters.push({ title: p.substring(0, 30).trim(), page: out.length });
+    // 【降维打击】：把当前大段落按单换行劈开，逐行地毯式搜索！
+    const subLines = p.split('\n').map(x=>x.trim()).filter(Boolean);
+    for(const line of subLines){
+      // 标题特征：字数在1到35之间，符合正则，且绝不以句号/问号结尾！
+      if(line.length > 0 && line.length < 35 && chapReg.test(line) && !/[。！？]$/.test(line)){
+        chapters.push({ title: line, page: out.length });
+        break; // 这个块里只要抓到一个就行啦
+      }
     }
 
     const t=cur?cur+'\n\n'+p:p;
@@ -3285,8 +3290,16 @@ function smartPaginateByHeight(text, width, height, fs, lh){
   }
   push();
   probe.remove();
-  // 变更：现在不仅返回分页，还把目录一并交出去啦
-  return { pages: out.length?out:[''], chapters }; 
+  
+  // 智能去重：防止同一页被记好几次
+  const uniqueChapters = [];
+  chapters.forEach(c => {
+    if(!uniqueChapters.length || uniqueChapters[uniqueChapters.length-1].page !== c.page){
+      uniqueChapters.push(c);
+    }
+  });
+
+  return { pages: out.length?out:[''], chapters: uniqueChapters }; 
 }
 
 function pageHTML(txt, idx){
@@ -3479,20 +3492,7 @@ window.changeReaderFont = function(delta){
   }, 180);
 };
 
-window.toggleReaderTheme=function(){
-  readerState.dark=!readerState.dark;
-  renderCurrent();
-};
-
-window.closeStudyReader=function(){
-  show('study');
-  renderStudyHome();
-};
-    window.toggleToc = function(){
-  const drawer = document.getElementById('tocDrawer');
-  const overlay = document.getElementById('tocOverlay');
-  const isOpen = drawer.style.left === '0px';
-  window.toggleToc = function(){
+window.toggleToc = function(){
   const drawer = document.getElementById('tocDrawer');
   const overlay = document.getElementById('tocOverlay');
   const isOpen = drawer.style.left === '0px';
@@ -3504,11 +3504,11 @@ window.closeStudyReader=function(){
   } else {
     renderTocList(); 
     
-    // 【新增】：审美拯救计划！根据夜间模式动态调整抽屉颜色！
+    // 根据夜间模式动态渲染抽屉颜色，拯救审美！
     drawer.style.background = readerState.dark ? 'rgba(28, 33, 43, 0.85)' : 'rgba(255,255,255,0.85)';
     drawer.style.color = readerState.dark ? '#dbe4ff' : '#22304a';
     drawer.style.borderRight = readerState.dark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(255,255,255,0.4)';
-    drawer.querySelector('div').style.color = readerState.dark ? '#dbe4ff' : '#22304a'; // 标题颜色同步
+    drawer.querySelector('div').style.color = readerState.dark ? '#dbe4ff' : '#22304a';
     
     overlay.style.display = 'block';
     overlay.offsetWidth; 
