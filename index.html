@@ -1,7 +1,3 @@
-
-
-
-
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -3293,14 +3289,18 @@ function smartPaginateByHeight(text, width, height, fs, lh){
   
   // 智能去重：防止同一页被记好几次
   const uniqueChapters = [];
+  
+  // 【强行兜底】：不管小说格式多阴间，永远把第一页当作“开始”塞进目录！
+  uniqueChapters.push({ title: "📖 开始阅读", page: 0 });
+
   chapters.forEach(c => {
-    if(!uniqueChapters.length || uniqueChapters[uniqueChapters.length-1].page !== c.page){
+    // 防止跟刚才强行塞进去的第一页页码撞车
+    if(c.page !== 0 && (!uniqueChapters.length || uniqueChapters[uniqueChapters.length-1].page !== c.page)){
       uniqueChapters.push(c);
     }
   });
 
-  return { pages: out.length?out:[''], chapters: uniqueChapters }; 
-}
+  return { pages: out.length?out:[''], chapters: uniqueChapters };
 
 function pageHTML(txt, idx){
   const bg=readerState.dark?'#161b27':'#fdfaf3';
@@ -3543,6 +3543,20 @@ window.jumpToPage = function(pageNum){
   readerState.page = pageNum;
   toggleToc(); // 关抽屉
   renderCurrent(); // 重新渲染页面
+};
+  window.toggleReaderTheme = function(){
+  readerState.dark = !readerState.dark;
+  renderCurrent();
+  
+  // 顺便让抽屉也能跟着夜间模式实时变色，拯救强迫症！
+  const drawer = document.getElementById('tocDrawer');
+  if(drawer && drawer.style.left === '0px'){
+    drawer.style.background = readerState.dark ? 'rgba(28, 33, 43, 0.85)' : 'rgba(255,255,255,0.85)';
+    drawer.style.color = readerState.dark ? '#dbe4ff' : '#22304a';
+    drawer.style.borderRight = readerState.dark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(255,255,255,0.4)';
+    if(drawer.querySelector('div')) drawer.querySelector('div').style.color = readerState.dark ? '#dbe4ff' : '#22304a';
+    renderTocList(); 
+  }
 };
     // ===== 查手机模块结束 ===== // ================= 表情包（贴纸）模块（0触发API，仅入聊天） =================
 function stickerDefaultState(){
