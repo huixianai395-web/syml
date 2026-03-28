@@ -3479,7 +3479,11 @@ function pageHTML(txt, idx){
         
         let icon = '';
         if(h.note){
-           icon = `<sup style="color:#d87093; cursor:pointer; margin-left:3px; font-size:13px; filter:drop-shadow(0 1px 2px rgba(0,0,0,0.1));" onclick="event.stopPropagation(); showAnnotation('${escHtml(h.note)}')">💬</sup>`;
+           // 【神级修复】：加入 pointer 拦截和最高层级，直接打碎翻页玻璃的拦截！
+           icon = `<sup style="color:#d87093; cursor:pointer; margin-left:3px; font-size:15px; position:relative; z-index:50; display:inline-block;" 
+                        onpointerdown="event.stopPropagation()" 
+                        onpointerup="event.stopPropagation()" 
+                        onclick="event.stopPropagation(); showAnnotation('${escHtml(h.note)}')">💬</sup>`;
         }
         
         const hid = h.id || 0;
@@ -5264,17 +5268,17 @@ window._replyMomentCommentAI = async function(momentId, npcName, userText) {
     } catch(err) { alert('头像处理失败：' + err.message); } 
     finally { e.target.value = ''; }
   });
-  // 【终极降维雷达】：只抓取前15个字进行定位，完美破解“跨页截断”难题！
+  // 【终极降维雷达】：暴力脱水，只认汉字和字母，绝对精准跃迁！
 window.jumpToHighlightText = function(text){
   if(!text) return;
   
-  // 暴力去除空格换行，并且【只取前 15 个字】作为追踪锚点！
-  const target = text.replace(/\s+/g, '').slice(0, 15); 
+  // 暴力脱水：剔除所有标点符号和空格，只保留纯文字，取前 8 个字作为超级锚点！
+  const target = text.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').slice(0, 8); 
   let foundPage = -1;
   
   for(let i = 0; i < readerState.pages.length; i++){
-    // 把当前页的纯文本也去掉空格
-    const pageText = readerState.pages[i].replace(/\s+/g, '');
+    // 同样把每一页的文本进行暴力脱水
+    const pageText = readerState.pages[i].replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
     if(pageText.includes(target)){
       foundPage = i;
       break;
