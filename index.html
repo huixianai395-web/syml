@@ -3569,36 +3569,52 @@ function doFlip(dir){
 
   requestAnimationFrame(frame);
 }
-function bindReaderGesture(){
-  const host=$('flipHost');
+window.bindReaderGesture = function(){
+  const host = document.getElementById('flipHost');
+  
+  // 【史诗级破局】：把挡在两边的巨大隐形翻页玻璃彻底砸碎！
+  const btnPrev = document.getElementById('tapPrev');
+  const btnNext = document.getElementById('tapNext');
+  if(btnPrev) btnPrev.style.display = 'none';
+  if(btnNext) btnNext.style.display = 'none';
+
   let sx=0, sy=0, moving=false;
 
-  host.onpointerdown=(e)=>{
+  host.onpointerdown = (e) => {
     if(readerState.turning || readerReflowLock) return;
-    sx=e.clientX; sy=e.clientY; moving=true;
+    sx = e.clientX; sy = e.clientY; moving = true;
   };
 
-  host.onpointerup=(e)=>{
+  host.onpointerup = (e) => {
     if(!moving) return;
-    const dx=e.clientX-sx, dy=e.clientY-sy;
-    moving=false;
-    if(Math.abs(dx)<22 || Math.abs(dx) < Math.abs(dy)*1.15) return;
-    if(dx<0) doFlip(1); else doFlip(-1);
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    moving = false;
+    
+    // 1. 如果点到了带删除魔法的高亮文字，绝对不翻页，让它乖乖弹出删除提示！
+    if(e.target.tagName.toLowerCase() === 'span' && e.target.onclick) return;
+    
+    // 2. 如果屏幕上还有高亮菜单，或者正在长按选字，绝对不翻页！
+    if(currentSelectedText.length > 0 || window.getSelection().toString().trim().length > 0) {
+      return;
+    }
+
+    // 3. 滑动翻页逻辑（保留最丝滑的滑动体验）
+    if(Math.abs(dx) >= 22 && Math.abs(dx) > Math.abs(dy)*1.15) {
+      if(dx < 0) doFlip(1); else doFlip(-1);
+      return;
+    }
+
+    // 4. 【全新智能点击翻页】：用底层雷达完美代替实体按钮！
+    const w = host.clientWidth;
+    if(e.clientX < w * 0.35) {
+      doFlip(-1); // 点左边35%区域，上一页
+    } else if(e.clientX > w * 0.65) {
+      doFlip(1);  // 点右边35%区域，下一页
+    }
   };
 
-  host.onpointercancel=()=>{ moving=false; };
-
-  $('tapPrev').onclick=(e)=>{
-    e.stopPropagation();
-    if(readerReflowLock) return;
-    doFlip(-1);
-  };
-  $('tapNext').onclick=(e)=>{
-    e.stopPropagation();
-    if(readerReflowLock) return;
-    doFlip(1);
-  };
-}
+  host.onpointercancel = () => { moving = false; };
+};
 window.openStudyReader=function(bookId){
   const data=getStudyData();
   const b=data.books.find(x=>x.id===bookId); if(!b) return;
