@@ -5301,5 +5301,77 @@ window.renderNotesList = function(){
   <div id="modalPreview" class="modal" onclick="this.classList.remove('active')">
   <img id="previewModalImg" style="max-width:95%;max-height:90dvh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
   </div>
+  <script>
+// 【主程专属·绝对防御级抽屉引擎】
+window.toggleNotes = function(){
+  const drawer = document.getElementById('notesDrawer');
+  const overlay = document.getElementById('notesOverlay');
+  if(!drawer || !overlay) return;
+
+  const isOpen = drawer.style.right === '0px';
+  if(isOpen){
+    drawer.style.right = '-320px';
+    overlay.style.opacity = '0';
+    setTimeout(()=> overlay.style.display = 'none', 300);
+  } else {
+    // 【神级防御】：先把门踹开！哪怕里面炸了，抽屉也必须弹出来！
+    overlay.style.display = 'block';
+    overlay.offsetWidth;
+    overlay.style.opacity = '1';
+    drawer.style.right = '0px';
+    
+    // 然后再小心翼翼地把笔记摆进去，用 try-catch 死死护住！
+    try {
+      if(window.renderNotesList) window.renderNotesList(); 
+    } catch(e) {
+      document.getElementById('notesList').innerHTML = `<div style="padding:20px; color:#e74c3c; text-align:center;">呜呜，渲染崩溃了：${e.message}</div>`;
+    }
+  }
+};
+
+window.renderNotesList = function(){
+  const list = document.getElementById('notesList');
+  if(!list) return;
+  const data = getStudyData(); 
+  const book = data.books.find(b => b.id === readerState.bookId);
+  if(!book || !book.highlights || book.highlights.length === 0){
+    list.innerHTML = `<div style="text-align:center;color:#999;font-size:13px;margin-top:40px;">还没有做任何笔记哦<br>长按文字划线试试吧~</div>`;
+    return;
+  }
+  
+  let html = '';
+  book.highlights.forEach(h => {
+    try {
+      const isNote = h.type === 'note';
+      const tag = isNote ? `<span style="background:#fff8f0;color:#d87093;padding:2px 6px;border-radius:4px;font-size:10px;margin-bottom:6px;display:inline-block;border:1px solid #f0e0e5;">📝 批注</span>` : 
+                           `<span style="background:#f0f4ff;color:#2f66d8;padding:2px 6px;border-radius:4px;font-size:10px;margin-bottom:6px;display:inline-block;">✨ 高亮</span>`;
+      
+      // 【终极排雷】：就算遇到外星字符也绝对不准崩溃！
+      let safeText = '';
+      try { 
+        safeText = encodeURIComponent(h.text || '').replace(/'/g, "%27"); 
+      } catch(err) { 
+        safeText = encodeURIComponent('特殊字符无法定位'); 
+      }
+      
+      html += `
+        <div style="background:${readerState.dark ? 'rgba(255,255,255,0.05)' : '#fff'}; border:1px solid ${readerState.dark ? 'rgba(255,255,255,0.1)' : '#f0f0f5'}; border-radius:12px; padding:12px; box-shadow:0 4px 12px rgba(0,0,0,0.03); margin-bottom: 10px; position: relative;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            ${tag}
+            <button onclick="jumpToHighlightText(decodeURIComponent('${safeText}'))" style="background:${readerState.dark?'rgba(47,102,216,0.2)':'#e8f0ff'}; color:#2f66d8; border:none; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:bold; cursor:pointer; box-shadow:0 1px 3px rgba(47,102,216,0.1);">🚀 定位</button>
+          </div>
+          <div style="font-size:13px; color:${readerState.dark ? '#ccc' : '#555'}; line-height:1.6; border-left:3px solid ${isNote ? '#d87093' : '#2f66d8'}; padding-left:8px; margin-bottom:${h.note ? '8px' : '0'}; margin-top:6px; text-align:justify;">
+            ${escHtml(h.text)}
+          </div>
+          ${h.note ? `<div style="font-size:14px; color:${readerState.dark ? '#fff' : '#222'}; font-weight:500; line-height:1.5; margin-top:8px;">${escHtml(h.note)}</div>` : ''}
+        </div>
+      `;
+    } catch(err) {
+      console.log('单条笔记跳过:', err);
+    }
+  });
+  list.innerHTML = html;
+};
+  </script>
 </body>
   </html>
