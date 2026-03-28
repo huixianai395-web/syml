@@ -2489,7 +2489,7 @@ function buildContent(x,st){
       if(callState.active&&callState.chatId===chatId){
   system+='\n[当前状态：正在'+(callState.type==='video'?'视频':'语音')+'通话中，已通话'+fmtCallDur(Date.now()-callState.start)+'，像真实电话一样交流，简短口语化。想挂断时回复[endcall]。]';
       }
-const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:(()=>{const c=buildContent(x,st);return typeof c==='string'?`[${fmtTs(x.time)}] ${c}`:c;})()})),{role:'user',content:modeTag}];
+const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:(()=>{const c=buildContent(x,st);return typeof c==='string'?`[${fmtFullTs(x.time)}] ${c}`:c;})()})),{role:'user',content:modeTag}];
       const out=await callApi(messages);
 
       let parts=[];
