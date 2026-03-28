@@ -1359,13 +1359,13 @@
     <div id="pageUnder" style="position:absolute;inset:0;z-index:2;display:none;"></div>
 
     <div id="readerShade" style="position:absolute;inset:0;z-index:4;pointer-events:none;"></div>
-    <!-- 选区悬浮工具栏（智能跟随选区位置 + 防丢失焦点！） -->
-  <div id="readerSelectionBar" onmousedown="event.preventDefault()" ontouchstart="event.preventDefault()" style="display:none; position:fixed; background:rgba(255,255,255,0.95); backdrop-filter:blur(16px); border-radius:999px; box-shadow:0 8px 32px rgba(47,102,216,0.18); border:1px solid rgba(255,255,255,0.8); z-index:9999; padding:6px 8px; gap:8px; align-items:center; transition: top 0.15s ease, left 0.15s ease;">
-    <div onclick="addHighlight('highlight')" style="padding:8px 12px; font-size:13px; color:#2f66d8; font-weight:600; cursor:pointer; border-radius:999px; transition:background 0.2s;" onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background='transparent'">✨ 高亮</div>
-    <div style="width:1px; height:14px; background:rgba(0,0,0,0.1);"></div>
-    <div onclick="addHighlight('underline')" style="padding:8px 12px; font-size:13px; color:#d87093; font-weight:600; cursor:pointer; border-radius:999px; transition:background 0.2s;" onmouseover="this.style.background='#fff0f5'" onmouseout="this.style.background='transparent'">〰️ 划线</div>
-    <div style="width:1px; height:14px; background:rgba(0,0,0,0.1);"></div>
-    <div onclick="addHighlight('note')" style="padding:8px 12px; font-size:13px; color:#3b2f22; font-weight:600; cursor:pointer; border-radius:999px; transition:background 0.2s;" onmouseover="this.style.background='#fff8f0'" onmouseout="this.style.background='transparent'">📝 批注</div>
+    <!-- 选区悬浮工具栏（终极适配版：固定底部，绝不与系统菜单重叠！瞬间截获点击！） -->
+  <div id="readerSelectionBar" style="display:none; position:fixed; bottom:calc(40px + var(--safe-bottom)); left:50%; transform:translateX(-50%); background:rgba(255,255,255,0.95); backdrop-filter:blur(20px); border-radius:16px; box-shadow:0 12px 40px rgba(47,102,216,0.15); border:1px solid rgba(255,255,255,0.8); z-index:9999; padding:8px 12px; gap:12px; align-items:center;">
+    <div onpointerdown="event.preventDefault(); addHighlight('highlight')" style="padding:8px 16px; font-size:14px; color:#2f66d8; font-weight:600; cursor:pointer; border-radius:10px; background:#f0f4ff;">✨ 高亮</div>
+    <div style="width:1px; height:18px; background:rgba(0,0,0,0.1);"></div>
+    <div onpointerdown="event.preventDefault(); addHighlight('underline')" style="padding:8px 16px; font-size:14px; color:#d87093; font-weight:600; cursor:pointer; border-radius:10px; background:#fff0f5;">〰️ 划线</div>
+    <div style="width:1px; height:18px; background:rgba(0,0,0,0.1);"></div>
+    <div onpointerdown="event.preventDefault(); addHighlight('note')" style="padding:8px 16px; font-size:14px; color:#3b2f22; font-weight:600; cursor:pointer; border-radius:10px; background:#fff8f0;">📝 批注</div>
   </div>
 
   <!-- 批注查看弹窗（复古纸张质感！） -->
@@ -3458,18 +3458,17 @@ function pageHTML(txt, idx){
     });
   }
 
-  // 【终极防误触锁】：外层禁止选中，内层允许选中！
+  // 【终极防乱跑锁】：外层 pointer-events: none，内层恢复 auto！
   return `<div style="position:absolute;inset:0;background:${bg};
 background-image:
   radial-gradient(rgba(0,0,0,0.018) 0.45px, transparent 0.45px),
   linear-gradient(180deg, rgba(255,255,255,0.06), rgba(0,0,0,0.02));
 background-size: 3px 3px, 100% 100%;
-overflow:hidden; user-select:none; -webkit-user-select:none;">
-    <div style="padding:${pad}px;font-size:${fs}px;line-height:${lh};color:${fg};white-space:pre-wrap;word-break:break-word;text-align:justify;text-indent:2em; user-select:text; -webkit-user-select:text;">${htmlTxt}</div>
+overflow:hidden; pointer-events:none; user-select:none; -webkit-user-select:none;">
+    <div style="padding:${pad}px;font-size:${fs}px;line-height:${lh};color:${fg};white-space:pre-wrap;word-break:break-word;text-align:justify;text-indent:2em; pointer-events:auto; user-select:text; -webkit-user-select:text;">${htmlTxt}</div>
     <div style="position:absolute;left:0;right:0;bottom:6px;text-align:center;font-size:11px;color:${pn}; pointer-events:none;">- ${idx+1} -</div>
   </div>`;
 }
-
 function rebuildPages(){
   const data=getStudyData();
   const book=data.books.find(b=>b.id===readerState.bookId);
@@ -3775,7 +3774,9 @@ window.addBookmark = function(){
 };
   let currentSelectedText = ''; // 隐形记忆芯片！
 
-// 监听系统选区，召唤并【智能精准跟随】悬浮菜单！
+let currentSelectedText = ''; 
+
+// 监听系统选区，召唤底部固定菜单！
 document.addEventListener('selectionchange', () => {
   const reader = document.getElementById('studyReader');
   if(reader && reader.classList.contains('active')){
@@ -3785,30 +3786,15 @@ document.addEventListener('selectionchange', () => {
     
     if(currentSelectedText.length > 0 && currentSelectedText.length < 200){ 
       bar.style.display = 'flex';
-      try {
-        const range = sel.getRangeAt(0);
-        const rect = range.getBoundingClientRect();
-        
-        // 智能计算 Y 轴：优先浮在文字上方，太靠上就躲到下方
-        let topPos = rect.top - 55;
-        if(topPos < 60) topPos = rect.bottom + 15;
-        
-        // 智能计算 X 轴：永远在选区正中间
-        let leftPos = rect.left + (rect.width / 2);
-        
-        bar.style.top = topPos + 'px';
-        bar.style.left = leftPos + 'px';
-        bar.style.transform = 'translateX(-50%)';
-      } catch(e) {}
     } else {
       bar.style.display = 'none';
     }
   }
 });
 
-// 神级功能：添加高亮与批注，并存入外挂硬盘！
+// 瞬间抓取，存入硬盘！
 window.addHighlight = function(type){
-  const text = currentSelectedText; // 直接调用记忆芯片里的字！绝不丢失！
+  const text = currentSelectedText; 
   if(!text) return;
   
   let note = '';
