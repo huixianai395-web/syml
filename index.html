@@ -1345,6 +1345,7 @@
   <section id="studyReader" class="screen">
   <div class="header">
     <button class="btn" onclick="closeStudyReader()">&#8249; 返回</button>
+    <button class="btn" onclick="toggleToc()">目录</button>
     <b id="readerBookTitle">阅读中</b>
     <div class="row" style="gap:6px;">
       <button class="btn" id="readerThemeBtn" onclick="toggleReaderTheme()">夜间</button>
@@ -1364,6 +1365,12 @@
 
   <button id="tapPrev" style="position:absolute;left:0;top:0;bottom:0;width:32%;z-index:8;background:transparent;border:none;"></button>
   <button id="tapNext" style="position:absolute;right:0;top:0;bottom:0;width:32%;z-index:8;background:transparent;border:none;"></button>
+    <!-- 这是目录的遮罩和抽屉 -->
+  <div id="tocOverlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.4);z-index:99;display:none;opacity:0;transition:opacity 0.3s;" onclick="toggleToc()"></div>
+  <div id="tocDrawer" style="position:absolute;top:0;bottom:0;left:-280px;width:260px;background:rgba(255,255,255,0.85);backdrop-filter:blur(24px) saturate(150%);border-right:1px solid rgba(255,255,255,0.4);z-index:100;transition:left 0.35s cubic-bezier(0.32, 0.72, 0, 1);overflow-y:auto;padding:20px 14px;box-shadow: 10px 0 30px rgba(0,0,0,0.1);">
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px;color:#22304a;padding-left:6px;">章节目录</div>
+    <div id="tocList" style="display:flex;flex-direction:column;gap:12px;"></div>
+  </div>
   </div>
   </section>
 <!-- ===== 查手机页面 ===== -->
@@ -3243,14 +3250,23 @@ function escHtml(s=''){
 function smartPaginateByHeight(text, width, height, fs, lh){
   const paras=String(text||'').replace(/\r/g,'').split(/\n{2,}/).map(x=>x.trim()).filter(Boolean);
   const probe=document.createElement('div');
-  probe.style.cssText=`position:fixed;left:-99999px;top:0;visibility:hidden;width:${width}px;height:${height}px;overflow:hidden;
-    font-size:${fs}px;line-height:${lh};white-space:pre-wrap;word-break:break-word;`;
+  probe.style.cssText=`position:fixed;left:-99999px;top:0;visibility:hidden;width:${width}px;height:${height}px;overflow:hidden;font-size:${fs}px;line-height:${lh};white-space:pre-wrap;word-break:break-word;`;
   document.body.appendChild(probe);
 
-  const out=[]; let cur='';
+  const out=[]; 
+  const chapters=[]; // 新增：用来装目录的篮子！
+  // 新增：识别章节的正则魔法！
+  const chapReg=/^\s*(?:第[零一二三四五六七八九十百千\d]+[章节回卷部篇]\s*.*|[正序楔引]子|[Pp]reface|[Cc]hapter\s*\d+)/;
+
+  let cur='';
   const push=()=>{ if(cur.trim()) out.push(cur.trim()); cur=''; };
 
   for(const p of paras){
+    // 新增：如果这行是章节标题，记下它的页码！
+    if(chapReg.test(p)){
+      chapters.push({ title: p.substring(0, 30).trim(), page: out.length });
+    }
+
     const t=cur?cur+'\n\n'+p:p;
     probe.textContent=t;
     if(probe.scrollHeight<=height){ cur=t; continue; }
@@ -3268,7 +3284,8 @@ function smartPaginateByHeight(text, width, height, fs, lh){
   }
   push();
   probe.remove();
-  return out.length?out:[''];
+  // 变更：现在不仅返回分页，还把目录一并交出去啦
+  return { pages: out.length?out:[''], chapters }; 
 }
 
 function pageHTML(txt, idx){
@@ -3296,7 +3313,9 @@ function rebuildPages(){
   const host=$('readerPage');
   const w=host.clientWidth-24;
   const h=host.clientHeight-24;
-  readerState.pages=smartPaginateByHeight(book.content,w,h,readerState.fontSize,1.62);
+  const res = smartPaginateByHeight(book.content,w,h,readerState.fontSize,1.62);
+  readerState.pages = res.pages;
+  readerState.chapters = res.chapters || []; // 完美接住！
 
   if(readerState.page>readerState.pages.length-1) readerState.page=Math.max(0,readerState.pages.length-1);
 }
@@ -3467,6 +3486,52 @@ window.toggleReaderTheme=function(){
 window.closeStudyReader=function(){
   show('study');
   renderStudyHome();
+};
+    window.toggleToc = function(){
+  const drawer = document.getElementById('tocDrawer');
+  const overlay = document.getElementById('tocOverlay');
+  const isOpen = drawer.style.left === '0px';
+  
+  if(isOpen){
+    drawer.style.left = '-280px';
+    overlay.style.opacity = '0';
+    setTimeout(()=> overlay.style.display = 'none', 300);
+  } else {
+    renderTocList(); // 每次打开前渲染最新目录
+    overlay.style.display = 'block';
+    // 强制重绘以触发过渡动画
+    overlay.offsetWidth; 
+    overlay.style.opacity = '1';
+    drawer.style.left = '0px';
+  }
+};
+
+window.renderTocList = function(){
+  const list = document.getElementById('tocList');
+  if(!readerState.chapters || !readerState.chapters.length){
+    list.innerHTML = '<div style="color:#8a93a8;font-size:13px;padding:10px;">没有解析到章节目录哦~</div>';
+    return;
+  }
+  
+  list.innerHTML = readerState.chapters.map(ch => {
+    const isCurrent = readerState.page >= ch.page && 
+      (readerState.chapters.indexOf(ch) === readerState.chapters.length - 1 || readerState.page < readerState.chapters[readerState.chapters.indexOf(ch) + 1].page);
+    const color = isCurrent ? '#2f66d8' : (readerState.dark ? '#a0aaba' : '#555');
+    const fw = isCurrent ? 'bold' : 'normal';
+    
+    return `<div style="font-size:14px;color:${color};font-weight:${fw};cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:6px;border-radius:8px;" 
+                 onclick="jumpToPage(${ch.page})"
+                 onmouseover="this.style.background='rgba(47,102,216,0.08)'" 
+                 onmouseout="this.style.background='transparent'">
+              ${escHtml(ch.title)}
+            </div>`;
+  }).join('');
+};
+
+window.jumpToPage = function(pageNum){
+  readerState.page = pageNum;
+  toggleToc(); // 关抽屉
+  renderCurrent(); // 重新渲染页面
 };
     // ===== 查手机模块结束 ===== // ================= 表情包（贴纸）模块（0触发API，仅入聊天） =================
 function stickerDefaultState(){
