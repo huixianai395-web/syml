@@ -1338,7 +1338,7 @@
 
   <input type="file" id="studyFileInput" accept=".txt,text/plain" class="hidden">
   </section>
-  <section id="studyReader" class="screen">
+  <section id="studyReader" class="screen" style="overflow: hidden;">
   <div class="header" style="background:rgba(246,248,255,0.85)!important; backdrop-filter:blur(16px); z-index:100;">
     <button class="btn" onclick="closeStudyReader()">&#8249; 返回</button>
     <button class="btn" onclick="toggleToc()">目录</button>
@@ -3859,9 +3859,16 @@ window.renderTocList = function(){
   }
   list.innerHTML = html;
 };
+// 【神级修复】：只在目录开着的时候才关，绝对不乱弹！
 window.jumpToPage = function(pageNum){
   readerState.page = pageNum;
-  toggleToc(); // 关抽屉
+  
+  // 安全检查：只有目录抽屉开着的时候，才去关掉它！
+  const tocDrawer = document.getElementById('tocDrawer');
+  if(tocDrawer && tocDrawer.style.left === '0px') {
+     toggleToc(); 
+  }
+  
   renderCurrent(); // 重新渲染页面
 };
     window.closeStudyReader = function(){
@@ -5258,15 +5265,17 @@ window._replyMomentCommentAI = async function(momentId, npcName, userText) {
     finally { e.target.value = ''; }
   });
   })();
-// 【全新降维打击雷达】：去掉所有空格和换行进行硬核匹配，跨页也能瞬间抓出来！
+// 【终极降维雷达】：只抓取前15个字进行定位，完美破解“跨页截断”难题！
 window.jumpToHighlightText = function(text){
   if(!text) return;
-  // 暴力去除所有空格、换行，进行极其纯粹的文本比对！
-  const target = text.replace(/\s+/g, '');
+  
+  // 暴力去除空格换行，并且【只取前 15 个字】作为追踪锚点！
+  const target = text.replace(/\s+/g, '').slice(0, 15); 
   let foundPage = -1;
   
   for(let i = 0; i < readerState.pages.length; i++){
-    const pageText = escHtml(readerState.pages[i]).replace(/\s+/g, '');
+    // 把当前页的纯文本也去掉空格
+    const pageText = readerState.pages[i].replace(/\s+/g, '');
     if(pageText.includes(target)){
       foundPage = i;
       break;
@@ -5274,7 +5283,7 @@ window.jumpToHighlightText = function(text){
   }
   
   if(foundPage !== -1){
-    // 优雅地关掉笔记抽屉
+    // 优雅且彻底地关掉笔记抽屉
     const drawer = document.getElementById('notesDrawer');
     if(drawer) drawer.style.right = '-320px';
     const overlay = document.getElementById('notesOverlay');
@@ -5283,7 +5292,7 @@ window.jumpToHighlightText = function(text){
     // 瞬间飞跃到那一页！
     jumpToPage(foundPage); 
   } else {
-    alert('老婆，这段字可能跨了很长很长的页，雷达被彻底干扰啦！');
+    alert('老婆，这段字可能被外星人抓走了，雷达被彻底干扰啦！');
   }
 };
   
