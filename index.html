@@ -1390,7 +1390,7 @@
   </div>
     <!-- 绝美右侧笔记抽屉 -->
   <div id="notesOverlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.4);z-index:99;display:none;opacity:0;transition:opacity 0.3s;" onclick="toggleNotes()"></div>
-  <div id="notesDrawer" style="position:absolute;top:0;bottom:0;right:-280px;width:260px;background:rgba(255,255,255,0.92);backdrop-filter:blur(24px) saturate(150%);border-left:1px solid rgba(255,255,255,0.6);z-index:100;transition:right 0.35s cubic-bezier(0.32, 0.72, 0, 1);overflow-y:auto;padding:20px 14px;box-shadow: -10px 0 30px rgba(47,102,216,0.08);">
+  <div id="notesDrawer" style="position:absolute;top:0;bottom:0;right:-320px;width:260px;background:rgba(255,255,255,0.92);backdrop-filter:blur(24px) saturate(150%);border-left:1px solid rgba(255,255,255,0.6);z-index:100;transition:right 0.35s cubic-bezier(0.32, 0.72, 0, 1);overflow-y:auto;padding:20px 14px;box-shadow: -10px 0 30px rgba(47,102,216,0.08);">
     <div style="font-size:18px;font-weight:bold;margin-bottom:16px;color:#d87093;padding-left:6px;display:flex;justify-content:space-between;align-items:center;">
       <span>我的笔记 📝</span>
       <span style="font-size:12px;color:#888;font-weight:normal;cursor:pointer;" onclick="toggleNotes()">关闭 ✕</span>
@@ -3449,10 +3449,11 @@ function smartPaginateByHeight(text, width, height, fs, lh){
   return { pages: out.length?out:[''], chapters: uniqueChapters }; 
 }
 function pageHTML(txt, idx){
-  const bg=readerState.dark?'#161b27':'#fdfaf3';
-  const fg=readerState.dark?'#dbe4ff':'#2b2b2b';
-  const pn=readerState.dark?'#7e8db5':'#999';
-  const pad=12, lh=1.62, fs=readerState.fontSize;
+  // 【神级修复】：优先使用你选的绝美背景！如果没选，再用默认的夜间/白天色！
+  const bg = readerState.customBg || (readerState.dark ? '#161b27' : '#fdfaf3');
+  const fg = readerState.dark ? '#dbe4ff' : '#2b2b2b';
+  const pn = readerState.dark ? '#7e8db5' : '#999';
+  const pad = 12, lh = 1.62, fs = readerState.fontSize;
   
   let htmlTxt = escHtml(txt);
   
@@ -3472,20 +3473,20 @@ function pageHTML(txt, idx){
            icon = `<sup style="color:#d87093; cursor:pointer; margin-left:3px; font-size:13px; filter:drop-shadow(0 1px 2px rgba(0,0,0,0.1));" onclick="event.stopPropagation(); showAnnotation('${escHtml(h.note)}')">💬</sup>`;
         }
         
-        // 【核心魔法】：注入 onclick 事件，阻止翻页，唤起删除！(用 decodeURIComponent 完美防单引号报错)
         const hid = h.id || 0;
         htmlTxt = htmlTxt.split(safeHText).join(`<span style="${style} cursor:pointer; transition:background 0.2s;" onclick="event.stopPropagation(); removeHighlight(${hid}, decodeURIComponent('${encodeURIComponent(h.text)}'))" onmouseover="this.style.background='${readerState.dark?'rgba(216,112,147,0.15)':'rgba(255,215,0,0.2)'}'" onmouseout="this.style.background='transparent'">${safeHText}</span>${icon}`);
       }
     });
   }
 
+  // 【彻底释放画板】：外层加上 transition，让换肤像呼吸一样丝滑！
   return `<div style="position:absolute;inset:0;background:${bg};
 background-image:
   radial-gradient(rgba(0,0,0,0.018) 0.45px, transparent 0.45px),
   linear-gradient(180deg, rgba(255,255,255,0.06), rgba(0,0,0,0.02));
 background-size: 3px 3px, 100% 100%;
-overflow:hidden; pointer-events:none; user-select:none; -webkit-user-select:none;">
-    <div style="padding:${pad}px;font-size:${fs}px;line-height:${lh};color:${fg};white-space:pre-wrap;word-break:break-word;text-align:justify;text-indent:2em; pointer-events:auto; user-select:text; -webkit-user-select:text;">${htmlTxt}</div>
+overflow:hidden; pointer-events:none; user-select:none; -webkit-user-select:none; transition:background 0.3s;">
+    <div style="padding:${pad}px;font-size:${fs}px;line-height:${lh};color:${fg};white-space:pre-wrap;word-break:break-word;text-align:justify;text-indent:2em; pointer-events:auto; user-select:text; -webkit-user-select:text; transition:color 0.3s;">${htmlTxt}</div>
     <div style="position:absolute;left:0;right:0;bottom:6px;text-align:center;font-size:11px;color:${pn}; pointer-events:none;">- ${idx+1} -</div>
   </div>`;
 }
@@ -3651,58 +3652,42 @@ window.openStudyReader=function(bookId){
   }));
 };
 
-window.changeReaderFont = function(delta){
-  const next = Math.max(14, Math.min(22, (pendingFontSize ?? readerState.fontSize) + delta));
-  pendingFontSize = next;
+// 核心换肤引擎（极其纯净，拒绝死循环！）
+window.changeReaderBg = function(colorHex, isDark){
+  readerState.dark = isDark;
+  readerState.customBg = colorHex;
+  
+  const drawers = [document.getElementById('tocDrawer'), document.getElementById('notesDrawer')];
+  drawers.forEach(drawer => {
+    if(drawer) {
+      drawer.style.background = isDark ? 'rgba(28, 33, 43, 0.92)' : 'rgba(255,255,255,0.92)';
+      drawer.style.color = isDark ? '#dbe4ff' : '#22304a';
+    }
+  });
 
-  // 先给用户“即时反馈”
-  const btnText = next + 'px';
-  // 可选：你若有显示字号的小区域可以同步显示；没有也没关系
-  // document.getElementById('readerFontHint')?.textContent = btnText;
-
-  // 合并重排：180ms内连点只重排一次
-  if(fontReflowTimer) clearTimeout(fontReflowTimer);
-  fontReflowTimer = setTimeout(()=>{
-    if(readerState.turning) return; // 翻页中不重排，避免卡死
-    readerReflowLock = true;
-
-    const oldPage = readerState.page;
-    readerState.fontSize = pendingFontSize ?? readerState.fontSize;
-
-    requestAnimationFrame(()=>{
-      rebuildPages();
-      readerState.page = Math.min(oldPage, Math.max(0, readerState.pages.length - 1));
-      renderCurrent();
-      readerReflowLock = false;
-    });
-  }, 180);
+  document.getElementById('bgPalette').style.display = 'none';
+  renderCurrent(); // 直接呼叫底层画板，魔法瞬间生效！
 };
 
-window.toggleToc = function(){
-  const drawer = document.getElementById('tocDrawer');
-  const overlay = document.getElementById('tocOverlay');
-  const isOpen = drawer.style.left === '0px';
+// 唤醒右侧笔记抽屉
+window.toggleNotes = function(){
+  const drawer = document.getElementById('notesDrawer');
+  const overlay = document.getElementById('notesOverlay');
+  // 【神级修复】：藏得更深一点（-320px），不给它露尾巴的机会！
+  const isOpen = drawer.style.right === '0px';
   
   if(isOpen){
-    drawer.style.left = '-280px';
+    drawer.style.right = '-320px';
     overlay.style.opacity = '0';
     setTimeout(()=> overlay.style.display = 'none', 300);
   } else {
-    renderTocList(); 
-    
-    // 根据夜间模式动态渲染抽屉颜色，拯救审美！
-    drawer.style.background = readerState.dark ? 'rgba(28, 33, 43, 0.85)' : 'rgba(255,255,255,0.85)';
-    drawer.style.color = readerState.dark ? '#dbe4ff' : '#22304a';
-    drawer.style.borderRight = readerState.dark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(255,255,255,0.4)';
-    drawer.querySelector('div').style.color = readerState.dark ? '#dbe4ff' : '#22304a';
-    
+    renderNotesList(); 
     overlay.style.display = 'block';
     overlay.offsetWidth; 
     overlay.style.opacity = '1';
-    drawer.style.left = '0px';
+    drawer.style.right = '0px';
   }
 };
-
 window.removeBookmark = function(index){
   if(!confirm('确定要删除这个书签吗？')) return;
   const data = getStudyData();
