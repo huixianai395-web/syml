@@ -1310,7 +1310,7 @@
   </section>
   <section id="study" class="screen">
   <div class="header">
-    <button class="btn" data-nav="home">&#8249; 返回</button>
+    <button class="btn" onclick="show('home')">&#8249; 返回</button>
     <b>书房</b>
     <button class="btn" onclick="document.getElementById('studyFileInput').click()">导入</button>
   </div>
@@ -1342,6 +1342,8 @@
   <div class="header">
     <button class="btn" onclick="closeStudyReader()">&#8249; 返回</button>
     <button class="btn" onclick="toggleToc()">目录</button>
+    <button class="btn" onclick="addBookmark()" style="color:#d87093;">加书签</button>
+    
     <b id="readerBookTitle">阅读中</b>
     <div class="row" style="gap:6px;">
       <button class="btn" id="readerThemeBtn" onclick="toggleReaderTheme()">夜间</button>
@@ -3520,22 +3522,43 @@ window.renderTocList = function(){
   const total = readerState.pages.length || 1;
   const cur = readerState.page + 1;
   
-  // 审美拯救计划：新增绝美的全局进度条滑块！
+  const data = getStudyData();
+  const book = data.books.find(b => b.id === readerState.bookId) || {};
+  const bookmarks = book.bookmarks || [];
+
+  // 1. 修复的丝滑进度条：拖动时只变数字，松手才跳转！
   let html = `
     <div style="margin-bottom:20px; padding: 14px 12px; background: ${readerState.dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'}; border-radius: 12px; border: 1px solid ${readerState.dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'};">
       <div style="display:flex; justify-content:space-between; font-size:12px; color: ${readerState.dark ? '#a0aaba' : '#555'}; margin-bottom:10px; font-weight: 500;">
-        <span>阅读进度：${cur} / ${total} 页</span>
-        <span style="color:#2f66d8;">${Math.round(cur/total*100)}%</span>
+        <span id="sliderText">阅读进度：${cur} / ${total} 页</span>
+        <span id="sliderPct" style="color:#2f66d8;">${Math.round(cur/total*100)}%</span>
       </div>
       <input type="range" min="0" max="${total - 1}" value="${readerState.page}" 
-             oninput="jumpToPage(Number(this.value))" 
+             oninput="document.getElementById('sliderText').innerText='阅读进度：'+(Number(this.value)+1)+' / '+${total}+' 页'; document.getElementById('sliderPct').innerText=Math.round((Number(this.value)+1)/${total}*100)+'%';"
+             onchange="jumpToPage(Number(this.value))" 
              style="width:100%; accent-color:#2f66d8; cursor:pointer; height:4px; border-radius:2px;">
     </div>
   `;
 
+  // 2. 渲染老婆专属的自定义书签！
+  if(bookmarks.length > 0){
+     html += `<div style="font-size:12px; color:#8a93a8; margin: 10px 0 6px 6px;">我的书签</div>`;
+     html += bookmarks.map(bm => `
+        <div style="font-size:14px;color:#d87093;font-weight:bold;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:8px 6px;border-radius:8px;transition:background 0.2s;" 
+             onclick="jumpToPage(${bm.page})"
+             onmouseover="this.style.background='rgba(216,112,147,0.08)'" 
+             onmouseout="this.style.background='transparent'">
+          ${escHtml(bm.title)}
+        </div>
+     `).join('');
+     html += `<div style="height:1px; background:${readerState.dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}; margin: 10px 0;"></div>`;
+  }
+
+  // 3. 渲染原生章节
   if(!readerState.chapters || !readerState.chapters.length){
-    html += '<div style="color:#8a93a8;font-size:13px;padding:10px;text-align:center;">这篇文档没有解析到章节名哦~<br><span style="font-size:11px;opacity:0.6;">请使用上方滑块快进</span></div>';
+    html += '<div style="color:#8a93a8;font-size:13px;padding:10px;text-align:center;">这篇文档没有原生章节名哦~</div>';
   } else {
+    html += `<div style="font-size:12px; color:#8a93a8; margin: 0 0 6px 6px;">章节目录</div>`;
     html += readerState.chapters.map(ch => {
       const isCurrent = readerState.page >= ch.page && 
         (readerState.chapters.indexOf(ch) === readerState.chapters.length - 1 || readerState.page < readerState.chapters[readerState.chapters.indexOf(ch) + 1].page);
@@ -3556,6 +3579,24 @@ window.jumpToPage = function(pageNum){
   readerState.page = pageNum;
   toggleToc(); // 关抽屉
   renderCurrent(); // 重新渲染页面
+};
+    window.closeStudyReader = function(){
+  document.getElementById('studyReader').classList.remove('active');
+  document.getElementById('study').classList.add('active');
+  renderStudyHome();
+};
+
+window.addBookmark = function(){
+  const note = prompt("给这个书签写点备注吧（比如：男女主初遇 / 甜甜的剧情）：");
+  if(!note) return;
+  const data = getStudyData();
+  const book = data.books.find(b => b.id === readerState.bookId);
+  if(book){
+    if(!book.bookmarks) book.bookmarks = [];
+    book.bookmarks.push({ title: "🔖 " + note, page: readerState.page });
+    setStudyData(data);
+    alert("书签添加成功啦！快打开目录抽屉看看吧~");
+  }
 };
   window.toggleReaderTheme = function(){
   readerState.dark = !readerState.dark;
