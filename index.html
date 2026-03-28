@@ -3266,6 +3266,48 @@ window.renderStudyHome=function(){
     if(batchBar) batchBar.remove();
   }
 };
+ // 【抢救补丁】：补回被误伤的导入书籍引擎！
+window.importStudyTxtFile = function(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const text = String(e.target.result||'').trim();
+    if(!text){ alert('老婆，这本书是空的哦！'); return; }
+
+    const data = getStudyData();
+    const rawName = file.name || '未命名文本';
+    const title = rawName.replace(/\.[^.]+$/, '') || '未命名文本';
+
+    const newBook = {
+      id: 'book_' + Date.now(),
+      title: title,
+      author: '本地导入',
+      cover: 'linear-gradient(160deg,#4a667c,#283b49)', // 先给个默认渐变，反正现在可以随便换绝美封面啦！
+      content: text
+    };
+
+    data.books.unshift(newBook);
+    data.currentBookId = newBook.id;
+    setStudyData(data); // 完美调用新的外挂硬盘双写静默保存！
+    renderStudyHome();
+    alert('🎉 导入成功：' + title);
+  };
+  reader.onerror = function(){ alert('读取文件失败啦宝宝。'); };
+  reader.readAsText(file, 'utf-8');
+};
+
+// 重新给隐藏的 input 绑上神经元监听器！
+setTimeout(() => {
+  const fileInput = document.getElementById('studyFileInput');
+  if(fileInput){
+    // 覆盖旧的 listener，防止重复绑定
+    fileInput.onchange = function(e){
+      const file = e.target.files && e.target.files[0];
+      if(file) window.importStudyTxtFile(file);
+      e.target.value = ''; // 清空，保证下次点同名文件也能完美触发
+    };
+  }
+}, 500);   
 window._openCurrentStudyBook=function(){
   const data=getStudyData();
   if(data.currentBookId){
