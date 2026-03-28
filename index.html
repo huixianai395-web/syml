@@ -3259,13 +3259,11 @@ function smartPaginateByHeight(text, width, height, fs, lh){
   const push=()=>{ if(cur.trim()) out.push(cur.trim()); cur=''; };
 
   for(const p of paras){
-    // 【降维打击】：把当前大段落按单换行劈开，逐行地毯式搜索！
     const subLines = p.split('\n').map(x=>x.trim()).filter(Boolean);
     for(const line of subLines){
-      // 标题特征：字数在1到35之间，符合正则，且绝不以句号/问号结尾！
       if(line.length > 0 && line.length < 35 && chapReg.test(line) && !/[。！？]$/.test(line)){
         chapters.push({ title: line, page: out.length });
-        break; // 这个块里只要抓到一个就行啦
+        break; 
       }
     }
 
@@ -3300,8 +3298,8 @@ function smartPaginateByHeight(text, width, height, fs, lh){
     }
   });
 
-  return { pages: out.length?out:[''], chapters: uniqueChapters };
-
+  return { pages: out.length?out:[''], chapters: uniqueChapters }; 
+}
 function pageHTML(txt, idx){
   const bg=readerState.dark?'#161b27':'#fdfaf3';
   const fg=readerState.dark?'#dbe4ff':'#2b2b2b';
