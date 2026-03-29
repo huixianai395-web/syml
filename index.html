@@ -1428,11 +1428,11 @@
   <input type="file" accept="image/*" onchange="window.uploadReaderCustomBg(this)" style="position:absolute; inset:-10px; width:200%; height:200%; opacity:0; cursor:pointer;">
 </div>
 
-<!-- 终极暴力秒变色调色盘！直接替换刚才那个带“字”的div！ -->
+<!-- 究极无敌秒变色调色盘！苹果手机的克星！ -->
 <div style="position:relative; width:32px; height:32px; border-radius:50%; background:#2f3443; color:#fff; border:2px solid #e2e8f0; box-shadow:0 2px 6px rgba(0,0,0,0.08); display:grid; place-items:center; font-size:14px; font-weight:bold; cursor:pointer; overflow:hidden;" title="点击更换字体颜色！">
   字
-  <!-- 核心魔法：把所有逻辑直接强塞进 oninput 里，绝对实时渲染！ -->
-  <input type="color" oninput="window.readerState.customFontColor=this.value; const d=getStudyData(); d.customFontColor=this.value; setStudyData(d); renderCurrent();" style="position:absolute; inset:-10px; width:200%; height:200%; opacity:0; cursor:pointer;">
+  <!-- 核心魔法：放弃重绘整个页面，直接穿透底层抓取文字容器，强行上色！绝对没有一毫秒的延迟！ -->
+  <input type="color" oninput="window.readerState.customFontColor=this.value; try{ document.getElementById('pageStatic').firstElementChild.children[1].style.color=this.value; }catch(e){} const d=getStudyData(); d.customFontColor=this.value; setStudyData(d);" style="position:absolute; inset:-10px; width:200%; height:200%; opacity:0; cursor:pointer;">
 </div>
 
 <script>
