@@ -624,9 +624,13 @@
 
 /* 微信底部导航栏 */
 .wx-bottom-nav {
-  height: 55px; background: #f7f7f7; border-top: 1px solid #d1d1d1;
+  height: 60px; /* 稍微加高一点点 */
+  background: #f7f7f7; border-top: 1px solid #d1d1d1;
   display: flex; justify-content: space-around; align-items: center;
-  padding-bottom: env(safe-area-inset-bottom); flex-shrink: 0;
+  padding-top: 6px; /* 把图标和字往下推一推，避开切割 */
+  padding-bottom: env(safe-area-inset-bottom); 
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 .wx-nav-item {
   display: flex; flex-direction: column; align-items: center;
@@ -897,7 +901,10 @@
         <div class="header"><button class="btn" data-nav="home">‹ 返回</button><b>发现</b></div>
         <div class="wx-page">
           <div class="wx-list-row" onclick="window._openMoments()">
-            <div class="wx-list-icon" style="background:#07c160; color:#fff;">⭕</div>
+            <div class="wx-list-icon" style="background:conic-gradient(from 45deg,#FFC107,#FF5722,#E91E63,#9C27B0,#2196F3,#4CAF50,#FFC107);display:grid;place-items:center;border-radius:8px;overflow:hidden;">
+  <!-- 绝美朋友圈彩色光圈 -->
+  <div style="width:14px;height:14px;border:2.5px solid #fff;border-radius:50%;"></div>
+            </div>
             <div class="wx-list-text">朋友圈</div>
             <div class="wx-list-arrow">›</div>
           </div>
@@ -958,35 +965,36 @@
   <section id="moments" class="screen">
     <div class="moments-scroll" id="momentsScroll" onscroll="window._checkMomentsScroll()">
       
-      <!-- 沉浸式顶部导航栏 -->
-      <div class="moments-top-bar" id="momentsTopBar" style="position: fixed; top: 0; left: 0; width: 100%; height: calc(44px + var(--safe-top)); padding-top: var(--safe-top); z-index: 9999; display: flex; align-items: center; justify-content: space-between;">
-        
+      <!-- 沉浸式顶部导航栏 (修复了出界问题，加了 box-sizing) -->
+      <div class="moments-top-bar" id="momentsTopBar" style="position: fixed; top: 0; left: 0; width: 100%; height: calc(44px + var(--safe-top)); padding-top: var(--safe-top); z-index: 9999; display: flex; align-items: center; justify-content: space-between; box-sizing: border-box; padding: 0 15px;">
+       
         <!-- 左侧：返回按钮 -->
-        <div data-nav="wechat" style="width: 60px; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; padding-left: 10px;">
-          <svg viewBox="0 0 24 24" fill="none" style="width: 28px; height: 28px; stroke: #fff; stroke-width: 2; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); pointer-events: none;"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        <div data-nav="wechat" style="width: 44px; height: 100%; display: flex; align-items: center; justify-content: flex-start; cursor: pointer;">
+          <svg viewBox="0 0 24 24" fill="none" style="width: 28px; height: 28px; stroke: #fff; stroke-width: 2.5; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); pointer-events: none;"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </div>
-        
+       
         <!-- 右侧：按钮组 -->
-        <div style="display: flex; align-items: center; height: 100%; padding-right: 10px;">
-          <!-- 魔法刷新按钮 (催更NPC发朋友圈) -->
-          <div onclick="window._generateNPCMoment()" style="width: 44px; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="让NPC发条朋友圈">
-            <svg viewBox="0 0 24 24" fill="none" style="width: 22px; height: 22px; stroke: #fff; stroke-width: 2; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); pointer-events: none;"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 1 0 2.13-5.83L2 12"></path></svg>
+        <div style="display: flex; align-items: center; height: 100%; gap: 10px;">
+          <!-- 魔法刷新按钮 -->
+          <div onclick="window._generateNPCMoment()" style="width: 32px; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="让NPC发条朋友圈">
+            <svg viewBox="0 0 24 24" fill="none" style="width: 22px; height: 22px; stroke: #fff; stroke-width: 2.5; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); pointer-events: none;"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 1 0 2.13-5.83L2 12"></path></svg>
           </div>
-          <!-- 相机按钮 (自己发) -->
-          <div onclick="document.getElementById('publishMomentModal').classList.add('active')" style="width: 44px; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-            <svg viewBox="0 0 24 24" fill="none" style="width: 26px; height: 26px; stroke: #fff; stroke-width: 2; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); pointer-events: none;"><circle cx="12" cy="12" r="3"></circle><path d="M19 4h-2l-1-2H8L7 4H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"></path></svg>
+          <!-- 相机按钮 -->
+          <div onclick="document.getElementById('publishMomentModal').classList.add('active')" style="width: 32px; height: 100%; display: flex; align-items: center; justify-content: flex-end; cursor: pointer;">
+            <svg viewBox="0 0 24 24" fill="none" style="width: 26px; height: 26px; stroke: #fff; stroke-width: 2.5; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); pointer-events: none;"><circle cx="12" cy="12" r="3"></circle><path d="M19 4h-2l-1-2H8L7 4H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"></path></svg>
           </div>
         </div>
-
       </div>
 
-      <!-- 朋友圈封面与个人信息 -->
+      <!-- 朋友圈封面与个人信息 (加回了可点击上传的头像) -->
       <div class="moments-header">
         <img class="moments-cover" id="momentsCoverImg" src="https://picsum.photos/800/600?blur=1" onclick="document.getElementById('momentsCoverFile').click()">
         <input type="file" id="momentsCoverFile" accept="image/*" class="hidden">
         <div class="moments-user-info">
           <div class="moments-name" id="momentsMyName">弥洛</div>
-          <img class="moments-avatar" id="momentsMyAvatar" src="https://via.placeholder.com/120">
+          <!-- 加上了 onclick 触发文件选择，还加了绝美的白边阴影 -->
+          <img class="moments-avatar" id="momentsMyAvatar" src="https://via.placeholder.com/120" onclick="document.getElementById('momentsAvatarUploadFile').click()" style="cursor:pointer; border: 2px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.15); background:#fff;">
+          <input type="file" id="momentsAvatarUploadFile" accept="image/*" class="hidden">
         </div>
       </div>
 
@@ -5256,6 +5264,31 @@ window._replyMomentCommentAI = async function(momentId, npcName, userText) {
     } catch(err) { alert('封面更换失败：' + err.message); } 
     finally { e.target.value = ''; }
   });
+  // ================= 朋友圈头像专属上传引擎 (完美对接外挂内存) =================
+  const mAvatarFile = document.getElementById('momentsAvatarUploadFile');
+  if(mAvatarFile){
+    mAvatarFile.addEventListener('change', async (e) => {
+      const f = e.target.files?.[0];
+      if(!f) return;
+      try {
+        const imgData = await compressImage(f, false); 
+        document.getElementById('momentsMyAvatar').src = imgData;
+        
+        // 核心：写入外挂内存！
+        const meData = getMe();
+        meData.avatar = imgData;
+        setMe(meData); // 永久封存！
+        
+        // 如果在微信主界面也需要同步，顺手赋值一下
+        if(typeof meAvatarDraftGlobal !== 'undefined') meAvatarDraftGlobal = imgData;
+        const mainAvatar = document.getElementById('mePageAvatar');
+        if(mainAvatar) mainAvatar.src = imgData;
+
+        alert('🎉 头像更换成功！已经死死钉在外挂内存里啦！');
+      } catch(err) { alert('头像更换失败了宝宝：' + err.message); } 
+      finally { e.target.value = ''; }
+    });
+  }
 
   window.addEventListener('DOMContentLoaded', () => {
     const savedCover = localStorage.getItem('mp_fix_moments_cover');
