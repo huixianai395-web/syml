@@ -3510,10 +3510,8 @@ function pageHTML(txt, idx){
     });
   }
 
-  // 【彻底释放画板】：外层加上 transition，让换肤像呼吸一样丝滑！
-  return `<div style="position:absolute;inset:0;background:${bg};// background-color: ${readerState.dark ? '#161b27' : '#fdfaf3'};
-
-overflow:hidden; pointer-events:none; user-select:none; -webkit-user-select:none; transition:background 0.3s;">
+  // 强行锁死 background-size: cover，神仙来了它都不会变形！
+  return `<div style="position:absolute;inset:0;background:${bg};background-size:cover;background-position:center;overflow:hidden; pointer-events:none; user-select:none; -webkit-user-select:none; transition:background 0.3s;">
     <div style="padding:${pad}px;font-size:${fs}px;line-height:${lh};color:${fg};white-space:pre-wrap;word-break:break-word;text-align:justify;text-indent:2em; pointer-events:auto; user-select:text; -webkit-user-select:text; transition:color 0.3s;">${htmlTxt}</div>
     <div style="position:absolute;left:0;right:0;bottom:6px;text-align:center;font-size:11px;color:${pn}; pointer-events:none;">- ${idx+1} -</div>
   </div>`;
@@ -3762,25 +3760,23 @@ window.changeReaderBg = function(colorHex, isDark, hidePalette = true){
   
   renderCurrent(); // 瞬间重绘，魔法生效！
 };
-   // 第二步：把这段 JS 替换进去（修复了报错，加入了切换逻辑）
-
-window.uploadReaderCustomBg = async function(input){
+   window.uploadReaderCustomBg = async function(input){
   const f = input.files?.[0];
   if(!f) return;
   try {
     const imgData = await compressImage(f, true);
-    // 加一层极薄的遮罩，保留人像质感
-    const finalBg = `linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.3)), url(${imgData}) center/cover no-repeat`;
+    // 加上 cover 属性，保证绝不变形！
+    const finalBg = `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), url(${imgData}) center/cover no-repeat`;
     
-    window.readerState.dark = true; // 默认白字
+    window.readerState.dark = true; 
     window.readerState.customBg = finalBg;
 
-    // 【完美解决报错】：去掉 window. 前缀，直接调本地函数！
     const data = getStudyData();
     data.customBg = finalBg;
     data.isDark = true;
     setStudyData(data); 
 
+    // 彻底干掉前缀，直接召唤重绘魔法！
     renderCurrent();
   } catch(err) {
     alert('上传失败啦宝宝：' + err.message);
@@ -3795,6 +3791,7 @@ window.toggleCustomBgTextColor = function(){
   const data = getStudyData();
   data.isDark = window.readerState.dark;
   setStudyData(data);
+  // 彻底干掉前缀！
   renderCurrent();
 };
 
