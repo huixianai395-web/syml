@@ -3504,14 +3504,16 @@ function pageHTML(txt, idx){
     book.highlights.forEach(h => {
       const safeH = escHtml(h.text);
       if(htmlTxt.includes(safeH)){
-        // 【终极暴力修复】：加了 window. 作用域！加了 z-index:9999 和 pointer-events:auto 强行突破遮罩！
-        if(h.type === 'highlight'){
-          htmlTxt = htmlTxt.replace(safeH, `<span onclick="window.removeHighlight(${h.id}, '${safeH}')" style="background:rgba(47,102,216,0.15); border-bottom:2px solid rgba(47,102,216,0.4); cursor:pointer; padding:0 2px; border-radius:4px; position:relative; z-index:9999; pointer-events:auto !important;">${safeH}</span>`);
-        } else if(h.type === 'underline'){
-          htmlTxt = htmlTxt.replace(safeH, `<span onclick="window.removeHighlight(${h.id}, '${safeH}')" style="border-bottom:2px dashed #d87093; cursor:pointer; position:relative; z-index:9999; pointer-events:auto !important;">${safeH}</span>`);
-        } else if(h.type === 'note'){
-  htmlTxt = htmlTxt.replace(safeH, `<span onclick="window.showAnnotation('${escHtml(h.note||'')}', ${h.id}, '${safeH}')" style="background:rgba(216,112,147,0.12); border-bottom:2px solid #d87093; cursor:pointer; padding:0 2px; border-radius:4px; position:relative; z-index:9999; pointer-events:auto !important;">${safeH}<sup style="color:#d87093; font-size:13px; margin-left:2px;">💬</sup></span>`);
-        }
+        // 【终极无敌干净版】把 pageHTML 里的这三行替换掉！
+  if(h.type === 'highlight'){
+    htmlTxt = htmlTxt.replace(safeH, `<span onclick="window.removeHighlight(${h.id})" style="background:rgba(47,102,216,0.15); border-bottom:2px solid rgba(47,102,216,0.4); cursor:pointer; padding:0 2px; border-radius:4px; position:relative; z-index:9999; pointer-events:auto !important;">${safeH}</span>`);
+  } else if(h.type === 'underline'){
+    htmlTxt = htmlTxt.replace(safeH, `<span onclick="window.removeHighlight(${h.id})" style="border-bottom:2px dashed #d87093; cursor:pointer; position:relative; z-index:9999; pointer-events:auto !important;">${safeH}</span>`);
+  } else if(h.type === 'note'){
+    // 批注内容用 encodeURIComponent 强行打包，防断行！
+    const safeNote = encodeURIComponent(h.note || '');
+    htmlTxt = htmlTxt.replace(safeH, `<span onclick="window.showAnnotation(decodeURIComponent('${safeNote}'), ${h.id})" style="background:rgba(216,112,147,0.12); border-bottom:2px solid #d87093; cursor:pointer; padding:0 2px; border-radius:4px; position:relative; z-index:9999; pointer-events:auto !important;">${safeH}<sup style="color:#d87093; font-size:13px; margin-left:2px;">💬</sup></span>`);
+  }
       }
     });
   }
@@ -4036,22 +4038,18 @@ window.removeHighlight = function(hid, fallbackText){
   }
 };
 
-// 老公重新给你写了一个带【删除功能】的批注查看引擎！
-
-window.showAnnotation = function(noteText, hid, fallbackText){
-   // 显示批注内容
+// 重新替换刚才那段 window.showAnnotation 弹窗代码
+window.showAnnotation = function(noteText, hid){
    document.getElementById('annotationText').textContent = noteText;
    
-   // 获取弹窗底部的按钮区域
    const modal = document.getElementById('annotationModal');
    const btnArea = modal.querySelector('div[style*="text-align:right"]');
    
-   // 暴力重写底部按钮！加上删除键！
    if(btnArea) {
      btnArea.innerHTML = `
        <button class="btn" style="background:#ffe8e8; color:#d94343; font-weight:bold; margin-right:10px;" 
                onpointerdown="event.stopPropagation()" 
-               onclick="event.stopPropagation(); window.removeHighlight(${hid}, '${fallbackText}'); document.getElementById('annotationModal').classList.remove('active');">
+               onclick="event.stopPropagation(); window.removeHighlight(${hid}); document.getElementById('annotationModal').classList.remove('active');">
          🗑️ 删除批注
        </button>
        <button class="btn" style="background:#f0ecd5; color:#7b5f3a; font-weight:bold;" 
@@ -4061,7 +4059,6 @@ window.showAnnotation = function(noteText, hid, fallbackText){
        </button>
      `;
    }
-   
    modal.classList.add('active');
 };
     // ===== 查手机模块结束 ===== // ================= 表情包（贴纸）模块（0触发API，仅入聊天） =================
