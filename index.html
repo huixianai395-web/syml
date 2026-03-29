@@ -3510,16 +3510,16 @@ function pageHTML(txt, idx){
     });
   }
 
-// 【绝对通透高清版】
+// 【终极薄纱质感+纯净文字版】
   // 直接替换掉 pageHTML 里的 return 部分！
   
   return `<div style="position:absolute;inset:0;background:${bg};background-size:cover;background-position:center;overflow:hidden; pointer-events:none; user-select:none; -webkit-user-select:none; transition:background 0.3s;">
     
-    <!-- 把高斯模糊降到0，黑色遮罩降到0.1，绝对看清脸！ -->
-    <div style="position:absolute;inset:0;backdrop-filter:blur(0px);-webkit-backdrop-filter:blur(0px);background-color:${readerState.dark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)'}; z-index:1;"></div>
+    <!-- 核心魔法1：加上一层‘薄纱’！0.3的透明度，既能看清脸，又能稍微压住背景不抢戏！ -->
+    <div style="position:absolute;inset:0;background-color:${readerState.dark ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.3)'}; z-index:1;"></div>
     
-    <!-- 保留极弱的发光阴影，字绝对清晰！ -->
-    <div style="position:relative; z-index:2; padding:${pad}px;font-size:${fs}px;line-height:${lh};color:${fg};white-space:pre-wrap;word-break:break-word;text-align:justify;text-indent:2em; pointer-events:auto; user-select:text; -webkit-user-select:text; transition:color 0.3s; text-shadow:${readerState.dark ? '0 1px 2px rgba(0,0,0,0.8)' : '0 1px 1px rgba(255,255,255,0.6)'};">${htmlTxt}</div>
+    <!-- 核心魔法2：去掉黑字的钢笔感！浅色模式直接去掉阴影还原纯粹的黑字，深色模式保留一点点黑影护白字！ -->
+    <div style="position:relative; z-index:2; padding:${pad}px;font-size:${fs}px;line-height:${lh};color:${fg};white-space:pre-wrap;word-break:break-word;text-align:justify;text-indent:2em; pointer-events:auto; user-select:text; -webkit-user-select:text; transition:color 0.3s; text-shadow:${readerState.dark ? '0 1px 2px rgba(0,0,0,0.6)' : 'none'};">${htmlTxt}</div>
     
     <div style="position:absolute;left:0;right:0;bottom:6px;text-align:center;font-size:11px;color:${pn}; pointer-events:none; z-index:2;">- ${idx+1} -</div>
   </div>`;
