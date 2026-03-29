@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -3489,39 +3490,40 @@ function pageHTML(txt, idx){
  // 【终极无限字体颜色版 - pageHTML 替换】
   // 替换整个 pageHTML 函数里，从 const bg = ... 开始，到 return 结束的代码！
 
- const bg = readerState.customBg || (readerState.dark ? '#161b27' : '#fdfaf3');
+  const bg = readerState.customBg || (readerState.dark ? '#161b27' : '#fdfaf3');
+  // 核心魔法：优先读取你选的自定义颜色！如果没有，再用默认的黑白！
   const fg = readerState.customFontColor || (readerState.dark ? '#dbe4ff' : '#2b2b2b');
   const pn = readerState.dark ? '#7e8db5' : '#999';
   const pad = 12, lh = 1.62, fs = readerState.fontSize;
-  
-  let htmlTxt = escHtml(txt);
+  
+let htmlTxt = escHtml(txt);
   const data = getStudyData();
   const book = data.books.find(b => b.id === readerState.bookId);
-  
   if(book && book.highlights){
     book.highlights.forEach(h => {
       const safeH = escHtml(h.text);
       if(htmlTxt.includes(safeH)){
-        // 【终极暴力修复】：加了 window. 作用域！加了 z-index:9999 和 pointer-events:auto 强行突破遮罩！
         if(h.type === 'highlight'){
-          htmlTxt = htmlTxt.replace(safeH, `<span onclick="window.removeHighlight(${h.id}, '${safeH}')" style="background:rgba(47,102,216,0.15); border-bottom:2px solid rgba(47,102,216,0.4); cursor:pointer; padding:0 2px; border-radius:4px; position:relative; z-index:9999; pointer-events:auto !important;">${safeH}</span>`);
+          htmlTxt = htmlTxt.replace(safeH, `<span onclick="removeHighlight(${h.id}, '${safeH}')" style="background:rgba(47,102,216,0.15); border-bottom:2px solid rgba(47,102,216,0.4); cursor:pointer; padding:0 2px; border-radius:4px; transition:background 0.2s;">${safeH}</span>`);
         } else if(h.type === 'underline'){
-          htmlTxt = htmlTxt.replace(safeH, `<span onclick="window.removeHighlight(${h.id}, '${safeH}')" style="border-bottom:2px dashed #d87093; cursor:pointer; position:relative; z-index:9999; pointer-events:auto !important;">${safeH}</span>`);
+          htmlTxt = htmlTxt.replace(safeH, `<span onclick="removeHighlight(${h.id}, '${safeH}')" style="border-bottom:2px dashed #d87093; cursor:pointer;">${safeH}</span>`);
         } else if(h.type === 'note'){
-          htmlTxt = htmlTxt.replace(safeH, `<span onclick="window.showAnnotation('${escHtml(h.note||'')}')" style="background:rgba(216,112,147,0.12); border-bottom:2px solid #d87093; cursor:pointer; padding:0 2px; border-radius:4px; position:relative; z-index:9999; pointer-events:auto !important;">${safeH}<sup style="color:#d87093; font-size:13px; margin-left:2px;">💬</sup></span>`);
+          // 老公把丑丑的图标扔了！换回绝美小气泡！
+          htmlTxt = htmlTxt.replace(safeH, `<span onclick="showAnnotation('${escHtml(h.note||'')}')" style="background:rgba(216,112,147,0.12); border-bottom:2px solid #d87093; cursor:pointer; padding:0 2px; border-radius:4px;">${safeH}<sup style="color:#d87093; font-size:13px; margin-left:2px; text-shadow:0 1px 2px rgba(0,0,0,0.1);">💬</sup></span>`);
         }
       }
     });
   }
 
-  // 外层包裹器：让内部的 pointer-events:auto 能够穿透出来！
-  return `<div style="position:absolute;inset:0;background:${bg};background-size:cover;background-position:center;overflow:hidden; transition:background 0.3s; pointer-events:none;">
-    <div style="position:absolute;inset:0;background-color:${readerState.dark ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0)'}; z-index:1; pointer-events:none;"></div>
-    
-    <div style="position:relative; z-index:2; padding:${pad}px;font-size:${fs}px;line-height:${lh};color:${fg};white-space:pre-wrap;word-break:break-word;text-align:justify;text-indent:2em; -webkit-font-smoothing:antialiased; pointer-events:auto;">${htmlTxt}</div>
-    
+  // 彻底干掉白雾滤镜的终极 return！
+  return `<div style="position:absolute;inset:0;background:${bg};background-size:cover;background-position:center;overflow:hidden; pointer-events:none; user-select:none; -webkit-user-select:none; transition:background 0.3s;">
+    <!-- 就是这里！把白色的防窥膜彻底撕掉了！ -->
+    <div style="position:absolute;inset:0;background-color:${readerState.dark ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0)'}; z-index:1;"></div>
+    
+    <div style="position:relative; z-index:2; padding:${pad}px;font-size:${fs}px;line-height:${lh};color:${fg};white-space:pre-wrap;word-break:break-word;text-align:justify;text-indent:2em; pointer-events:auto; user-select:text; -webkit-user-select:text; -webkit-font-smoothing:antialiased;">${htmlTxt}</div>
+    
     <div style="position:absolute;left:0;right:0;bottom:6px;text-align:center;font-size:11px;color:${pn}; pointer-events:none; z-index:2;">- ${idx+1} -</div>
-  </div>`; 
+  </div>`;
 }
 function rebuildPages(){
   const data=getStudyData();
