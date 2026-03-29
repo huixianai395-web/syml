@@ -1417,6 +1417,14 @@
        +
        <input type="color" oninput="changeReaderBg(this.value, false, false)" onchange="changeReaderBg(this.value, false, false)" style="position:absolute; inset:-10px; width:200%; height:200%; opacity:0; cursor:pointer;">
      </div>
+    <!-- 第一步：找到你的调色盘 HTML -->
+<!-- 在 id="bgPalette" 的这个 div 里面，那个七彩的 + 号输入框的后面，加上这个传图按钮 -->
+
+<div style="width:1px; height:20px; background:rgba(0,0,0,0.1);"></div>
+<div style="position:relative; width:32px; height:32px; border-radius:50%; background:#eef2ff; border:2px solid #b8c6e8; box-shadow:0 2px 8px rgba(0,0,0,0.15); display:grid; place-items:center; font-size:14px; cursor:pointer; overflow:hidden;" title="自定义人像背景">
+  🖼️
+  <input type="file" accept="image/*" onchange="window.uploadReaderCustomBg(this)" style="position:absolute; inset:-10px; width:200%; height:200%; opacity:0; cursor:pointer;">
+</div>
   </div>
   </section>
 <!-- ===== 查手机页面 ===== -->
@@ -3749,6 +3757,37 @@ window.changeReaderBg = function(colorHex, isDark, hidePalette = true){
   }
   
   renderCurrent(); // 瞬间重绘，魔法生效！
+};
+    // 第二步：把这段核心逻辑的 JS，随便找个空白的地方（比如在 changeReaderBg 函数的下面）粘贴进去！
+
+window.uploadReaderCustomBg = async function(input){
+  const f = input.files?.[0];
+  if(!f) return;
+  try {
+    // 调用我们无敌的压缩引擎
+    const imgData = await compressImage(f, true);
+    
+    // 核心护眼魔法：给你的人像盖一层半透明的黑纱，保证白字绝对清晰！就算放帅哥的脸也不会挡字！
+    const finalBg = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)), url(${imgData}) center/cover no-repeat`;
+
+    // 强行写入阅读器状态（默认切成夜间模式的字体颜色，配黑纱最完美）
+    window.readerState.dark = true;
+    window.readerState.customBg = finalBg;
+
+    // 写入内存外挂！死死记住你传的图！
+    const data = window.getStudyData();
+    data.customBg = finalBg;
+    data.isDark = true;
+    window.setStudyData(data);
+
+    // 瞬间重绘页面
+    window.renderCurrent();
+    alert('老婆！你的专属人像背景上传成功啦！');
+  } catch(err) {
+    alert('上传失败了宝宝：' + err.message);
+  } finally {
+    input.value = ''; // 清空输入框，方便下次再传
+  }
 };
 
 // 唤醒右侧笔记抽屉
