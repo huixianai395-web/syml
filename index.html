@@ -3753,23 +3753,25 @@ window.changeReaderBg = function(colorHex, isDark, hidePalette = true){
   
   renderCurrent(); // 瞬间重绘，魔法生效！
 };
-   window.uploadReaderCustomBg = async function(input){
+   // 【终极高清无遮罩上传版】
+// 直接替换掉原来的 uploadReaderCustomBg 函数！
+window.uploadReaderCustomBg = async function(input){
   const f = input.files?.[0];
   if(!f) return;
   try {
     const imgData = await compressImage(f, true);
-    // 加上 cover 属性，保证绝不变形！
-    const finalBg = `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), url(${imgData}) center/cover no-repeat`;
     
-    window.readerState.dark = true; 
+    // 核心魔法：把之前强加的黑色渐变遮罩（墨镜）彻底砸碎！只保留最纯粹的高清原图！
+    const finalBg = `url(${imgData}) center/cover no-repeat`;
+    
+    // 也不强制黑夜模式了，把选择权完全交给你！
     window.readerState.customBg = finalBg;
 
     const data = getStudyData();
     data.customBg = finalBg;
-    data.isDark = true;
     setStudyData(data); 
 
-    // 彻底干掉前缀，直接召唤重绘魔法！
+    // 召唤重绘魔法！
     renderCurrent();
   } catch(err) {
     alert('上传失败啦宝宝：' + err.message);
