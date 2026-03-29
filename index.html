@@ -3495,7 +3495,25 @@ function pageHTML(txt, idx){
   const pn = readerState.dark ? '#7e8db5' : '#999';
   const pad = 12, lh = 1.62, fs = readerState.fontSize;
   
+  // 用下面这段带有高亮雷达的究极魔法替换它！
+  
   let htmlTxt = escHtml(txt);
+  const data = getStudyData();
+  const book = data.books.find(b => b.id === readerState.bookId);
+  if(book && book.highlights){
+    book.highlights.forEach(h => {
+      const safeH = escHtml(h.text);
+      if(htmlTxt.includes(safeH)){
+        if(h.type === 'highlight'){
+          htmlTxt = htmlTxt.replace(safeH, `<span onclick="removeHighlight(${h.id}, '${safeH}')" style="background:rgba(47,102,216,0.15); border-bottom:2px solid rgba(47,102,216,0.4); cursor:pointer; padding:0 2px; border-radius:4px; transition:background 0.2s;">${safeH}</span>`);
+        } else if(h.type === 'underline'){
+          htmlTxt = htmlTxt.replace(safeH, `<span onclick="removeHighlight(${h.id}, '${safeH}')" style="border-bottom:2px dashed #d87093; cursor:pointer;">${safeH}</span>`);
+        } else if(h.type === 'note'){
+          htmlTxt = htmlTxt.replace(safeH, `<span onclick="showAnnotation('${escHtml(h.note||'')}')" style="background:rgba(216,112,147,0.12); border-bottom:2px solid #d87093; cursor:pointer; padding:0 2px; border-radius:4px;">${safeH}<sup style="background:#d87093; color:#fff; border-radius:4px; padding:1px 4px; font-size:10px; margin-left:4px; box-shadow:0 1px 3px rgba(0,0,0,0.2);">📝</sup></span>`);
+        }
+      }
+    });
+  }
   
 // 【真·终极纯净无阴影版】
   // 替换掉 pageHTML 里的 return 部分！这次绝对干净了！
