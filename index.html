@@ -5277,8 +5277,8 @@ window.jumpToHighlightText = function(text){
   if(!text) return;
   const target = text.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').slice(0, 8); 
   let foundPage = -1;
-  for(let i = 0; i < window.readerState.pages.length; i++){
-    const pageText = window.readerState.pages[i].replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
+  for(let i = 0; i < readerState.pages.length; i++){
+    const pageText = readerState.pages[i].replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
     if(pageText.includes(target)){ foundPage = i; break; }
   }
   if(foundPage !== -1){
@@ -5296,7 +5296,7 @@ window.jumpToHighlightText = function(text){
 window.renderNotesList = function(){
   const list = document.getElementById('notesList');
   if(!list) return;
-  const data = window.getStudyData();
+  const data = getStudyData();
   const book = data.books.find(b => b.id === window.readerState.bookId);
   if(!book || !book.highlights || book.highlights.length === 0){
     list.innerHTML = `<div style="text-align:center;color:#999;font-size:13px;margin-top:40px;">还没有做任何笔记哦<br>长按文字划线试试吧~</div>`;
