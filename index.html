@@ -1,5 +1,6 @@
 
 
+
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -847,6 +848,26 @@
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
+  <style>
+/* 妈妈专属：全局古风百年宣纸背景强制覆盖 */
+body, .chat-container, .message-list {
+  background-color: #fdf6e3 !important;
+  background-image: radial-gradient(#f9f1d9 1px, transparent 1px) !important;
+  background-size: 20px 20px !important;
+}
+
+/* 妈妈专属：聊天气泡美化 */
+.bubble {
+  border-radius: 12px !important;
+  box-shadow: 0 4px 10px rgba(59, 49, 43, 0.08) !important;
+  border: none !important;
+}
+
+.bubble-text {
+  color: #3b312b !important;
+  line-height: 1.6 !important;
+}
+  </style>
 </head>
 <body>
 <div id="app">
@@ -1115,12 +1136,6 @@
   <section id="chatSetting" class="screen">
     <div class="header"><button class="btn" data-nav="chatRoom">‹ 返回</button><b>聊天设置</b><button class="btn p" id="saveChatSettingBtn">保存</button></div>
     <div class="page">
-      <div style="display:flex;gap:8px;margin-bottom:10px;background:rgba(255,255,255,0.8);backdrop-filter:blur(10px);padding:8px;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,0.06);">
-  <div onclick="window._switchSettingTab('role',this)" style="flex:1;text-align:center;padding:8px 4px;border-radius:10px;font-size:12px;font-weight:700;color:#2f66d8;background:#edf2ff;cursor:pointer;">👤 角色</div>
-  <div onclick="window._switchSettingTab('style',this)" style="flex:1;text-align:center;padding:8px 4px;border-radius:10px;font-size:12px;font-weight:700;color:#555;cursor:pointer;">🎨 外观</div>
-  <div onclick="window._switchSettingTab('data',this)" style="flex:1;text-align:center;padding:8px 4px;border-radius:10px;font-size:12px;font-weight:700;color:#555;cursor:pointer;">💾 数据</div>
-      </div>
-      <div id="st-tab-data" class="st-tab-pane">
       <div class="card">
         <div class="small">收藏夹（单独入口，避免误触）</div>
         <div class="row" style="margin-top:8px;"><button class="btn" id="openFavBtn">打开收藏夹</button></div>
@@ -1148,7 +1163,6 @@
         <img id="meAvatarPreview" class="preview-img hidden" style="margin-top:8px;" />
         <div class="small" style="margin-top:8px;">我方人设</div><textarea id="mePersonaInput" class="ta" style="min-height:90px;"></textarea>
       </div>
-        </div><div id="st-tab-role" class="st-tab-pane" style="display:none;">
 
       <div class="card">
         <div class="small">对方名称（当前联系人）</div><input id="roleNameInput" class="input" />
@@ -1187,7 +1201,6 @@
         <div class="row" style="margin-top:8px;"><input id="contextLenInput" class="input" type="number" min="5" max="500" value="30" placeholder="默认30条" /></div>
         <div class="small" style="margin-top:6px;color:#888;">数值越大AI记性越好，但API消耗也越大哦</div>
       </div>
-          </div><div id="st-tab-style" class="st-tab-pane" style="display:none;">
 
       <div class="card">
         <div class="small">时间戳</div>
@@ -1250,7 +1263,7 @@
           <button class="btn d" id="clearChatBtn2">清空当前聊天</button><button class="btn d" id="deleteContactBtn">删除当前好友</button>
         </div>
       </div>
-    </div></div>
+    </div>
   </section>
 
   <section id="favorites" class="screen">
@@ -1726,18 +1739,7 @@ async function callSendToAi(userText){
     callRenderMsgs();
   }
 }
-window._switchSettingTab = function(tabName, el){
-  document.querySelectorAll('.st-tab-pane').forEach(p => p.style.display = 'none');
-  const target = document.getElementById('st-tab-' + tabName);
-  if(target) target.style.display = 'block';
-  const nav = el.parentElement;
-  if(nav) nav.querySelectorAll('div[onclick]').forEach(btn => {
-    btn.style.background = 'transparent';
-    btn.style.color = '#555';
-  });
-  el.style.color = tabName==='role'?'#2f66d8':tabName==='style'?'#c04a8a':'#3a7a3a';
-  el.style.background = tabName==='role'?'#edf2ff':tabName==='style'?'#fce8f3':'#e8f5e9';
-};
+
 window._callAccept=()=>connectCall();
 window._callReject=()=>{
   const wasOut=callState.phase==='ringing-out';
