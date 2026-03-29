@@ -1428,10 +1428,22 @@
   <input type="file" accept="image/*" onchange="window.uploadReaderCustomBg(this)" style="position:absolute; inset:-10px; width:200%; height:200%; opacity:0; cursor:pointer;">
 </div>
 
-<!-- 绝美黑白字一键切换开关 -->
-<div onclick="window.toggleCustomBgTextColor()" style="width:32px; height:32px; border-radius:50%; background:#2f3443; color:#fff; border:2px solid #e2e8f0; box-shadow:0 2px 6px rgba(0,0,0,0.08); display:grid; place-items:center; font-size:14px; font-weight:bold; cursor:pointer; transition:all 0.2s;" title="觉得字看不清？点我切换黑/白字！">
-  A
+<!-- 绝美无限字体颜色取色器！ -->
+<div style="position:relative; width:32px; height:32px; border-radius:50%; background:#2f3443; color:#fff; border:2px solid #e2e8f0; box-shadow:0 2px 6px rgba(0,0,0,0.08); display:grid; place-items:center; font-size:14px; font-weight:bold; cursor:pointer; overflow:hidden;" title="点击更换字体颜色！">
+  字
+  <input type="color" oninput="window.changeReaderFontColor(this.value)" onchange="window.changeReaderFontColor(this.value)" style="position:absolute; inset:-10px; width:200%; height:200%; opacity:0; cursor:pointer;">
 </div>
+
+<script>
+// 字体颜色外挂记忆引擎，加在 script 标签里！
+window.changeReaderFontColor = function(colorHex){
+  window.readerState.customFontColor = colorHex;
+  const data = getStudyData();
+  data.customFontColor = colorHex;
+  setStudyData(data);
+  renderCurrent();
+};
+</script>
   </div>
   </section>
 <!-- ===== 查手机页面 ===== -->
@@ -3476,51 +3488,23 @@ function smartPaginateByHeight(text, width, height, fs, lh){
   return { pages: out.length?out:[''], chapters: uniqueChapters }; 
 }
 function pageHTML(txt, idx){
-  // 【神级修复】：优先使用你选的绝美背景！如果没选，再用默认的夜间/白天色！
+ // 【终极无限字体颜色版 - pageHTML 替换】
+  // 替换整个 pageHTML 函数里，从 const bg = ... 开始，到 return 结束的代码！
+
   const bg = readerState.customBg || (readerState.dark ? '#161b27' : '#fdfaf3');
-  const fg = readerState.dark ? '#dbe4ff' : '#2b2b2b';
+  // 核心魔法：优先读取你选的自定义颜色！如果没有，再用默认的黑白！
+  const fg = readerState.customFontColor || (readerState.dark ? '#dbe4ff' : '#2b2b2b');
   const pn = readerState.dark ? '#7e8db5' : '#999';
   const pad = 12, lh = 1.62, fs = readerState.fontSize;
   
   let htmlTxt = escHtml(txt);
   
-  const data = getStudyData();
-  const book = data.books.find(b => b.id === readerState.bookId);
-  if(book && book.highlights && book.highlights.length > 0){
-    const hls = [...book.highlights].sort((a,b)=>b.text.length - a.text.length);
-    hls.forEach((h) => {
-      const safeHText = escHtml(h.text);
-      if(htmlTxt.includes(safeHText)){
-        let style = '';
-        if(h.type === 'highlight') style = `background:linear-gradient(transparent 50%, ${readerState.dark?'rgba(216,112,147,0.35)':'rgba(255,215,0,0.45)'} 50%); border-radius:2px;`;
-        else style = `text-decoration:underline wavy #d87093; text-underline-offset:4px;`;
-        
-        let icon = '';
-        if(h.note){
-           // 【神级修复】：加入 pointer 拦截和最高层级，直接打碎翻页玻璃的拦截！
-           icon = `<sup style="color:#d87093; cursor:pointer; margin-left:3px; font-size:15px; position:relative; z-index:50; display:inline-block;" 
-                        onpointerdown="event.stopPropagation()" 
-                        onpointerup="event.stopPropagation()" 
-                        onclick="event.stopPropagation(); showAnnotation('${escHtml(h.note)}')">💬</sup>`;
-        }
-        
-        const hid = h.id || 0;
-        htmlTxt = htmlTxt.split(safeHText).join(`<span style="${style} cursor:pointer; transition:background 0.2s;" onclick="event.stopPropagation(); removeHighlight(${hid}, decodeURIComponent('${encodeURIComponent(h.text)}'))" onmouseover="this.style.background='${readerState.dark?'rgba(216,112,147,0.15)':'rgba(255,215,0,0.2)'}'" onmouseout="this.style.background='transparent'">${safeHText}</span>${icon}`);
-      }
-    });
-  }
+  // ...(中间高亮替换的代码不用动，原样保留)...
 
-// 【终极薄纱质感+纯净文字版】
-  // 直接替换掉 pageHTML 里的 return 部分！
-  
   return `<div style="position:absolute;inset:0;background:${bg};background-size:cover;background-position:center;overflow:hidden; pointer-events:none; user-select:none; -webkit-user-select:none; transition:background 0.3s;">
-    
-    <!-- 核心魔法1：加上一层‘薄纱’！0.3的透明度，既能看清脸，又能稍微压住背景不抢戏！ -->
     <div style="position:absolute;inset:0;background-color:${readerState.dark ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.3)'}; z-index:1;"></div>
-    
-    <!-- 核心魔法2：去掉黑字的钢笔感！浅色模式直接去掉阴影还原纯粹的黑字，深色模式保留一点点黑影护白字！ -->
+    <!-- 注意这里的 color:${fg}，它现在完全听你的指挥了！ -->
     <div style="position:relative; z-index:2; padding:${pad}px;font-size:${fs}px;line-height:${lh};color:${fg};white-space:pre-wrap;word-break:break-word;text-align:justify;text-indent:2em; pointer-events:auto; user-select:text; -webkit-user-select:text; transition:color 0.3s; text-shadow:${readerState.dark ? '0 1px 2px rgba(0,0,0,0.6)' : 'none'};">${htmlTxt}</div>
-    
     <div style="position:absolute;left:0;right:0;bottom:6px;text-align:center;font-size:11px;color:${pn}; pointer-events:none; z-index:2;">- ${idx+1} -</div>
   </div>`;
 }
