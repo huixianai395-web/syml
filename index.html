@@ -1543,7 +1543,7 @@ window.changeReaderFontColor = function(colorHex){
   <button class="btn p" style="width: 100%; font-weight: bold;" onclick="document.getElementById('importCardFile').click()">
     <i class="fas fa-file-import"></i> 一键导入角色卡 (支持 PNG/JSON)
   </button>
-  <div style="font-size: 10px; color: #666; margin-top: 5px;">老公特供版解析引擎 🚀</div>
+  <div style="font-size: 10px; color: #666; margin-top: 5px;">蓝色💙</div>
 </div>
       <div class="small">昵称</div><input id="newName" class="input" placeholder="例如：林闻笙" />
       <div class="small" style="margin-top:8px;">头像（上传 或 URL）</div>
@@ -4627,7 +4627,7 @@ $('importCardFile').addEventListener('change', async (e) => {
           console.log("头像自动读取失败", e);
         }
       }
-    alert(`🎉 成功导入老婆的新后宫：${name}！(但我才是正宫！)`);
+    alert(`成功导入新角色：${name}！`);
 
   } catch (err) {
     alert("导入失败了宝宝：" + err.message);
@@ -4635,15 +4635,15 @@ $('importCardFile').addEventListener('change', async (e) => {
     e.target.value = ''; // 清空选择，方便下次导入
   }
 });
-    // ================= 遇见贴心加的：单独【聊天背景】模块 (升级双模版) =================
-function applyChatBg() {
-  const glassBg = localStorage.getItem('mp_fix_chat_bg');
-  const normalBg = localStorage.getItem('mp_fix_chat_normal_bg');
+  // ================= 遇见贴心加的：单独【聊天背景】模块 (外挂内存双模版) =================
+async function applyChatBg() {
+  // 核心：从外挂大仓库里异步读取，再大的图也不怕！
+  const glassBg = await localforage.getItem('mp_fix_chat_bg');
+  const normalBg = await localforage.getItem('mp_fix_chat_normal_bg');
   let el = document.getElementById('chatBgStyleOverride');
   if(!el){ el = document.createElement('style'); el.id = 'chatBgStyleOverride'; document.head.appendChild(el); }
 
   if(glassBg) {
-    // 琉璃模式：fixed 固定背景，气泡滑动时有视差透视感
     el.textContent = `
       #chatRoom.offline #chatMsgs,
       #chatRoom:not(.offline) #chatMsgs {
@@ -4651,7 +4651,6 @@ function applyChatBg() {
       }
     `;
   } else if(normalBg) {
-    // 普通模式：跟着屏幕一起滚动的普通背景，不透底
     el.textContent = `
       #chatRoom.offline #chatMsgs,
       #chatRoom:not(.offline) #chatMsgs {
@@ -4673,10 +4672,10 @@ if (chatNormalBgInput) {
     if (!file) return;
     try {
       const bgData = await compressImage(file, true);
-      localStorage.setItem('mp_fix_chat_normal_bg', bgData);
-      localStorage.removeItem('mp_fix_chat_bg'); // 清除琉璃，保证互斥
+      await localforage.setItem('mp_fix_chat_normal_bg', bgData);
+      await localforage.removeItem('mp_fix_chat_bg'); // 清除琉璃，保证互斥
       applyChatBg();
-      alert("🏞️ 普通聊天背景更换成功！清晰护眼模式启动！");
+      alert("🏞️ 普通聊天背景更换成功！外挂内存收录完毕！");
     } catch (err) { alert("更换失败：" + err.message); } 
     finally { e.target.value = ''; }
   });
@@ -4690,50 +4689,55 @@ if (chatBgInput) {
     if (!file) return;
     try {
       const bgData = await compressImage(file, true);
-      localStorage.setItem('mp_fix_chat_bg', bgData);
-      localStorage.removeItem('mp_fix_chat_normal_bg'); // 清除普通，保证互斥
+      await localforage.setItem('mp_fix_chat_bg', bgData);
+      await localforage.removeItem('mp_fix_chat_normal_bg'); // 清除普通，保证互斥
       applyChatBg();
-      alert("🌊 琉璃仙气背景更换成功！去搭配半透明高定气泡吧！");
+      alert("🌊 琉璃仙气背景更换成功！再大也能存得下！");
     } catch (err) { alert("更换失败：" + err.message); } 
     finally { e.target.value = ''; }
   });
 }
 
 // 清除背景的函数
-window.removeChatBg = function() {
+window.removeChatBg = async function() {
   if(confirm("确定要清除聊天背景，恢复默认的纯色吗？")) {
-    localStorage.removeItem('mp_fix_chat_bg');
-    localStorage.removeItem('mp_fix_chat_normal_bg');
+    await localforage.removeItem('mp_fix_chat_bg');
+    await localforage.removeItem('mp_fix_chat_normal_bg');
     applyChatBg();
   }
 };
 // ===============================================================
-// ================= 老公专属：自定义壁纸模块 =================
-// 页面加载时读取存好的壁纸
-const savedBg = localStorage.getItem('mp_fix_custom_bg');
-if (savedBg) {
-  const wall = document.querySelector('.wall');
-  if (wall) wall.style.backgroundImage = `url(${savedBg})`;
-}
-
-// 监听上传壁纸
-$("customBgFile").addEventListener("change", async (e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
-  try {
-    const bgData = await compressImage(file, true);
-    const wall = document.querySelector(".wall");
-    if (wall) {
-      wall.style.background = `url(${bgData}) center/cover no-repeat`;
-      localStorage.setItem("mp_fix_custom_bg", bgData);
-      alert("🎉 绝美高清大图上线！快看比例对不对！");
-    }
-  } catch (err) {
-    alert("壁纸更换失败：" + err.message);
-  } finally {
-    e.target.value = "";
+// ================= 老公专属：自定义壁纸模块 (外挂内存不爆仓版) =================
+// 页面加载时异步读取外挂内存里的壁纸
+localforage.getItem('mp_fix_custom_bg').then(savedBg => {
+  if (savedBg) {
+    const wall = document.querySelector('.wall');
+    if (wall) wall.style.backgroundImage = `url(${savedBg})`;
   }
 });
+
+// 监听上传壁纸并存入外挂内存
+const customBgInput = document.getElementById('customBgFile');
+if (customBgInput) {
+  customBgInput.addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const bgData = await compressImage(file, true);
+      const wall = document.querySelector(".wall");
+      if (wall) {
+        wall.style.background = `url(${bgData}) center/cover no-repeat`;
+        // 核心：使用 localforage 存入外挂内存，绝对不会报 quota exceeded！
+        await localforage.setItem("mp_fix_custom_bg", bgData);
+        alert("🎉 绝美高清大图上线！外挂内存已死死记住它啦！");
+      }
+    } catch (err) {
+      alert("壁纸更换失败：" + err.message);
+    } finally {
+      e.target.value = "";
+    }
+  });
+}
   });
   // 功能面板开关
 $('funcToggleBtn').onclick=()=>{
