@@ -5269,43 +5269,35 @@ window._replyMomentCommentAI = async function(momentId, npcName, userText) {
     } catch(err) { alert('头像处理失败：' + err.message); } 
     finally { e.target.value = ''; }
   });
-  // 【终极降维雷达】：暴力脱水，只认汉字和字母，绝对精准跃迁！
+  // 1. 强制把状态挂载到 window 上，打破苹果 Safari 的闭包隔离！
+window.readerState = window.readerState || { bookId:null, page:0, fontSize:18, dark:false, pages:[], turning:false };
+
+// 2. 终极降维雷达：暴力脱水，只认汉字和字母！
 window.jumpToHighlightText = function(text){
   if(!text) return;
-  
-  // 暴力脱水：剔除所有标点符号和空格，只保留纯文字，取前 8 个字作为超级锚点！
   const target = text.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').slice(0, 8); 
   let foundPage = -1;
-  
-  for(let i = 0; i < readerState.pages.length; i++){
-    // 同样把每一页的文本进行暴力脱水
-    const pageText = readerState.pages[i].replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
-    if(pageText.includes(target)){
-      foundPage = i;
-      break;
-    }
+  for(let i = 0; i < window.readerState.pages.length; i++){
+    const pageText = window.readerState.pages[i].replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
+    if(pageText.includes(target)){ foundPage = i; break; }
   }
-  
   if(foundPage !== -1){
-    // 优雅且彻底地关掉笔记抽屉
     const drawer = document.getElementById('notesDrawer');
     if(drawer) drawer.style.right = '-320px';
     const overlay = document.getElementById('notesOverlay');
     if(overlay) { overlay.style.opacity = '0'; setTimeout(()=> overlay.style.display = 'none', 300); }
-    
-    // 瞬间飞跃到那一页！
-    jumpToPage(foundPage); 
+    window.jumpToPage(foundPage); 
   } else {
     alert('老婆，这段字可能被外星人抓走了，雷达被彻底干扰啦！');
   }
 };
 
-// 【升级版】：给笔记列表的每一个卡片，都装上点击跃迁的魔法！
+// 3. 渲染笔记列表引擎（绝对安全版，强行读取 window.readerState！）
 window.renderNotesList = function(){
   const list = document.getElementById('notesList');
   if(!list) return;
-  const data = getStudyData(); // 【外挂内存】：从这里安全读取！
-  const book = data.books.find(b => b.id === readerState.bookId);
+  const data = window.getStudyData();
+  const book = data.books.find(b => b.id === window.readerState.bookId);
   if(!book || !book.highlights || book.highlights.length === 0){
     list.innerHTML = `<div style="text-align:center;color:#999;font-size:13px;margin-top:40px;">还没有做任何笔记哦<br>长按文字划线试试吧~</div>`;
     return;
@@ -5317,15 +5309,15 @@ window.renderNotesList = function(){
                          `<span style="background:#f0f4ff;color:#2f66d8;padding:2px 6px;border-radius:4px;font-size:10px;margin-bottom:6px;display:inline-block;">✨ 高亮</span>`;
     
     return `
-      <div onclick="jumpToHighlightText(decodeURIComponent('${encodeURIComponent(h.text)}'))" 
-           style="background:${readerState.dark ? 'rgba(255,255,255,0.05)' : '#fff'}; border:1px solid ${readerState.dark ? 'rgba(255,255,255,0.1)' : '#f0f0f5'}; border-radius:12px; padding:12px; box-shadow:0 4px 12px rgba(0,0,0,0.03); cursor:pointer; transition:transform 0.2s;"
+      <div onclick="window.jumpToHighlightText(decodeURIComponent('${encodeURIComponent(h.text)}'))" 
+           style="background:${window.readerState.dark ? 'rgba(255,255,255,0.05)' : '#fff'}; border:1px solid ${window.readerState.dark ? 'rgba(255,255,255,0.1)' : '#f0f0f5'}; border-radius:12px; padding:12px; box-shadow:0 4px 12px rgba(0,0,0,0.03); cursor:pointer; transition:transform 0.2s;"
            onmousedown="this.style.transform='scale(0.97)'" 
            onmouseup="this.style.transform='scale(1)'">
         ${tag}
-        <div style="font-size:13px; color:${readerState.dark ? '#ccc' : '#555'}; line-height:1.6; border-left:3px solid ${isNote ? '#d87093' : '#2f66d8'}; padding-left:8px; margin-bottom:${h.note ? '8px' : '0'}; text-align:justify;">
+        <div style="font-size:13px; color:${window.readerState.dark ? '#ccc' : '#555'}; line-height:1.6; border-left:3px solid ${isNote ? '#d87093' : '#2f66d8'}; padding-left:8px; margin-bottom:${h.note ? '8px' : '0'}; text-align:justify;">
           ${escHtml(h.text)}
         </div>
-        ${h.note ? `<div style="font-size:14px; color:${readerState.dark ? '#fff' : '#222'}; font-weight:500; line-height:1.5;">${escHtml(h.note)}</div>` : ''}
+        ${h.note ? `<div style="font-size:14px; color:${window.readerState.dark ? '#fff' : '#222'}; font-weight:500; line-height:1.5;">${escHtml(h.note)}</div>` : ''}
       </div>
     `;
   }).join('');
