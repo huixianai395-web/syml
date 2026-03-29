@@ -57,7 +57,20 @@
   box-shadow:0 6px 18px rgba(40,60,120,.16);
     }
     .list{display:flex;flex-direction:column;gap:8px}
-    .item{background:#fff;border:1px solid #ececf2;border-radius:12px;padding:10px;display:flex;gap:10px;align-items:center;}
+    /* 真实微信联系人列表风格 (消灭大缝隙) */
+    .item {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid #f0f0f5; /* 只有极其温柔的底边线 */
+      border-radius: 0;
+      padding: 14px 0; /* 加大上下留白，呼吸感更强 */
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin: 0;
+    }
+    .item:last-child { border-bottom: none; }
+    #contactList.list { gap: 0; padding: 0 16px; background: #fff; border-radius: 12px; }
     .avatar{width:44px;height:44px;border-radius:12px;object-fit:cover;background:#eef2ff;flex-shrink:0}
     .main{flex:1;min-width:0;cursor:pointer}
     .name{font-weight:600;color:#222}.preview{margin-top:4px;font-size:12px;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -901,9 +914,19 @@
         <div class="header"><button class="btn" data-nav="home">‹ 返回</button><b>发现</b></div>
         <div class="wx-page">
           <div class="wx-list-row" onclick="window._openMoments()">
-            <div class="wx-list-icon" style="background:conic-gradient(from 45deg,#FFC107,#FF5722,#E91E63,#9C27B0,#2196F3,#4CAF50,#FFC107);display:grid;place-items:center;border-radius:8px;overflow:hidden;">
-  <!-- 绝美朋友圈彩色光圈 -->
-  <div style="width:14px;height:14px;border:2.5px solid #fff;border-radius:50%;"></div>
+            <div class="wx-list-icon" style="width:28px; height:28px; display:grid; place-items:center; margin-right:12px;">
+              <!-- 纯代码手绘的绝美朋友圈四色渐变环 -->
+              <svg viewBox="0 0 24 24" style="width:26px; height:26px;" fill="none">
+                <circle cx="12" cy="12" r="9" stroke="url(#momentsGrad)" stroke-width="3.5" stroke-linecap="round"/>
+                <defs>
+                  <linearGradient id="momentsGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#FA5151"/>
+                    <stop offset="33%" stop-color="#FFC300"/>
+                    <stop offset="66%" stop-color="#07C160"/>
+                    <stop offset="100%" stop-color="#10AEFF"/>
+                  </linearGradient>
+                </defs>
+              </svg>
             </div>
             <div class="wx-list-text">朋友圈</div>
             <div class="wx-list-arrow">›</div>
@@ -911,30 +934,48 @@
         </div>
       </div>
 
-      <!-- 4. 【我】Tab (多重身份预设库) -->
-      <div id="wxTab-me" class="wx-tab-content">
-        <div class="header"><button class="btn" data-nav="home">‹ 返回</button><b>我的预设</b></div>
-        <div class="wx-page">
-          <div style="background:#fff; border-radius:14px; padding:16px; border:1px solid #ececf2; display:flex; align-items:center; margin-bottom:12px;">
-            <img id="mePageAvatar" src="https://via.placeholder.com/64x64?text=我" style="width:64px; height:64px; border-radius:12px; object-fit:cover; margin-right:16px; cursor:pointer; background:#eef2ff;" onclick="document.getElementById('mePageAvatarFile').click()">
+      <!-- 4. 【我】Tab (多重身份预设库 - 极简高级版) -->
+      <div id="wxTab-me" class="wx-tab-content" style="background:#f7f7f7;">
+        <div class="header" style="background:transparent; border:none; justify-content:center;"><b>我</b></div>
+        <div class="wx-page" style="padding:0;">
+          
+          <!-- 顶部大名片区 -->
+          <div style="background:#fff; padding:30px 20px 40px; display:flex; align-items:flex-start; margin-bottom:10px;">
+            <img id="mePageAvatar" src="https://via.placeholder.com/120" style="width:68px; height:68px; border-radius:12px; object-fit:cover; margin-right:20px; cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,0.05);" onclick="document.getElementById('mePageAvatarFile').click()">
             <input type="file" id="mePageAvatarFile" accept="image/*" class="hidden">
-            <div style="flex:1;">
-              <input id="mePageName" class="input" placeholder="你的昵称" style="font-size:18px; font-weight:bold; border:none; padding:0; margin-bottom:4px; width:100%;" value="弥洛">
-              <div style="font-size:12px; color:#999;">点击头像可更换</div>
+            <div style="flex:1; padding-top:4px;">
+              <input id="mePageName" class="input" placeholder="输入你的名字..." style="font-size:22px; font-weight:700; color:#191919; border:none; padding:0; background:transparent; margin-bottom:6px; width:100%;" value="弥洛">
+              <div style="font-size:14px; color:#7d7d7d;">微信号：milo_baby</div>
+            </div>
+            <div style="color:#ccc; font-size:20px; align-self:center;">›</div>
+          </div>
+
+          <!-- 预设马甲管理区 -->
+          <div style="background:#fff; padding-left:20px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px 16px 0; border-bottom:1px solid #f0f0f5;">
+              <div style="font-size:16px; color:#191919;">当前使用马甲</div>
+              <select id="mePresetSelect" class="select" style="width:auto; border:none; background:transparent; color:#576b95; font-size:15px; padding:0; text-align:right; direction:rtl; outline:none; cursor:pointer;"></select>
             </div>
           </div>
 
-          <div class="card">
-            <div class="small" style="color:#07c160; font-weight:bold; margin-bottom:8px;">👑 我的身份预设库</div>
-            <select id="mePresetSelect" class="select" style="margin-bottom:10px;"></select>
-            <div class="small">世界观与性格设定 (AI会死死记住)：</div>
-            <textarea id="mePagePersona" class="ta" style="min-height:120px; margin-top:6px;" placeholder="在这里写下你的背景设定..."></textarea>
-            
-            <div class="row" style="margin-top:12px; flex-wrap:wrap;">
-              <button class="btn p" id="mePageSaveBtn" style="flex:1;">保存当前设定</button>
-              <button class="btn" id="mePageNewBtn" style="flex:1;">+ 新建身份</button>
-              <button class="btn d" id="mePageDelBtn">删除</button>
+          <!-- 设定输入区 -->
+          <div style="background:#fff; margin-top:10px; padding:20px;">
+            <div style="font-size:14px; color:#7d7d7d; margin-bottom:10px;">世界观与性格设定（全局通用底座）：</div>
+            <textarea id="mePagePersona" class="ta" style="min-height:120px; background:#f7f7f7; border:none; border-radius:8px; font-size:15px; padding:12px; color:#191919;" placeholder="在这里写下你的背景设定..."></textarea>
+            
+            <div class="row" style="margin-top:20px; gap:12px;">
+              <button class="btn p" id="mePageSaveBtn" style="flex:1; background:#07c160; border-radius:8px; padding:10px 0; font-size:16px; font-weight:600;">保存当前设定</button>
             </div>
+            <div class="row" style="margin-top:12px; gap:12px;">
+              <button class="btn" id="mePageNewBtn" style="flex:1; background:#f2f2f2; color:#576b95; border-radius:8px; padding:10px 0; font-weight:600;">+ 新建马甲</button>
+              <button class="btn" id="mePageDelBtn" style="flex:1; background:#fff0f0; color:#fa5151; border-radius:8px; padding:10px 0; font-weight:600;">删除当前</button>
+            </div>
+          </div>
+          
+          <!-- 蓝色科普小贴士 -->
+          <div style="padding:20px; font-size:12px; color:#b2b2b2; text-align:justify; line-height:1.6;">
+            💡 <b>蓝色科普时间：</b><br>
+            这里的设定是你的【全局通用底座】。如果你在某个单聊里没有专门设置“我方人设”，AI 就会默认读取这里的资料哦！如果聊天设置里单独配了，就会优先用单聊里的“专属剧本”！绝对不会串戏哒！
           </div>
         </div>
       </div>
