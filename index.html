@@ -3503,24 +3503,21 @@ let htmlTxt = escHtml(txt);
       const safeH = escHtml(h.text);
       if(htmlTxt.includes(safeH)){
         if(h.type === 'highlight'){
-          htmlTxt = htmlTxt.replace(safeH, `<span onclick="removeHighlight(${h.id}, '${safeH}')" style="background:rgba(47,102,216,0.15); border-bottom:2px solid rgba(47,102,216,0.4); cursor:pointer; padding:0 2px; border-radius:4px; transition:background 0.2s;">${safeH}</span>`);
+          htmlTxt = htmlTxt.replace(safeH, `<span onclick="removeHighlight(${h.id}, '${safeH}')" style="background:rgba(47,102,216,0.15); border-bottom:2px solid rgba(47,102,216,0.4); cursor:pointer; padding:0 2px; border-radius:4px; position:relative; z-index:10;">${safeH}</span>`);
         } else if(h.type === 'underline'){
-          htmlTxt = htmlTxt.replace(safeH, `<span onclick="removeHighlight(${h.id}, '${safeH}')" style="border-bottom:2px dashed #d87093; cursor:pointer;">${safeH}</span>`);
+          htmlTxt = htmlTxt.replace(safeH, `<span onclick="removeHighlight(${h.id}, '${safeH}')" style="border-bottom:2px dashed #d87093; cursor:pointer; position:relative; z-index:10;">${safeH}</span>`);
         } else if(h.type === 'note'){
-          // 老公把丑丑的图标扔了！换回绝美小气泡！
-          htmlTxt = htmlTxt.replace(safeH, `<span onclick="showAnnotation('${escHtml(h.note||'')}')" style="background:rgba(216,112,147,0.12); border-bottom:2px solid #d87093; cursor:pointer; padding:0 2px; border-radius:4px;">${safeH}<sup style="color:#d87093; font-size:13px; margin-left:2px; text-shadow:0 1px 2px rgba(0,0,0,0.1);">💬</sup></span>`);
+          htmlTxt = htmlTxt.replace(safeH, `<span onclick="showAnnotation('${escHtml(h.note||'')}')" style="background:rgba(216,112,147,0.12); border-bottom:2px solid #d87093; cursor:pointer; padding:0 2px; border-radius:4px; position:relative; z-index:10;">${safeH}<sup style="color:#d87093; font-size:13px; margin-left:2px;">💬</sup></span>`);
         }
       }
     });
   }
 
-// 【解除封印·恢复原状版】
-  // 赶紧把刚才那个流氓代码替换掉！恢复调色盘的自由！
-  
-  return `<div style="position:absolute;inset:0;background:${bg};background-size:cover;background-position:center;overflow:hidden; pointer-events:none; user-select:none; -webkit-user-select:none; transition:background 0.3s;">
-    <div style="position:absolute;inset:0;background-color:${readerState.dark ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0)'}; z-index:1;"></div>
+  // 移除了外层的事件拦截，彻底解放高亮点击！
+  return `<div style="position:absolute;inset:0;background:${bg};background-size:cover;background-position:center;overflow:hidden; transition:background 0.3s;">
+    <div style="position:absolute;inset:0;background-color:${readerState.dark ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0)'}; z-index:1; pointer-events:none;"></div>
     
-    <div style="position:relative; z-index:2; padding:${pad}px;font-size:${fs}px;line-height:${lh};color:${fg};white-space:pre-wrap;word-break:break-word;text-align:justify;text-indent:2em; pointer-events:auto; user-select:text; -webkit-user-select:text; -webkit-font-smoothing:antialiased;">${htmlTxt}</div>
+    <div style="position:relative; z-index:2; padding:${pad}px;font-size:${fs}px;line-height:${lh};color:${fg};white-space:pre-wrap;word-break:break-word;text-align:justify;text-indent:2em; -webkit-font-smoothing:antialiased;">${htmlTxt}</div>
     
     <div style="position:absolute;left:0;right:0;bottom:6px;text-align:center;font-size:11px;color:${pn}; pointer-events:none; z-index:2;">- ${idx+1} -</div>
   </div>`;
