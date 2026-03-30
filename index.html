@@ -883,7 +883,7 @@
         <div class="icon" data-nav="api"><div class="ibox">🔑</div><div class="lab">API</div></div>
         <div class="icon" data-nav="fontCenter"><div class="ibox">🔤</div><div class="lab">字体</div></div>
         <div class="icon" id="phoneCheckIcon"><div class="ibox">🔍</div><div class="lab">查手机</div></div>
-        <div class="icon" data-nav="worldbook"><div class="ibox">📚</div><div class="lab">世界书</div></div>
+        <div class="icon" onclick="show('worldbook'); if(window._renderGlobalWb) window._renderGlobalWb();"><div class="ibox">📚</div><div class="lab">世界书</div></div>
         <div class="icon" onclick="show('study');renderStudyHome();">
           <div class="ibox ibox-book">📖</div>
           <div class="lab">书房</div>
@@ -5745,12 +5745,13 @@ window.renderNotesList = function(){
   <div id="modalPreview" class="modal" onclick="this.classList.remove('active')">
   <img id="previewModalImg" style="max-width:95%;max-height:90dvh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
   </div>
-    <!-- ================= 世界书 (Lorebook) 独立 App 与双核系统 ================= -->
+    <!-- ================= 世界书 (Lorebook) 独立 App 与双核系统 (终极修复版) ================= -->
   
   <!-- 1. 真正的独立 App：全局管理中心 -->
   <section id="worldbook" class="screen">
     <div class="header">
-      <button class="btn" data-nav="home">‹ 返回</button>
+      <!-- 🌟 绝对指令：强制返回桌面，绝不卡死！ -->
+      <button class="btn" onclick="show('home')">‹ 返回</button>
       <b>世界书总库</b>
       <button class="btn" onclick="document.getElementById('wbImportFile').click()">导入</button>
       <input type="file" id="wbImportFile" accept=".json,.txt" class="hidden">
@@ -5763,7 +5764,7 @@ window.renderNotesList = function(){
     </div>
   </section>
 
-  <!-- 2. 角色挑选面板 (聊天设置进入，已修复卡死问题) -->
+  <!-- 2. 角色挑选面板 (聊天设置进入) -->
   <div id="roleWbModal" class="modal" style="z-index:100;" onclick="if(event.target===this) this.classList.remove('active')">
     <div class="modal-card" style="max-width:380px; background:#fcfdff; padding:0; overflow:hidden; display:flex; flex-direction:column; max-height:85dvh;">
       <div style="padding:16px; background:linear-gradient(180deg,#f8f9ff,#f4f6fb); border-bottom:1px solid #e4e8f5; display:flex; justify-content:space-between; align-items:center;">
@@ -5775,7 +5776,6 @@ window.renderNotesList = function(){
       </div>
       <div id="roleWbList" style="flex:1; overflow-y:auto; padding:12px; background:#f4f6fb; display:flex; flex-direction:column; gap:12px;"></div>
       
-      <!-- 固定的底部保存按钮 -->
       <div style="padding:12px 16px; background:#fff; border-top:1px solid #e4e8f5;">
         <button class="btn p" id="saveRoleWbBtn" style="width:100%; border-radius:10px; padding:10px 0; font-size:15px; font-weight:bold; box-shadow:0 4px 12px rgba(47,102,216,0.2);">保存配置</button>
       </div>
@@ -5784,13 +5784,14 @@ window.renderNotesList = function(){
 
   <script>
   (() => {
-    // 🌟 蓝色的外挂内存专区：绝对不占运行内存！
+    // 🌟 专属内置剪刀：再也不会因为找不到工具而崩溃了！
+    const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+
     const K_WB_BOOKS = 'mp_fix_wb_books_v3';
 
     async function getWbBooks() { return (await localforage.getItem(K_WB_BOOKS)) || []; }
     async function setWbBooks(data) { await localforage.setItem(K_WB_BOOKS, data); }
 
-    // 🌟 升级版暴力扒皮雷达：彻底解决嵌套解析失败问题
     function deepExtractEntries(obj, results) {
       if (!obj) return;
       if (Array.isArray(obj)) {
@@ -5815,7 +5816,8 @@ window.renderNotesList = function(){
     }
 
     // ================= 全局总库逻辑 =================
-    async function renderGlobalWb() {
+    // 🌟 挂载到 window 上，让桌面图标随时能唤醒它！
+    window._renderGlobalWb = async function() {
       const books = await getWbBooks();
       const box = document.getElementById('globalWbList');
       if (books.length === 0) {
@@ -5826,20 +5828,13 @@ window.renderNotesList = function(){
         <div style="background:#fff; border:1px solid #e4e8f5; border-radius:16px; padding:16px; box-shadow:0 4px 12px rgba(47,102,216,0.05);">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <div>
-              <div style="font-size:16px; font-weight:800; color:#1a1d26;">📖 ${escHtml(b.bookName)}</div>
+              <div style="font-size:16px; font-weight:800; color:#1a1d26;">📖 ${safeEsc(b.bookName)}</div>
               <div style="font-size:13px; color:#7a86a8; margin-top:6px;">包含 <b style="color:#2f66d8;">${b.entries.length}</b> 个词条设定</div>
             </div>
             <button class="btn d" onclick="window._delGlobalBook('${b.bookId}')" style="border-radius:8px; padding:8px 12px; font-weight:bold;">删除</button>
           </div>
         </div>
       `).join('');
-    }
-
-    // 每次进入世界书 App 时，自动刷新列表
-    const originalShow = window.show;
-    window.show = function(id) {
-      if (id === 'worldbook') renderGlobalWb();
-      originalShow(id);
     };
 
     window._delGlobalBook = async (bookId) => {
@@ -5847,7 +5842,7 @@ window.renderNotesList = function(){
       let books = await getWbBooks();
       books = books.filter(b => b.bookId !== bookId);
       await setWbBooks(books);
-      renderGlobalWb();
+      window._renderGlobalWb();
     };
 
     document.getElementById('wbImportFile').addEventListener('change', async (e) => {
@@ -5869,14 +5864,15 @@ window.renderNotesList = function(){
           });
         }
 
-        if (extracted.length === 0) throw new Error("雷达扫描完毕，格式太奇怪了，未发现任何有效词条！");
+        if (extracted.length === 0) throw new Error("雷达扫描完毕，未发现有效词条！");
 
         const bookName = file.name.replace(/\.[^.]+$/, '');
         books.unshift({ bookId: 'bk_' + Date.now(), bookName, entries: extracted });
         await setWbBooks(books);
         
-        renderGlobalWb();
-        alert(`🎉 暴力解析成功！成功从《${bookName}》中榨出 ${extracted.length} 个词条，已存入外挂内存！`);
+        // 🌟 修复弹窗阻塞 DOM 渲染的问题：先等 100 毫秒画好屏幕，再弹窗庆祝！
+        window._renderGlobalWb();
+        setTimeout(() => alert(`🎉 暴力解析成功！成功从《${bookName}》中榨出 ${extracted.length} 个词条！`), 100);
       } catch (err) {
         alert('解析失败啦宝宝：' + err.message);
       } finally {
@@ -5890,7 +5886,7 @@ window.renderNotesList = function(){
     async function renderRoleWb() {
       if (!currentId) return;
       const st = normSettings(getContactById(currentId)?.settings);
-      tempSelectedIds = new Set(st.wbEnabled || []); // 读出该角色勾选的词条
+      tempSelectedIds = new Set(st.wbEnabled || []);
 
       const books = await getWbBooks();
       const box = document.getElementById('roleWbList');
@@ -5906,8 +5902,8 @@ window.renderNotesList = function(){
             <label style="display:flex; align-items:flex-start; gap:8px; padding:10px 0; border-top:1px dashed #edf2ff; cursor:pointer;">
               <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="window._toggleRoleEntry('${e.id}', this.checked)" style="width:18px; height:18px; accent-color:#2f66d8; margin-top:2px; flex-shrink:0;">
               <div style="flex:1; min-width:0;">
-                <div style="font-size:13px; font-weight:bold; color:${isChecked ? '#2f66d8' : '#333'};">${escHtml(e.keys)}</div>
-                <div style="font-size:11px; color:#888; margin-top:4px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${escHtml(e.content)}</div>
+                <div style="font-size:13px; font-weight:bold; color:${isChecked ? '#2f66d8' : '#333'};">${safeEsc(e.keys)}</div>
+                <div style="font-size:11px; color:#888; margin-top:4px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${safeEsc(e.content)}</div>
               </div>
             </label>
           `;
@@ -5916,7 +5912,7 @@ window.renderNotesList = function(){
         return `
           <div style="background:#fff; border:1px solid #e4e8f5; border-radius:12px; padding:12px; box-shadow:0 2px 8px rgba(47,102,216,0.02);">
             <div style="font-size:14px; font-weight:800; color:#1a1d26; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-              <span>📖 ${escHtml(b.bookName)}</span>
+              <span>📖 ${safeEsc(b.bookName)}</span>
               <button class="btn" onclick="window._selectAllBook('${b.bookId}')" style="font-size:11px; padding:4px 8px; background:#eef3ff; color:#2f66d8;">本本全选</button>
             </div>
             <div style="max-height:220px; overflow-y:auto; padding-right:4px;">
@@ -5940,18 +5936,16 @@ window.renderNotesList = function(){
       }
     };
 
-    // 点击聊天设置里的按钮，打开挑选面板
     document.getElementById('openWorldbookBtn').onclick = () => {
       document.getElementById('roleWbModal').classList.add('active');
       renderRoleWb();
     };
 
-    // 保存配置到当前角色的 settings 里
     document.getElementById('saveRoleWbBtn').onclick = () => {
       if (!currentId) return;
       const c = getContactById(currentId);
       const st = normSettings(c?.settings);
-      st.wbEnabled = Array.from(tempSelectedIds); // 把挑选的 ID 存起来！
+      st.wbEnabled = Array.from(tempSelectedIds);
       updateContact(currentId, { settings: st });
       document.getElementById('roleWbModal').classList.remove('active');
       alert('配置已保存！AI 已经记住了你勾选的所有设定！');
