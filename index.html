@@ -1,4 +1,5 @@
-➕列表群聊壳子
+
+
 
 <!doctype html>
 <html lang="zh-CN">
@@ -1853,7 +1854,7 @@ window._callHangup=()=>endCall();
 
   const GlobalState={};
   async function initAppStorage(){
-  const keys=[K_CONTACT,K_CHAT,K_API,K_ME,K_PREF,K_FONT,K_BUBBLE_PRESET,K_STICKER,'mp_fix_groups'];
+  const keys=[K_CONTACT,K_CHAT,K_API,K_ME,K_PREF,K_FONT,K_BUBBLE_PRESET,K_STICKER];
     for(let k of keys){
       let val=await localforage.getItem(k);
       if(val===null){
@@ -1987,9 +1988,10 @@ function refreshFontSizeUI(){
   function setContacts(v){setJ(K_CONTACT,(v||[]).map(c=>({...c,settings:normSettings(c.settings)})));}
   function getChats(){return getJ(K_CHAT,{});} function setChats(v){setJ(K_CHAT,v);} 
   function getMe(){return getJ(K_ME,{name:'我',avatar:'',persona:'',note:''});} function setMe(v){setJ(K_ME,v);} 
- // 🌟 蓝色特制：彻底修复全局群聊抽屉！(避开重复声明的致命Bug)
-  window.getGroups = function() { return getJ('mp_fix_groups', []); };
-  window.setGroups = function(v) { setJ('mp_fix_groups', v); };
+  // 🌟 蓝色特制：把外挂群聊抽屉提升到全局大厅！雷达这下绝对能扫到了！
+  const K_GROUP = 'mp_fix_groups';
+  window.getGroups = function() { return getJ(K_GROUP, []); };
+  window.setGroups = function(v) { setJ(K_GROUP, v); };
 
   function getContactById(id){
     const c = getContacts().find(x=>x.id===id);
@@ -2003,6 +2005,7 @@ function refreshFontSizeUI(){
     window._isDeleting=true;setTimeout(()=>window._isDeleting=false,500);
     if(!confirm('确定要删除这个聊天及所有记录吗？')) return false;
     
+    // 🌟 蓝色的智能删除：精准定位外挂内存！
     const groups = window.getGroups();
     if(groups.some(g => g.id === id)) {
       window.setGroups(groups.filter(g => g.id !== id));
@@ -2017,6 +2020,7 @@ function refreshFontSizeUI(){
 
   function renderContacts(k=''){
     k=(k||'').trim();
+    // 🌟 蓝色的雷达大融合：无障碍读取全局群聊抽屉！
     const contacts = getContacts();
     const groups = window.getGroups();
     let all = [...contacts, ...groups];
