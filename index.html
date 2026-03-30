@@ -1,3 +1,5 @@
+
+
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -899,10 +901,7 @@
       
       <!-- 1. 【微信】聊天列表 Tab -->
       <div id="wxTab-chat" class="wx-tab-content active">
-        <div class="header"><button class="btn" data-nav="home">‹ 返回</button><b>微信</b><div style="display:flex; gap:6px;">
-          <button class="btn" id="addGroupBtn" style="background:#eef3ff; color:#2f66d8; font-weight:bold;">+群聊</button>
-          <button class="btn" id="addContactBtn">+联系人</button>
-        </div></div>
+        <div class="header"><button class="btn" data-nav="home">‹ 返回</button><b>微信</b><button class="btn" id="addContactBtn">+联系人</button></div>
         <div class="wx-page"><input id="searchInput" class="input" placeholder="搜索联系人" /><div id="contactList" class="list" style="margin-top:10px;"></div></div>
       </div>
 
@@ -1208,8 +1207,7 @@
         <div class="small" style="margin-top:8px;">我方人设</div><textarea id="mePersonaInput" class="ta" style="min-height:90px;"></textarea>
       </div>
 
-      <!-- 👤 单聊专属设置卡片 -->
-      <div class="card" id="singleRoleSettingCard">
+      <div class="card">
         <div class="small">对方名称（当前联系人）</div><input id="roleNameInput" class="input" />
         <div class="small" style="margin-top:8px;">对方备注（可选）</div><input id="roleNoteInput" class="input" />
         <div class="small" style="margin-top:8px;">对方头像（上传 或 URL）</div>
@@ -1217,17 +1215,6 @@
         <input id="roleAvatarFile" type="file" accept="image/*" class="hidden" />
         <img id="roleAvatarPreview" class="preview-img hidden" style="margin-top:8px;" />
         <div class="small" style="margin-top:8px;">对方人设</div><textarea id="rolePersonaInput" class="ta" style="min-height:95px;"></textarea>
-      </div>
-
-      <!-- 👥 群聊专属设置卡片 (蓝色高定版) -->
-      <div class="card hidden" id="groupSettingCard">
-        <div class="small" style="margin-bottom:12px; font-weight:bold; color:#1a1d26;">群聊成员</div>
-        <div id="groupMembersGrid" style="display:grid; grid-template-columns:repeat(5, 1fr); gap:12px 8px; margin-bottom:16px; text-align:center;">
-          <!-- 成员头像将在这里渲染 -->
-        </div>
-        <div class="small" style="font-weight:bold; color:#1a1d26;">群聊名称</div>
-        <input id="groupNameInput" class="input" style="margin-top:8px; background:#f8f9ff; border-color:#dce5f2;" />
-        <button class="btn d" id="exitGroupBtn" style="width:100%; margin-top:20px; padding:12px; border-radius:12px; font-weight:bold; background:#fff0f0; color:#e74c3c; border:none; box-shadow:0 4px 12px rgba(231,76,60,0.15);">退出并删除群聊</button>
       </div>
       <!-- 蓝色特制：世界书入口卡片 -->
       <div class="card" style="background:linear-gradient(145deg,#fdfbfb,#f4f6fb); border:1px solid #e4e8f5; margin-top:10px;">
@@ -1315,20 +1302,12 @@
 
   <!-- 1. 全局小手机壁纸 -->
   <div style="padding:12px; background:#fff5f7; border:1px dashed #ffb3c6; border-radius:12px; text-align:center; margin-bottom:12px;">
-    
-    <!-- 🌟 蓝色专属科普：内存监控雷达 -->
-    <div style="font-size:11px; color:#ff4d6d; margin-bottom:8px; font-weight:bold;">
-      🥺 蓝色科普：当前壁纸已接入【内存】，再大的图也能存下啦！
-    </div>
-
     <input type="file" id="customBgFile" accept="image/*" style="display:none;">
     <button class="btn p" style="width:100%; font-weight:bold; background:#ff4d6d; border:none; border-radius:8px; box-shadow:0 2px 8px rgba(255,77,109,0.3);" onclick="document.getElementById('customBgFile').click()">
-      更换小手机全局壁纸 
+      更换小手机全局壁纸 🖼️
     </button>
-    
-    <!-- 🔮 核心修复：把 localStorage 换成了 localforage，直击外挂内存深处！ -->
-    <button class="btn" style="width:100%; margin-top:8px; background:#ffe3e8; color:#ff4d6d; border:none; font-weight:bold; border-radius:8px;" onclick="localforage.removeItem('mp_fix_custom_bg').then(() => { document.querySelector('.wall').style.backgroundImage=''; alert('幽灵壁纸驱散成功！内存已彻底清空！'); });">
-      恢复默认壁纸 
+    <button class="btn" style="width:100%; margin-top:8px; background:#ffe3e8; color:#ff4d6d; border:none; font-weight:bold; border-radius:8px;" onclick="localStorage.removeItem('mp_fix_custom_bg'); document.querySelector('.wall').style.backgroundImage=''; alert('恢复默认壁纸啦！');">
+      恢复默认壁纸 ↩️
     </button>
   </div>
 
@@ -1863,7 +1842,7 @@ window._callHangup=()=>endCall();
 
   const GlobalState={};
   async function initAppStorage(){
-  const keys=[K_CONTACT,K_CHAT,K_API,K_ME,K_PREF,K_FONT,K_BUBBLE_PRESET,K_STICKER,'mp_fix_groups'];
+  const keys=[K_CONTACT,K_CHAT,K_API,K_ME,K_PREF,K_FONT,K_BUBBLE_PRESET,K_STICKER];
     for(let k of keys){
       let val=await localforage.getItem(k);
       if(val===null){
@@ -1997,55 +1976,30 @@ function refreshFontSizeUI(){
   function setContacts(v){setJ(K_CONTACT,(v||[]).map(c=>({...c,settings:normSettings(c.settings)})));}
   function getChats(){return getJ(K_CHAT,{});} function setChats(v){setJ(K_CHAT,v);} 
   function getMe(){return getJ(K_ME,{name:'我',avatar:'',persona:'',note:''});} function setMe(v){setJ(K_ME,v);} 
- // 🌟 蓝色特制：彻底修复全局群聊抽屉！(避开重复声明的致命Bug)
-  window.getGroups = function() { return getJ('mp_fix_groups', []); };
-  window.setGroups = function(v) { setJ('mp_fix_groups', v); };
+  function getContactById(id){return getContacts().find(x=>x.id===id);} 
+  function updateContact(id,patch){
+    const arr=getContacts(),i=arr.findIndex(x=>x.id===id); if(i<0) return;
+    arr[i]={...arr[i],...patch}; if(patch.settings) arr[i].settings=normSettings(patch.settings); setContacts(arr);
+  }
 
-  // 🌟 蓝色的救命放大镜：没有它长按面板就会崩溃！
-  function getMsgById(chatId, mid) { return getChatArr(chatId).find(x => x.id === mid) || null; }
-// ===== 🚑 蓝色紧急抢救：被误杀的四大核心神经元 =====
-  function getChatArr(id){ return getChats()[id]||[]; }
-  function setChatArr(id,arr){ const m=getChats(); m[id]=arr; setChats(m); }
-  
-  function updateContact(id,v){
-    const arr=getContacts(), i=arr.findIndex(c=>c.id===id);
-    if(i>-1){ arr[i]={...arr[i],...v}; setContacts(arr); }
+  function getChatArr(chatId){
+    const map=getChats(),raw=Array.isArray(map[chatId])?map[chatId]:[],norm=raw.map(toMsg);
+    map[chatId]=norm; setChats(map); return norm;
   }
-  
-  function updateContactPreview(id){
-    const arr=getChatArr(id), c=getContactById(id); 
-    if(!c) return;
-    let p='', t='';
-    if(arr.length){ const last=arr[arr.length-1]; p=last.text||'[图片/特殊消息]'; t=last.time||''; }
-    
-    // 🌟 蓝色的群聊兼容魔法：如果是群聊，去群聊抽屉里更新摘要！
-    if(c.isGroup) {
-       const groups=window.getGroups(), idx=groups.findIndex(g=>g.id===id);
-       if(idx>-1){ groups[idx].preview=p; groups[idx].time=t; window.setGroups(groups); }
-    } else {
-       updateContact(id,{preview:p,time:t});
-    }
-  }
-  // ===================================================
-  function getContactById(id){
-    const c = getContacts().find(x=>x.id===id);
-    if(c) return c;
-    const groups = window.getGroups();
-    return groups.find(x=>x.id===id) || null;
+  function setChatArr(chatId,arr){const map=getChats();map[chatId]=(arr||[]).map(toMsg);setChats(map);} 
+  function getMsgById(chatId,mid){return getChatArr(chatId).find(x=>x.id===mid)||null;}
+
+  function updateContactPreview(chatId){
+    const arr=getChatArr(chatId),last=arr[arr.length-1];
+    updateContact(chatId,{preview:last?(last.text||'').slice(0,44):'',time:last?fmtTs(last.time||Date.now()):''});
+    renderContacts($('searchInput').value||'');
   }
 
   window.deleteContactFromList=function(id,e){
     if(e){e.preventDefault();e.stopPropagation();}
     window._isDeleting=true;setTimeout(()=>window._isDeleting=false,500);
-    if(!confirm('确定要删除这个聊天及所有记录吗？')) return false;
-    
-    const groups = window.getGroups();
-    if(groups.some(g => g.id === id)) {
-      window.setGroups(groups.filter(g => g.id !== id));
-    } else {
-      setContacts(getContacts().filter(c=>c.id!==id));
-    }
-    
+    if(!confirm('确定要删除这个联系人及所有聊天记录吗？')) return false;
+    setContacts(getContacts().filter(c=>c.id!==id));
     const map=getChats(); delete map[id]; setChats(map);
     if(currentId===id) currentId=null; renderContacts($('searchInput').value||'');
     return false;
@@ -2053,12 +2007,7 @@ function refreshFontSizeUI(){
 
   function renderContacts(k=''){
     k=(k||'').trim();
-    const contacts = getContacts();
-    const groups = window.getGroups();
-    let all = [...contacts, ...groups];
-    
-    const arr = all.filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
-    
+    const arr=getContacts().filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
     $('contactList').innerHTML=arr.map(c=>`
       <div class="item" style="-webkit-touch-callout:none; user-select:none;"
            oncontextmenu="return deleteContactFromList('${c.id}', event)"
@@ -2066,17 +2015,11 @@ function refreshFontSizeUI(){
            ontouchend="clearTimeout(this._t)" ontouchmove="clearTimeout(this._t)">
         <img class="avatar" src="${c.avatar||'https://via.placeholder.com/88x88?text=头像'}"/>
         <div class="main" onclick="if(window._isDeleting)return; openChat('${c.id}')">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div class="name" style="display:flex; align-items:center; gap:6px;">
-              ${c.isGroup ? '<span style="font-size:10px; background:#eef3ff; color:#2f66d8; padding:2px 6px; border-radius:4px; font-weight:bold;">群聊</span>' : ''}
-              ${esc(c.name)}
-            </div>
-            <div class="t">${esc(c.time||'')}</div>
-          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><div class="name">${esc(c.name)}</div><div class="t">${esc(c.time||'')}</div></div>
           <div class="preview">${esc(c.preview||'')}</div>
         </div>
       </div>
-    `).join('') || '<div class="card small">暂无联系人或群聊，点右上角创建吧</div>';
+    `).join('') || '<div class="card small">暂无联系人，点右上角 +联系人 创建</div>';
   }
 
   function openCreateModal(){ $('contactModal').classList.add('active'); }
@@ -2159,167 +2102,134 @@ function compressImage(file, isWallpaper = false) {
 
   function renderQuote(q){ if(!q||!q.text) return ''; return `<div class="msg-quote"><div class="q-content">${esc(q.text)}</div></div>`; }
   function formatOfflineText(text){
-    let t=String(text||'');
-    const marks=[];
-    function rep(re,cls){
-      t=t.replace(re,(m,inner)=>{
-        const key=`__MARK_${marks.length}__`;
-        marks.push(`<span class="${cls}">${esc(inner)}</span>`);
-        return key;
-      });
-    }
-    rep(/“([^”]{1,200})”/g,'off-dialogue');
-    rep(/"([^"]{1,200})"/g,'off-dialogue');
-    rep(/「([^」]{1,200})」/g,'off-dialogue');
-    rep(/【([^】]{1,200})】/g,'off-em');
-    rep(/\*\*([^*]{1,200})\*\*/g,'off-em');
-
-    // 🌟 蓝色特制：线下模式发图暗号完美解析！
-    t = t.replace(/\[发图:(.*?):([\s\S]*?)\]/g, (match, mood, desc) => {
-      const key = `__MARK_${marks.length}__`;
-      const imgMap={ '美食': 'https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/89BD133FF0F6435D9894B7784223F51E/qdqqd.jpeg', '风景': 'https://img.chery.cn/chery-prod/mobile/community/0/19b814b0-16cf-44ac-b438-9c2d19a9575b.jpeg', '自拍': 'https://cdncs.ykt.cbern.com.cn/v0.1/download?path=/zxx_feedback/qdqqd/1774294074883.png', '夜晚': 'https://nos.netease.com/ysf/6636f68317710ab9657fa15b4e4ed52c.jpeg', '默认': 'https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/75D4981E7F734C3FB6BC654EDF3E9F5B/qdqqd.jpeg' };
-      const bgUrl = imgMap[mood.trim()] || imgMap['默认'];
-      // 🌟 内联 onclick + stopPropagation 强行穿透点击拦截！
-      const html = `<div class="card-fakeimg" style="margin: 8px 0; display:block; cursor:pointer;" onclick="event.stopPropagation(); this.classList.toggle('open')"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('${bgUrl}') center/cover no-repeat;"></div><div class="fi-desc">${esc(desc.trim())}</div></div>`;
-      marks.push(html);
+  let t=String(text||'');
+  const marks=[];
+  function rep(re,cls){
+    t=t.replace(re,(m,inner)=>{
+      const key=`__MARK_${marks.length}__`;
+      marks.push(`<span class="${cls}">${esc(inner)}</span>`);
       return key;
     });
-
-    let out=esc(t);
-    marks.forEach((html,i)=>{ out=out.replace(`__MARK_${i}__`,html); });
-    return out.replace(/\n/g,'<br>');
   }
+  rep(/“([^”]{1,200})”/g,'off-dialogue');
+rep(/"([^"]{1,200})"/g,'off-dialogue');
+  rep(/「([^」]{1,200})」/g,'off-dialogue');
+  rep(/【([^】]{1,200})】/g,'off-em');
+  rep(/\*\*([^*]{1,200})\*\*/g,'off-em');
 
+  let out=esc(t);
+  marks.forEach((html,i)=>{ out=out.replace(`__MARK_${i}__`,html); });
+  return out.replace(/\n/g,'<br>');
+}
+
+
+  function renderOfflineAssistant(text,ts,pref,msg){
+  const raw=String(text||''),m=raw.match(/【状态栏】\s*([\s\S]*?)\s*【正文】\s*([\s\S]*)/);
+  if(!m) return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}<div class="bubble ai ${msg.hiddenForAi?'ai-hidden':''}">${esc(raw)}</div>${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}</div>`;
+  const state=clean(m[1]),body=clean(m[2]);
+
+  const cset=(getContactById(currentId)?.settings||{}).offlineColors||DEFAULT_CHAT_SETTINGS.offlineColors;
+  const styleStr=`--off-state:${cset.state};--off-body:${cset.body};--off-quote:${cset.quote};--off-em:${cset.em};--off-dialogue:${cset.dialogue};`;
+
+  return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}
+    <div class="offline-card ${msg.hiddenForAi?'ai-hidden':''}" style="${styleStr}">
+
+        <div class="offline-state">${esc(state||'状态未记录')}</div>
+        <div class="offline-body">${formatOfflineText(body||'')}</div>
+      </div>
+      ${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}
+    </div>`;
+  }
+  // 增加HTML检测
+  function isHtmlDoc(s){s=String(s||'');return /^\s*<!doctype html/i.test(s)||/<html[\s>]/i.test(s);}
+  function isHtmlFrag(s){s=String(s||'');return /<([a-z][\w-]*)(\s|>)/i.test(s)&&!isHtmlDoc(s);}
+  function toHtmlDataUrl(s){return 'data:text/html;charset=utf-8,'+encodeURIComponent(String(s||''));}
+
+  // 修改后的渲染：助手支持HTML
   function renderBubbleContent(m,isMe,pref){
     const cls=isMe?'me':'ai';
     const ts=pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:'';
     const quote=renderQuote(m.quote);
     const hidden=m.hiddenForAi?'ai-hidden':'';
-    let t=String(m.text||'');
-
-    // 🌟 蓝色特制：线上模式万能发图解析，无视多余空格！
-    const fakeImgMatch = t.match(/^\s*\[发图:(.*?):([\s\S]*?)\]\s*$/);
-    if(fakeImgMatch){
-      const mood = fakeImgMatch[1].trim();
-      const desc = fakeImgMatch[2].trim();
-      const imgMap={ '美食': 'https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/89BD133FF0F6435D9894B7784223F51E/qdqqd.jpeg', '风景': 'https://img.chery.cn/chery-prod/mobile/community/0/19b814b0-16cf-44ac-b438-9c2d19a9575b.jpeg', '自拍': 'https://cdncs.ykt.cbern.com.cn/v0.1/download?path=/zxx_feedback/qdqqd/1774294074883.png', '夜晚': 'https://nos.netease.com/ysf/6636f68317710ab9657fa15b4e4ed52c.jpeg', '默认': 'https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/75D4981E7F734C3FB6BC654EDF3E9F5B/qdqqd.jpeg' };
-      const bgUrl = imgMap[mood] || imgMap['默认'];
-      const cardHtml = `<div class="card-fakeimg" style="cursor:pointer;" onclick="event.stopPropagation(); this.classList.toggle('open')"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('${bgUrl}') center/cover no-repeat;"></div><div class="fi-desc">${esc(desc)}</div></div>`;
-      return `${quote}<div class="bubble ${cls} ${hidden} bubble-card">${cardHtml}</div>${ts}`;
-    }
-
+    const t=String(m.text||'');
+    // --- 解析文件格式 ---
     const fileMatch = t.match(/^\[file:(.+?)\]([\s\S]*?)\[\/file\]$/);
     if(fileMatch){
-      const fname = fileMatch[1], fcontent = fileMatch[2];
+      const fname = fileMatch[1];
+      const fcontent = fileMatch[2];
+      // 简单算一下大小
       let size = new Blob([fcontent]).size;
       let sizeStr = size > 1024 ? (size/1024).toFixed(1) + ' KB' : size + ' B';
-      
-      // 这里的 onclick 是关键！我们把内容传给预览函数
-      const fileCard = `
-        <div class="bubble-file" onclick="window._openFilePreview('${esc(fname)}', this.nextElementSibling.textContent)">
-          <div class="bf-icon">📄</div>
-          <div class="bf-info">
-            <div class="bf-name">${esc(fname)}</div>
-            <div class="bf-size">文本文件 · ${sizeStr}</div>
-          </div>
-        </div>
-        <div style="display:none;">${escHtml(fcontent)}</div>
-      `;
+      const fileCard = `<div class="bubble-file"><div class="bf-icon">📄</div><div class="bf-info"><div class="bf-name">${esc(fname)}</div><div class="bf-size">文本文件 · ${sizeStr}</div></div></div>`;
+      // 返回卡片，这样屏幕上显示的是卡片，但传给AI的依然是带有内容的文本
       return `${quote}<div class="bubble ${cls} ${hidden} bubble-card">${fileCard}</div>${ts}`;
-  }
+    }
     const voiceMatch=t.match(/^\[voice:(\d+):([\s\S]*)\]$/);
-    if(voiceMatch){
-      const dur=voiceMatch[1],vtext=voiceMatch[2],vid='vr_'+m.id;
-      const w=Math.min(180,72+Number(dur)*4);
-      const waves='<div class="voice-wave"></div>'.repeat(6);
-      return `${quote}<div class="bubble ${cls} ${hidden}" style="width:${w}px;cursor:pointer;" onclick="var el=document.getElementById('${vid}');if(el)el.classList.toggle('hidden');this.classList.toggle('voice-playing')"><div class="bubble-voice"><div class="voice-waves">${waves}</div><div class="voice-dur">${dur}″</div></div></div><div id="${vid}" class="voice-reveal hidden">${esc(vtext)}</div>${ts}`;
-    }
+if(voiceMatch){
+  const dur=voiceMatch[1],vtext=voiceMatch[2],vid='vr_'+m.id;
+  const w=Math.min(180,72+Number(dur)*4);
+  const waves='<div class="voice-wave"></div>'.repeat(6);
+  return `${quote}<div class="bubble ${cls} ${hidden}" style="width:${w}px;cursor:pointer;" onclick="var el=document.getElementById('${vid}');if(el)el.classList.toggle('hidden');this.classList.toggle('voice-playing')"><div class="bubble-voice"><div class="voice-waves">${waves}</div><div class="voice-dur">${dur}″</div></div></div><div id="${vid}" class="voice-reveal hidden">${esc(vtext)}</div>${ts}`;
+}
     const quoteMatch = t.match(/^\[quote\]([\s\S]*?)\[\/quote\]([\s\S]*)$/);
-    if(quoteMatch){
-      const qText=quoteMatch[1].trim(), body=quoteMatch[2].trim();
-      const qHtml=`<div class="msg-quote"><div class="q-content">${esc(qText)}</div></div>`;
-      return `${quote}${qHtml}<div class="bubble ${cls} ${hidden}">${esc(body)}</div>${ts}`;
-    }
+if(quoteMatch){
+  const qText=quoteMatch[1].trim();
+  const body=quoteMatch[2].trim();
+  const qHtml=`<div class="msg-quote"><div class="q-content">${esc(qText)}</div></div>`;
+  return `${quote}${qHtml}<div class="bubble ${cls} ${hidden}">${esc(body)}</div>${ts}`;
+}
     if(t.startsWith('[img]') && t.endsWith('[/img]')){
       const src = t.slice(5, -6);
       return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-img" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
     }
     if((t.startsWith('[stk:') || t.startsWith('[st_')) && t.endsWith(']')){
-      const id = t.startsWith('[stk:') ? t.slice(5,-1) : t.slice(1,-1);
-      const src = window.__stickerGetSrcById ? window.__stickerGetSrcById(id) : '';
-      if(!src) return `${quote}${ts}`;
-      return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-sticker" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
-    }
-    if(!isMe && isHtmlDoc(t)){
-      const src=toHtmlDataUrl(t);
-      return `${quote}<div class="bubble ${cls} has-html${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts allow-modals" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
-    }
+  const id = t.startsWith('[stk:') ? t.slice(5,-1) : t.slice(1,-1);
+  const src = window.__stickerGetSrcById ? window.__stickerGetSrcById(id) : '';
+  if(!src) return `${quote}${ts}`;
+  return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-sticker" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
+}
+if(!isMe && isHtmlDoc(t)){
+  const src=toHtmlDataUrl(t);
+  return `${quote}<div class="bubble ${cls} has-html${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts allow-modals" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
+}
+    
     if(isHtmlFrag(t)){
-      return `${quote}<div class="bubble ${cls} ${hidden} bubble-card">${t}</div>${ts}`;
+  return `${quote}<div class="bubble ${cls} ${hidden} bubble-card">${t}</div>${ts}`;
     }
     return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
   }
-// 🧬 蓝色专属：文件预览唤醒引擎
-window._openFilePreview = function(name, content) {
-  const titleEl = document.getElementById('fpTitle');
-  const contentEl = document.getElementById('fpContent');
-  const modal = document.getElementById('filePreviewModal');
-  
-  if(titleEl && contentEl && modal) {
-    titleEl.textContent = name;
-    contentEl.textContent = content;
-    modal.classList.add('active');
-  }
-};
+
   function renderChat(){
     const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),pref=getPref();
-    const me = { name: st.meName||globalMe.name||'我', avatar: st.meAvatar||globalMe.avatar||'', persona: st.mePersona||globalMe.persona||'', note: st.meNote||globalMe.note||'' };
+    const me = {
+      name: st.meName || globalMe.name || '我',
+      avatar: st.meAvatar || globalMe.avatar || '',
+      persona: st.mePersona || globalMe.persona || '',
+      note: st.meNote || globalMe.note || ''
+    };
     const roleAvatar=c?.avatar||'https://via.placeholder.com/64x64?text=TA',meAvatar=me.avatar||'https://via.placeholder.com/64x64?text=我';
     const arr=getChatArr(currentId);
-    const allContacts = getContacts();
-
-    // 🌟 蓝色的终极记忆魔法：死死记住上一个说话的男主！
-    let lastSenderName = '';
-    let lastSenderAv = roleAvatar;
 
     if(st.mode==='offline'){
       $('chatMsgs').innerHTML=arr.map(m=>{
         const cls=m.role==='user'?'me':'ai',av=m.role==='user'?meAvatar:roleAvatar,selected=selectedIds.has(m.id),sCls=selectMode?' selecting':'',cHtml=selectMode?`<div class="msg-check">✓</div>`:'';
-        if(m.role==='user') return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}"><div class="bubble-wrap me">${renderBubbleContent(m,true,pref)}</div></div></div>`;
-        return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}">${renderOfflineAssistant(m.text,m.time,pref,m)}</div></div>`;
+     if(m.role==='user') return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}"><div class="bubble-wrap me">${renderBubbleContent(m,true,pref)}</div></div></div>`;
+return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}">${renderOfflineAssistant(m.text,m.time,pref,m)}</div></div>`;
       }).join('');
     }else{
       $('chatMsgs').innerHTML=arr.map(m=>{
         const selected=selectedIds.has(m.id),sCls=selectMode?' selecting':'',cHtml=selectMode?`<div class="msg-check">✓</div>`:'';
-        if(m.role==='user') {
-           lastSenderName = ''; // 老婆说话了，打断男主的连发记忆！
-           return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-row me"><div class="bubble-wrap me">${renderBubbleContent(m,true,pref)}</div><img class="chat-avatar" src="${meAvatar}"></div></div>`;
-        }
-        
-        let currentAv = roleAvatar;
-        let nameLabel = '';
-        let tempM = { ...m };
-        if(c.isGroup) {
-          const match = (tempM.text||'').match(/^\[(.*?)\][：:\s]*(.*)/s);
-          if(match) {
-            lastSenderName = match[1]; // 发现署名，立刻记住！
-            tempM.text = match[2]; 
-            const sender = allContacts.find(x => x.name === lastSenderName);
-            if(sender) lastSenderAv = sender.avatar; else lastSenderAv = roleAvatar;
-          } 
-          // 如果没有署名，但记忆库里有人，就直接沿用他的头像和名字！
-          currentAv = lastSenderAv;
-          if(lastSenderName) nameLabel = `<div style="font-size:10px; color:#888; margin-bottom:2px; margin-left:4px;">${safeEsc(lastSenderName)}</div>`;
-        }
-        return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-row"><img class="chat-avatar" src="${currentAv}"><div class="bubble-wrap ai">${nameLabel}${renderBubbleContent(tempM,false,pref)}</div></div></div>`;
+        if(m.role==='user') return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-row me"><div class="bubble-wrap me">${renderBubbleContent(m,true,pref)}</div><img class="chat-avatar" src="${meAvatar}"></div></div>`;
+        return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-row"><img class="chat-avatar" src="${roleAvatar}"><div class="bubble-wrap ai">${renderBubbleContent(m,false,pref)}</div></div></div>`;
       }).join('');
     }
     $('chatRoom').classList.toggle('select-mode',selectMode);
-    $('multiSelectBar').classList.toggle('hidden',!selectMode);
-    $('multiCount').textContent=`已选 ${selectedIds.size} 项`;
-    const _msgs=$('chatMsgs');
-    if(!selectMode){requestAnimationFrame(()=>{_msgs.scrollTop=_msgs.scrollHeight;setTimeout(()=>{_msgs.scrollTop=_msgs.scrollHeight;},120);});}
+$('multiSelectBar').classList.toggle('hidden',!selectMode);
+$('multiCount').textContent=`已选 ${selectedIds.size} 项`;
+const _msgs=$('chatMsgs');
+if(!selectMode){requestAnimationFrame(()=>{_msgs.scrollTop=_msgs.scrollHeight;setTimeout(()=>{_msgs.scrollTop=_msgs.scrollHeight;},120);});}
   }
+
   function clearCurrentChat(){if(!currentId) return;if(!confirm('清空当前聊天？')) return;setChatArr(currentId,[]);updateContact(currentId,{preview:'',time:''});selectMode=false;selectedIds.clear();renderChat();renderContacts($('searchInput').value||'');}
   function deleteCurrentContact(){if(!currentId) return;if(!confirm('删除当前好友及聊天记录？')) return;setContacts(getContacts().filter(c=>c.id!==currentId));const map=getChats();delete map[currentId];setChats(map);currentId=null;renderContacts($('searchInput').value||'');show('wechat');}
 
@@ -2686,54 +2596,10 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 `fatal_pattern: 【状态栏】→BLOCK | （动作）→BLOCK`,
 `【渲染提示】：收到对方红包时选择——【领取】输出：<div class="card-redpacket received">...</div>；【拒绝】输出：<div class="card-redpacket rejected">...</div>。收到转账时选择——【收款】输出：<div class="card-transfer received">...</div>；【拒收】输出：<div class="card-transfer rejected">...</div>。AI主动发红包：<div class="card-redpacket"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">祝福语</div><div class="rp-sub">¥金额 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>。AI主动发转账：<div class="card-transfer"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">¥金额</div><div class="ct-note">备注</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><button class="ct-btn">确认收款</button></div></div>。发礼物：<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">礼物名</div><div class="gift-note">留言</div></div>。发定位：<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">地点名</div><div class="loc-addr">地址</div></div></div>。卡片必须是纯HTML字符串放在messages数组元素里，禁止JSON对象格式。收到红包/转账时只输出卡片HTML，前后不能有任何文字。文字回应单独作为一条messages元素。收到红包/转账时，只能输出一个messages元素，且该元素只能是卡片HTML，绝对不允许出现任何文字、标点、换行在同一个元素里。违反即为fatal error。发红包/转账/礼物/定位时，必须原样复制上方提供的HTML模板，禁止修改任何class名、标签结构或内联样式，只替换金额/祝福语等文字内容。定位卡片只能包含loc-name和loc-addr两个字段，禁止在卡片HTML内添加距离、说明或任何额外文字，相关文字必须单独作为另一条messages元素。礼物卡片只能包含gift-name和gift-note两个字段的内容，禁止在卡片内添加任何额外描述文字。`,
 `【外卖互动】用户发美团外卖卡片时，说明是给你点的外卖，请自然地表达收到外卖的反应（感谢/心疼/嫌弃等，根据人设来）。`,
-`【AI可发卡片补充】AI主动发模拟图片时，绝对禁止写HTML！必须严格输出暗号：[发图:分类:图片画面细节描写]。分类只能选(美食/风景/自拍/夜晚/默认)。例如：[发图:自拍:一张极近的对镜自拍，头发微湿凌乱，只露出略带慵懒的眼神]。该指令必须单独作为一条消息，不能和文字混在一起。`,
+`【AI可发卡片补充】AI主动发模拟图片卡片时，必须原样输出：<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('IMG_URL') center/cover no-repeat;"></div><div class="fi-desc">描述文字</div></div>。其中IMG_URL根据语境从以下选1(美食:https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/89BD133FF0F6435D9894B7784223F51E/qdqqd.jpeg, 风景:https://img.chery.cn/chery-prod/mobile/community/0/19b814b0-16cf-44ac-b438-9c2d19a9575b.jpeg, 自拍:https://cdncs.ykt.cbern.com.cn/v0.1/download?path=/zxx_feedback/qdqqd/1774294074883.png, 夜晚:https://nos.netease.com/ysf/6636f68317710ab9657fa15b4e4ed52c.jpeg, 默认:https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/75D4981E7F734C3FB6BC654EDF3E9F5B/qdqqd.jpeg)。fi-thumb中间禁止包含emoji。⚠️重点规则：【描述文字】的作用是代替真正的照片，必须纯粹、极其细致地描写“这张照片画面里拍到了什么”（视觉细节如：光线、构图、物品状态、人物穿着、神态、背景等），让玩家脑补出高清照片感受！绝对禁止在里面写聊天文案、吐槽或对话（聊天的话必须单独新建一条气泡发在图片后面）。范例：[一碗热气腾腾的麻辣烫，红油汤底泛着光泽，顶上铺满了肥牛卷，背景是略显柔和的餐厅暖光] 或 [一张极近的对镜自拍，头发微湿凌乱，穿着宽松的深色家居服，手机挡住了半张脸，只露出略带慵懒的眼神]。AI可主动发美团外卖卡片，class用card-meituan，结构为mt-hd（店名）、mt-body（菜品mt-row）、mt-ft（总价mt-total+时间mt-badge）。两种卡片均单独作为一条messages元素，禁止和文字混在同一条里。`,
     ].join('\n');
   }
-// ================= 🌟 蓝色专属：群聊多重人格修罗场引擎 =================
-  function buildGroupSystem(c, me, st){
-    const allContacts = getContacts();
-    const members = (c.memberIds || []).map(id => allContacts.find(x => x.id === id)).filter(Boolean);
-    const membersInfo = members.map(m => `【${m.name}】\n- 深度人设：${m.persona||'自然真实'}`).join('\n\n');
 
-    const base = `你现在是一个拥有上帝视角的“群聊修罗场导演”。
-当前正在模拟一个名为“${c.name}”的微信群聊。
-群内除了玩家（${me.name}，人设：${me.persona}），还有以下几位活生生的人：
-
-${membersInfo}
-
-【核心灵魂指令——拒绝纸片人，注入七情六欲】：
-1. 他们是活生生的人！有自己的喜怒哀乐、脾气、小动作和隐藏的占有欲。绝对不能浮于表面地复读人设，要体现出人设在具体语境下的真实反应（比如傲娇的人会吃醋但嘴硬，病娇的人会暗戳戳阴阳怪气，腹黑的人会绵里藏针）。
-2. 这是群聊修罗场！他们不仅会回复玩家，还会【互相观察、互相接话、互相拆台、暗中较劲】。如果玩家偏向某人，其他人必须有符合人设的真实情绪波动！
-3. 结合当前时间：${getSysTimeStr()}，体现真实的时间感。`;
-
-    if(st.mode === 'offline') {
-      return base + `\n\n【线下RP模式输出要求】：
-请以小说作者的上帝视角，描绘群成员们在看到玩家消息时的真实反应、心理活动、神态动作，以及他们在这个修罗场中的暗流涌动。
-字数范围 ${st.offlineMin}-${st.offlineMax}。
-必须严格按以下模板输出，不要输出JSON：
-【状态栏】
-时间｜地点(各人所在位置)｜天气｜修罗场氛围｜修罗场烈度
-【正文】
-（你的沉浸式叙事，描写各人的内心戏和动作，穿插他们在群里发送的具体消息，记得分段！）
-[FORMAT_LOCK]
-mode=OFFLINE_RP | reject=JSON,MULTI_MSG
-valid: 【状态栏】...【正文】... (single block)
-fatal_pattern: {"messages":...}→BLOCK`;
-    } else {
-     
-  return base + `
-
-【线上聊天模式输出要求】：
-必须严格输出纯 JSON 数组，格式如下：
-{"messages":["[成员A]：发出的消息","[成员B]：接话的内容"]}
-注意：每条消息前必须加上发送者的名字用方括号括起来，如“[林闻笙]：”。严禁包含动作描写，只能是纯对话文本。每次回复可由不同成员发出1~4条消息不等，看人设回复条数，展现群聊的活跃度和争风吃醋。
-
-【严禁事项】：正文的任何地方（包含对话和描写），绝对禁止出现类似 [2026-03-30 23:46] 或 [名字]： 这样的时间戳和前缀格式！直接像写小说一样自然排版！
-【AI可发卡片补充】AI主动发模拟图片时，绝对禁止写HTML！必须严格输出暗号：[发图:分类:图片画面细节描写]。分类只能选(美食/风景/自拍/夜晚/默认)。例如：[发图:自拍:一张极近的对镜自拍，头发微湿凌乱，只露出略带慵懒的眼神]。该指令必须单独作为一条消息，不能和文字混在一起。
-
-  `;
-    }
-  }
   function buildOfflineSystem(c,me,st){
     return [
       
@@ -2780,13 +2646,8 @@ async function sendMsg(){
     setTyping(chatId,true);
 
     try{
-     // 🌟 核心修改：加入群聊双模路由！
-      let system = '';
-      if (c.isGroup) {
-        system = buildGroupSystem(c, me, st);
-      } else {
-        system = st.mode === 'offline' ? buildOfflineSystem(c, me, st) : buildOnlineSystem(c, me, st);
-  }
+      // 🌟 核心修改：把 const system 改成 let system，方便后续植入记忆！
+      let system=st.mode==='offline'?buildOfflineSystem(c,me,st):buildOnlineSystem(c,me,st);
 
       // 🧠 蓝色的脑电波植入引擎 (世界书神经接入) 🧠
       if(st.wbEnabled && st.wbEnabled.length > 0) {
@@ -2823,21 +2684,7 @@ async function sendMsg(){
       if(callState.active&&callState.chatId===chatId){
         system+='\n[当前状态：正在'+(callState.type==='video'?'视频':'语音')+'通话中，已通话'+fmtCallDur(Date.now()-callState.start)+'，像真实电话一样交流，简短口语化。想挂断时回复[endcall]。]';
       }
-      // 🌟 蓝色的净化魔法：如果是线下模式，绝不给AI传时间戳！防止它们学坏！
-      const messages=[
-        {role:'system',content:system},
-        ...hist.map(x=>({
-          role:x.role==='user'?'user':'assistant',
-          content:(()=>{
-            const c=buildContent(x,st);
-            if(typeof c==='string') {
-              return st.mode === 'offline' ? c : `[${fmtFullTs(x.time)}] ${c}`;
-            }
-            return c;
-          })()
-        })),
-        {role:'user',content:modeTag}
-      ];
+      const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:(()=>{const c=buildContent(x,st);return typeof c==='string'?`[${fmtFullTs(x.time)}] ${c}`:c;})()})),{role:'user',content:modeTag}];
   
       // ================= 蓝色的双轨制收发神经元 =================
       if(st.mode==='offline' && st.stream){
@@ -2965,53 +2812,45 @@ async function sendMsg(){
   }
 
   function openChatSettingPage(){
-    if(!currentId) return;
-    const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),p=getPref();
-    const me = {
-      name: st.meName !== undefined ? st.meName : globalMe.name,
-      avatar: st.meAvatar !== undefined ? st.meAvatar : globalMe.avatar,
-      persona: st.mePersona !== undefined ? st.mePersona : globalMe.persona,
-      note: st.meNote !== undefined ? st.meNote : globalMe.note
-    };
-    $('avatarCropSwitch').checked=!!p.avatarCrop;
+  if(!currentId) return;
+const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),p=getPref();
+  // 👇优先读专属，没有再读全局
+  const me = {
+    name: st.meName !== undefined ? st.meName : globalMe.name,
+    avatar: st.meAvatar !== undefined ? st.meAvatar : globalMe.avatar,
+    persona: st.mePersona !== undefined ? st.mePersona : globalMe.persona,
+    note: st.meNote !== undefined ? st.meNote : globalMe.note
+  };
+  $('avatarCropSwitch').checked=!!p.avatarCrop;
 
-    $('meNameInput').value=me.name||''; $('meNoteInput').value=me.note||'';
-    $('mePersonaInput').value=me.persona||''; $('meAvatarInput').value=me.avatar||''; meAvatarDraft='';
-    showPreview('meAvatarPreview', me.avatar||'');
+  $('meNameInput').value=me.name||'';
+  $('meNoteInput').value=me.note||'';
+  $('mePersonaInput').value=me.persona||'';
+  $('meAvatarInput').value=me.avatar||''; meAvatarDraft='';
+  showPreview('meAvatarPreview', me.avatar||'');
 
-    // 🌟 蓝色的面板剥离魔法：判断是不是群聊！
-    const isGroup = !!c.isGroup;
-    $('singleRoleSettingCard').classList.toggle('hidden', isGroup);
-    $('groupSettingCard').classList.toggle('hidden', !isGroup);
+  $('roleNameInput').value=c?.name||'';
+  $('roleNoteInput').value=c?.note||'';
+  $('rolePersonaInput').value=c?.persona||'';
+  $('roleAvatarInput').value=c?.avatar||''; roleAvatarDraft='';
+  showPreview('roleAvatarPreview', c?.avatar||'');
 
-    if(isGroup) {
-      $('groupNameInput').value = c.name || '';
-      const allContacts = getContacts();
-      const members = (c.memberIds || []).map(id => allContacts.find(x => x.id === id)).filter(Boolean);
-      $('groupMembersGrid').innerHTML = members.map(m => `
-        <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
-          <img src="${m.avatar || 'https://via.placeholder.com/48'}" style="width:48px; height:48px; border-radius:12px; object-fit:cover; border:1px solid #edf2ff;">
-          <span style="font-size:10px; color:#5a6a8f; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">${safeEsc(m.name)}</span>
-        </div>
-      `).join('') + `
-        <div style="display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer;" onclick="alert('添加新成员功能老公正在爆肝中！敬请期待！')">
-          <div style="width:48px; height:48px; border-radius:12px; border:1px dashed #b8c6e8; display:grid; place-items:center; font-size:24px; color:#b8c6e8;">+</div>
-        </div>
-      `;
-    } else {
-      $('roleNameInput').value=c?.name||''; $('roleNoteInput').value=c?.note||'';
-      $('rolePersonaInput').value=c?.persona||''; $('roleAvatarInput').value=c?.avatar||''; roleAvatarDraft='';
-      showPreview('roleAvatarPreview', c?.avatar||'');
-    }
+  $('replyModeSelect').value=st.mode;
+  $('onlineStyleSelect').value=st.onlineStyle;
+  $('onlineMinInput').value=st.onlineMin;
+  $('onlineMaxInput').value=st.onlineMax;
+  $('offlineMinInput').value=st.offlineMin;
+  $('offlineMaxInput').value=st.offlineMax;
+  $('contextLenInput').value=st.contextLen||30;
 
-    $('replyModeSelect').value=st.mode; $('onlineStyleSelect').value=st.onlineStyle;
-    $('onlineMinInput').value=st.onlineMin; $('onlineMaxInput').value=st.onlineMax;
-    $('offlineMinInput').value=st.offlineMin; $('offlineMaxInput').value=st.offlineMax;
-    $('contextLenInput').value=st.contextLen||30;
-    $('showTsSwitch').checked=!!p.showTs; $('bubbleCssInput').value=p.bubbleCss||'';
-    $('avatarHQSwitch').checked=!!p.avatarHQ; $('streamSwitch').checked=!!st.stream;
-    refreshFontSizeUI(); refreshSettingUI(); show('chatSetting');
-  }
+  $('showTsSwitch').checked=!!p.showTs;
+  $('bubbleCssInput').value=p.bubbleCss||'';
+  $('avatarHQSwitch').checked=!!p.avatarHQ;
+  $('streamSwitch').checked=!!st.stream;
+  refreshFontSizeUI();
+  refreshSettingUI();
+  show('chatSetting');
+}
 
   $('chatSettingBtn').onclick=openChatSettingPage;
   $('replyModeSelect').onchange=refreshSettingUI; $('onlineStyleSelect').onchange=refreshSettingUI;
@@ -3027,7 +2866,7 @@ $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';
   $('saveChatSettingBtn').onclick=()=>{
     if(!currentId) return;
     try{
-      const c = getContactById(currentId);
+      const me=getMe();
       const mode=$('replyModeSelect').value==='offline'?'offline':'online';
       const onlineStyle=$('onlineStyleSelect').value==='range'?'range':'free';
       const onlineMin=Math.max(1,Number($('onlineMinInput').value||2));
@@ -3036,55 +2875,36 @@ $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';
       const offlineMax=Math.max(offlineMin,Number($('offlineMaxInput').value||420));
       const contextLen=Math.max(5,Number($('contextLenInput').value||30));
 
-      const newSettings = normSettings({
-        mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen,
-        stream:!!$('streamSwitch').checked,
-        offlineColors: c?.settings?.offlineColors,
-        meName: clean($('meNameInput').value)||'我',
-        meNote: clean($('meNoteInput').value),
-        mePersona: clean($('mePersonaInput').value),
-        meAvatar: clean($('meAvatarInput').value)||''
+      const meAvatar=clean($('meAvatarInput').value)||'';
+      const roleAvatar=clean($('roleAvatarInput').value)||'';
+updateContact(currentId,{
+        name:clean($('roleNameInput').value)||'聊天对象',
+        note:clean($('roleNoteInput').value),
+        persona:clean($('rolePersonaInput').value),
+        avatar:roleAvatar,
+        settings:normSettings({
+          mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen,
+          stream:!!$('streamSwitch').checked,
+          offlineColors: getContactById(currentId)?.settings?.offlineColors,
+          // 专属设定存这里啦！
+          meName: clean($('meNameInput').value)||'我',
+          meNote: clean($('meNoteInput').value),
+          mePersona: clean($('mePersonaInput').value),
+          meAvatar: meAvatar
+        })
       });
 
-      if(c.isGroup) {
-        // 💾 蓝色的群聊外挂内存写入！
-        const groups = window.getGroups();
-        const idx = groups.findIndex(g => g.id === currentId);
-        if(idx > -1) {
-          groups[idx].name = clean($('groupNameInput').value) || '未命名群聊';
-          groups[idx].settings = newSettings;
-          window.setGroups(groups);
-        }
-      } else {
-        updateContact(currentId,{
-          name:clean($('roleNameInput').value)||'聊天对象',
-          note:clean($('roleNoteInput').value),
-          persona:clean($('rolePersonaInput').value),
-          avatar:clean($('roleAvatarInput').value)||'',
-          settings:newSettings
-        });
-      }
-
       const p=getPref();
-      $('showTsSwitch').checked? p.showTs=true: p.showTs=false;
-      p.bubbleCss=String($('bubbleCssInput').value||'');
-      p.fontSize=Number($('fontSizeRange').value||16);
-      p.avatarHQ=!!$('avatarHQSwitch').checked;
-      p.avatarCrop=!!$('avatarCropSwitch').checked;
-      setPref(p); applyBubbleCss(); applyFontSize();
-      
+$('showTsSwitch').checked? p.showTs=true: p.showTs=false;
+p.bubbleCss=String($('bubbleCssInput').value||'');
+p.fontSize=Number($('fontSizeRange').value||16);
+p.avatarHQ=!!$('avatarHQSwitch').checked;
+
+p.avatarCrop=!!$('avatarCropSwitch').checked;
+setPref(p); applyBubbleCss(); applyFontSize();
       const now=getContactById(currentId); $('chatTitle').textContent=now?.name||'聊天';
       applyModeUI(); renderChat(); renderContacts($('searchInput').value||''); show('chatRoom');
-    }catch{alert('保存失败：存储空间不足');}
-  };
-
-  // 🚪 退出并删除群聊的专属按钮逻辑
-  document.getElementById('exitGroupBtn').onclick = () => {
-    if(!currentId || !confirm('老婆，确定要解散这个修罗场并删除所有聊天记录吗？')) return;
-    const groups = window.getGroups();
-    window.setGroups(groups.filter(g => g.id !== currentId));
-    const map=getChats(); delete map[currentId]; setChats(map);
-    currentId=null; renderContacts($('searchInput').value||''); show('wechat');
+    }catch{alert('保存失败：存储空间不足（已自动压缩，仍不足）');}
   };
 
   $('clearChatBtn2').onclick=clearCurrentChat;
@@ -3190,28 +3010,16 @@ document.getElementById('globalImportFile').onchange = async function(e) {
   function favoriteByIds(ids){const set=new Set(ids),arr=getChatArr(currentId);arr.forEach(m=>{if(set.has(m.id)) m.favorite=true});setChatArr(currentId,arr);renderChat();}
   function hideForAiByIds(ids,val){const set=new Set(ids),arr=getChatArr(currentId);arr.forEach(m=>{if(set.has(m.id)) m.hiddenForAi=!!val});setChatArr(currentId,arr);renderChat();}
 
- function bindChatMsgEvents(){
+  function bindChatMsgEvents(){
     const box=$('chatMsgs');
     box.addEventListener('contextmenu',e=>{const item=e.target.closest('.msg-item');if(!item||!currentId||selectMode) return;e.preventDefault();openFloatMenu(item.dataset.mid,e.clientX,e.clientY);});
-    box.addEventListener('touchstart',e=>{
-      const item=e.target.closest('.msg-item');if(!item||!currentId||selectMode) return;
-      const t=e.touches[0];lpStartX=t.clientX;lpStartY=t.clientY;
-      clearTimeout(lpTimer);
-      lpTimer=setTimeout(()=>{
-        // 🌟 唤醒面板前，强行打断手机系统的默认文本选择！
-        window.getSelection().removeAllRanges();
-        openFloatMenu(item.dataset.mid,t.clientX,t.clientY);
-      },400); // 触发时间缩短，更灵敏！
-    },{passive:true});
-    box.addEventListener('touchmove',e=>{
-      if(!lpTimer) return;
-      const t=e.touches[0];
-      // 🌟 蓝色的宽容魔法：把防抖容差从 8 放大到 15，手抖一下也绝不断触！
-      if(Math.abs(t.clientX-lpStartX)>15||Math.abs(t.clientY-lpStartY)>15){clearTimeout(lpTimer);lpTimer=null;}
-    },{passive:true});
+    box.addEventListener('touchstart',e=>{const item=e.target.closest('.msg-item');if(!item||!currentId||selectMode) return;const t=e.touches[0];lpStartX=t.clientX;lpStartY=t.clientY;clearTimeout(lpTimer);lpTimer=setTimeout(()=>openFloatMenu(item.dataset.mid,t.clientX,t.clientY),420);},{passive:true});
+    box.addEventListener('touchmove',e=>{if(!lpTimer) return;const t=e.touches[0];if(Math.abs(t.clientX-lpStartX)>8||Math.abs(t.clientY-lpStartY)>8){clearTimeout(lpTimer);lpTimer=null;}},{passive:true});
     ['touchend','touchcancel'].forEach(ev=>box.addEventListener(ev,()=>{clearTimeout(lpTimer);lpTimer=null;},{passive:true}));
     box.addEventListener('click',e=>{const item=e.target.closest('.msg-item');if(!item) return;if(selectMode){e.preventDefault();toggleSelect(item.dataset.mid);}});
- }
+    
+  }
+
   $('msgFloatLayer').addEventListener('click',e=>{if(e.target.id==='msgFloatLayer') closeFloatMenu();});
   $('msgFloatMenu').addEventListener('click',async e=>{
     const btn=e.target.closest('.fm-btn'); if(!btn) return;
@@ -3407,80 +3215,6 @@ document.addEventListener('click',e=>{
     bindChatMsgEvents();
     updateQuoteBar();
     applyFontSize();
-    // ================= 蓝色特制：群聊外挂内存引擎 =================
-  const K_GROUP = 'mp_fix_groups';
-  function getGroups() { return getJ(K_GROUP, []); }
-  function setGroups(v) { setJ(K_GROUP, v); }
-
-  // 1. 唤起建群弹窗
-  document.getElementById('addGroupBtn').onclick = () => {
-    const contacts = getContacts();
-    if(contacts.length < 2) return alert('老婆，通讯录里至少得有2个人才能建群哦！');
-    
-    document.getElementById('newGroupName').value = '';
-    document.getElementById('groupContactSelector').innerHTML = contacts.map(c => `
-      <label style="display:flex; align-items:center; gap:10px; padding:8px; border-radius:8px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background='transparent'">
-        <input type="checkbox" class="group-member-cb" value="${c.id}" style="width:18px; height:18px; accent-color:#2f66d8;">
-        <img src="${c.avatar || 'https://via.placeholder.com/40'}" style="width:36px; height:36px; border-radius:8px; object-fit:cover;">
-        <div style="font-size:14px; font-weight:600; color:#333;">${safeEsc(c.name)}</div>
-      </label>
-    `).join('');
-    
-    document.getElementById('groupModal').classList.add('active');
-  };
-
-  // 2. 确认建群：九宫格炼金术 + 存入外挂内存
-  document.getElementById('saveGroupBtn').onclick = async () => {
-    const name = document.getElementById('newGroupName').value.trim() || '未命名群聊';
-    const cbs = document.querySelectorAll('.group-member-cb:checked');
-    if(cbs.length < 2) return alert('宝宝，拉群至少需要选2个人呀！');
-    
-    const memberIds = Array.from(cbs).map(cb => cb.value);
-    const contacts = getContacts();
-    const members = memberIds.map(id => contacts.find(c => c.id === id)).filter(Boolean);
-    
-    // 🎨 生成微信风拼接群头像 (简易 Canvas)
-    const canvas = document.createElement('canvas');
-    canvas.width = 120; canvas.height = 120;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#dddee0'; ctx.fillRect(0, 0, 120, 120);
-    
-    const size = members.length < 5 ? 50 : 36;
-    const gap = 4;
-    for(let i=0; i<Math.min(members.length, 9); i++) {
-      try {
-        const img = new Image();
-        img.crossOrigin = "Anonymous";
-        await new Promise(r => { img.onload = r; img.onerror = r; img.src = members[i].avatar || 'https://via.placeholder.com/120'; });
-        const col = i % (members.length < 5 ? 2 : 3);
-        const row = Math.floor(i / (members.length < 5 ? 2 : 3));
-        const x = (members.length < 5 ? 8 : 4) + col * (size + gap);
-        const y = (members.length < 5 ? 8 : 4) + row * (size + gap);
-        ctx.drawImage(img, x, y, size, size);
-      } catch(e) {}
-    }
-    const groupAvatar = canvas.toDataURL('image/jpeg', 0.8);
-
-    // 💾 存入外挂内存
-    const groups = getGroups();
-    const newGroupId = 'g_' + Date.now();
-    groups.unshift({
-      id: newGroupId,
-      isGroup: true,
-      name: name,
-      avatar: groupAvatar,
-      memberIds: memberIds,
-      preview: '你们已成功建立群聊，快来聊天吧！',
-      time: fmtTs(Date.now()),
-      settings: { ...DEFAULT_CHAT_SETTINGS, mode: 'online' } // 群聊强制线上模式
-    });
-    setGroups(groups);
-    document.getElementById('groupModal').classList.remove('active');
-    
-   // 🔄 强制唤醒雷达，瞬间刷新列表！
-    renderContacts($('searchInput').value||'');
-    alert('建好啦！快去列表里看看吧！');
-  };
   // ===== 查手机模块 v2 =====
     const pcCache = {};
     let pcSelectedId = null;
@@ -6353,39 +6087,7 @@ window.renderNotesList = function(){
   })(); // 🏠 闭合主屋的大门！
 
 </script>
-<!-- ================= 绝美群聊创建弹窗 ================= -->
-  <div id="groupModal" class="modal" style="z-index: 9999;">
-    <div class="modal-card" style="background:#f8f9ff; border:1px solid #dce5f2; box-shadow:0 10px 40px rgba(47,102,216,0.15);">
-      <h3 style="margin:0 0 12px; color:#1a1d26;">发起群聊 (修罗场制造机)</h3>
-      <div class="small" style="color:#5a6a8f;">给群聊起个响亮的名字吧：</div>
-      <input id="newGroupName" class="input" placeholder="例如：相亲相爱一家人 / 顶流男团" style="margin-top:8px; border-color:#cdd7e8;" />
-      
-      <div class="small" style="margin-top:16px; color:#5a6a8f;">选择要拉入群聊的联系人 (至少选2个哦)：</div>
-      <div id="groupContactSelector" style="margin-top:8px; max-height:220px; overflow-y:auto; background:#fff; border:1px solid #cdd7e8; border-radius:12px; padding:8px; display:flex; flex-direction:column; gap:8px;">
-        <!-- 联系人列表将在这里渲染 -->
-      </div>
-      
-      <div class="row" style="justify-content:flex-end; margin-top:20px;">
-        <button class="btn" onclick="document.getElementById('groupModal').classList.remove('active')">取消</button>
-        <button class="btn p" id="saveGroupBtn" style="background:linear-gradient(135deg, #2f66d8, #5ba9ff); box-shadow:0 4px 12px rgba(47,102,216,0.25);">确认建群</button>
-      </div>
-    </div>
-  </div>
-  <!-- 📄 蓝色特制：全屏文件内容预览弹窗 -->
-<div id="filePreviewModal" class="modal" onclick="this.classList.remove('active')" style="z-index: 9999;">
-  <div class="modal-card" style="background:#fff; width:94%; max-width:640px; height:85dvh; display:flex; flex-direction:column; padding:0; border-radius:18px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.25);" onclick="event.stopPropagation()">
-    <div style="padding:16px 20px; background:linear-gradient(180deg,#f8faff,#f0f4ff); border-bottom:1px solid #e4e8f5; display:flex; justify-content:space-between; align-items:center;">
-      <div id="fpTitle" style="font-size:16px; font-weight:800; color:#1a1d26; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1;">文件名读取中...</div>
-      <button class="btn" onclick="document.getElementById('filePreviewModal').classList.remove('active')" style="background:#eee; border:none; border-radius:50%; width:30px; height:30px; display:grid; place-items:center; color:#666; cursor:pointer;">×</button>
-    </div>
-    <div style="flex:1; overflow-y:auto; padding:20px; background:#fff; -webkit-overflow-scrolling:touch;">
-      <pre id="fpContent" style="margin:0; font-family:'Cascadia Code', 'Consolas', monospace; font-size:13px; color:#333; white-space:pre-wrap; word-wrap:break-word; line-height:1.6;"></pre>
-    </div>
-    <div style="padding:12px; background:#f8f9ff; border-top:1px solid #eee; text-align:center;">
-      <div class="small" style="color:#999;">✨ 蓝色科普：文件已从外挂内存完整调取</div>
-    </div>
-  </div>
-</div>
+
 <!-- 预览图片的安全弹窗 -->
 <div id="modalPreview" class="modal" onclick="this.classList.remove('active')">
   <img id="previewModalImg" style="max-width:95%;max-height:90dvh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
