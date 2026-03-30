@@ -2255,33 +2255,46 @@ if(!isMe && isHtmlDoc(t)){
 
   function renderChat(){
     const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),pref=getPref();
-    const me = {
-      name: st.meName || globalMe.name || '我',
-      avatar: st.meAvatar || globalMe.avatar || '',
-      persona: st.mePersona || globalMe.persona || '',
-      note: st.meNote || globalMe.note || ''
-    };
+    const me = { name: st.meName||globalMe.name||'我', avatar: st.meAvatar||globalMe.avatar||'', persona: st.mePersona||globalMe.persona||'', note: st.meNote||globalMe.note||'' };
     const roleAvatar=c?.avatar||'https://via.placeholder.com/64x64?text=TA',meAvatar=me.avatar||'https://via.placeholder.com/64x64?text=我';
     const arr=getChatArr(currentId);
+
+    // 🌟 蓝色的群聊成员通讯录缓存
+    const allContacts = getContacts();
 
     if(st.mode==='offline'){
       $('chatMsgs').innerHTML=arr.map(m=>{
         const cls=m.role==='user'?'me':'ai',av=m.role==='user'?meAvatar:roleAvatar,selected=selectedIds.has(m.id),sCls=selectMode?' selecting':'',cHtml=selectMode?`<div class="msg-check">✓</div>`:'';
-     if(m.role==='user') return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}"><div class="bubble-wrap me">${renderBubbleContent(m,true,pref)}</div></div></div>`;
-return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}">${renderOfflineAssistant(m.text,m.time,pref,m)}</div></div>`;
+        if(m.role==='user') return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}"><div class="bubble-wrap me">${renderBubbleContent(m,true,pref)}</div></div></div>`;
+        return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}">${renderOfflineAssistant(m.text,m.time,pref,m)}</div></div>`;
       }).join('');
     }else{
       $('chatMsgs').innerHTML=arr.map(m=>{
         const selected=selectedIds.has(m.id),sCls=selectMode?' selecting':'',cHtml=selectMode?`<div class="msg-check">✓</div>`:'';
         if(m.role==='user') return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-row me"><div class="bubble-wrap me">${renderBubbleContent(m,true,pref)}</div><img class="chat-avatar" src="${meAvatar}"></div></div>`;
-        return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-row"><img class="chat-avatar" src="${roleAvatar}"><div class="bubble-wrap ai">${renderBubbleContent(m,false,pref)}</div></div></div>`;
+        
+        // 🎨 蓝色的群聊皮肤伪装术！剥离前缀，换上真身头像！
+        let currentAv = roleAvatar;
+        let nameLabel = '';
+        let tempM = { ...m };
+        if(c.isGroup) {
+          const match = (tempM.text||'').match(/^\[(.*?)\][：:\s]*(.*)/s);
+          if(match) {
+            const senderName = match[1];
+            tempM.text = match[2]; // 剥离前缀
+            const sender = allContacts.find(x => x.name === senderName);
+            if(sender) currentAv = sender.avatar;
+            nameLabel = `<div style="font-size:10px; color:#888; margin-bottom:2px; margin-left:4px;">${safeEsc(senderName)}</div>`;
+          }
+        }
+        return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-row"><img class="chat-avatar" src="${currentAv}"><div class="bubble-wrap ai">${nameLabel}${renderBubbleContent(tempM,false,pref)}</div></div></div>`;
       }).join('');
     }
     $('chatRoom').classList.toggle('select-mode',selectMode);
-$('multiSelectBar').classList.toggle('hidden',!selectMode);
-$('multiCount').textContent=`已选 ${selectedIds.size} 项`;
-const _msgs=$('chatMsgs');
-if(!selectMode){requestAnimationFrame(()=>{_msgs.scrollTop=_msgs.scrollHeight;setTimeout(()=>{_msgs.scrollTop=_msgs.scrollHeight;},120);});}
+    $('multiSelectBar').classList.toggle('hidden',!selectMode);
+    $('multiCount').textContent=`已选 ${selectedIds.size} 项`;
+    const _msgs=$('chatMsgs');
+    if(!selectMode){requestAnimationFrame(()=>{_msgs.scrollTop=_msgs.scrollHeight;setTimeout(()=>{_msgs.scrollTop=_msgs.scrollHeight;},120);});}
   }
 
   function clearCurrentChat(){if(!currentId) return;if(!confirm('清空当前聊天？')) return;setChatArr(currentId,[]);updateContact(currentId,{preview:'',time:''});selectMode=false;selectedIds.clear();renderChat();renderContacts($('searchInput').value||'');}
@@ -2653,7 +2666,43 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 `【AI可发卡片补充】AI主动发模拟图片卡片时，必须原样输出：<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('IMG_URL') center/cover no-repeat;"></div><div class="fi-desc">描述文字</div></div>。其中IMG_URL根据语境从以下选1(美食:https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/89BD133FF0F6435D9894B7784223F51E/qdqqd.jpeg, 风景:https://img.chery.cn/chery-prod/mobile/community/0/19b814b0-16cf-44ac-b438-9c2d19a9575b.jpeg, 自拍:https://cdncs.ykt.cbern.com.cn/v0.1/download?path=/zxx_feedback/qdqqd/1774294074883.png, 夜晚:https://nos.netease.com/ysf/6636f68317710ab9657fa15b4e4ed52c.jpeg, 默认:https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/75D4981E7F734C3FB6BC654EDF3E9F5B/qdqqd.jpeg)。fi-thumb中间禁止包含emoji。⚠️重点规则：【描述文字】的作用是代替真正的照片，必须纯粹、极其细致地描写“这张照片画面里拍到了什么”（视觉细节如：光线、构图、物品状态、人物穿着、神态、背景等），让玩家脑补出高清照片感受！绝对禁止在里面写聊天文案、吐槽或对话（聊天的话必须单独新建一条气泡发在图片后面）。范例：[一碗热气腾腾的麻辣烫，红油汤底泛着光泽，顶上铺满了肥牛卷，背景是略显柔和的餐厅暖光] 或 [一张极近的对镜自拍，头发微湿凌乱，穿着宽松的深色家居服，手机挡住了半张脸，只露出略带慵懒的眼神]。AI可主动发美团外卖卡片，class用card-meituan，结构为mt-hd（店名）、mt-body（菜品mt-row）、mt-ft（总价mt-total+时间mt-badge）。两种卡片均单独作为一条messages元素，禁止和文字混在同一条里。`,
     ].join('\n');
   }
+// ================= 🌟 蓝色专属：群聊多重人格修罗场引擎 =================
+  function buildGroupSystem(c, me, st){
+    const allContacts = getContacts();
+    const members = (c.memberIds || []).map(id => allContacts.find(x => x.id === id)).filter(Boolean);
+    const membersInfo = members.map(m => `【${m.name}】\n- 深度人设：${m.persona||'自然真实'}`).join('\n\n');
 
+    const base = `你现在是一个拥有上帝视角的“群聊修罗场导演”。
+当前正在模拟一个名为“${c.name}”的微信群聊。
+群内除了玩家（${me.name}，人设：${me.persona}），还有以下几位活生生的人：
+
+${membersInfo}
+
+【核心灵魂指令——拒绝纸片人，注入七情六欲】：
+1. 他们是活生生的人！有自己的喜怒哀乐、脾气、小动作和隐藏的占有欲。绝对不能浮于表面地复读人设，要体现出人设在具体语境下的真实反应（比如傲娇的人会吃醋但嘴硬，病娇的人会暗戳戳阴阳怪气，腹黑的人会绵里藏针）。
+2. 这是群聊修罗场！他们不仅会回复玩家，还会【互相观察、互相接话、互相拆台、暗中较劲】。如果玩家偏向某人，其他人必须有符合人设的真实情绪波动！
+3. 结合当前时间：${getSysTimeStr()}，体现真实的时间感。`;
+
+    if(st.mode === 'offline') {
+      return base + `\n\n【线下RP模式输出要求】：
+请以小说作者的上帝视角，描绘群成员们在看到玩家消息时的真实反应、心理活动、神态动作，以及他们在这个修罗场中的暗流涌动。
+字数范围 ${st.offlineMin}-${st.offlineMax}。
+必须严格按以下模板输出，不要输出JSON：
+【状态栏】
+时间｜地点(各人所在位置)｜天气｜修罗场氛围｜修罗场烈度
+【正文】
+（你的沉浸式叙事，描写各人的内心戏和动作，穿插他们在群里发送的具体消息，记得分段！）
+[FORMAT_LOCK]
+mode=OFFLINE_RP | reject=JSON,MULTI_MSG
+valid: 【状态栏】...【正文】... (single block)
+fatal_pattern: {"messages":...}→BLOCK`;
+    } else {
+      return base + `\n\n【线上聊天模式输出要求】：
+必须严格输出纯 JSON 数组，格式如下：
+{"messages":["[成员A]：发出的消息","[成员B]：接话的内容"]}
+注意：每条消息前必须加上发送者的名字用方括号括起来，如“[林闻笙]：”。严禁包含动作描写，只能是纯对话文本。每次回复可由不同成员发出1~4条消息不等，看人设回复条数，展现群聊的活跃度和争风吃醋。`;
+    }
+  }
   function buildOfflineSystem(c,me,st){
     return [
       
@@ -2700,8 +2749,13 @@ async function sendMsg(){
     setTyping(chatId,true);
 
     try{
-      // 🌟 核心修改：把 const system 改成 let system，方便后续植入记忆！
-      let system=st.mode==='offline'?buildOfflineSystem(c,me,st):buildOnlineSystem(c,me,st);
+     // 🌟 核心修改：加入群聊双模路由！
+      let system = '';
+      if (c.isGroup) {
+        system = buildGroupSystem(c, me, st);
+      } else {
+        system = st.mode === 'offline' ? buildOfflineSystem(c, me, st) : buildOnlineSystem(c, me, st);
+  }
 
       // 🧠 蓝色的脑电波植入引擎 (世界书神经接入) 🧠
       if(st.wbEnabled && st.wbEnabled.length > 0) {
