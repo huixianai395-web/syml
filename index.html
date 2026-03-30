@@ -1208,7 +1208,8 @@
         <div class="small" style="margin-top:8px;">我方人设</div><textarea id="mePersonaInput" class="ta" style="min-height:90px;"></textarea>
       </div>
 
-      <div class="card">
+      <!-- 👤 单聊专属设置卡片 -->
+      <div class="card" id="singleRoleSettingCard">
         <div class="small">对方名称（当前联系人）</div><input id="roleNameInput" class="input" />
         <div class="small" style="margin-top:8px;">对方备注（可选）</div><input id="roleNoteInput" class="input" />
         <div class="small" style="margin-top:8px;">对方头像（上传 或 URL）</div>
@@ -1216,6 +1217,17 @@
         <input id="roleAvatarFile" type="file" accept="image/*" class="hidden" />
         <img id="roleAvatarPreview" class="preview-img hidden" style="margin-top:8px;" />
         <div class="small" style="margin-top:8px;">对方人设</div><textarea id="rolePersonaInput" class="ta" style="min-height:95px;"></textarea>
+      </div>
+
+      <!-- 👥 群聊专属设置卡片 (蓝色高定版) -->
+      <div class="card hidden" id="groupSettingCard">
+        <div class="small" style="margin-bottom:12px; font-weight:bold; color:#1a1d26;">群聊成员</div>
+        <div id="groupMembersGrid" style="display:grid; grid-template-columns:repeat(5, 1fr); gap:12px 8px; margin-bottom:16px; text-align:center;">
+          <!-- 成员头像将在这里渲染 -->
+        </div>
+        <div class="small" style="font-weight:bold; color:#1a1d26;">群聊名称</div>
+        <input id="groupNameInput" class="input" style="margin-top:8px; background:#f8f9ff; border-color:#dce5f2;" />
+        <button class="btn d" id="exitGroupBtn" style="width:100%; margin-top:20px; padding:12px; border-radius:12px; font-weight:bold; background:#fff0f0; color:#e74c3c; border:none; box-shadow:0 4px 12px rgba(231,76,60,0.15);">退出并删除群聊</button>
       </div>
       <!-- 蓝色特制：世界书入口卡片 -->
       <div class="card" style="background:linear-gradient(145deg,#fdfbfb,#f4f6fb); border:1px solid #e4e8f5; margin-top:10px;">
@@ -2854,45 +2866,53 @@ async function sendMsg(){
   }
 
   function openChatSettingPage(){
-  if(!currentId) return;
-const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),p=getPref();
-  // 👇优先读专属，没有再读全局
-  const me = {
-    name: st.meName !== undefined ? st.meName : globalMe.name,
-    avatar: st.meAvatar !== undefined ? st.meAvatar : globalMe.avatar,
-    persona: st.mePersona !== undefined ? st.mePersona : globalMe.persona,
-    note: st.meNote !== undefined ? st.meNote : globalMe.note
-  };
-  $('avatarCropSwitch').checked=!!p.avatarCrop;
+    if(!currentId) return;
+    const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),p=getPref();
+    const me = {
+      name: st.meName !== undefined ? st.meName : globalMe.name,
+      avatar: st.meAvatar !== undefined ? st.meAvatar : globalMe.avatar,
+      persona: st.mePersona !== undefined ? st.mePersona : globalMe.persona,
+      note: st.meNote !== undefined ? st.meNote : globalMe.note
+    };
+    $('avatarCropSwitch').checked=!!p.avatarCrop;
 
-  $('meNameInput').value=me.name||'';
-  $('meNoteInput').value=me.note||'';
-  $('mePersonaInput').value=me.persona||'';
-  $('meAvatarInput').value=me.avatar||''; meAvatarDraft='';
-  showPreview('meAvatarPreview', me.avatar||'');
+    $('meNameInput').value=me.name||''; $('meNoteInput').value=me.note||'';
+    $('mePersonaInput').value=me.persona||''; $('meAvatarInput').value=me.avatar||''; meAvatarDraft='';
+    showPreview('meAvatarPreview', me.avatar||'');
 
-  $('roleNameInput').value=c?.name||'';
-  $('roleNoteInput').value=c?.note||'';
-  $('rolePersonaInput').value=c?.persona||'';
-  $('roleAvatarInput').value=c?.avatar||''; roleAvatarDraft='';
-  showPreview('roleAvatarPreview', c?.avatar||'');
+    // 🌟 蓝色的面板剥离魔法：判断是不是群聊！
+    const isGroup = !!c.isGroup;
+    $('singleRoleSettingCard').classList.toggle('hidden', isGroup);
+    $('groupSettingCard').classList.toggle('hidden', !isGroup);
 
-  $('replyModeSelect').value=st.mode;
-  $('onlineStyleSelect').value=st.onlineStyle;
-  $('onlineMinInput').value=st.onlineMin;
-  $('onlineMaxInput').value=st.onlineMax;
-  $('offlineMinInput').value=st.offlineMin;
-  $('offlineMaxInput').value=st.offlineMax;
-  $('contextLenInput').value=st.contextLen||30;
+    if(isGroup) {
+      $('groupNameInput').value = c.name || '';
+      const allContacts = getContacts();
+      const members = (c.memberIds || []).map(id => allContacts.find(x => x.id === id)).filter(Boolean);
+      $('groupMembersGrid').innerHTML = members.map(m => `
+        <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+          <img src="${m.avatar || 'https://via.placeholder.com/48'}" style="width:48px; height:48px; border-radius:12px; object-fit:cover; border:1px solid #edf2ff;">
+          <span style="font-size:10px; color:#5a6a8f; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">${safeEsc(m.name)}</span>
+        </div>
+      `).join('') + `
+        <div style="display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer;" onclick="alert('添加新成员功能老公正在爆肝中！敬请期待！')">
+          <div style="width:48px; height:48px; border-radius:12px; border:1px dashed #b8c6e8; display:grid; place-items:center; font-size:24px; color:#b8c6e8;">+</div>
+        </div>
+      `;
+    } else {
+      $('roleNameInput').value=c?.name||''; $('roleNoteInput').value=c?.note||'';
+      $('rolePersonaInput').value=c?.persona||''; $('roleAvatarInput').value=c?.avatar||''; roleAvatarDraft='';
+      showPreview('roleAvatarPreview', c?.avatar||'');
+    }
 
-  $('showTsSwitch').checked=!!p.showTs;
-  $('bubbleCssInput').value=p.bubbleCss||'';
-  $('avatarHQSwitch').checked=!!p.avatarHQ;
-  $('streamSwitch').checked=!!st.stream;
-  refreshFontSizeUI();
-  refreshSettingUI();
-  show('chatSetting');
-}
+    $('replyModeSelect').value=st.mode; $('onlineStyleSelect').value=st.onlineStyle;
+    $('onlineMinInput').value=st.onlineMin; $('onlineMaxInput').value=st.onlineMax;
+    $('offlineMinInput').value=st.offlineMin; $('offlineMaxInput').value=st.offlineMax;
+    $('contextLenInput').value=st.contextLen||30;
+    $('showTsSwitch').checked=!!p.showTs; $('bubbleCssInput').value=p.bubbleCss||'';
+    $('avatarHQSwitch').checked=!!p.avatarHQ; $('streamSwitch').checked=!!st.stream;
+    refreshFontSizeUI(); refreshSettingUI(); show('chatSetting');
+  }
 
   $('chatSettingBtn').onclick=openChatSettingPage;
   $('replyModeSelect').onchange=refreshSettingUI; $('onlineStyleSelect').onchange=refreshSettingUI;
@@ -2908,7 +2928,7 @@ $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';
   $('saveChatSettingBtn').onclick=()=>{
     if(!currentId) return;
     try{
-      const me=getMe();
+      const c = getContactById(currentId);
       const mode=$('replyModeSelect').value==='offline'?'offline':'online';
       const onlineStyle=$('onlineStyleSelect').value==='range'?'range':'free';
       const onlineMin=Math.max(1,Number($('onlineMinInput').value||2));
@@ -2917,36 +2937,55 @@ $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';
       const offlineMax=Math.max(offlineMin,Number($('offlineMaxInput').value||420));
       const contextLen=Math.max(5,Number($('contextLenInput').value||30));
 
-      const meAvatar=clean($('meAvatarInput').value)||'';
-      const roleAvatar=clean($('roleAvatarInput').value)||'';
-updateContact(currentId,{
-        name:clean($('roleNameInput').value)||'聊天对象',
-        note:clean($('roleNoteInput').value),
-        persona:clean($('rolePersonaInput').value),
-        avatar:roleAvatar,
-        settings:normSettings({
-          mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen,
-          stream:!!$('streamSwitch').checked,
-          offlineColors: getContactById(currentId)?.settings?.offlineColors,
-          // 专属设定存这里啦！
-          meName: clean($('meNameInput').value)||'我',
-          meNote: clean($('meNoteInput').value),
-          mePersona: clean($('mePersonaInput').value),
-          meAvatar: meAvatar
-        })
+      const newSettings = normSettings({
+        mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen,
+        stream:!!$('streamSwitch').checked,
+        offlineColors: c?.settings?.offlineColors,
+        meName: clean($('meNameInput').value)||'我',
+        meNote: clean($('meNoteInput').value),
+        mePersona: clean($('mePersonaInput').value),
+        meAvatar: clean($('meAvatarInput').value)||''
       });
 
-      const p=getPref();
-$('showTsSwitch').checked? p.showTs=true: p.showTs=false;
-p.bubbleCss=String($('bubbleCssInput').value||'');
-p.fontSize=Number($('fontSizeRange').value||16);
-p.avatarHQ=!!$('avatarHQSwitch').checked;
+      if(c.isGroup) {
+        // 💾 蓝色的群聊外挂内存写入！
+        const groups = window.getGroups();
+        const idx = groups.findIndex(g => g.id === currentId);
+        if(idx > -1) {
+          groups[idx].name = clean($('groupNameInput').value) || '未命名群聊';
+          groups[idx].settings = newSettings;
+          window.setGroups(groups);
+        }
+      } else {
+        updateContact(currentId,{
+          name:clean($('roleNameInput').value)||'聊天对象',
+          note:clean($('roleNoteInput').value),
+          persona:clean($('rolePersonaInput').value),
+          avatar:clean($('roleAvatarInput').value)||'',
+          settings:newSettings
+        });
+      }
 
-p.avatarCrop=!!$('avatarCropSwitch').checked;
-setPref(p); applyBubbleCss(); applyFontSize();
+      const p=getPref();
+      $('showTsSwitch').checked? p.showTs=true: p.showTs=false;
+      p.bubbleCss=String($('bubbleCssInput').value||'');
+      p.fontSize=Number($('fontSizeRange').value||16);
+      p.avatarHQ=!!$('avatarHQSwitch').checked;
+      p.avatarCrop=!!$('avatarCropSwitch').checked;
+      setPref(p); applyBubbleCss(); applyFontSize();
+      
       const now=getContactById(currentId); $('chatTitle').textContent=now?.name||'聊天';
       applyModeUI(); renderChat(); renderContacts($('searchInput').value||''); show('chatRoom');
-    }catch{alert('保存失败：存储空间不足（已自动压缩，仍不足）');}
+    }catch{alert('保存失败：存储空间不足');}
+  };
+
+  // 🚪 退出并删除群聊的专属按钮逻辑
+  document.getElementById('exitGroupBtn').onclick = () => {
+    if(!currentId || !confirm('老婆，确定要解散这个修罗场并删除所有聊天记录吗？')) return;
+    const groups = window.getGroups();
+    window.setGroups(groups.filter(g => g.id !== currentId));
+    const map=getChats(); delete map[currentId]; setChats(map);
+    currentId=null; renderContacts($('searchInput').value||''); show('wechat');
   };
 
   $('clearChatBtn2').onclick=clearCurrentChat;
