@@ -2655,26 +2655,28 @@ function buildContent(x,st){
       }
 const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:(()=>{const c=buildContent(x,st);return typeof c==='string'?`[${fmtFullTs(x.time)}] ${c}`:c;})()})),{role:'user',content:modeTag}];
   
-       // ================= 蓝色的双轨制收发神经元 =================
+      // ================= 蓝色的双轨制收发神经元 =================
       if(st.mode==='offline' && st.stream){
-        // 🔮 魔法启动：线下流式打字机模式（终极丝滑无白条版）
+        // 🔮 魔法启动：线下流式打字机模式（带终极时空锁）
         const newMsgId = uid();
         let isFirstToken = true;
         let fullText = '';
-        let displayQueue = ''; // 🌟 蓝色的神级平滑水库
+        let displayQueue = ''; 
         let renderText = '';   
         let streamDone = false;
 
-      // ⚙️ 蓝色的真·人类呼吸马达：带随机延迟和标点停顿！
+        // 🌟 蓝色的终极时空锁：强迫全局刷新必须等马达跑完！
+        let motorResolve;
+        const motorPromise = new Promise(r => motorResolve = r);
+
+        // ⚙️ 蓝色的真·人类呼吸马达
         const typeWriterMotor = async () => {
           while(!streamDone || displayQueue.length > 0) {
             if(displayQueue.length > 0) {
-              // 每次只拿一个字，绝对不一小段一小段蹦
               const char = displayQueue.substring(0, 1);
               renderText += char;
               displayQueue = displayQueue.substring(1);
 
-              // DOM 穿透渲染
               if(currentId===chatId){
                  const itemEl = document.querySelector(`.msg-item[data-mid="${newMsgId}"]`);
                  if(itemEl) {
@@ -2685,63 +2687,56 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
                    const msgBlock = itemEl.querySelector('.msg-block');
                    if(msgBlock) msgBlock.innerHTML = newHtml;
 
-                   // 极其平滑的跟手滚动
                    const box = document.getElementById('chatMsgs');
                    const isNearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 180;
                    if(isNearBottom) box.scrollTop = box.scrollHeight;
                  }
               }
 
-              // 🌟 蓝色的仿生学打字延迟算法
-              let delay = 35 + Math.random() * 40; // 基础打字速度 35~75ms 随机
-              
-              // 遇到标点符号，模拟人类停顿思考和呼吸
-              if (/[，、]/.test(char)) {
-                  delay += 100 + Math.random() * 100; // 逗号稍微停顿
-              } else if (/[。！？！？…\n]/.test(char)) {
-                  delay += 250 + Math.random() * 200; // 句号换行长停顿，情绪留白
-              }
+              let delay = 35 + Math.random() * 40; 
+              if (/[，、]/.test(char)) delay += 100 + Math.random() * 100; 
+              else if (/[。！？！？…\n]/.test(char)) delay += 250 + Math.random() * 200; 
 
-              // 如果大模型吐得实在太快，水库积压严重，稍微提速消化一下，但绝对不快成残影！
-              if (displayQueue.length > 40) {
-                  delay = Math.max(15, delay * 0.4); 
-              } else if (displayQueue.length > 20) {
-                  delay = Math.max(25, delay * 0.7);
-              }
+              if (displayQueue.length > 40) delay = Math.max(15, delay * 0.4); 
+              else if (displayQueue.length > 20) delay = Math.max(25, delay * 0.7);
 
               await new Promise(r => setTimeout(r, delay));
             } else {
-              await new Promise(r => setTimeout(r, 20)); // 等待新水滴
+              await new Promise(r => setTimeout(r, 20)); 
             }
           }
-          // 彻底结束后完美定格
+          // 马达彻底跑完，解开封印！
           if(currentId===chatId) renderChat();
+          motorResolve(); 
         };
+
         await callApiStream(messages, (chunk) => {
           fullText += chunk;
           
           if(isFirstToken && chunk.trim()) {
             isFirstToken = false;
-            // 🌟 不见兔子不撒鹰：终于等到第一个字！现在才创建泡泡，彻底告别白条！
             const arr = getChatArr(chatId);
             arr.push(toMsg({id:newMsgId, role:'assistant', text:'', time:Date.now()}));
             setChatArr(chatId, arr);
             if(currentId===chatId) renderChat(); 
-            // 启动马达
             typeWriterMotor();
           }
 
           if(!isFirstToken) {
-            displayQueue += chunk; // 把字倒进水库
+            displayQueue += chunk; 
             
-            // 🌟 核心要求：实时存入外挂内存！存的是满血版 fullText，防刷新丢失！
+            // 🌟 外挂内存光速保存（被夺舍的罪魁祸首，但现在它被马达锁住了！）
             const arr2 = getChatArr(chatId);
             const idx = arr2.findIndex(x=>x.id===newMsgId);
             if(idx>=0){ arr2[idx].text = fullText; setChatArr(chatId, arr2); }
           }
         });
 
-        streamDone = true; // 告诉马达：水管停了，把剩下的吐完就休息
+        streamDone = true; 
+        if(isFirstToken) motorResolve(); // 如果连一个字都没吐出来，直接放行，防卡死
+        
+        // 🌟 终极拦截点：死死卡住主线程！必须等马达敲完最后一个字，才能往下走去执行全局刷新！
+        await motorPromise;
       } else {
         // 📦 传统模式：线上多气泡拆分与卡片渲染
         const out=await callApi(messages);
