@@ -2000,6 +2000,9 @@ function refreshFontSizeUI(){
  // 🌟 蓝色特制：彻底修复全局群聊抽屉！(避开重复声明的致命Bug)
   window.getGroups = function() { return getJ('mp_fix_groups', []); };
   window.setGroups = function(v) { setJ('mp_fix_groups', v); };
+
+  // 🌟 蓝色的救命放大镜：没有它长按面板就会崩溃！
+  function getMsgById(chatId, mid) { return getChatArr(chatId).find(x => x.id === mid) || null; }
 // ===== 🚑 蓝色紧急抢救：被误杀的四大核心神经元 =====
   function getChatArr(id){ return getChats()[id]||[]; }
   function setChatArr(id,arr){ const m=getChats(); m[id]=arr; setChats(m); }
@@ -3172,61 +3175,26 @@ document.getElementById('globalImportFile').onchange = async function(e) {
   function hideForAiByIds(ids,val){const set=new Set(ids),arr=getChatArr(currentId);arr.forEach(m=>{if(set.has(m.id)) m.hiddenForAi=!!val});setChatArr(currentId,arr);renderChat();}
 
  function bindChatMsgEvents(){
-    // 🌟 蓝色的终极禁咒：动态向 DOM 注入封杀令，把系统的长按菜单彻底阉割！
-    if(!document.getElementById('iosKillerCss')){
-      const style = document.createElement('style');
-      style.id = 'iosKillerCss';
-      style.innerHTML = `
-        .msg-item, .bubble, .chat-avatar { 
-          -webkit-touch-callout: none !important; 
-          -webkit-user-select: none !important; 
-          user-select: none !important; 
-        }
-      `;
-      document.head.appendChild(style);
-    }
-
     const box=$('chatMsgs');
-    // 拦截电脑端右键
-    box.addEventListener('contextmenu',e=>{
-      const item=e.target.closest('.msg-item');if(!item||!currentId||selectMode) return;
-      e.preventDefault(); openFloatMenu(item.dataset.mid,e.clientX,e.clientY);
-    });
-
-    // 拦截移动端长按
+    box.addEventListener('contextmenu',e=>{const item=e.target.closest('.msg-item');if(!item||!currentId||selectMode) return;e.preventDefault();openFloatMenu(item.dataset.mid,e.clientX,e.clientY);});
     box.addEventListener('touchstart',e=>{
       const item=e.target.closest('.msg-item');if(!item||!currentId||selectMode) return;
-      // 只允许点击气泡或头像触发
-      if(!e.target.closest('.bubble') && !e.target.closest('.chat-avatar')) return;
-
-      const t=e.touches[0];
-      window.lpStartX=t.clientX; window.lpStartY=t.clientY;
-      clearTimeout(window.lpTimer);
-      window.lpTimer=setTimeout(()=>{
+      const t=e.touches[0];lpStartX=t.clientX;lpStartY=t.clientY;
+      clearTimeout(lpTimer);
+      lpTimer=setTimeout(()=>{
+        // 🌟 唤醒面板前，强行打断手机系统的默认文本选择！
         window.getSelection().removeAllRanges();
-        // 触发时如果手机支持，给个微小的震动反馈！
-        if(navigator.vibrate) navigator.vibrate(50);
-        openFloatMenu(item.dataset.mid, t.clientX, t.clientY);
-      }, 380); // 黄金触发时间
+        openFloatMenu(item.dataset.mid,t.clientX,t.clientY);
+      },400); // 触发时间缩短，更灵敏！
     },{passive:true});
-
     box.addEventListener('touchmove',e=>{
-      if(!window.lpTimer) return;
+      if(!lpTimer) return;
       const t=e.touches[0];
-      // 容错率拉满，手抖也能弹出来！
-      if(Math.abs(t.clientX-window.lpStartX)>15||Math.abs(t.clientY-window.lpStartY)>15){
-        clearTimeout(window.lpTimer); window.lpTimer=null;
-      }
+      // 🌟 蓝色的宽容魔法：把防抖容差从 8 放大到 15，手抖一下也绝不断触！
+      if(Math.abs(t.clientX-lpStartX)>15||Math.abs(t.clientY-lpStartY)>15){clearTimeout(lpTimer);lpTimer=null;}
     },{passive:true});
-
-    ['touchend','touchcancel'].forEach(ev=>box.addEventListener(ev,()=>{
-      clearTimeout(window.lpTimer); window.lpTimer=null;
-    },{passive:true}));
-
-    box.addEventListener('click',e=>{
-      const item=e.target.closest('.msg-item');if(!item) return;
-      if(selectMode){e.preventDefault();toggleSelect(item.dataset.mid);}
-    });
+    ['touchend','touchcancel'].forEach(ev=>box.addEventListener(ev,()=>{clearTimeout(lpTimer);lpTimer=null;},{passive:true}));
+    box.addEventListener('click',e=>{const item=e.target.closest('.msg-item');if(!item) return;if(selectMode){e.preventDefault();toggleSelect(item.dataset.mid);}});
  }
   $('msgFloatLayer').addEventListener('click',e=>{if(e.target.id==='msgFloatLayer') closeFloatMenu();});
   $('msgFloatMenu').addEventListener('click',async e=>{
