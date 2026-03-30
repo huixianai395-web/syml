@@ -2627,9 +2627,9 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
     ].join('\n');
   }
 
-  async function sendMsg(){
+async function sendMsg(){
     if(!currentId) return;
-const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),globalMe=getMe();
+    const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),globalMe=getMe();
     const me = {
       name: st.meName !== undefined ? st.meName : globalMe.name,
       avatar: st.meAvatar !== undefined ? st.meAvatar : globalMe.avatar,
@@ -2644,29 +2644,49 @@ const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),glo
     setTyping(chatId,true);
 
     try{
-      const system=st.mode==='offline'?buildOfflineSystem(c,me,st):buildOnlineSystem(c,me,st);
-      const modeTag=st.mode==='offline'?'[线下RP回复] 现在是'+getSysTimeStr():'[线上聊天回复] 现在是'+getSysTimeStr();
-function buildContent(x,st){
-  const text=(st.mode==='online'&&x.role==='assistant'&&x.text.includes('【状态栏】'))?x.text.replace(/【状态栏】[\s\S]*?【正文】\s*/,'').trim():x.text;
-  if(typeof text==='string'&&text.startsWith('[stk:')&&text.endsWith(']')){
-    const id=text.slice(5,-1);
-    const name=(window.__stickerGetNameById?window.__stickerGetNameById(id):'')||id;
-    return `[表情包:${name}]`;
-  }
-  if(x.role==='user'&&text.startsWith('[img]')&&text.endsWith('[/img]')){
-    const src=text.slice(5,-6);
-    return [{type:'image_url',image_url:{url:src,detail:'auto'}}];
-  }
-  return text;
-}
-      if(callState.active&&callState.chatId===chatId){
-  system+='\n[当前状态：正在'+(callState.type==='video'?'视频':'语音')+'通话中，已通话'+fmtCallDur(Date.now()-callState.start)+'，像真实电话一样交流，简短口语化。想挂断时回复[endcall]。]';
+      // 🌟 核心修改：把 const system 改成 let system，方便后续植入记忆！
+      let system=st.mode==='offline'?buildOfflineSystem(c,me,st):buildOnlineSystem(c,me,st);
+
+      // 🧠 蓝色的脑电波植入引擎 (世界书神经接入) 🧠
+      if(st.wbEnabled && st.wbEnabled.length > 0) {
+        const allBooks = (await localforage.getItem('mp_fix_wb_books_v3')) || [];
+        let wbTexts = [];
+        allBooks.forEach(b => {
+          (b.entries || []).forEach(e => {
+            if(st.wbEnabled.includes(e.id)) {
+              wbTexts.push(`[${e.keys}] ${e.content}`);
+            }
+          });
+        });
+        if(wbTexts.length > 0) {
+          // 神不知鬼不觉地把设定塞进 AI 的脑子里！
+          system += '\n\n【外挂世界书设定(极其重要，请严格遵循)】：\n' + wbTexts.join('\n');
+        }
       }
-const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:(()=>{const c=buildContent(x,st);return typeof c==='string'?`[${fmtFullTs(x.time)}] ${c}`:c;})()})),{role:'user',content:modeTag}];
+      // ==========================================
+
+      const modeTag=st.mode==='offline'?'[线下RP回复] 现在是'+getSysTimeStr():'[线上聊天回复] 现在是'+getSysTimeStr();
+      function buildContent(x,st){
+        const text=(st.mode==='online'&&x.role==='assistant'&&x.text.includes('【状态栏】'))?x.text.replace(/【状态栏】[\s\S]*?【正文】\s*/,'').trim():x.text;
+        if(typeof text==='string'&&text.startsWith('[stk:')&&text.endsWith(']')){
+          const id=text.slice(5,-1);
+          const name=(window.__stickerGetNameById?window.__stickerGetNameById(id):'')||id;
+          return `[表情包:${name}]`;
+        }
+        if(x.role==='user'&&text.startsWith('[img]')&&text.endsWith('[/img]')){
+          const src=text.slice(5,-6);
+          return [{type:'image_url',image_url:{url:src,detail:'auto'}}];
+        }
+        return text;
+      }
+      if(callState.active&&callState.chatId===chatId){
+        system+='\n[当前状态：正在'+(callState.type==='video'?'视频':'语音')+'通话中，已通话'+fmtCallDur(Date.now()-callState.start)+'，像真实电话一样交流，简短口语化。想挂断时回复[endcall]。]';
+      }
+      const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:(()=>{const c=buildContent(x,st);return typeof c==='string'?`[${fmtFullTs(x.time)}] ${c}`:c;})()})),{role:'user',content:modeTag}];
   
-     // ================= 蓝色的双轨制收发神经元 =================
+      // ================= 蓝色的双轨制收发神经元 =================
       if(st.mode==='offline' && st.stream){
-        // 🔮 魔法启动：线下流式打字机模式（终极完全体：时空锁 + 大拇指仿生 + 外挂内存）
+        // 🔮 魔法启动：线下流式打字机模式
         const newMsgId = uid();
         let isFirstToken = true;
         let fullText = '';
@@ -2674,11 +2694,9 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
         let renderText = '';   
         let streamDone = false;
 
-        // 🌟 蓝色的终极时空锁：强迫外挂内存的全局刷新必须等马达跑完！
         let motorResolve;
         const motorPromise = new Promise(r => motorResolve = r);
 
-        // ⚙️ 蓝色的真·人类大拇指仿生马达（极致活人感版）
         const typeWriterMotor = async () => {
           while(!streamDone || displayQueue.length > 0) {
             if(displayQueue.length > 0) {
@@ -2702,12 +2720,10 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
                  }
               }
 
-              // 🌟 重新调校的仿生学延迟：慢一点，更有灵魂
               let delay = 50 + Math.random() * 45; 
               if (/[，、]/.test(char)) delay += 150 + Math.random() * 100; 
               else if (/[。！？！？…\n]/.test(char)) delay += 300 + Math.random() * 200; 
 
-              // 极度克制的加速：绝对不许变成机枪扫射
               if (displayQueue.length > 50) delay = Math.max(30, delay * 0.5); 
               else if (displayQueue.length > 20) delay = Math.max(45, delay * 0.8);
 
@@ -2716,27 +2732,22 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
               await new Promise(r => setTimeout(r, 20)); 
             }
           }
-          // 马达彻底跑完，解开封印，允许外挂内存刷新！
           if(currentId===chatId) renderChat();
           motorResolve(); 
         };
 
         await callApiStream(messages, (chunk) => {
           fullText += chunk;
-          
           if(isFirstToken && chunk.trim()) {
             isFirstToken = false;
             const arr = getChatArr(chatId);
             arr.push(toMsg({id:newMsgId, role:'assistant', text:'', time:Date.now()}));
             setChatArr(chatId, arr);
             if(currentId===chatId) renderChat(); 
-            typeWriterMotor(); // 启动马达
+            typeWriterMotor(); 
           }
-
           if(!isFirstToken) {
             displayQueue += chunk; 
-            
-            // 🌟 外挂内存光速保存：数据绝对不丢！
             const arr2 = getChatArr(chatId);
             const idx = arr2.findIndex(x=>x.id===newMsgId);
             if(idx>=0){ arr2[idx].text = fullText; setChatArr(chatId, arr2); }
@@ -2745,19 +2756,17 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
 
         streamDone = true; 
         if(isFirstToken) motorResolve(); 
-        
-        // 🌟 死死卡住主线程！必须等马达敲完！
         await motorPromise;
       } else {
-        // 📦 传统模式：线上多气泡拆分与卡片渲染
+        // 📦 传统模式
         const out=await callApi(messages);
         let parts=[];
         if(st.mode==='offline') parts=[clean(out)||'...'];
         else{
           if(out.includes('【状态栏】')){parts=[clean(out)||'...'];}
           else{
-            parts=splitAiBubbles(out); parts=mergeCodeBubbles(parts); 
-            parts=splitLongBubbles(parts,37); parts=extractCardBubbles(parts); 
+            parts=splitAiBubbles(out); parts=mergeCodeBubbles(parts); 
+            parts=splitLongBubbles(parts,37); parts=extractCardBubbles(parts); 
             if(st.onlineStyle==='range') parts=enforceCountRange(parts,st.onlineMin,st.onlineMax);
           }
         }
@@ -2778,12 +2787,11 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
         syncCardFromAi(parts, chatId);
         await emitAiSequential(parts.length?parts:['...'],chatId,st.mode);
       }
-      // =========================================================   
       updateContactPreview(chatId); if(currentId===chatId) renderChat();
     }catch(e){
       const arr2=getChatArr(chatId);arr2.push(toMsg({role:'assistant',text:'请求失败：'+clean(e.message),time:Date.now()}));setChatArr(chatId,arr2);
       updateContactPreview(chatId); if(currentId===chatId) renderChat();
-    }finally{setTyping(chatId,false);} 
+    }finally{setTyping(chatId,false);} 
   }
 
   $('sendBtn').onclick=sendMsg;
