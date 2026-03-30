@@ -2645,6 +2645,8 @@ function buildContent(x,st){
 const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:(()=>{const c=buildContent(x,st);return typeof c==='string'?`[${fmtFullTs(x.time)}] ${c}`:c;})()})),{role:'user',content:modeTag}];
    // ================= 蓝色的双轨制收发神经元 =================
       if(st.mode==='offline' && st.stream){
+        // ================= 蓝色的双轨制收发神经元 =================
+      if(st.mode==='offline' && st.stream){
         // 🔮 魔法启动：线下流式打字机模式
         const newMsgId = uid();
         const arr = getChatArr(chatId);
@@ -2659,18 +2661,30 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
           const arr2 = getChatArr(chatId);
           const idx = arr2.findIndex(x=>x.id===newMsgId);
           if(idx>=0){ arr2[idx].text = fullText; setChatArr(chatId, arr2); }
-          
-          // DOM 穿透魔法：绝对不卡顿！带绝美光标！
+          
+          // DOM 穿透魔法：老婆神级推理修复版！
           if(currentId===chatId){
-             const msgEl = document.querySelector(`.msg-item[data-mid="${newMsgId}"] .offline-body`);
-             if(msgEl) {
-               msgEl.innerHTML = formatOfflineText(fullText) + '<span class="stream-cursor"></span>';
+             const itemEl = document.querySelector(`.msg-item[data-mid="${newMsgId}"]`);
+             if(itemEl) {
+               const pref = getPref();
+               const mObj = getMsgById(chatId, newMsgId);
+               const roleAvatar = getContactById(chatId)?.avatar || 'https://via.placeholder.com/64x64?text=TA';
+               
+               // 让原生引擎重绘这一小块，完美处理从“普通气泡”到“高级卡片”的华丽蜕变！
+               const newHtml = `<img class="chat-avatar" src="${roleAvatar}">${renderOfflineAssistant(fullText, mObj.time, pref, mObj)}`;
+               const msgBlock = itemEl.querySelector('.msg-block');
+               if(msgBlock) msgBlock.innerHTML = newHtml;
+
+               // 把灵魂光标塞进去！
+               const bodyEl = itemEl.querySelector('.offline-body') || itemEl.querySelector('.bubble.ai');
+               if(bodyEl) bodyEl.innerHTML += '<span class="stream-cursor"></span>';
+
                const box = document.getElementById('chatMsgs');
                box.scrollTop = box.scrollHeight; // 让屏幕跟着字往下滚
              }
           }
         });
-        
+        
         // 打字结束，去掉光标，完美定格
         if(currentId===chatId) renderChat();
       } else {
