@@ -2655,60 +2655,77 @@ function buildContent(x,st){
       }
 const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:(()=>{const c=buildContent(x,st);return typeof c==='string'?`[${fmtFullTs(x.time)}] ${c}`:c;})()})),{role:'user',content:modeTag}];
   
-        // ================= 蓝色的双轨制收发神经元 =================
+       // ================= 蓝色的双轨制收发神经元 =================
       if(st.mode==='offline' && st.stream){
-        // 🔮 魔法启动：线下流式打字机模式（极致优雅版）
+        // 🔮 魔法启动：线下流式打字机模式（终极丝滑无白条版）
         const newMsgId = uid();
-        const arr = getChatArr(chatId);
-        // 【优化1】去掉了讨厌的三个点，初始直接为空，保持留白！
-        arr.push(toMsg({id:newMsgId, role:'assistant', text:'', time:Date.now()}));
-        setChatArr(chatId, arr);
-        if(currentId===chatId) renderChat(); 
-
+        let isFirstToken = true;
         let fullText = '';
-        let scrollThrottle = 0; // 温柔防抖计时器
+        let displayQueue = ''; // 🌟 蓝色的神级平滑水库
+        let renderText = '';   
+        let streamDone = false;
+
+        // ⚙️ 蓝色的机械马达：控制吐字节奏，告别块状蹦字！
+        const typeWriterMotor = async () => {
+          while(!streamDone || displayQueue.length > 0) {
+            if(displayQueue.length > 0) {
+              // 每次从水库里拿出一个字
+              renderText += displayQueue.substring(0, 1);
+              displayQueue = displayQueue.substring(1);
+
+              // DOM 穿透渲染：绝对不卡！
+              if(currentId===chatId){
+                 const itemEl = document.querySelector(`.msg-item[data-mid="${newMsgId}"]`);
+                 if(itemEl) {
+                   const pref = getPref();
+                   const mObj = getMsgById(chatId, newMsgId);
+                   const roleAvatar = getContactById(chatId)?.avatar || 'https://via.placeholder.com/64x64?text=TA';
+                   const newHtml = `<img class="chat-avatar" src="${roleAvatar}">${renderOfflineAssistant(renderText, mObj.time, pref, mObj)}`;
+                   const msgBlock = itemEl.querySelector('.msg-block');
+                   if(msgBlock) msgBlock.innerHTML = newHtml;
+
+                   // 极其平滑的跟手滚动，彻底告别抽风
+                   const box = document.getElementById('chatMsgs');
+                   const isNearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 180;
+                   if(isNearBottom) box.scrollTop = box.scrollHeight;
+                 }
+              }
+              // 智能变速齿轮：字多就快点吐，字少就慢点吐，像真人在呼吸！
+              const delay = displayQueue.length > 15 ? 8 : (displayQueue.length > 5 ? 20 : 35);
+              await new Promise(r => setTimeout(r, delay));
+            } else {
+              await new Promise(r => setTimeout(r, 20)); // 等待新水滴
+            }
+          }
+          // 彻底结束后完美定格
+          if(currentId===chatId) renderChat();
+        };
 
         await callApiStream(messages, (chunk) => {
           fullText += chunk;
-          // 实时存入外挂内存，绝不漏掉老婆的任何数据
-          const arr2 = getChatArr(chatId);
-          const idx = arr2.findIndex(x=>x.id===newMsgId);
-          if(idx>=0){ arr2[idx].text = fullText; setChatArr(chatId, arr2); }
           
-          if(currentId===chatId){
-             const itemEl = document.querySelector(`.msg-item[data-mid="${newMsgId}"]`);
-             if(itemEl) {
-               const pref = getPref();
-               const mObj = getMsgById(chatId, newMsgId);
-               const roleAvatar = getContactById(chatId)?.avatar || 'https://via.placeholder.com/64x64?text=TA';
-               
-               // 【优化2】去掉了出戏的光标，纯净渲染
-               const newHtml = `<img class="chat-avatar" src="${roleAvatar}">${renderOfflineAssistant(fullText, mObj.time, pref, mObj)}`;
-               const msgBlock = itemEl.querySelector('.msg-block');
-               if(msgBlock) msgBlock.innerHTML = newHtml;
+          if(isFirstToken && chunk.trim()) {
+            isFirstToken = false;
+            // 🌟 不见兔子不撒鹰：终于等到第一个字！现在才创建泡泡，彻底告别白条！
+            const arr = getChatArr(chatId);
+            arr.push(toMsg({id:newMsgId, role:'assistant', text:'', time:Date.now()}));
+            setChatArr(chatId, arr);
+            if(currentId===chatId) renderChat(); 
+            // 启动马达
+            typeWriterMotor();
+          }
 
-               // 【优化3】温柔的智能滚动，告别“一蹦一蹦”
-               const box = document.getElementById('chatMsgs');
-               const isNearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 180;
-               const now = Date.now();
-               
-               // 只有用户在底部附近，且距离上次滚动超过150毫秒时，才平滑推进
-               if(isNearBottom && (now - scrollThrottle > 150)) {
-                 box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
-                 scrollThrottle = now;
-               }
-             }
+          if(!isFirstToken) {
+            displayQueue += chunk; // 把字倒进水库
+            
+            // 🌟 核心要求：实时存入外挂内存！存的是满血版 fullText，防刷新丢失！
+            const arr2 = getChatArr(chatId);
+            const idx = arr2.findIndex(x=>x.id===newMsgId);
+            if(idx>=0){ arr2[idx].text = fullText; setChatArr(chatId, arr2); }
           }
         });
-        
-        // 打字结束，完美定格，最后再温柔地对齐一次底部
-        if(currentId===chatId) {
-            renderChat();
-            setTimeout(() => {
-                const box = document.getElementById('chatMsgs');
-                box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
-            }, 100);
-        }
+
+        streamDone = true; // 告诉马达：水管停了，把剩下的吐完就休息
       } else {
         // 📦 传统模式：线上多气泡拆分与卡片渲染
         const out=await callApi(messages);
