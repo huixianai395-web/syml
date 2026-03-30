@@ -1,4 +1,4 @@
-
+➕群聊💬框架
 
 
 <!doctype html>
@@ -1988,31 +1988,30 @@ function refreshFontSizeUI(){
   function setContacts(v){setJ(K_CONTACT,(v||[]).map(c=>({...c,settings:normSettings(c.settings)})));}
   function getChats(){return getJ(K_CHAT,{});} function setChats(v){setJ(K_CHAT,v);} 
   function getMe(){return getJ(K_ME,{name:'我',avatar:'',persona:'',note:''});} function setMe(v){setJ(K_ME,v);} 
-  // 🌟 蓝色特制：把外挂群聊抽屉提升到全局大厅！雷达这下绝对能扫到了！
-  const K_GROUP = 'mp_fix_groups';
-  window.getGroups = function() { return getJ(K_GROUP, []); };
-  window.setGroups = function(v) { setJ(K_GROUP, v); };
+  function getContactById(id){return getContacts().find(x=>x.id===id);} 
+  function updateContact(id,patch){
+    const arr=getContacts(),i=arr.findIndex(x=>x.id===id); if(i<0) return;
+    arr[i]={...arr[i],...patch}; if(patch.settings) arr[i].settings=normSettings(patch.settings); setContacts(arr);
+  }
 
-  function getContactById(id){
-    const c = getContacts().find(x=>x.id===id);
-    if(c) return c;
-    const groups = window.getGroups();
-    return groups.find(x=>x.id===id) || null;
+  function getChatArr(chatId){
+    const map=getChats(),raw=Array.isArray(map[chatId])?map[chatId]:[],norm=raw.map(toMsg);
+    map[chatId]=norm; setChats(map); return norm;
+  }
+  function setChatArr(chatId,arr){const map=getChats();map[chatId]=(arr||[]).map(toMsg);setChats(map);} 
+  function getMsgById(chatId,mid){return getChatArr(chatId).find(x=>x.id===mid)||null;}
+
+  function updateContactPreview(chatId){
+    const arr=getChatArr(chatId),last=arr[arr.length-1];
+    updateContact(chatId,{preview:last?(last.text||'').slice(0,44):'',time:last?fmtTs(last.time||Date.now()):''});
+    renderContacts($('searchInput').value||'');
   }
 
   window.deleteContactFromList=function(id,e){
     if(e){e.preventDefault();e.stopPropagation();}
     window._isDeleting=true;setTimeout(()=>window._isDeleting=false,500);
-    if(!confirm('确定要删除这个聊天及所有记录吗？')) return false;
-    
-    // 🌟 蓝色的智能删除：精准定位外挂内存！
-    const groups = window.getGroups();
-    if(groups.some(g => g.id === id)) {
-      window.setGroups(groups.filter(g => g.id !== id));
-    } else {
-      setContacts(getContacts().filter(c=>c.id!==id));
-    }
-    
+    if(!confirm('确定要删除这个联系人及所有聊天记录吗？')) return false;
+    setContacts(getContacts().filter(c=>c.id!==id));
     const map=getChats(); delete map[id]; setChats(map);
     if(currentId===id) currentId=null; renderContacts($('searchInput').value||'');
     return false;
@@ -2020,13 +2019,7 @@ function refreshFontSizeUI(){
 
   function renderContacts(k=''){
     k=(k||'').trim();
-    // 🌟 蓝色的雷达大融合：无障碍读取全局群聊抽屉！
-    const contacts = getContacts();
-    const groups = window.getGroups();
-    let all = [...contacts, ...groups];
-    
-    const arr = all.filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
-    
+    const arr=getContacts().filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
     $('contactList').innerHTML=arr.map(c=>`
       <div class="item" style="-webkit-touch-callout:none; user-select:none;"
            oncontextmenu="return deleteContactFromList('${c.id}', event)"
@@ -2034,17 +2027,11 @@ function refreshFontSizeUI(){
            ontouchend="clearTimeout(this._t)" ontouchmove="clearTimeout(this._t)">
         <img class="avatar" src="${c.avatar||'https://via.placeholder.com/88x88?text=头像'}"/>
         <div class="main" onclick="if(window._isDeleting)return; openChat('${c.id}')">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div class="name" style="display:flex; align-items:center; gap:6px;">
-              ${c.isGroup ? '<span style="font-size:10px; background:#eef3ff; color:#2f66d8; padding:2px 6px; border-radius:4px; font-weight:bold;">群聊</span>' : ''}
-              ${esc(c.name)}
-            </div>
-            <div class="t">${esc(c.time||'')}</div>
-          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><div class="name">${esc(c.name)}</div><div class="t">${esc(c.time||'')}</div></div>
           <div class="preview">${esc(c.preview||'')}</div>
         </div>
       </div>
-    `).join('') || '<div class="card small">暂无联系人或群聊，点右上角创建吧</div>';
+    `).join('') || '<div class="card small">暂无联系人，点右上角 +联系人 创建</div>';
   }
 
   function openCreateModal(){ $('contactModal').classList.add('active'); }
@@ -3310,9 +3297,8 @@ document.addEventListener('click',e=>{
     setGroups(groups);
     document.getElementById('groupModal').classList.remove('active');
     
-   // 🔄 强制唤醒雷达，瞬间刷新列表！
-    renderContacts($('searchInput').value||'');
-    alert('建好啦！快去列表里看看吧！');
+    // 刷新列表（需要稍微改一下 renderContacts 让他同时读取群聊）
+    alert('建好啦！快去列表里找它吧！');
   };
   // ===== 查手机模块 v2 =====
     const pcCache = {};
