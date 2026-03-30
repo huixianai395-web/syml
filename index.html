@@ -2665,15 +2665,16 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
         let renderText = '';   
         let streamDone = false;
 
-        // ⚙️ 蓝色的机械马达：控制吐字节奏，告别块状蹦字！
+      // ⚙️ 蓝色的真·人类呼吸马达：带随机延迟和标点停顿！
         const typeWriterMotor = async () => {
           while(!streamDone || displayQueue.length > 0) {
             if(displayQueue.length > 0) {
-              // 每次从水库里拿出一个字
-              renderText += displayQueue.substring(0, 1);
+              // 每次只拿一个字，绝对不一小段一小段蹦
+              const char = displayQueue.substring(0, 1);
+              renderText += char;
               displayQueue = displayQueue.substring(1);
 
-              // DOM 穿透渲染：绝对不卡！
+              // DOM 穿透渲染
               if(currentId===chatId){
                  const itemEl = document.querySelector(`.msg-item[data-mid="${newMsgId}"]`);
                  if(itemEl) {
@@ -2684,14 +2685,30 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
                    const msgBlock = itemEl.querySelector('.msg-block');
                    if(msgBlock) msgBlock.innerHTML = newHtml;
 
-                   // 极其平滑的跟手滚动，彻底告别抽风
+                   // 极其平滑的跟手滚动
                    const box = document.getElementById('chatMsgs');
                    const isNearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 180;
                    if(isNearBottom) box.scrollTop = box.scrollHeight;
                  }
               }
-              // 智能变速齿轮：字多就快点吐，字少就慢点吐，像真人在呼吸！
-              const delay = displayQueue.length > 15 ? 8 : (displayQueue.length > 5 ? 20 : 35);
+
+              // 🌟 蓝色的仿生学打字延迟算法
+              let delay = 35 + Math.random() * 40; // 基础打字速度 35~75ms 随机
+              
+              // 遇到标点符号，模拟人类停顿思考和呼吸
+              if (/[，、]/.test(char)) {
+                  delay += 100 + Math.random() * 100; // 逗号稍微停顿
+              } else if (/[。！？！？…\n]/.test(char)) {
+                  delay += 250 + Math.random() * 200; // 句号换行长停顿，情绪留白
+              }
+
+              // 如果大模型吐得实在太快，水库积压严重，稍微提速消化一下，但绝对不快成残影！
+              if (displayQueue.length > 40) {
+                  delay = Math.max(15, delay * 0.4); 
+              } else if (displayQueue.length > 20) {
+                  delay = Math.max(25, delay * 0.7);
+              }
+
               await new Promise(r => setTimeout(r, delay));
             } else {
               await new Promise(r => setTimeout(r, 20)); // 等待新水滴
@@ -2700,7 +2717,6 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
           // 彻底结束后完美定格
           if(currentId===chatId) renderChat();
         };
-
         await callApiStream(messages, (chunk) => {
           fullText += chunk;
           
