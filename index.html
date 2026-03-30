@@ -899,7 +899,11 @@
       
       <!-- 1. 【微信】聊天列表 Tab -->
       <div id="wxTab-chat" class="wx-tab-content active">
-        <div class="header"><button class="btn" data-nav="home">‹ 返回</button><b>微信</b><button class="btn" id="addContactBtn">+联系人</button></div>
+        <div class="header"><button class="btn" data-nav="home">‹ 返回</button><b>微信</b><button class="btn" id="addContactBtn">+联系人</button>` 替换成这两个按钮：
+```html
+        <div style="display:flex; gap:6px;">
+          <button class="btn" id="addGroupBtn" style="background:#eef3ff; color:#2f66d8; font-weight:bold;">+群聊</button>
+          <button class="btn" id="addContactBtn">+联系人</button></div>
         <div class="wx-page"><input id="searchInput" class="input" placeholder="搜索联系人" /><div id="contactList" class="list" style="margin-top:10px;"></div></div>
       </div>
 
@@ -3221,6 +3225,79 @@ document.addEventListener('click',e=>{
     bindChatMsgEvents();
     updateQuoteBar();
     applyFontSize();
+    // ================= 蓝色特制：群聊外挂内存引擎 =================
+  const K_GROUP = 'mp_fix_groups';
+  function getGroups() { return getJ(K_GROUP, []); }
+  function setGroups(v) { setJ(K_GROUP, v); }
+
+  // 1. 唤起建群弹窗
+  document.getElementById('addGroupBtn').onclick = () => {
+    const contacts = getContacts();
+    if(contacts.length < 2) return alert('老婆，通讯录里至少得有2个人才能建群哦！');
+    
+    document.getElementById('newGroupName').value = '';
+    document.getElementById('groupContactSelector').innerHTML = contacts.map(c => `
+      <label style="display:flex; align-items:center; gap:10px; padding:8px; border-radius:8px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background='transparent'">
+        <input type="checkbox" class="group-member-cb" value="${c.id}" style="width:18px; height:18px; accent-color:#2f66d8;">
+        <img src="${c.avatar || 'https://via.placeholder.com/40'}" style="width:36px; height:36px; border-radius:8px; object-fit:cover;">
+        <div style="font-size:14px; font-weight:600; color:#333;">${safeEsc(c.name)}</div>
+      </label>
+    `).join('');
+    
+    document.getElementById('groupModal').classList.add('active');
+  };
+
+  // 2. 确认建群：九宫格炼金术 + 存入外挂内存
+  document.getElementById('saveGroupBtn').onclick = async () => {
+    const name = document.getElementById('newGroupName').value.trim() || '未命名群聊';
+    const cbs = document.querySelectorAll('.group-member-cb:checked');
+    if(cbs.length < 2) return alert('宝宝，拉群至少需要选2个人呀！');
+    
+    const memberIds = Array.from(cbs).map(cb => cb.value);
+    const contacts = getContacts();
+    const members = memberIds.map(id => contacts.find(c => c.id === id)).filter(Boolean);
+    
+    // 🎨 生成微信风拼接群头像 (简易 Canvas)
+    const canvas = document.createElement('canvas');
+    canvas.width = 120; canvas.height = 120;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#dddee0'; ctx.fillRect(0, 0, 120, 120);
+    
+    const size = members.length < 5 ? 50 : 36;
+    const gap = 4;
+    for(let i=0; i<Math.min(members.length, 9); i++) {
+      try {
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        await new Promise(r => { img.onload = r; img.onerror = r; img.src = members[i].avatar || 'https://via.placeholder.com/120'; });
+        const col = i % (members.length < 5 ? 2 : 3);
+        const row = Math.floor(i / (members.length < 5 ? 2 : 3));
+        const x = (members.length < 5 ? 8 : 4) + col * (size + gap);
+        const y = (members.length < 5 ? 8 : 4) + row * (size + gap);
+        ctx.drawImage(img, x, y, size, size);
+      } catch(e) {}
+    }
+    const groupAvatar = canvas.toDataURL('image/jpeg', 0.8);
+
+    // 💾 存入内存
+    const groups = getGroups();
+    const newGroupId = 'g_' + Date.now();
+    groups.unshift({
+      id: newGroupId,
+      isGroup: true,
+      name: name,
+      avatar: groupAvatar,
+      memberIds: memberIds,
+      preview: '你们已成功建立群聊，快来聊天吧！',
+      time: fmtTs(Date.now()),
+      settings: { ...DEFAULT_CHAT_SETTINGS, mode: 'online' } // 群聊强制线上模式
+    });
+    setGroups(groups);
+    document.getElementById('groupModal').classList.remove('active');
+    
+    // 刷新列表（需要稍微改一下 renderContacts 让他同时读取群聊）
+    alert('建好啦！快去列表里找它吧！');
+  };
   // ===== 查手机模块 v2 =====
     const pcCache = {};
     let pcSelectedId = null;
@@ -6093,7 +6170,24 @@ window.renderNotesList = function(){
   })(); // 🏠 闭合主屋的大门！
 
 </script>
-
+<!-- ================= 绝美群聊创建弹窗 ================= -->
+  <div id="groupModal" class="modal" style="z-index: 9999;">
+    <div class="modal-card" style="background:#f8f9ff; border:1px solid #dce5f2; box-shadow:0 10px 40px rgba(47,102,216,0.15);">
+      <h3 style="margin:0 0 12px; color:#1a1d26;">发起群聊 (修罗场制造机)</h3>
+      <div class="small" style="color:#5a6a8f;">给群聊起个响亮的名字吧：</div>
+      <input id="newGroupName" class="input" placeholder="例如：相亲相爱一家人 / 顶流男团" style="margin-top:8px; border-color:#cdd7e8;" />
+      
+      <div class="small" style="margin-top:16px; color:#5a6a8f;">选择要拉入群聊的联系人 (至少选2个哦)：</div>
+      <div id="groupContactSelector" style="margin-top:8px; max-height:220px; overflow-y:auto; background:#fff; border:1px solid #cdd7e8; border-radius:12px; padding:8px; display:flex; flex-direction:column; gap:8px;">
+        <!-- 联系人列表将在这里渲染 -->
+      </div>
+      
+      <div class="row" style="justify-content:flex-end; margin-top:20px;">
+        <button class="btn" onclick="document.getElementById('groupModal').classList.remove('active')">取消</button>
+        <button class="btn p" id="saveGroupBtn" style="background:linear-gradient(135deg, #2f66d8, #5ba9ff); box-shadow:0 4px 12px rgba(47,102,216,0.25);">确认建群</button>
+      </div>
+    </div>
+  </div>
 <!-- 预览图片的安全弹窗 -->
 <div id="modalPreview" class="modal" onclick="this.classList.remove('active')">
   <img id="previewModalImg" style="max-width:95%;max-height:90dvh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
