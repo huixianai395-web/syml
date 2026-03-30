@@ -969,7 +969,18 @@
               <button class="btn" id="mePageDelBtn" style="flex:1; background:#fff0f0; color:#e74c3c; border-radius:12px; padding:10px 0; font-weight:600;">删除当前</button>
             </div>
           </div>
-          
+          <!-- 终极数据安全屋 (全局导出/导入) -->
+          <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px;">
+            <div style="font-size:15px; font-weight:800; color:#1a1d26; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+              <span>🗄️</span> 终极数据安全屋
+            </div>
+            <div style="font-size:12px; color:#8892a8; margin-bottom:16px; line-height:1.5;">包含所有聊天记录、马甲设定、高清壁纸及书房进度的完整宇宙打包。</div>
+            <div style="display:flex; gap:12px;">
+              <button class="btn p" id="globalExportBtn" style="flex:1; background:linear-gradient(135deg, #07c160, #20d274); border-radius:12px; padding:12px 0; font-size:14px; font-weight:bold; box-shadow:0 4px 12px rgba(7,193,96,0.2);">一键云端打包</button>
+              <button class="btn p" id="globalImportBtn" style="flex:1; background:#4a67a8; border-radius:12px; padding:12px 0; font-size:14px; font-weight:bold; box-shadow:0 4px 12px rgba(74,103,168,0.2);">时空恢复导入</button>
+              <input type="file" id="globalImportFile" accept=".json" class="hidden">
+            </div>
+          </div>
           <!-- 蓝色科普小贴士 (绝美毛玻璃渐变版) -->
           <div style="margin-top:20px; padding:16px; background:linear-gradient(145deg, #eef3ff, #f6f8ff); border-radius:16px; border:1px solid #dce5f2;">
             <div style="font-size:13px; font-weight:bold; color:#2f66d8; margin-bottom:6px;">✨ 蓝色科普时间：</div>
@@ -1204,8 +1215,19 @@
       </div>
 
       <div class="card">
-        <div class="small">模式</div>
-        <select id="replyModeSelect" class="select" style="margin-top:8px;"><option value="online">线上模式（多气泡）</option><option value="offline">线下模式（酒馆RP）</option></select>
+        <div class="small">聊天模式</div>
+        <select id="replyModeSelect" class="select" style="margin-top:8px;">
+          <option value="online">线上模式（多气泡）</option>
+          <option value="offline">线下模式（酒馆RP）</option>
+        </select>
+        <!-- 蓝色的流式输出开关 -->
+        <div class="row" style="margin-top:12px; justify-content:space-between; padding-top:12px; border-top:1px solid #f0f4ff;">
+          <div>
+            <div class="small" style="color:#2f66d8; font-weight:bold;">开启打字机流式输出</div>
+            <div style="font-size:10px; color:#999; margin-top:2px;">仅建议在线下RP模式开启，沉浸感拉满</div>
+          </div>
+          <input id="streamSwitch" type="checkbox" style="transform:scale(1.1); accent-color:#2f66d8;" />
+        </div>
       </div>
 
       <div class="card" id="onlineSettingCard">
@@ -2668,7 +2690,7 @@ const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),
   $('showTsSwitch').checked=!!p.showTs;
   $('bubbleCssInput').value=p.bubbleCss||'';
   $('avatarHQSwitch').checked=!!p.avatarHQ;
-
+  $('streamSwitch').checked=!!st.stream;
   refreshFontSizeUI();
   refreshSettingUI();
   show('chatSetting');
@@ -2706,6 +2728,7 @@ updateContact(currentId,{
         avatar:roleAvatar,
         settings:normSettings({
           mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen,
+          stream:!!$('streamSwitch').checked,
           offlineColors: getContactById(currentId)?.settings?.offlineColors,
           // 专属设定存这里啦！
           meName: clean($('meNameInput').value)||'我',
@@ -2747,6 +2770,58 @@ setPref(p); applyBubbleCss(); applyFontSize();
     }catch{alert('导入失败：文件格式不正确');}
     finally{e.target.value='';}
   };
+// ================= 终极数据安全屋：全局导出导入引擎 =================
+document.getElementById('globalExportBtn').onclick = async function() {
+  try {
+    this.textContent = '打包中...';
+    const data = {
+      contacts: getContacts(), chats: getChats(), api: getApiState(),
+      me: getMe(), pref: getPref(), font: getFontState(),
+      stickers: getJ('mp_fix_sticker_groups', null),
+      study: getJ('mp_fix_study_books', null),
+      mePresets: getJ('mp_fix_me_presets_list', null), // 马甲设定
+      customBg: await localforage.getItem('mp_fix_custom_bg'),
+      chatNormalBg: await localforage.getItem('mp_fix_chat_normal_bg'),
+      chatGlassBg: await localforage.getItem('mp_fix_chat_bg'),
+      momentsCover: localStorage.getItem('mp_fix_moments_cover'),
+      moments: JSON.parse(localStorage.getItem('mp_fix_moments')) || []
+    };
+    const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'Milo_Universe_Backup_' + Date.now() + '.json';
+    a.click();
+    this.textContent = '一键云端打包';
+    alert('🎉 宇宙备份完成！高清壁纸和几千条聊天全都在里面啦！快找个安全的地方存起来！');
+  } catch(e) { alert('导出失败：' + e.message); this.textContent = '一键云端打包'; }
+};
+
+document.getElementById('globalImportBtn').onclick = () => document.getElementById('globalImportFile').click();
+document.getElementById('globalImportFile').onchange = async function(e) {
+  const f = e.target.files?.[0]; if(!f) return;
+  try {
+    const text = await f.text();
+    const j = JSON.parse(text);
+    if(j.contacts) setContacts(j.contacts);
+    if(j.chats) setChats(j.chats);
+    if(j.api) setApiState(j.api);
+    if(j.me) setMe(j.me);
+    if(j.pref) setPref(j.pref);
+    if(j.font) setFontState(j.font);
+    if(j.stickers) setJ('mp_fix_sticker_groups', j.stickers);
+    if(j.study) setJ('mp_fix_study_books', j.study);
+    if(j.mePresets) setJ('mp_fix_me_presets_list', j.mePresets);
+    if(j.customBg) await localforage.setItem('mp_fix_custom_bg', j.customBg);
+    if(j.chatNormalBg) await localforage.setItem('mp_fix_chat_normal_bg', j.chatNormalBg);
+    if(j.chatGlassBg) await localforage.setItem('mp_fix_chat_bg', j.chatGlassBg);
+    if(j.momentsCover) localStorage.setItem('mp_fix_moments_cover', j.momentsCover);
+    if(j.moments) localStorage.setItem('mp_fix_moments', JSON.stringify(j.moments));
+    
+    alert('🎉 时空恢复成功！即将刷新页面以唤醒所有数据！');
+    location.reload();
+  } catch(err) { alert('导入失败，文件格式不对哦宝宝：' + err.message); }
+  finally { e.target.value = ''; }
+};
 
   async function copyText(text){
     const t=String(text||'');
