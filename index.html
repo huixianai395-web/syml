@@ -2655,9 +2655,9 @@ function buildContent(x,st){
       }
 const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:(()=>{const c=buildContent(x,st);return typeof c==='string'?`[${fmtFullTs(x.time)}] ${c}`:c;})()})),{role:'user',content:modeTag}];
   
-      // ================= 蓝色的双轨制收发神经元 =================
+     // ================= 蓝色的双轨制收发神经元 =================
       if(st.mode==='offline' && st.stream){
-        // 🔮 魔法启动：线下流式打字机模式（带终极时空锁）
+        // 🔮 魔法启动：线下流式打字机模式（终极完全体：时空锁 + 大拇指仿生 + 外挂内存）
         const newMsgId = uid();
         let isFirstToken = true;
         let fullText = '';
@@ -2665,11 +2665,11 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
         let renderText = '';   
         let streamDone = false;
 
-        // 🌟 蓝色的终极时空锁：强迫全局刷新必须等马达跑完！
+        // 🌟 蓝色的终极时空锁：强迫外挂内存的全局刷新必须等马达跑完！
         let motorResolve;
         const motorPromise = new Promise(r => motorResolve = r);
 
-        // ⚙️ 蓝色的真·人类呼吸马达
+        // ⚙️ 蓝色的真·人类大拇指仿生马达（极致活人感版）
         const typeWriterMotor = async () => {
           while(!streamDone || displayQueue.length > 0) {
             if(displayQueue.length > 0) {
@@ -2693,19 +2693,21 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
                  }
               }
 
-              let delay = 35 + Math.random() * 40; 
-              if (/[，、]/.test(char)) delay += 100 + Math.random() * 100; 
-              else if (/[。！？！？…\n]/.test(char)) delay += 250 + Math.random() * 200; 
+              // 🌟 重新调校的仿生学延迟：慢一点，更有灵魂
+              let delay = 50 + Math.random() * 45; 
+              if (/[，、]/.test(char)) delay += 150 + Math.random() * 100; 
+              else if (/[。！？！？…\n]/.test(char)) delay += 300 + Math.random() * 200; 
 
-              if (displayQueue.length > 40) delay = Math.max(15, delay * 0.4); 
-              else if (displayQueue.length > 20) delay = Math.max(25, delay * 0.7);
+              // 极度克制的加速：绝对不许变成机枪扫射
+              if (displayQueue.length > 50) delay = Math.max(30, delay * 0.5); 
+              else if (displayQueue.length > 20) delay = Math.max(45, delay * 0.8);
 
               await new Promise(r => setTimeout(r, delay));
             } else {
               await new Promise(r => setTimeout(r, 20)); 
             }
           }
-          // 马达彻底跑完，解开封印！
+          // 马达彻底跑完，解开封印，允许外挂内存刷新！
           if(currentId===chatId) renderChat();
           motorResolve(); 
         };
@@ -2719,13 +2721,13 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
             arr.push(toMsg({id:newMsgId, role:'assistant', text:'', time:Date.now()}));
             setChatArr(chatId, arr);
             if(currentId===chatId) renderChat(); 
-            typeWriterMotor();
+            typeWriterMotor(); // 启动马达
           }
 
           if(!isFirstToken) {
             displayQueue += chunk; 
             
-            // 🌟 外挂内存光速保存（被夺舍的罪魁祸首，但现在它被马达锁住了！）
+            // 🌟 外挂内存光速保存：数据绝对不丢！
             const arr2 = getChatArr(chatId);
             const idx = arr2.findIndex(x=>x.id===newMsgId);
             if(idx>=0){ arr2[idx].text = fullText; setChatArr(chatId, arr2); }
@@ -2733,9 +2735,9 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
         });
 
         streamDone = true; 
-        if(isFirstToken) motorResolve(); // 如果连一个字都没吐出来，直接放行，防卡死
+        if(isFirstToken) motorResolve(); 
         
-        // 🌟 终极拦截点：死死卡住主线程！必须等马达敲完最后一个字，才能往下走去执行全局刷新！
+        // 🌟 死死卡住主线程！必须等马达敲完！
         await motorPromise;
       } else {
         // 📦 传统模式：线上多气泡拆分与卡片渲染
