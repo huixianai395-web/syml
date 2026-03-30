@@ -2159,115 +2159,92 @@ function compressImage(file, isWallpaper = false) {
 
   function renderQuote(q){ if(!q||!q.text) return ''; return `<div class="msg-quote"><div class="q-content">${esc(q.text)}</div></div>`; }
   function formatOfflineText(text){
-  let t=String(text||'');
-  const marks=[];
-  function rep(re,cls){
-    t=t.replace(re,(m,inner)=>{
-      const key=`__MARK_${marks.length}__`;
-      marks.push(`<span class="${cls}">${esc(inner)}</span>`);
+    let t=String(text||'');
+    const marks=[];
+    function rep(re,cls){
+      t=t.replace(re,(m,inner)=>{
+        const key=`__MARK_${marks.length}__`;
+        marks.push(`<span class="${cls}">${esc(inner)}</span>`);
+        return key;
+      });
+    }
+    rep(/“([^”]{1,200})”/g,'off-dialogue');
+    rep(/"([^"]{1,200})"/g,'off-dialogue');
+    rep(/「([^」]{1,200})」/g,'off-dialogue');
+    rep(/【([^】]{1,200})】/g,'off-em');
+    rep(/\*\*([^*]{1,200})\*\*/g,'off-em');
+
+    // 🌟 蓝色特制：线下模式发图暗号完美解析！
+    t = t.replace(/\[发图:(.*?):([\s\S]*?)\]/g, (match, mood, desc) => {
+      const key = `__MARK_${marks.length}__`;
+      const imgMap={ '美食': 'https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/89BD133FF0F6435D9894B7784223F51E/qdqqd.jpeg', '风景': 'https://img.chery.cn/chery-prod/mobile/community/0/19b814b0-16cf-44ac-b438-9c2d19a9575b.jpeg', '自拍': 'https://cdncs.ykt.cbern.com.cn/v0.1/download?path=/zxx_feedback/qdqqd/1774294074883.png', '夜晚': 'https://nos.netease.com/ysf/6636f68317710ab9657fa15b4e4ed52c.jpeg', '默认': 'https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/75D4981E7F734C3FB6BC654EDF3E9F5B/qdqqd.jpeg' };
+      const bgUrl = imgMap[mood.trim()] || imgMap['默认'];
+      // 🌟 内联 onclick + stopPropagation 强行穿透点击拦截！
+      const html = `<div class="card-fakeimg" style="margin: 8px 0; display:block; cursor:pointer;" onclick="event.stopPropagation(); this.classList.toggle('open')"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('${bgUrl}') center/cover no-repeat;"></div><div class="fi-desc">${esc(desc.trim())}</div></div>`;
+      marks.push(html);
       return key;
     });
+
+    let out=esc(t);
+    marks.forEach((html,i)=>{ out=out.replace(`__MARK_${i}__`,html); });
+    return out.replace(/\n/g,'<br>');
   }
-  rep(/“([^”]{1,200})”/g,'off-dialogue');
-rep(/"([^"]{1,200})"/g,'off-dialogue');
-  rep(/「([^」]{1,200})」/g,'off-dialogue');
-  rep(/【([^】]{1,200})】/g,'off-em');
-  rep(/\*\*([^*]{1,200})\*\*/g,'off-em');
 
-  let out=esc(t);
-  marks.forEach((html,i)=>{ out=out.replace(`__MARK_${i}__`,html); });
-  return out.replace(/\n/g,'<br>');
-}
-
-
-  function renderOfflineAssistant(text,ts,pref,msg){
-  const raw=String(text||''),m=raw.match(/【状态栏】\s*([\s\S]*?)\s*【正文】\s*([\s\S]*)/);
-  if(!m) return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}<div class="bubble ai ${msg.hiddenForAi?'ai-hidden':''}">${esc(raw)}</div>${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}</div>`;
-  const state=clean(m[1]),body=clean(m[2]);
-
-  const cset=(getContactById(currentId)?.settings||{}).offlineColors||DEFAULT_CHAT_SETTINGS.offlineColors;
-  const styleStr=`--off-state:${cset.state};--off-body:${cset.body};--off-quote:${cset.quote};--off-em:${cset.em};--off-dialogue:${cset.dialogue};`;
-
-  return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}
-    <div class="offline-card ${msg.hiddenForAi?'ai-hidden':''}" style="${styleStr}">
-
-        <div class="offline-state">${esc(state||'状态未记录')}</div>
-        <div class="offline-body">${formatOfflineText(body||'')}</div>
-      </div>
-      ${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}
-    </div>`;
-  }
-  // 增加HTML检测
-  function isHtmlDoc(s){s=String(s||'');return /^\s*<!doctype html/i.test(s)||/<html[\s>]/i.test(s);}
-  function isHtmlFrag(s){s=String(s||'');return /<([a-z][\w-]*)(\s|>)/i.test(s)&&!isHtmlDoc(s);}
-  function toHtmlDataUrl(s){return 'data:text/html;charset=utf-8,'+encodeURIComponent(String(s||''));}
-
-  // 修改后的渲染：助手支持HTML
   function renderBubbleContent(m,isMe,pref){
     const cls=isMe?'me':'ai';
     const ts=pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:'';
     const quote=renderQuote(m.quote);
     const hidden=m.hiddenForAi?'ai-hidden':'';
-    const t=String(m.text||'');
-    // 🌟 蓝色的全新发图暗号解析：彻底抛弃让AI写HTML！
-    const fakeImgMatch = t.match(/^\[发图:(.*?):([\s\S]*?)\]$/);
+    let t=String(m.text||'');
+
+    // 🌟 蓝色特制：线上模式万能发图解析，无视多余空格！
+    const fakeImgMatch = t.match(/^\s*\[发图:(.*?):([\s\S]*?)\]\s*$/);
     if(fakeImgMatch){
       const mood = fakeImgMatch[1].trim();
       const desc = fakeImgMatch[2].trim();
-      const imgMap={
-        '美食': 'https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/89BD133FF0F6435D9894B7784223F51E/qdqqd.jpeg',
-        '风景': 'https://img.chery.cn/chery-prod/mobile/community/0/19b814b0-16cf-44ac-b438-9c2d19a9575b.jpeg',
-        '自拍': 'https://cdncs.ykt.cbern.com.cn/v0.1/download?path=/zxx_feedback/qdqqd/1774294074883.png',
-        '夜晚': 'https://nos.netease.com/ysf/6636f68317710ab9657fa15b4e4ed52c.jpeg',
-        '默认': 'https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/75D4981E7F734C3FB6BC654EDF3E9F5B/qdqqd.jpeg'
-      };
+      const imgMap={ '美食': 'https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/89BD133FF0F6435D9894B7784223F51E/qdqqd.jpeg', '风景': 'https://img.chery.cn/chery-prod/mobile/community/0/19b814b0-16cf-44ac-b438-9c2d19a9575b.jpeg', '自拍': 'https://cdncs.ykt.cbern.com.cn/v0.1/download?path=/zxx_feedback/qdqqd/1774294074883.png', '夜晚': 'https://nos.netease.com/ysf/6636f68317710ab9657fa15b4e4ed52c.jpeg', '默认': 'https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/75D4981E7F734C3FB6BC654EDF3E9F5B/qdqqd.jpeg' };
       const bgUrl = imgMap[mood] || imgMap['默认'];
-      const cardHtml = `<div class="card-fakeimg" onclick="this.classList.toggle('open')"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('${bgUrl}') center/cover no-repeat;"></div><div class="fi-desc">${esc(desc)}</div></div>`;
+      const cardHtml = `<div class="card-fakeimg" style="cursor:pointer;" onclick="event.stopPropagation(); this.classList.toggle('open')"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('${bgUrl}') center/cover no-repeat;"></div><div class="fi-desc">${esc(desc)}</div></div>`;
       return `${quote}<div class="bubble ${cls} ${hidden} bubble-card">${cardHtml}</div>${ts}`;
-  }
-    // --- 解析文件格式 ---
+    }
+
     const fileMatch = t.match(/^\[file:(.+?)\]([\s\S]*?)\[\/file\]$/);
     if(fileMatch){
-      const fname = fileMatch[1];
-      const fcontent = fileMatch[2];
-      // 简单算一下大小
+      const fname = fileMatch[1], fcontent = fileMatch[2];
       let size = new Blob([fcontent]).size;
       let sizeStr = size > 1024 ? (size/1024).toFixed(1) + ' KB' : size + ' B';
       const fileCard = `<div class="bubble-file"><div class="bf-icon">📄</div><div class="bf-info"><div class="bf-name">${esc(fname)}</div><div class="bf-size">文本文件 · ${sizeStr}</div></div></div>`;
-      // 返回卡片，这样屏幕上显示的是卡片，但传给AI的依然是带有内容的文本
       return `${quote}<div class="bubble ${cls} ${hidden} bubble-card">${fileCard}</div>${ts}`;
     }
     const voiceMatch=t.match(/^\[voice:(\d+):([\s\S]*)\]$/);
-if(voiceMatch){
-  const dur=voiceMatch[1],vtext=voiceMatch[2],vid='vr_'+m.id;
-  const w=Math.min(180,72+Number(dur)*4);
-  const waves='<div class="voice-wave"></div>'.repeat(6);
-  return `${quote}<div class="bubble ${cls} ${hidden}" style="width:${w}px;cursor:pointer;" onclick="var el=document.getElementById('${vid}');if(el)el.classList.toggle('hidden');this.classList.toggle('voice-playing')"><div class="bubble-voice"><div class="voice-waves">${waves}</div><div class="voice-dur">${dur}″</div></div></div><div id="${vid}" class="voice-reveal hidden">${esc(vtext)}</div>${ts}`;
-}
+    if(voiceMatch){
+      const dur=voiceMatch[1],vtext=voiceMatch[2],vid='vr_'+m.id;
+      const w=Math.min(180,72+Number(dur)*4);
+      const waves='<div class="voice-wave"></div>'.repeat(6);
+      return `${quote}<div class="bubble ${cls} ${hidden}" style="width:${w}px;cursor:pointer;" onclick="var el=document.getElementById('${vid}');if(el)el.classList.toggle('hidden');this.classList.toggle('voice-playing')"><div class="bubble-voice"><div class="voice-waves">${waves}</div><div class="voice-dur">${dur}″</div></div></div><div id="${vid}" class="voice-reveal hidden">${esc(vtext)}</div>${ts}`;
+    }
     const quoteMatch = t.match(/^\[quote\]([\s\S]*?)\[\/quote\]([\s\S]*)$/);
-if(quoteMatch){
-  const qText=quoteMatch[1].trim();
-  const body=quoteMatch[2].trim();
-  const qHtml=`<div class="msg-quote"><div class="q-content">${esc(qText)}</div></div>`;
-  return `${quote}${qHtml}<div class="bubble ${cls} ${hidden}">${esc(body)}</div>${ts}`;
-}
+    if(quoteMatch){
+      const qText=quoteMatch[1].trim(), body=quoteMatch[2].trim();
+      const qHtml=`<div class="msg-quote"><div class="q-content">${esc(qText)}</div></div>`;
+      return `${quote}${qHtml}<div class="bubble ${cls} ${hidden}">${esc(body)}</div>${ts}`;
+    }
     if(t.startsWith('[img]') && t.endsWith('[/img]')){
       const src = t.slice(5, -6);
       return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-img" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
     }
     if((t.startsWith('[stk:') || t.startsWith('[st_')) && t.endsWith(']')){
-  const id = t.startsWith('[stk:') ? t.slice(5,-1) : t.slice(1,-1);
-  const src = window.__stickerGetSrcById ? window.__stickerGetSrcById(id) : '';
-  if(!src) return `${quote}${ts}`;
-  return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-sticker" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
-}
-if(!isMe && isHtmlDoc(t)){
-  const src=toHtmlDataUrl(t);
-  return `${quote}<div class="bubble ${cls} has-html${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts allow-modals" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
-}
-    
+      const id = t.startsWith('[stk:') ? t.slice(5,-1) : t.slice(1,-1);
+      const src = window.__stickerGetSrcById ? window.__stickerGetSrcById(id) : '';
+      if(!src) return `${quote}${ts}`;
+      return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-sticker" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
+    }
+    if(!isMe && isHtmlDoc(t)){
+      const src=toHtmlDataUrl(t);
+      return `${quote}<div class="bubble ${cls} has-html${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts allow-modals" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
+    }
     if(isHtmlFrag(t)){
-  return `${quote}<div class="bubble ${cls} ${hidden} bubble-card">${t}</div>${ts}`;
+      return `${quote}<div class="bubble ${cls} ${hidden} bubble-card">${t}</div>${ts}`;
     }
     return `${quote}<div class="bubble ${cls} ${hidden}">${esc(t)}</div>${ts}`;
   }
