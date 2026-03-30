@@ -5739,367 +5739,295 @@ window.renderNotesList = function(){
     `;
   }).join('');
 };
-  })();
 
-  </script>
-  <div id="modalPreview" class="modal" onclick="this.classList.remove('active')">
-  <img id="previewModalImg" style="max-width:95%;max-height:90dvh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
-  </div>
-    <!-- ================= 世界书 (Lorebook) 独立 App 与双核系统 (终极修复版) ================= -->
-  
-  <!-- 1. 真正的独立 App：全局管理中心 -->
-  <section id="worldbook" class="screen">
-    <div class="header">
-      <!-- 🌟 绝对指令：强制返回桌面，绝不卡死！ -->
-      <button class="btn" onclick="show('home')">‹ 返回</button>
-      <b>世界书总库</b>
-      <button class="btn" onclick="document.getElementById('wbImportFile').click()">导入</button>
-      <input type="file" id="wbImportFile" accept=".json,.txt" class="hidden">
-    </div>
-    <div class="page" style="background:linear-gradient(180deg,#f4f6fb,#edf2ff); padding:16px;">
-      <div style="font-size:12px; color:#5a6a8f; margin-bottom:12px; text-align:center;">
-        在这里统一管理所有的世界观设定，导入后可在各角色的聊天设置中挂载。
-      </div>
-      <div id="globalWbList" class="list" style="gap:14px;"></div>
-    </div>
-  </section>
+// ================= 世界书 (Lorebook) 核心逻辑 (终于搬进主屋啦！) =================
+const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+const K_WB_BOOKS = 'mp_fix_wb_books_v3';
 
-  <!-- 2. 角色挑选面板 (聊天设置进入) -->
-  <div id="roleWbModal" class="modal" style="z-index:100;" onclick="if(event.target===this) this.classList.remove('active')">
-    <div class="modal-card" style="max-width:380px; background:#fcfdff; padding:0; overflow:hidden; display:flex; flex-direction:column; max-height:85dvh;">
-      <div style="padding:16px; background:linear-gradient(180deg,#f8f9ff,#f4f6fb); border-bottom:1px solid #e4e8f5; display:flex; justify-content:space-between; align-items:center;">
-        <div style="font-size:16px; font-weight:800; color:#1a1d26;">📌 为当前角色挑选设定</div>
-        <button class="btn" onclick="document.getElementById('roleWbModal').classList.remove('active')" style="background:transparent; color:#888; font-size:20px; padding:0 8px;">×</button>
-      </div>
-      <div style="padding:8px 16px; font-size:12px; color:#4a67a8; background:#eef3ff;">
-        打勾的条目将会被注入到当前 AI 的脑海中。
-      </div>
-      <div id="roleWbList" style="flex:1; overflow-y:auto; padding:12px; background:#f4f6fb; display:flex; flex-direction:column; gap:12px;"></div>
-      
-      <div style="padding:12px 16px; background:#fff; border-top:1px solid #e4e8f5;">
-        <button class="btn p" id="saveRoleWbBtn" style="width:100%; border-radius:10px; padding:10px 0; font-size:15px; font-weight:bold; box-shadow:0 4px 12px rgba(47,102,216,0.2);">保存配置</button>
-      </div>
-    </div>
-  </div>
+async function getWbBooks() { return (await localforage.getItem(K_WB_BOOKS)) || []; }
+async function setWbBooks(data) { await localforage.setItem(K_WB_BOOKS, data); }
 
-  <script>
-  (() => {
-    // 🌟 专属内置剪刀
-    const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
-    const K_WB_BOOKS = 'mp_fix_wb_books_v3';
+function deepExtractEntries(obj, results) {
+  if (!obj) return;
+  if (Array.isArray(obj)) {
+    obj.forEach(item => deepExtractEntries(item, results));
+    return;
+  }
+  if (typeof obj === 'object') {
+    let k = obj.key || obj.keys || obj.keyword || obj.name;
+    let c = obj.content || obj.value || obj.description || obj.entry;
+    if (k && c && typeof c === 'string') {
+      results.push({
+        id: 'we_' + Date.now() + Math.random().toString().slice(2,8),
+        keys: Array.isArray(k) ? k.join(',') : String(k),
+        content: String(c)
+      });
+    } else {
+      for (let prop in obj) {
+        deepExtractEntries(obj[prop], results);
+      }
+    }
+  }
+}
 
-    async function getWbBooks() { return (await localforage.getItem(K_WB_BOOKS)) || []; }
-    async function setWbBooks(data) { await localforage.setItem(K_WB_BOOKS, data); }
+let currentViewBookId = null;
 
-    function deepExtractEntries(obj, results) {
-      if (!obj) return;
-      if (Array.isArray(obj)) {
-        obj.forEach(item => deepExtractEntries(item, results));
+window._renderGlobalWb = async function() {
+  try {
+    const books = await getWbBooks();
+    const box = document.getElementById('globalWbList');
+
+    if (currentViewBookId) {
+      const book = books.find(b => b.bookId === currentViewBookId);
+      if (!book) { currentViewBookId = null; return window._renderGlobalWb(); }
+
+      let html = `
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+          <button class="btn" onclick="window._wbBackToList()" style="padding:6px 12px; background:#eef3ff; color:#2f66d8; font-weight:bold;">🔙 返回书架</button>
+          <b style="font-size:15px; color:#1a1d26; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${safeEsc(book.bookName)}</b>
+        </div>
+      `;
+
+      if(!book.entries || book.entries.length === 0) {
+        html += `<div style="text-align:center; padding:40px 0; color:#888;">这本书没有词条哦~</div>`;
+      } else {
+        html += book.entries.map(e => `
+          <div style="background:#fff; border:1px solid #e4e8f5; border-radius:12px; padding:12px; margin-bottom:12px; box-shadow:0 2px 8px rgba(47,102,216,0.04);">
+            <div style="font-weight:bold; color:#2f66d8; margin-bottom:8px; font-size:14px;">触发词：${safeEsc(e.keys)}</div>
+            <textarea id="wb_edit_${e.id}" class="ta" style="min-height:80px; font-size:13px; padding:10px; line-height:1.5; background:#f8f9ff; border:1px solid #dce5f2;">${safeEsc(e.content)}</textarea>
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
+              <button class="btn d" onclick="window._wbDelEntry('${book.bookId}', '${e.id}')" style="padding:6px 14px;">删除此条</button>
+              <button class="btn p" onclick="window._wbSaveEntry('${book.bookId}', '${e.id}')" style="padding:6px 14px;">保存修改</button>
+            </div>
+          </div>
+        `).join('');
+      }
+      if(box) box.innerHTML = html;
+    } else {
+      if (books.length === 0) {
+        if(box) box.innerHTML = `<div style="text-align:center; padding:60px 0; color:#a0aaba; font-size:14px;">总库空空如也<br><br>点击右上角「导入」按钮<br>添加你的世界书吧～</div>`;
         return;
       }
-      if (typeof obj === 'object') {
-        let k = obj.key || obj.keys || obj.keyword || obj.name;
-        let c = obj.content || obj.value || obj.description || obj.entry;
-        if (k && c && typeof c === 'string') {
-          results.push({
-            id: 'we_' + Date.now() + Math.random().toString().slice(2,8),
-            keys: Array.isArray(k) ? k.join(',') : String(k),
-            content: String(c)
-          });
-        } else {
-          for (let prop in obj) {
-            deepExtractEntries(obj[prop], results);
-          }
-        }
-      }
+      if(box) box.innerHTML = books.map(b => `
+        <div style="background:#fff; border:1px solid #e4e8f5; border-radius:16px; padding:16px; box-shadow:0 4px 12px rgba(47,102,216,0.05); cursor:pointer; margin-bottom:12px; transition:transform 0.1s;" 
+             onclick="window._wbViewBook('${b.bookId}')" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="flex:1; min-width:0; padding-right:10px;">
+              <div style="font-size:16px; font-weight:800; color:#1a1d26; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📖 ${safeEsc(b.bookName)}</div>
+              <div style="font-size:13px; color:#7a86a8; margin-top:6px;">包含 <b style="color:#2f66d8;">${(b.entries||[]).length}</b> 个词条设定</div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <button class="btn d" onclick="event.stopPropagation(); window._delGlobalBook('${b.bookId}')" style="border-radius:8px; padding:6px 12px; font-weight:bold; font-size:12px;">删除</button>
+              <div style="color:#ccc; font-size:20px; font-weight:bold; margin-left:4px;">›</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+  } catch (err) {
+    const box = document.getElementById('globalWbList');
+    if(box) box.innerHTML = '渲染失败：' + err.message;
+  }
+};
+
+window._wbViewBook = (id) => { currentViewBookId = id; window._renderGlobalWb(); };
+window._wbBackToList = () => { currentViewBookId = null; window._renderGlobalWb(); };
+
+window._wbSaveEntry = async (bookId, entryId) => {
+  const text = document.getElementById('wb_edit_' + entryId).value;
+  const books = await getWbBooks();
+  const b = books.find(x => x.bookId === bookId);
+  if(b) {
+    const e = b.entries.find(x => x.id === entryId);
+    if(e) e.content = text;
+    await setWbBooks(books);
+    alert('🎉 词条修改保存成功！外挂内存已更新！');
+  }
+};
+
+window._wbDelEntry = async (bookId, entryId) => {
+  if(!confirm('确定删除这条设定吗？')) return;
+  const books = await getWbBooks();
+  const b = books.find(x => x.bookId === bookId);
+  if(b) {
+    b.entries = b.entries.filter(x => x.id !== entryId);
+    await setWbBooks(books);
+    window._renderGlobalWb();
+  }
+};
+
+window._delGlobalBook = async (bookId) => {
+  if (!confirm('确定要从总库中彻底删除这本书吗？')) return;
+  let books = await getWbBooks();
+  books = books.filter(b => b.bookId !== bookId);
+  await setWbBooks(books);
+  window._renderGlobalWb();
+};
+
+const originalShow = window.show;
+window.show = function(id) {
+  if (id === 'worldbook') { currentViewBookId = null; window._renderGlobalWb(); }
+  originalShow(id);
+};
+
+window._openRoleWbModal = async function() {
+  const modal = document.getElementById('roleWbModal');
+  const box = document.getElementById('roleWbList');
+  if(!modal || !box) return;
+  
+  modal.classList.add('active');
+  box.innerHTML = '<div style="text-align:center; padding:40px; color:#888;">正在从外挂内存读取数据...</div>';
+
+  try {
+    if (!currentId) throw new Error("未选中任何角色！");
+    const c = getContactById(currentId);
+    const st = normSettings(c?.settings);
+    
+    window._tempSelectedWbIds = new Set(st.wbEnabled || []);
+
+    const books = await getWbBooks();
+    if (!books || books.length === 0) {
+      box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:13px;">请先去桌面进入【世界书】App导入数据哦</div>`;
+      return;
     }
 
-    // ================= 全局总库逻辑 (支持点击进入内页编辑！) =================
-    let currentViewBookId = null; // 记忆当前正在看哪本书
+    let html = '';
+    books.forEach(b => {
+      const entries = b.entries || [];
+      if (entries.length === 0) return; 
 
-    window._renderGlobalWb = async function() {
-      try {
-        const books = await getWbBooks();
-        const box = document.getElementById('globalWbList');
-
-        // 📖 如果当前选中了一本书，就渲染它的内页！
-        if (currentViewBookId) {
-          const book = books.find(b => b.bookId === currentViewBookId);
-          if (!book) { currentViewBookId = null; return window._renderGlobalWb(); } // 书没了就退回
-
-          let html = `
-            <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
-              <button class="btn" onclick="window._wbBackToList()" style="padding:6px 12px; background:#eef3ff; color:#2f66d8; font-weight:bold;">🔙 返回书架</button>
-              <b style="font-size:15px; color:#1a1d26; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${safeEsc(book.bookName)}</b>
+      const entriesHtml = entries.map(e => {
+        const isChecked = window._tempSelectedWbIds.has(e.id);
+        return `
+          <label style="display:flex; align-items:flex-start; gap:8px; padding:10px 0; border-top:1px dashed #edf2ff; cursor:pointer;">
+            <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="window._toggleRoleEntry('${e.id}', this.checked)" style="width:18px; height:18px; accent-color:#2f66d8; margin-top:2px; flex-shrink:0;">
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:13px; font-weight:bold; color:${isChecked ? '#2f66d8' : '#333'};">${safeEsc(e.keys)}</div>
+              <div style="font-size:11px; color:#888; margin-top:4px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${safeEsc(e.content)}</div>
             </div>
-          `;
+          </label>
+        `;
+      }).join('');
 
-          if(!book.entries || book.entries.length === 0) {
-            html += `<div style="text-align:center; padding:40px 0; color:#888;">这本书没有词条哦~</div>`;
-          } else {
-            html += book.entries.map(e => `
-              <div style="background:#fff; border:1px solid #e4e8f5; border-radius:12px; padding:12px; margin-bottom:12px; box-shadow:0 2px 8px rgba(47,102,216,0.04);">
-                <div style="font-weight:bold; color:#2f66d8; margin-bottom:8px; font-size:14px;">触发词：${safeEsc(e.keys)}</div>
-                <textarea id="wb_edit_${e.id}" class="ta" style="min-height:80px; font-size:13px; padding:10px; line-height:1.5; background:#f8f9ff; border:1px solid #dce5f2;">${safeEsc(e.content)}</textarea>
-                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
-                  <button class="btn d" onclick="window._wbDelEntry('${book.bookId}', '${e.id}')" style="padding:6px 14px;">删除此条</button>
-                  <button class="btn p" onclick="window._wbSaveEntry('${book.bookId}', '${e.id}')" style="padding:6px 14px;">保存修改</button>
-                </div>
-              </div>
-            `).join('');
-          }
-          box.innerHTML = html;
-        } 
-        // 📚 否则，渲染书架列表
-        else {
-          if (books.length === 0) {
-            box.innerHTML = `<div style="text-align:center; padding:60px 0; color:#a0aaba; font-size:14px;">总库空空如也<br><br>点击右上角「导入」按钮<br>添加你的世界书吧～</div>`;
-            return;
-          }
-          box.innerHTML = books.map(b => `
-            <div style="background:#fff; border:1px solid #e4e8f5; border-radius:16px; padding:16px; box-shadow:0 4px 12px rgba(47,102,216,0.05); cursor:pointer; margin-bottom:12px; transition:transform 0.1s;" 
-                 onclick="window._wbViewBook('${b.bookId}')" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div style="flex:1; min-width:0; padding-right:10px;">
-                  <div style="font-size:16px; font-weight:800; color:#1a1d26; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📖 ${safeEsc(b.bookName)}</div>
-                  <div style="font-size:13px; color:#7a86a8; margin-top:6px;">包含 <b style="color:#2f66d8;">${(b.entries||[]).length}</b> 个词条设定</div>
-                </div>
-                <div style="display:flex; gap:8px; align-items:center;">
-                  <button class="btn d" onclick="event.stopPropagation(); window._delGlobalBook('${b.bookId}')" style="border-radius:8px; padding:6px 12px; font-weight:bold; font-size:12px;">删除</button>
-                  <div style="color:#ccc; font-size:20px; font-weight:bold; margin-left:4px;">›</div>
-                </div>
-              </div>
-            </div>
-          `).join('');
-        }
-      } catch (err) {
-        document.getElementById('globalWbList').innerHTML = '渲染失败：' + err.message;
-      }
-    };
-
-    // 交互魔法绑定
-    window._wbViewBook = (id) => { currentViewBookId = id; window._renderGlobalWb(); };
-    window._wbBackToList = () => { currentViewBookId = null; window._renderGlobalWb(); };
-
-    window._wbSaveEntry = async (bookId, entryId) => {
-      const text = document.getElementById('wb_edit_' + entryId).value;
-      const books = await getWbBooks();
-      const b = books.find(x => x.bookId === bookId);
-      if(b) {
-        const e = b.entries.find(x => x.id === entryId);
-        if(e) e.content = text;
-        await setWbBooks(books);
-        alert('🎉 词条修改保存成功！外挂内存已更新！');
-      }
-    };
-
-    window._wbDelEntry = async (bookId, entryId) => {
-      if(!confirm('确定删除这条设定吗？')) return;
-      const books = await getWbBooks();
-      const b = books.find(x => x.bookId === bookId);
-      if(b) {
-        b.entries = b.entries.filter(x => x.id !== entryId);
-        await setWbBooks(books);
-        window._renderGlobalWb();
-      }
-    };
-
-    window._delGlobalBook = async (bookId) => {
-      if (!confirm('确定要从总库中彻底删除这本书吗？删除后各角色挂载的该书设定也会失效哦！')) return;
-      let books = await getWbBooks();
-      books = books.filter(b => b.bookId !== bookId);
-      await setWbBooks(books);
-      window._renderGlobalWb();
-    };
-
-    // 监听桌面点击，自动刷新
-    const originalShow = window.show;
-    window.show = function(id) {
-      if (id === 'worldbook') { currentViewBookId = null; window._renderGlobalWb(); }
-      originalShow(id);
-    };
-
-    document.getElementById('wbImportFile').addEventListener('change', async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      try {
-        const text = await file.text();
-        const books = await getWbBooks();
-        let extracted = [];
-
-        if (file.name.endsWith('.json')) {
-          deepExtractEntries(JSON.parse(text), extracted);
-        } else {
-          const blocks = text.replace(/\r/g, '').split(/\n{2,}/).filter(Boolean);
-          blocks.forEach(block => {
-            const lines = block.split('\n');
-            const keys = lines[0].length < 20 ? lines[0] : '文本词条';
-            extracted.push({ id: 'we_' + Date.now() + Math.random().toString().slice(2,8), keys, content: block });
-          });
-        }
-        if (extracted.length === 0) throw new Error("雷达扫描完毕，未发现有效词条！");
-        const bookName = file.name.replace(/\.[^.]+$/, '');
-        books.unshift({ bookId: 'bk_' + Date.now(), bookName, entries: extracted });
-        await setWbBooks(books);
-        
-        window._renderGlobalWb();
-        setTimeout(() => alert(`🎉 暴力解析成功！成功从《${bookName}》中榨出 ${extracted.length} 个词条！`), 100);
-      } catch (err) {
-        alert('解析失败啦宝宝：' + err.message);
-      } finally { e.target.value = ''; }
+      html += `
+        <div style="background:#fff; border:1px solid #e4e8f5; border-radius:12px; padding:12px; box-shadow:0 2px 8px rgba(47,102,216,0.02); margin-bottom:12px;">
+          <div style="font-size:14px; font-weight:800; color:#1a1d26; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📖 ${safeEsc(b.bookName)}</span>
+            <button class="btn" onclick="window._selectAllBook('${b.bookId}')" style="font-size:11px; padding:4px 8px; background:#eef3ff; color:#2f66d8; flex-shrink:0;">本本全选</button>
+          </div>
+          <div style="max-height:220px; overflow-y:auto; padding-right:4px;">
+            ${entriesHtml}
+          </div>
+        </div>
+      `;
     });
 
-    // ================= 角色挑选逻辑 (终极防崩溃渲染版) =================
-    window._openRoleWbModal = async function() {
-      const modal = document.getElementById('roleWbModal');
-      const box = document.getElementById('roleWbList');
-      modal.classList.add('active');
-      box.innerHTML = '<div style="text-align:center; padding:40px; color:#888;">正在从外挂内存读取数据...</div>';
+    box.innerHTML = html || `<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:13px;">导入的世界书都是空的哦~</div>`;
 
-      try {
-        if (!currentId) throw new Error("未选中任何角色！");
-        const c = getContactById(currentId);
-        const st = normSettings(c?.settings);
-        
-        // 把选中的 ID 挂载到全局，方便 checkbox 随时修改
-        window._tempSelectedWbIds = new Set(st.wbEnabled || []);
+  } catch (err) {
+    box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#e74c3c; font-size:13px;">渲染失败：${err.message}</div>`;
+  }
+};
 
-        const books = await getWbBooks();
-        if (!books || books.length === 0) {
-          box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:13px;">请先去桌面进入【世界书】App导入数据哦</div>`;
-          return;
-        }
+window._toggleRoleEntry = (id, isChecked) => {
+  if (isChecked) window._tempSelectedWbIds.add(id); else window._tempSelectedWbIds.delete(id);
+};
 
-        let html = '';
-        books.forEach(b => {
-          const entries = b.entries || [];
-          if (entries.length === 0) return; // 遇到坏数据直接跳过，绝不崩溃！
+window._selectAllBook = async (bookId) => {
+  const books = await getWbBooks();
+  const book = books.find(b => b.bookId === bookId);
+  if (book && book.entries) {
+    book.entries.forEach(e => window._tempSelectedWbIds.add(e.id));
+    window._openRoleWbModal(); 
+  }
+};
 
-          const entriesHtml = entries.map(e => {
-            const isChecked = window._tempSelectedWbIds.has(e.id);
-            return `
-              <label style="display:flex; align-items:flex-start; gap:8px; padding:10px 0; border-top:1px dashed #edf2ff; cursor:pointer;">
-                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="window._toggleRoleEntry('${e.id}', this.checked)" style="width:18px; height:18px; accent-color:#2f66d8; margin-top:2px; flex-shrink:0;">
-                <div style="flex:1; min-width:0;">
-                  <div style="font-size:13px; font-weight:bold; color:${isChecked ? '#2f66d8' : '#333'};">${safeEsc(e.keys)}</div>
-                  <div style="font-size:11px; color:#888; margin-top:4px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${safeEsc(e.content)}</div>
-                </div>
-              </label>
-            `;
-          }).join('');
+// 🌟 注入 UI 的魔法引擎！
+setTimeout(() => {
+  const wbContainer = document.createElement('div');
+  wbContainer.innerHTML = `
+    <!-- 1. 真正的独立 App：全局管理中心 -->
+    <section id="worldbook" class="screen">
+      <div class="header">
+        <button class="btn" onclick="show('home')">‹ 返回</button>
+        <b>世界书总库</b>
+        <button class="btn" onclick="document.getElementById('wbImportFile').click()">导入</button>
+        <input type="file" id="wbImportFile" accept=".json,.txt" class="hidden">
+      </div>
+      <div class="page" style="background:linear-gradient(180deg,#f4f6fb,#edf2ff); padding:16px;">
+        <div style="font-size:12px; color:#5a6a8f; margin-bottom:12px; text-align:center;">在这里统一管理所有的世界观设定，导入后可在各角色的聊天设置中挂载。</div>
+        <div id="globalWbList" class="list" style="gap:14px;"></div>
+      </div>
+    </section>
 
-          html += `
-            <div style="background:#fff; border:1px solid #e4e8f5; border-radius:12px; padding:12px; box-shadow:0 2px 8px rgba(47,102,216,0.02); margin-bottom:12px;">
-              <div style="font-size:14px; font-weight:800; color:#1a1d26; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-                <span style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📖 ${safeEsc(b.bookName)}</span>
-                <button class="btn" onclick="window._selectAllBook('${b.bookId}')" style="font-size:11px; padding:4px 8px; background:#eef3ff; color:#2f66d8; flex-shrink:0;">本本全选</button>
-              </div>
-              <div style="max-height:220px; overflow-y:auto; padding-right:4px;">
-                ${entriesHtml}
-              </div>
-            </div>
-          `;
-        });
-
-        box.innerHTML = html || `<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:13px;">导入的世界书都是空的哦~</div>`;
-
-      } catch (err) {
-        box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#e74c3c; font-size:13px;">渲染失败：${err.message}</div>`;
-      }
-    };
-
-    window._toggleRoleEntry = (id, isChecked) => {
-      if (isChecked) window._tempSelectedWbIds.add(id); else window._tempSelectedWbIds.delete(id);
-    };
-
-    window._selectAllBook = async (bookId) => {
-      const books = await getWbBooks();
-      const book = books.find(b => b.bookId === bookId);
-      if (book && book.entries) {
-        book.entries.forEach(e => window._tempSelectedWbIds.add(e.id));
-        window._openRoleWbModal(); // 重新渲染刷新UI
-      }
-    };
-
-    const openWbBtn = document.getElementById('openWorldbookBtn');
-    if (openWbBtn) {
-      openWbBtn.onclick = () => { window._openRoleWbModal(); };
-    }
-
-    // 🌟 终极护妻魔法：用 JS 自动把世界书的 UI 种进大别墅里！绝对不会放错位置！
-    const wbContainer = document.createElement('div');
-    wbContainer.innerHTML = `
-      <!-- 1. 真正的独立 App：全局管理中心 -->
-      <section id="worldbook" class="screen">
-        <div class="header">
-          <button class="btn" onclick="show('home')">‹ 返回</button>
-          <b>世界书总库</b>
-          <button class="btn" onclick="document.getElementById('wbImportFile').click()">导入</button>
-          <input type="file" id="wbImportFile" accept=".json,.txt" class="hidden">
+    <!-- 2. 角色挑选面板弹窗 -->
+    <div id="roleWbModal" class="modal" style="z-index:100;" onclick="if(event.target===this) this.classList.remove('active')">
+      <div class="modal-card" style="max-width:380px; background:#fcfdff; padding:0; overflow:hidden; display:flex; flex-direction:column; max-height:85dvh;">
+        <div style="padding:16px; background:linear-gradient(180deg,#f8f9ff,#f4f6fb); border-bottom:1px solid #e4e8f5; display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:16px; font-weight:800; color:#1a1d26;">📌 为当前角色挑选设定</div>
+          <button class="btn" onclick="document.getElementById('roleWbModal').classList.remove('active')" style="background:transparent; color:#888; font-size:20px; padding:0 8px;">×</button>
         </div>
-        <div class="page" style="background:linear-gradient(180deg,#f4f6fb,#edf2ff); padding:16px;">
-          <div style="font-size:12px; color:#5a6a8f; margin-bottom:12px; text-align:center;">在这里统一管理所有的世界观设定，导入后可在各角色的聊天设置中挂载。</div>
-          <div id="globalWbList" class="list" style="gap:14px;"></div>
-        </div>
-      </section>
-
-      <!-- 2. 角色挑选面板弹窗 -->
-      <div id="roleWbModal" class="modal" style="z-index:100;" onclick="if(event.target===this) this.classList.remove('active')">
-        <div class="modal-card" style="max-width:380px; background:#fcfdff; padding:0; overflow:hidden; display:flex; flex-direction:column; max-height:85dvh;">
-          <div style="padding:16px; background:linear-gradient(180deg,#f8f9ff,#f4f6fb); border-bottom:1px solid #e4e8f5; display:flex; justify-content:space-between; align-items:center;">
-            <div style="font-size:16px; font-weight:800; color:#1a1d26;">📌 为当前角色挑选设定</div>
-            <button class="btn" onclick="document.getElementById('roleWbModal').classList.remove('active')" style="background:transparent; color:#888; font-size:20px; padding:0 8px;">×</button>
-          </div>
-          <div style="padding:8px 16px; font-size:12px; color:#4a67a8; background:#eef3ff;">打勾的条目将会被注入到当前 AI 的脑海中。</div>
-          <div id="roleWbList" style="flex:1; overflow-y:auto; padding:12px; background:#f4f6fb; display:flex; flex-direction:column; gap:12px;"></div>
-          <div style="padding:12px 16px; background:#fff; border-top:1px solid #e4e8f5;">
-            <button class="btn p" id="saveRoleWbBtn" style="width:100%; border-radius:10px; padding:10px 0; font-size:15px; font-weight:bold; box-shadow:0 4px 12px rgba(47,102,216,0.2);">保存配置</button>
-          </div>
+        <div style="padding:8px 16px; font-size:12px; color:#4a67a8; background:#eef3ff;">打勾的条目将会被注入到当前 AI 的脑海中。</div>
+        <div id="roleWbList" style="flex:1; overflow-y:auto; padding:12px; background:#f4f6fb; display:flex; flex-direction:column; gap:12px;"></div>
+        <div style="padding:12px 16px; background:#fff; border-top:1px solid #e4e8f5;">
+          <button class="btn p" id="saveRoleWbBtn" style="width:100%; border-radius:10px; padding:10px 0; font-size:15px; font-weight:bold; box-shadow:0 4px 12px rgba(47,102,216,0.2);">保存配置</button>
         </div>
       </div>
-    `;
-    document.getElementById('app').appendChild(wbContainer);
+    </div>
+  `;
+  document.getElementById('app').appendChild(wbContainer);
 
-    // 重新绑定刚才生成的按钮事件
-    document.getElementById('saveRoleWbBtn').onclick = () => {
-      if (!currentId) return;
-      const c = getContactById(currentId);
-      const st = normSettings(c?.settings);
-      st.wbEnabled = Array.from(window._tempSelectedWbIds || []);
-      updateContact(currentId, { settings: st });
-      document.getElementById('roleWbModal').classList.remove('active');
-      alert('🎉 专属配置已保存！外挂内存已经记住了你勾选的所有设定！');
-    };
+  // 绑定事件
+  const openWbBtn = document.getElementById('openWorldbookBtn');
+  if (openWbBtn) {
+    openWbBtn.onclick = () => { window._openRoleWbModal(); };
+  }
 
-    document.getElementById('wbImportFile').addEventListener('change', async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      try {
-        const text = await file.text();
-        const books = await getWbBooks();
-        let extracted = [];
-        if (file.name.endsWith('.json')) {
-          deepExtractEntries(JSON.parse(text), extracted);
-        } else {
-          const blocks = text.replace(/\r/g, '').split(/\n{2,}/).filter(Boolean);
-          blocks.forEach(block => {
-            const lines = block.split('\n');
-            const keys = lines[0].length < 20 ? lines[0] : '文本词条';
-            extracted.push({ id: 'we_' + Date.now() + Math.random().toString().slice(2,8), keys, content: block });
-          });
-        }
-        if (extracted.length === 0) throw new Error("雷达扫描完毕，未发现有效词条！");
-        const bookName = file.name.replace(/\.[^.]+$/, '');
-        books.unshift({ bookId: 'bk_' + Date.now(), bookName, entries: extracted });
-        await setWbBooks(books);
-        window._renderGlobalWb();
-        setTimeout(() => alert(`🎉 暴力解析成功！成功从《${bookName}》中榨出 ${extracted.length} 个词条！`), 100);
-      } catch (err) {
-        alert('解析失败啦宝宝：' + err.message);
-      } finally { e.target.value = ''; }
-    });
+  document.getElementById('saveRoleWbBtn').onclick = () => {
+    if (!currentId) return;
+    const c = getContactById(currentId);
+    const st = normSettings(c?.settings);
+    st.wbEnabled = Array.from(window._tempSelectedWbIds || []);
+    updateContact(currentId, { settings: st });
+    document.getElementById('roleWbModal').classList.remove('active');
+    alert('🎉 专属配置已保存！外挂内存已经记住了你勾选的所有设定！');
+  };
 
-  })(); // 🏠 闭合主屋的大门
-  </script>
+  document.getElementById('wbImportFile').addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const books = await getWbBooks();
+      let extracted = [];
+      if (file.name.endsWith('.json')) {
+        deepExtractEntries(JSON.parse(text), extracted);
+      } else {
+        const blocks = text.replace(/\r/g, '').split(/\n{2,}/).filter(Boolean);
+        blocks.forEach(block => {
+          const lines = block.split('\n');
+          const keys = lines[0].length < 20 ? lines[0] : '文本词条';
+          extracted.push({ id: 'we_' + Date.now() + Math.random().toString().slice(2,8), keys, content: block });
+        });
+      }
+      if (extracted.length === 0) throw new Error("雷达扫描完毕，未发现有效词条！");
+      const bookName = file.name.replace(/\.[^.]+$/, '');
+      books.unshift({ bookId: 'bk_' + Date.now(), bookName, entries: extracted });
+      await setWbBooks(books);
+      window._renderGlobalWb();
+      setTimeout(() => alert(`🎉 暴力解析成功！成功从《${bookName}》中榨出 ${extracted.length} 个词条！`), 100);
+    } catch (err) {
+      alert('解析失败啦宝宝：' + err.message);
+    } finally { e.target.value = ''; }
+  });
+}, 100); 
+
+})(); // 🏠 闭合主屋的大门！
+</script>
+
+<!-- 预览图片的安全弹窗 -->
+<div id="modalPreview" class="modal" onclick="this.classList.remove('active')">
+  <img id="previewModalImg" style="max-width:95%;max-height:90dvh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+</div>
 </body>
 </html>
