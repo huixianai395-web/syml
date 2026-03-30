@@ -2361,7 +2361,7 @@ if(after){
     if(!r.ok){const msg=data?.error?.message||data?.message||raw?.slice(0,220)||('HTTP '+r.status);throw new Error(clean(msg)||('HTTP '+r.status));}
     const out=clean(data?.choices?.[0]?.message?.content||''); if(!out) throw new Error('接口返回为空内容'); return out;
   }
-  // ================= 蓝色专属：流式打字机引擎 =================
+ // ================= 蓝色专属：终极防断流打字机引擎 =================
   async function callApiStream(messages, onChunk){
     const s=getApiState(),cfg=s.presets[s.current];if(!cfg.base||!cfg.key) throw new Error('请配置API');
     const r=await fetch(buildUrl(cfg.base,'/v1/chat/completions'),{
@@ -2371,17 +2371,26 @@ if(after){
     if(!r.ok) throw new Error('HTTP '+r.status);
     const reader=r.body.getReader(); const dec=new TextDecoder('utf-8');
     let done=false;
+    let buffer=''; // 🌟 蓝色的终极蓄水池，专治各种碎水滴！
     while(!done){
       const {value,done:d}=await reader.read(); done=d;
       if(value){
-        const chunk=dec.decode(value,{stream:true});
-        const lines=chunk.split('\n').filter(x=>x.trim().startsWith('data: '));
-        for(const l of lines){
-          const dStr=l.replace('data: ','').trim(); if(dStr==='[DONE]') continue;
+        buffer += dec.decode(value,{stream:true});
+        const lines = buffer.split('\n');
+        // 把最后一行可能不完整的碎片切下来，留在蓄水池里等下一次拼接
+        buffer = lines.pop(); 
+        for(let l of lines){
+          l = l.trim();
+          if(!l.startsWith('data: ')) continue;
+          const dStr = l.slice(6).trim();
+          if(dStr === '[DONE]') continue;
           try{
-            const j=JSON.parse(dStr); const dt=j.choices[0]?.delta?.content||'';
+            const j = JSON.parse(dStr);
+            const dt = j.choices[0]?.delta?.content || '';
             if(dt) onChunk(dt);
-          }catch(e){}
+          }catch(e){
+            // 就算遇到极度畸形的 JSON，也不会卡死了！
+          }
         }
       }
     }
