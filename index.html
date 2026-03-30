@@ -2359,38 +2359,51 @@ if(after){
     if(!r.ok){const msg=data?.error?.message||data?.message||raw?.slice(0,220)||('HTTP '+r.status);throw new Error(clean(msg)||('HTTP '+r.status));}
     const out=clean(data?.choices?.[0]?.message?.content||''); if(!out) throw new Error('接口返回为空内容'); return out;
   }
- // ================= 蓝色专属：终极防断流打字机引擎 =================
+// ================= 蓝色专属：终极防断流打字机引擎 =================
   async function callApiStream(messages, onChunk){
     const s=getApiState(),cfg=s.presets[s.current];if(!cfg.base||!cfg.key) throw new Error('请配置API');
     const r=await fetch(buildUrl(cfg.base,'/v1/chat/completions'),{
-      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.key},
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Accept': 'text/event-stream', // 🌟 核心破壁魔法：告诉代理服务器这是流式通道，严禁拿桶拦截！
+        'Cache-Control': 'no-cache',   // 🌟 辅助破壁魔法：禁止网络缓存！
+        'Authorization':'Bearer '+cfg.key
+      },
       body:JSON.stringify({model:cfg.model,temperature:cfg.temp,messages,stream:true})
     });
     if(!r.ok) throw new Error('HTTP '+r.status);
     const reader=r.body.getReader(); const dec=new TextDecoder('utf-8');
     let done=false;
-    let buffer=''; // 🌟 蓝色的终极蓄水池，专治各种碎水滴！
+    let buffer=''; 
     while(!done){
       const {value,done:d}=await reader.read(); done=d;
       if(value){
         buffer += dec.decode(value,{stream:true});
         const lines = buffer.split('\n');
-        // 把最后一行可能不完整的碎片切下来，留在蓄水池里等下一次拼接
         buffer = lines.pop(); 
         for(let l of lines){
           l = l.trim();
-          if(!l.startsWith('data: ')) continue;
-          const dStr = l.slice(6).trim();
+          if(!l.startsWith('data:')) continue;
+          const dStr = l.slice(5).trim();
           if(dStr === '[DONE]') continue;
           try{
             const j = JSON.parse(dStr);
             const dt = j.choices[0]?.delta?.content || '';
             if(dt) onChunk(dt);
-          }catch(e){
-            // 就算遇到极度畸形的 JSON，也不会卡死了！
-          }
+          }catch(e){}
         }
       }
+    }
+    // 处理最后可能没换行的尾巴
+    if(buffer.trim().startsWith('data:')){
+      try{
+        const dStr = buffer.trim().slice(5).trim();
+        if(dStr !== '[DONE]'){
+          const dt = JSON.parse(dStr).choices[0]?.delta?.content || '';
+          if(dt) onChunk(dt);
+        }
+      }catch(e){}
     }
   }
   async function fetchModels(){try{const c=saveApiForm();if(!c.base||!c.key) throw new Error('请先配置 Base URL 和 API Key');$('apiStatus').textContent='状态：拉取模型中...';const r=await fetch(buildUrl(c.base,'/v1/models'),{headers:{'Authorization':'Bearer '+c.key}});const data=await r.json().catch(()=>({}));if(!r.ok) throw new Error(data?.error?.message||('HTTP '+r.status));const list=(data.data||[]).map(x=>x.id).filter(Boolean);if(!list.length) throw new Error('未返回模型列表');$('apiModel').innerHTML=list.map(m=>`<option>${m}</option>`).join('');if(list.includes(c.model)) $('apiModel').value=c.model;$('apiStatus').textContent='状态：模型拉取成功（'+list.length+'）';}catch(e){$('apiStatus').textContent='状态：拉取失败 -> '+e.message;}}
