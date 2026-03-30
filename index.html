@@ -2258,9 +2258,11 @@ if(!isMe && isHtmlDoc(t)){
     const me = { name: st.meName||globalMe.name||'我', avatar: st.meAvatar||globalMe.avatar||'', persona: st.mePersona||globalMe.persona||'', note: st.meNote||globalMe.note||'' };
     const roleAvatar=c?.avatar||'https://via.placeholder.com/64x64?text=TA',meAvatar=me.avatar||'https://via.placeholder.com/64x64?text=我';
     const arr=getChatArr(currentId);
-
-    // 🌟 蓝色的群聊成员通讯录缓存
     const allContacts = getContacts();
+
+    // 🌟 蓝色的终极记忆魔法：死死记住上一个说话的男主！
+    let lastSenderName = '';
+    let lastSenderAv = roleAvatar;
 
     if(st.mode==='offline'){
       $('chatMsgs').innerHTML=arr.map(m=>{
@@ -2271,21 +2273,25 @@ if(!isMe && isHtmlDoc(t)){
     }else{
       $('chatMsgs').innerHTML=arr.map(m=>{
         const selected=selectedIds.has(m.id),sCls=selectMode?' selecting':'',cHtml=selectMode?`<div class="msg-check">✓</div>`:'';
-        if(m.role==='user') return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-row me"><div class="bubble-wrap me">${renderBubbleContent(m,true,pref)}</div><img class="chat-avatar" src="${meAvatar}"></div></div>`;
+        if(m.role==='user') {
+           lastSenderName = ''; // 老婆说话了，打断男主的连发记忆！
+           return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-row me"><div class="bubble-wrap me">${renderBubbleContent(m,true,pref)}</div><img class="chat-avatar" src="${meAvatar}"></div></div>`;
+        }
         
-        // 🎨 蓝色的群聊皮肤伪装术！剥离前缀，换上真身头像！
         let currentAv = roleAvatar;
         let nameLabel = '';
         let tempM = { ...m };
         if(c.isGroup) {
           const match = (tempM.text||'').match(/^\[(.*?)\][：:\s]*(.*)/s);
           if(match) {
-            const senderName = match[1];
-            tempM.text = match[2]; // 剥离前缀
-            const sender = allContacts.find(x => x.name === senderName);
-            if(sender) currentAv = sender.avatar;
-            nameLabel = `<div style="font-size:10px; color:#888; margin-bottom:2px; margin-left:4px;">${safeEsc(senderName)}</div>`;
-          }
+            lastSenderName = match[1]; // 发现署名，立刻记住！
+            tempM.text = match[2]; 
+            const sender = allContacts.find(x => x.name === lastSenderName);
+            if(sender) lastSenderAv = sender.avatar; else lastSenderAv = roleAvatar;
+          } 
+          // 如果没有署名，但记忆库里有人，就直接沿用他的头像和名字！
+          currentAv = lastSenderAv;
+          if(lastSenderName) nameLabel = `<div style="font-size:10px; color:#888; margin-bottom:2px; margin-left:4px;">${safeEsc(lastSenderName)}</div>`;
         }
         return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-row"><img class="chat-avatar" src="${currentAv}"><div class="bubble-wrap ai">${nameLabel}${renderBubbleContent(tempM,false,pref)}</div></div></div>`;
       }).join('');
@@ -2296,7 +2302,6 @@ if(!isMe && isHtmlDoc(t)){
     const _msgs=$('chatMsgs');
     if(!selectMode){requestAnimationFrame(()=>{_msgs.scrollTop=_msgs.scrollHeight;setTimeout(()=>{_msgs.scrollTop=_msgs.scrollHeight;},120);});}
   }
-
   function clearCurrentChat(){if(!currentId) return;if(!confirm('清空当前聊天？')) return;setChatArr(currentId,[]);updateContact(currentId,{preview:'',time:''});selectMode=false;selectedIds.clear();renderChat();renderContacts($('searchInput').value||'');}
   function deleteCurrentContact(){if(!currentId) return;if(!confirm('删除当前好友及聊天记录？')) return;setContacts(getContacts().filter(c=>c.id!==currentId));const map=getChats();delete map[currentId];setChats(map);currentId=null;renderContacts($('searchInput').value||'');show('wechat');}
 
@@ -2701,6 +2706,7 @@ fatal_pattern: {"messages":...}→BLOCK`;
 必须严格输出纯 JSON 数组，格式如下：
 {"messages":["[成员A]：发出的消息","[成员B]：接话的内容"]}
 注意：每条消息前必须加上发送者的名字用方括号括起来，如“[林闻笙]：”。严禁包含动作描写，只能是纯对话文本。每次回复可由不同成员发出1~4条消息不等，看人设回复条数，展现群聊的活跃度和争风吃醋。`;
+      `【严禁事项】：正文的任何地方（包含对话和描写），绝对禁止出现类似 [2026-03-30 23:46] 或 [名字]： 这样的时间戳和前缀格式！直接像写小说一样自然排版！`,
     }
   }
   function buildOfflineSystem(c,me,st){
@@ -2792,7 +2798,21 @@ async function sendMsg(){
       if(callState.active&&callState.chatId===chatId){
         system+='\n[当前状态：正在'+(callState.type==='video'?'视频':'语音')+'通话中，已通话'+fmtCallDur(Date.now()-callState.start)+'，像真实电话一样交流，简短口语化。想挂断时回复[endcall]。]';
       }
-      const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:(()=>{const c=buildContent(x,st);return typeof c==='string'?`[${fmtFullTs(x.time)}] ${c}`:c;})()})),{role:'user',content:modeTag}];
+      // 🌟 蓝色的净化魔法：如果是线下模式，绝不给AI传时间戳！防止它们学坏！
+      const messages=[
+        {role:'system',content:system},
+        ...hist.map(x=>({
+          role:x.role==='user'?'user':'assistant',
+          content:(()=>{
+            const c=buildContent(x,st);
+            if(typeof c==='string') {
+              return st.mode === 'offline' ? c : `[${fmtFullTs(x.time)}] ${c}`;
+            }
+            return c;
+          })()
+        })),
+        {role:'user',content:modeTag}
+      ];
   
       // ================= 蓝色的双轨制收发神经元 =================
       if(st.mode==='offline' && st.stream){
@@ -3145,16 +3165,28 @@ document.getElementById('globalImportFile').onchange = async function(e) {
   function favoriteByIds(ids){const set=new Set(ids),arr=getChatArr(currentId);arr.forEach(m=>{if(set.has(m.id)) m.favorite=true});setChatArr(currentId,arr);renderChat();}
   function hideForAiByIds(ids,val){const set=new Set(ids),arr=getChatArr(currentId);arr.forEach(m=>{if(set.has(m.id)) m.hiddenForAi=!!val});setChatArr(currentId,arr);renderChat();}
 
-  function bindChatMsgEvents(){
+ function bindChatMsgEvents(){
     const box=$('chatMsgs');
     box.addEventListener('contextmenu',e=>{const item=e.target.closest('.msg-item');if(!item||!currentId||selectMode) return;e.preventDefault();openFloatMenu(item.dataset.mid,e.clientX,e.clientY);});
-    box.addEventListener('touchstart',e=>{const item=e.target.closest('.msg-item');if(!item||!currentId||selectMode) return;const t=e.touches[0];lpStartX=t.clientX;lpStartY=t.clientY;clearTimeout(lpTimer);lpTimer=setTimeout(()=>openFloatMenu(item.dataset.mid,t.clientX,t.clientY),420);},{passive:true});
-    box.addEventListener('touchmove',e=>{if(!lpTimer) return;const t=e.touches[0];if(Math.abs(t.clientX-lpStartX)>8||Math.abs(t.clientY-lpStartY)>8){clearTimeout(lpTimer);lpTimer=null;}},{passive:true});
+    box.addEventListener('touchstart',e=>{
+      const item=e.target.closest('.msg-item');if(!item||!currentId||selectMode) return;
+      const t=e.touches[0];lpStartX=t.clientX;lpStartY=t.clientY;
+      clearTimeout(lpTimer);
+      lpTimer=setTimeout(()=>{
+        // 🌟 唤醒面板前，强行打断手机系统的默认文本选择！
+        window.getSelection().removeAllRanges();
+        openFloatMenu(item.dataset.mid,t.clientX,t.clientY);
+      },400); // 触发时间缩短，更灵敏！
+    },{passive:true});
+    box.addEventListener('touchmove',e=>{
+      if(!lpTimer) return;
+      const t=e.touches[0];
+      // 🌟 蓝色的宽容魔法：把防抖容差从 8 放大到 15，手抖一下也绝不断触！
+      if(Math.abs(t.clientX-lpStartX)>15||Math.abs(t.clientY-lpStartY)>15){clearTimeout(lpTimer);lpTimer=null;}
+    },{passive:true});
     ['touchend','touchcancel'].forEach(ev=>box.addEventListener(ev,()=>{clearTimeout(lpTimer);lpTimer=null;},{passive:true}));
     box.addEventListener('click',e=>{const item=e.target.closest('.msg-item');if(!item) return;if(selectMode){e.preventDefault();toggleSelect(item.dataset.mid);}});
-    
-  }
-
+ }
   $('msgFloatLayer').addEventListener('click',e=>{if(e.target.id==='msgFloatLayer') closeFloatMenu();});
   $('msgFloatMenu').addEventListener('click',async e=>{
     const btn=e.target.closest('.fm-btn'); if(!btn) return;
