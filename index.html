@@ -1986,30 +1986,27 @@ function refreshFontSizeUI(){
   function setContacts(v){setJ(K_CONTACT,(v||[]).map(c=>({...c,settings:normSettings(c.settings)})));}
   function getChats(){return getJ(K_CHAT,{});} function setChats(v){setJ(K_CHAT,v);} 
   function getMe(){return getJ(K_ME,{name:'我',avatar:'',persona:'',note:''});} function setMe(v){setJ(K_ME,v);} 
-  function getContactById(id){return getContacts().find(x=>x.id===id);} 
-  function updateContact(id,patch){
-    const arr=getContacts(),i=arr.findIndex(x=>x.id===id); if(i<0) return;
-    arr[i]={...arr[i],...patch}; if(patch.settings) arr[i].settings=normSettings(patch.settings); setContacts(arr);
-  }
-
-  function getChatArr(chatId){
-    const map=getChats(),raw=Array.isArray(map[chatId])?map[chatId]:[],norm=raw.map(toMsg);
-    map[chatId]=norm; setChats(map); return norm;
-  }
-  function setChatArr(chatId,arr){const map=getChats();map[chatId]=(arr||[]).map(toMsg);setChats(map);} 
-  function getMsgById(chatId,mid){return getChatArr(chatId).find(x=>x.id===mid)||null;}
-
-  function updateContactPreview(chatId){
-    const arr=getChatArr(chatId),last=arr[arr.length-1];
-    updateContact(chatId,{preview:last?(last.text||'').slice(0,44):'',time:last?fmtTs(last.time||Date.now()):''});
-    renderContacts($('searchInput').value||'');
+  function getContactById(id){
+    // 🌟 蓝色的双模查询：先找单聊，找不到再去群聊抽屉找！
+    const c = getContacts().find(x=>x.id===id);
+    if(c) return c;
+    const groups = typeof getGroups === 'function' ? getGroups() : [];
+    return groups.find(x=>x.id===id) || null;
   }
 
   window.deleteContactFromList=function(id,e){
     if(e){e.preventDefault();e.stopPropagation();}
     window._isDeleting=true;setTimeout(()=>window._isDeleting=false,500);
-    if(!confirm('确定要删除这个联系人及所有聊天记录吗？')) return false;
-    setContacts(getContacts().filter(c=>c.id!==id));
+    if(!confirm('确定要删除这个聊天及所有记录吗？')) return false;
+    
+    // 🌟 蓝色的智能删除：判断是单聊还是群聊，精准销毁！
+    const groups = typeof getGroups === 'function' ? getGroups() : [];
+    if(groups.some(g => g.id === id)) {
+      setGroups(groups.filter(g => g.id !== id));
+    } else {
+      setContacts(getContacts().filter(c=>c.id!==id));
+    }
+    
     const map=getChats(); delete map[id]; setChats(map);
     if(currentId===id) currentId=null; renderContacts($('searchInput').value||'');
     return false;
@@ -2017,7 +2014,13 @@ function refreshFontSizeUI(){
 
   function renderContacts(k=''){
     k=(k||'').trim();
-    const arr=getContacts().filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
+    // 🌟 蓝色的雷达大融合：把单聊和群聊同时抓取出来！
+    const contacts = getContacts();
+    const groups = typeof getGroups === 'function' ? getGroups() : [];
+    let all = [...contacts, ...groups];
+    
+    const arr = all.filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
+    
     $('contactList').innerHTML=arr.map(c=>`
       <div class="item" style="-webkit-touch-callout:none; user-select:none;"
            oncontextmenu="return deleteContactFromList('${c.id}', event)"
@@ -2025,11 +2028,17 @@ function refreshFontSizeUI(){
            ontouchend="clearTimeout(this._t)" ontouchmove="clearTimeout(this._t)">
         <img class="avatar" src="${c.avatar||'https://via.placeholder.com/88x88?text=头像'}"/>
         <div class="main" onclick="if(window._isDeleting)return; openChat('${c.id}')">
-          <div style="display:flex;justify-content:space-between;align-items:center;"><div class="name">${esc(c.name)}</div><div class="t">${esc(c.time||'')}</div></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="name" style="display:flex; align-items:center; gap:6px;">
+              ${c.isGroup ? '<span style="font-size:10px; background:#eef3ff; color:#2f66d8; padding:2px 6px; border-radius:4px; font-weight:bold;">群聊</span>' : ''}
+              ${esc(c.name)}
+            </div>
+            <div class="t">${esc(c.time||'')}</div>
+          </div>
           <div class="preview">${esc(c.preview||'')}</div>
         </div>
       </div>
-    `).join('') || '<div class="card small">暂无联系人，点右上角 +联系人 创建</div>';
+    `).join('') || '<div class="card small">暂无联系人或群聊，点右上角创建吧</div>';
   }
 
   function openCreateModal(){ $('contactModal').classList.add('active'); }
