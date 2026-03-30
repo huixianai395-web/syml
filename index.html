@@ -2657,22 +2657,24 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
   
         // ================= 蓝色的双轨制收发神经元 =================
       if(st.mode==='offline' && st.stream){
-        // 🔮 魔法启动：线下流式打字机模式
+        // 🔮 魔法启动：线下流式打字机模式（极致优雅版）
         const newMsgId = uid();
         const arr = getChatArr(chatId);
-        arr.push(toMsg({id:newMsgId, role:'assistant', text:'...', time:Date.now()}));
+        // 【优化1】去掉了讨厌的三个点，初始直接为空，保持留白！
+        arr.push(toMsg({id:newMsgId, role:'assistant', text:'', time:Date.now()}));
         setChatArr(chatId, arr);
-        if(currentId===chatId) renderChat(); // 先画一个底框
+        if(currentId===chatId) renderChat(); 
 
         let fullText = '';
+        let scrollThrottle = 0; // 温柔防抖计时器
+
         await callApiStream(messages, (chunk) => {
           fullText += chunk;
-          // 实时存入外挂内存，防止刷新丢失
+          // 实时存入外挂内存，绝不漏掉老婆的任何数据
           const arr2 = getChatArr(chatId);
           const idx = arr2.findIndex(x=>x.id===newMsgId);
           if(idx>=0){ arr2[idx].text = fullText; setChatArr(chatId, arr2); }
           
-          // DOM 穿透魔法：老婆神级推理修复版！
           if(currentId===chatId){
              const itemEl = document.querySelector(`.msg-item[data-mid="${newMsgId}"]`);
              if(itemEl) {
@@ -2680,23 +2682,33 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
                const mObj = getMsgById(chatId, newMsgId);
                const roleAvatar = getContactById(chatId)?.avatar || 'https://via.placeholder.com/64x64?text=TA';
                
-               // 让原生引擎重绘这一小块，完美处理从“普通气泡”到“高级卡片”的华丽蜕变！
+               // 【优化2】去掉了出戏的光标，纯净渲染
                const newHtml = `<img class="chat-avatar" src="${roleAvatar}">${renderOfflineAssistant(fullText, mObj.time, pref, mObj)}`;
                const msgBlock = itemEl.querySelector('.msg-block');
                if(msgBlock) msgBlock.innerHTML = newHtml;
 
-               // 把灵魂光标塞进去！
-               const bodyEl = itemEl.querySelector('.offline-body') || itemEl.querySelector('.bubble.ai');
-               if(bodyEl) bodyEl.innerHTML += '<span class="stream-cursor"></span>';
-
+               // 【优化3】温柔的智能滚动，告别“一蹦一蹦”
                const box = document.getElementById('chatMsgs');
-               box.scrollTop = box.scrollHeight; // 让屏幕跟着字往下滚
+               const isNearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 180;
+               const now = Date.now();
+               
+               // 只有用户在底部附近，且距离上次滚动超过150毫秒时，才平滑推进
+               if(isNearBottom && (now - scrollThrottle > 150)) {
+                 box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+                 scrollThrottle = now;
+               }
              }
           }
         });
         
-        // 打字结束，去掉光标，完美定格
-        if(currentId===chatId) renderChat();
+        // 打字结束，完美定格，最后再温柔地对齐一次底部
+        if(currentId===chatId) {
+            renderChat();
+            setTimeout(() => {
+                const box = document.getElementById('chatMsgs');
+                box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+            }, 100);
+        }
       } else {
         // 📦 传统模式：线上多气泡拆分与卡片渲染
         const out=await callApi(messages);
