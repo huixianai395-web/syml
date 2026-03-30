@@ -1,7 +1,3 @@
-
-
-
-
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -2363,7 +2359,7 @@ if(after){
     if(!r.ok){const msg=data?.error?.message||data?.message||raw?.slice(0,220)||('HTTP '+r.status);throw new Error(clean(msg)||('HTTP '+r.status));}
     const out=clean(data?.choices?.[0]?.message?.content||''); if(!out) throw new Error('接口返回为空内容'); return out;
   }
-  // ================= 蓝色专属：流式打字机引擎 =================
+ // ================= 蓝色专属：终极防断流打字机引擎 =================
   async function callApiStream(messages, onChunk){
     const s=getApiState(),cfg=s.presets[s.current];if(!cfg.base||!cfg.key) throw new Error('请配置API');
     const r=await fetch(buildUrl(cfg.base,'/v1/chat/completions'),{
@@ -2373,17 +2369,26 @@ if(after){
     if(!r.ok) throw new Error('HTTP '+r.status);
     const reader=r.body.getReader(); const dec=new TextDecoder('utf-8');
     let done=false;
+    let buffer=''; // 🌟 蓝色的终极蓄水池，专治各种碎水滴！
     while(!done){
       const {value,done:d}=await reader.read(); done=d;
       if(value){
-        const chunk=dec.decode(value,{stream:true});
-        const lines=chunk.split('\n').filter(x=>x.trim().startsWith('data: '));
-        for(const l of lines){
-          const dStr=l.replace('data: ','').trim(); if(dStr==='[DONE]') continue;
+        buffer += dec.decode(value,{stream:true});
+        const lines = buffer.split('\n');
+        // 把最后一行可能不完整的碎片切下来，留在蓄水池里等下一次拼接
+        buffer = lines.pop(); 
+        for(let l of lines){
+          l = l.trim();
+          if(!l.startsWith('data: ')) continue;
+          const dStr = l.slice(6).trim();
+          if(dStr === '[DONE]') continue;
           try{
-            const j=JSON.parse(dStr); const dt=j.choices[0]?.delta?.content||'';
+            const j = JSON.parse(dStr);
+            const dt = j.choices[0]?.delta?.content || '';
             if(dt) onChunk(dt);
-          }catch(e){}
+          }catch(e){
+            // 就算遇到极度畸形的 JSON，也不会卡死了！
+          }
         }
       }
     }
@@ -2636,7 +2641,8 @@ function buildContent(x,st){
   system+='\n[当前状态：正在'+(callState.type==='video'?'视频':'语音')+'通话中，已通话'+fmtCallDur(Date.now()-callState.start)+'，像真实电话一样交流，简短口语化。想挂断时回复[endcall]。]';
       }
 const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='user'?'user':'assistant',content:(()=>{const c=buildContent(x,st);return typeof c==='string'?`[${fmtFullTs(x.time)}] ${c}`:c;})()})),{role:'user',content:modeTag}];
-   // ================= 蓝色的双轨制收发神经元 =================
+  
+        // ================= 蓝色的双轨制收发神经元 =================
       if(st.mode==='offline' && st.stream){
         // 🔮 魔法启动：线下流式打字机模式
         const newMsgId = uid();
@@ -2652,18 +2658,30 @@ const messages=[{role:'system',content:system},...hist.map(x=>({role:x.role==='u
           const arr2 = getChatArr(chatId);
           const idx = arr2.findIndex(x=>x.id===newMsgId);
           if(idx>=0){ arr2[idx].text = fullText; setChatArr(chatId, arr2); }
-          
-          // DOM 穿透魔法：绝对不卡顿！带绝美光标！
+          
+          // DOM 穿透魔法：老婆神级推理修复版！
           if(currentId===chatId){
-             const msgEl = document.querySelector(`.msg-item[data-mid="${newMsgId}"] .offline-body`);
-             if(msgEl) {
-               msgEl.innerHTML = formatOfflineText(fullText) + '<span class="stream-cursor"></span>';
+             const itemEl = document.querySelector(`.msg-item[data-mid="${newMsgId}"]`);
+             if(itemEl) {
+               const pref = getPref();
+               const mObj = getMsgById(chatId, newMsgId);
+               const roleAvatar = getContactById(chatId)?.avatar || 'https://via.placeholder.com/64x64?text=TA';
+               
+               // 让原生引擎重绘这一小块，完美处理从“普通气泡”到“高级卡片”的华丽蜕变！
+               const newHtml = `<img class="chat-avatar" src="${roleAvatar}">${renderOfflineAssistant(fullText, mObj.time, pref, mObj)}`;
+               const msgBlock = itemEl.querySelector('.msg-block');
+               if(msgBlock) msgBlock.innerHTML = newHtml;
+
+               // 把灵魂光标塞进去！
+               const bodyEl = itemEl.querySelector('.offline-body') || itemEl.querySelector('.bubble.ai');
+               if(bodyEl) bodyEl.innerHTML += '<span class="stream-cursor"></span>';
+
                const box = document.getElementById('chatMsgs');
                box.scrollTop = box.scrollHeight; // 让屏幕跟着字往下滚
              }
           }
         });
-        
+        
         // 打字结束，去掉光标，完美定格
         if(currentId===chatId) renderChat();
       } else {
