@@ -1751,6 +1751,32 @@ window.changeReaderFontColor = function(colorHex){
     <button class="btn" id="multiCancelBtn">取消</button>
     <div id="multiCount" class="small" style="margin-left:auto;">已选 0 项</div>
   </div>
+  <!-- ================= 蓝色高定：专属时光档案馆抽屉 ================= -->
+  <div id="memoryOverlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.4); z-index:299; display:none; opacity:0; transition:opacity 0.3s;" onclick="window._toggleMemoryArchive()"></div>
+  
+  <div id="memoryDrawer" style="position:absolute; top:0; bottom:0; right:-360px; width:320px; background:rgba(244,246,251,0.92); backdrop-filter:blur(24px) saturate(150%); -webkit-backdrop-filter:blur(24px) saturate(150%); border-left:1px solid rgba(255,255,255,0.6); z-index:300; transition:right 0.35s cubic-bezier(0.32, 0.72, 0, 1); overflow-y:auto; padding:20px 16px; box-shadow:-10px 0 30px rgba(47,102,216,0.08);">
+    
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-left:4px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:20px;">🕰️</span>
+        <b style="font-size:16px; color:#2f66d8; letter-spacing:0.5px;">时光档案馆</b>
+      </div>
+      <button class="btn" onclick="window._toggleMemoryArchive()" style="background:transparent; color:#7a86a8; padding:4px 8px; font-size:12px;">✕ 关闭</button>
+    </div>
+
+    <div class="small" style="color:#8892a8; margin-bottom:16px; padding:0 4px; line-height:1.5;">
+      这里封存着你们所有的羁绊。AI 会自动将摘要压缩成卡片存入，你也可以随时手动镌刻新的记忆。
+    </div>
+
+    <button class="btn p" onclick="window._addNewMemoryCard()" style="width:100%; margin-bottom:16px; background:linear-gradient(135deg, #2f66d8, #5ba9ff); border-radius:12px; padding:12px; font-weight:bold; box-shadow:0 4px 12px rgba(47,102,216,0.2); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
+      ✨ 镌刻新记忆
+    </button>
+
+    <!-- 记忆卡片列表容器：无限长廊 -->
+    <div id="memoryCardList" style="display:flex; flex-direction:column; gap:12px;">
+      <!-- 这里的卡片会由 JS 动态生成，每张卡片都可以编辑日期和内容！ -->
+    </div>
+  </div>
 
   <div id="msgFloatLayer" class="float-layer hidden">
     <div id="msgFloatMenu" class="float-menu">
