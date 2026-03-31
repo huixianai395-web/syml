@@ -2392,10 +2392,26 @@ if(!isMe && isHtmlDoc(t)){
     let lastSenderAv = roleAvatar;
 
     if(st.mode==='offline'){
-      $('chatMsgs').innerHTML=arr.map(m=>{
+      $('chatMsgs').innerHTML=arr.map((m, index)=>{
+        // 🌟 蓝色魔法：计算楼层和字数！
+        const floorNum = index + 1;
+        const wordCount = (m.text || '').replace(/<[^>]*>/g, '').length; // 剔除代码标签后的纯字数
+        
+        // 绝美的毛玻璃元数据条 (调用了老婆之前贴的 CSS)
+        const metaHtml = `
+          <div class="rp-meta-bar">
+            <div class="rp-meta-item">#${floorNum} 楼</div>
+            <div class="rp-meta-divider"></div>
+            <div class="rp-meta-item">${wordCount} 字</div>
+          </div>
+        `;
+
         const cls=m.role==='user'?'me':'ai',av=m.role==='user'?meAvatar:roleAvatar,selected=selectedIds.has(m.id),sCls=selectMode?' selecting':'',cHtml=selectMode?`<div class="msg-check">✓</div>`:'';
-        if(m.role==='user') return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}"><div class="bubble-wrap me">${renderBubbleContent(m,true,pref)}</div></div></div>`;
-        return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}">${renderOfflineAssistant(m.text,m.time,pref,m)}</div></div>`;
+        
+        if(m.role==='user') {
+          return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}"><div class="bubble-wrap me">${renderBubbleContent(m,true,pref)}</div>${metaHtml}</div></div>`;
+        }
+        return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}">${renderOfflineAssistant(m.text,m.time,pref,m)}${metaHtml}</div></div>`;
       }).join('');
     }else{
       $('chatMsgs').innerHTML=arr.map(m=>{
