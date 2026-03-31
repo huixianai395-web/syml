@@ -2397,8 +2397,8 @@ if(!isMe && isHtmlDoc(t)){
         const wordCount = (m.text || '').replace(/<[^>]*>/g, '').length;
         const isMe = m.role === 'user';
         
-        // 🌟 蓝色魔法：因为底层的生成计时器我明天才写，今晚先用随机数给你模拟一个绝美的秒数效果！
-        const genTime = isMe ? '0.0' : (Math.random() * 4 + 1.5).toFixed(1);
+       // 🌟 蓝色高定：读取外挂内存里的真实秒数，如果是你发的消息就是0.0！
+        const genTime = isMe ? '0.0' : (m.genTime || '0.0');
 
         // 🌟 蓝色高定骨架：去掉了土土的中文，换成清透的 #, s, t，并分配了完美的 class 身份证！
         // 现在的内联样式只是暂时的极简排版，你以后随时可以在 CSS 里用这些 class 覆盖掉它们！
@@ -2447,15 +2447,8 @@ if(!isMe && isHtmlDoc(t)){
     const _msgs=$('chatMsgs');
     if(!selectMode){
       requestAnimationFrame(()=>{
-        // 🌟 蓝色魔法：加上 CSS 的平滑滚动属性，让它像德芙一样滑下去，而不是生硬地瞬移！
-        _msgs.style.scrollBehavior = 'smooth';
-        _msgs.scrollTop = _msgs.scrollHeight;
-        
-        setTimeout(()=>{
-          _msgs.scrollTop = _msgs.scrollHeight;
-          // 滚完之后悄悄把平滑滚动关掉，防止你平时用手划屏幕的时候手感变得黏糊糊的
-          _msgs.style.scrollBehavior = 'auto';
-        }, 150);
+        _msgs.style.scrollBehavior='auto';
+        _msgs.scrollTop=_msgs.scrollHeight;
       });
     }
   }
@@ -2951,7 +2944,7 @@ async function sendMsg(){
     const hist=getChatArr(chatId).filter(x=>x.text && !x.hiddenForAi).slice(-(st.contextLen||30));
     if(!hist.length) return;
     setTyping(chatId,true);
-
+let reqStart = Date.now(); // 🌟 蓝色魔法：按下秒表，记录 AI 开始思考的时间！
     try{
      // 🌟 核心修改：加入群聊双模路由！
       let system = '';
@@ -3120,7 +3113,16 @@ async function sendMsg(){
     }catch(e){
       const arr2=getChatArr(chatId);arr2.push(toMsg({role:'assistant',text:'请求失败：'+clean(e.message),time:Date.now()}));setChatArr(chatId,arr2);
       updateContactPreview(chatId); if(currentId===chatId) renderChat();
-    }finally{setTyping(chatId,false);} 
+   }finally{
+      setTyping(chatId, false);
+      const reqCost = ((Date.now() - reqStart) / 1000).toFixed(1);
+      const finalArr = getChatArr(chatId);
+      if(finalArr.length > 0 && finalArr[finalArr.length-1].role === 'assistant') {
+        finalArr[finalArr.length-1].genTime = reqCost;
+        setChatArr(chatId, finalArr);
+        if(currentId === chatId) renderChat();
+      }
+    }
   }
 
   $('sendBtn').onclick=sendMsg;
