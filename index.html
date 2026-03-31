@@ -3470,57 +3470,85 @@ document.addEventListener('click',e=>{
     document.getElementById('groupModal').classList.add('active');
   };
 
-  // 2. 确认建群：九宫格炼金术 + 存入外挂内存
-  document.getElementById('saveGroupBtn').onclick = async () => {
+// 2. 确认建群：并发九宫格炼金术 + 存入外挂内存
+  document.getElementById('saveGroupBtn').onclick = async function() {
+    const btn = this;
     const name = document.getElementById('newGroupName').value.trim() || '未命名群聊';
     const cbs = document.querySelectorAll('.group-member-cb:checked');
     if(cbs.length < 2) return alert('宝宝，拉群至少需要选2个人呀！');
     
-    const memberIds = Array.from(cbs).map(cb => cb.value);
-    const contacts = getContacts();
-    const members = memberIds.map(id => contacts.find(c => c.id === id)).filter(Boolean);
-    
-    // 🎨 生成微信风拼接群头像 (简易 Canvas)
-    const canvas = document.createElement('canvas');
-    canvas.width = 120; canvas.height = 120;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#dddee0'; ctx.fillRect(0, 0, 120, 120);
-    
-    const size = members.length < 5 ? 50 : 36;
-    const gap = 4;
-    for(let i=0; i<Math.min(members.length, 9); i++) {
-      try {
-        const img = new Image();
-        img.crossOrigin = "Anonymous";
-        await new Promise(r => { img.onload = r; img.onerror = r; img.src = members[i].avatar || 'https://via.placeholder.com/120'; });
-        const col = i % (members.length < 5 ? 2 : 3);
-        const row = Math.floor(i / (members.length < 5 ? 2 : 3));
-        const x = (members.length < 5 ? 8 : 4) + col * (size + gap);
-        const y = (members.length < 5 ? 8 : 4) + row * (size + gap);
-        ctx.drawImage(img, x, y, size, size);
-      } catch(e) {}
-    }
-    const groupAvatar = canvas.toDataURL('image/jpeg', 0.8);
+    // 🌟 蓝色优化：加上极其优雅的加载提示，防误触！
+    const oldText = btn.innerHTML;
+    btn.innerHTML = '正在施展九宫格炼金术...';
+    btn.style.pointerEvents = 'none';
+    btn.style.opacity = '0.8';
 
-    // 💾 存入外挂内存
-    const groups = getGroups();
-    const newGroupId = 'g_' + Date.now();
-    groups.unshift({
-      id: newGroupId,
-      isGroup: true,
-      name: name,
-      avatar: groupAvatar,
-      memberIds: memberIds,
-      preview: '你们已成功建立群聊，快来聊天吧！',
-      time: fmtTs(Date.now()),
-      settings: { ...DEFAULT_CHAT_SETTINGS, mode: 'online' } // 群聊强制线上模式
-    });
-    setGroups(groups);
-    document.getElementById('groupModal').classList.remove('active');
-    
-   // 🔄 强制唤醒雷达，瞬间刷新列表！
-    renderContacts($('searchInput').value||'');
-    alert('建好啦！快去列表里看看吧！');
+    try {
+      const memberIds = Array.from(cbs).map(cb => cb.value);
+      const contacts = getContacts();
+      const members = memberIds.map(id => contacts.find(c => c.id === id)).filter(Boolean);
+      
+      // 🎨 生成微信风拼接群头像 (简易 Canvas)
+      const canvas = document.createElement('canvas');
+      canvas.width = 120; canvas.height = 120;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#dddee0'; ctx.fillRect(0, 0, 120, 120);
+      
+      const size = members.length < 5 ? 50 : 36;
+      const gap = 4;
+
+      // 🌟 蓝色核心修复：把“排队挨个画”改成“并发一起画”，速度提升9倍！
+      const drawTasks = members.slice(0, 9).map((member, i) => {
+        return new Promise(resolve => {
+          const img = new Image();
+          img.crossOrigin = "Anonymous";
+          img.onload = () => resolve({ img, i });
+          img.onerror = () => resolve({ img: null, i });
+          img.src = member.avatar || 'https://via.placeholder.com/120';
+        });
+      });
+
+      const loadedImages = await Promise.all(drawTasks);
+
+      loadedImages.forEach(({ img, i }) => {
+        if (img) {
+          const col = i % (members.length < 5 ? 2 : 3);
+          const row = Math.floor(i / (members.length < 5 ? 2 : 3));
+          const x = (members.length < 5 ? 8 : 4) + col * (size + gap);
+          const y = (members.length < 5 ? 8 : 4) + row * (size + gap);
+          ctx.drawImage(img, x, y, size, size);
+        }
+      });
+      
+      const groupAvatar = canvas.toDataURL('image/jpeg', 0.8);
+
+      // 💾 存入外挂内存
+      const groups = getGroups();
+      const newGroupId = 'g_' + Date.now();
+      groups.unshift({
+        id: newGroupId,
+        isGroup: true,
+        name: name,
+        avatar: groupAvatar,
+        memberIds: memberIds,
+        preview: '你们已成功建立群聊，快来聊天吧！',
+        time: fmtTs(Date.now()),
+        settings: { ...DEFAULT_CHAT_SETTINGS, mode: 'online' } // 群聊强制线上模式
+      });
+      setGroups(groups);
+      
+      document.getElementById('groupModal').classList.remove('active');
+      // 🔄 强制唤醒雷达，瞬间刷新列表！
+      renderContacts(document.getElementById('searchInput').value||'');
+      
+    } catch(e) {
+      alert('建群失败了宝宝：' + e.message);
+    } finally {
+      // 恢复按钮状态
+      btn.innerHTML = oldText;
+      btn.style.pointerEvents = 'auto';
+      btn.style.opacity = '1';
+    }
   };
   // ===== 查手机模块 v2 =====
     const pcCache = {};
