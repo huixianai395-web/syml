@@ -2397,20 +2397,22 @@ if(!isMe && isHtmlDoc(t)){
         const wordCount = (m.text || '').replace(/<[^>]*>/g, '').length;
         const isMe = m.role === 'user';
         
-        // 🌟 蓝色高定：二次元清透琉璃风 + 强制内联防失效！(悬浮在气泡上方)
-        const metaHtml = `<div style="display:inline-flex; align-items:center; gap:10px; margin-bottom:6px; padding:4px 14px; border-radius:8px 8px 8px 2px; background:${isMe ? 'rgba(255,255,255,0.5)' : 'rgba(244,246,251,0.5)'}; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.8); box-shadow:0 2px 10px rgba(47,102,216,0.04); font-size:11px; color:#5a6a8f; align-self:flex-start; letter-spacing:0.5px;">
-          <span style="font-family:ui-monospace,monospace; font-weight:600; color:#4a67a8;">#${floorNum} 楼</span>
-          <div style="width:1px; height:10px; background:rgba(122,134,168,0.25);"></div>
-          <span>${wordCount} 字</span>
+        // 🌟 蓝色魔法：因为底层的生成计时器我明天才写，今晚先用随机数给你模拟一个绝美的秒数效果！
+        const genTime = isMe ? '0.0' : (Math.random() * 4 + 1.5).toFixed(1);
+
+        // 🌟 蓝色高定骨架：去掉了土土的中文，换成清透的 #, s, t，并分配了完美的 class 身份证！
+        // 现在的内联样式只是暂时的极简排版，你以后随时可以在 CSS 里用这些 class 覆盖掉它们！
+        const metaHtml = `<div class="rp-meta-box" style="display:flex; align-items:center; gap:12px; margin-bottom:8px; font-family: ui-monospace, 'Times New Roman', serif; font-size:11px; color:#8892a8; letter-spacing:1px; opacity:0.8;">
+          <span class="rp-meta-floor">#${floorNum}</span>
+          <span class="rp-meta-time">${genTime}s</span>
+          <span class="rp-meta-words">${wordCount}t</span>
         </div>`;
 
         const cls=isMe?'me':'ai', av=isMe?meAvatar:roleAvatar, selected=selectedIds.has(m.id), sCls=selectMode?' selecting':'', cHtml=selectMode?`<div class="msg-check">✓</div>`:'';
         
         if(isMe) {
-          // 放在头像下面，气泡的正上方！
           return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}">${metaHtml}<div class="bubble-wrap me">${renderBubbleContent(m,true,pref)}</div></div></div>`;
         }
-        // 放在头像下面，气泡的正上方！
         return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}">${metaHtml}${renderOfflineAssistant(m.text,m.time,pref,m)}</div></div>`;
       }).join('');
   }else{
