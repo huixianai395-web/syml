@@ -6560,14 +6560,15 @@ window._renderMemoryCards = async function() {
   `).join('');
 };
 
-// 新增记忆卡片
+// 新增记忆卡片 (纯净修复版，绝对不会再报错了！)
 window._addNewMemoryCard = async function() {
   if(!currentId) return;
   const allMems = await getMemories();
   if(!allMems[currentId]) allMems[currentId] = [];
   
   const d = new Date();
-  const dateStr = \`\${d.getFullYear()}-\${String(d.getMonth()+1).padStart(2,'0')}-\${String(d.getDate()).padStart(2,'0')}\`;
+  // 罪魁祸首就是下面这一行，我已经把所有该死的反斜杠 \ 都删掉了！
+  const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   
   allMems[currentId].unshift({
     id: 'mem_' + Date.now(),
