@@ -2182,16 +2182,23 @@ function compressImage(file, isWallpaper = false) {
       return key;
     });
   }
-  rep(/"([^"]{1,200})"/g,'off-dialogue');
-rep(/"([^"]{1,200})"/g,'off-dialogue');
-  rep(/「([^」]{1,200})」/g,'off-dialogue');
-  rep(/【([^】]{1,200})】/g,'off-em');
-  rep(/\*\*([^*]{1,200})\*\*/g,'off-em');
+  
+  // 🌟 蓝色核心修复：同时兼容直引号 " " 和 中文弯引号 “ ”
+  // 增加对多种引号的包容性，防止 iPhone 智能标点导致不染色
+  rep(/[Inner"]([^"Inner]{1,500})[Inner"]/g,'off-dialogue'); 
+  rep(/[“"]([^“”"]{1,500})[”"]/g,'off-dialogue'); 
+  
+  // 顺便兼容一下单引号，万一 AI 抽风用单引号呢
+  rep(/[‘']([^‘’']{1,500})[’']/g,'off-dialogue');
+  
+  rep(/「([^」]{1,500})」/g,'off-dialogue');
+  rep(/【([^】]{1,500})】/g,'off-em');
+  rep(/\*\*([^*]{1,500})\*\*/g,'off-em');
 
   let out=esc(t);
   marks.forEach((html,i)=>{ out=out.replace(`__MARK_${i}__`,html); });
   return out.replace(/\n/g,'<br>');
-}
+  }
 
 
   function renderOfflineAssistant(text,ts,pref,msg){
