@@ -5345,6 +5345,7 @@ async function applyChatBg() {
   if(!el){ el = document.createElement('style'); el.id = 'chatBgStyleOverride'; document.head.appendChild(el); }
 
   if(glassBg) {
+    // 🌊 琉璃仙气背景：继续保持透明视差感
     el.textContent = `
       #chatRoom.offline #chatMsgs,
       #chatRoom:not(.offline) #chatMsgs {
@@ -5352,14 +5353,15 @@ async function applyChatBg() {
       }
     `;
   } else if(normalBg) {
+    // 🏞️ 普通背景：我们要的是扎实、不透底、随屏滚动的安定感！
     el.textContent = `
       #chatRoom.offline #chatMsgs,
       #chatRoom:not(.offline) #chatMsgs {
         background: url(${normalBg}) center/cover no-repeat !important;
-        background-attachment: scroll !important;
+        background-attachment: scroll !important; /* 强制不跟随视差 */
       }
-      /* 配合普通背景，给气泡加一点点低饱和度的高级白，防透底 */
-      #chatRoom:not(.offline) .bubble.ai { background: rgba(248,250,255,0.95) !important; border: 1px solid rgba(220,229,242,0.8) !important; }
+      /* 针对普通背景，我们把气泡背景调实一点，防止透出底色太乱 */
+      #chatRoom:not(.offline) .bubble.ai { background: #ffffff !important; }
     `;
   } else {
     el.textContent = '';
