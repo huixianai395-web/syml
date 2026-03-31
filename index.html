@@ -6608,45 +6608,139 @@ window.renderNotesList = function(){
       window._renderMemoryCards();
     };
 
-  })(); // 🏠 闭合主屋的大门！
+  // ================= 蓝色核心引擎：时光档案馆 & 记忆压缩 (外挂内存直连版) =================
+  const K_MEMORIES = 'mp_fix_chat_memories';
+  async function getMemories() { return (await localforage.getItem(K_MEMORIES)) || {}; }
+  async function setMemories(v) { await localforage.setItem(K_MEMORIES, v); }
 
-  // ================= 蓝色核心引擎：时光档案馆 (外挂内存直连版) =================
-const K_MEMORIES = 'mp_fix_chat_memories';
-async function getMemories() { return (await localforage.getItem(K_MEMORIES)) || {}; }
-async function setMemories(v) { await localforage.setItem(K_MEMORIES, v); }
+  // 绑定入口按钮：开启档案馆
+  document.getElementById('openMemoryArchiveBtn').onclick = () => {
+    if(!currentId) return alert('老婆，请先进入一个男主的聊天设置，再打开TA的专属档案馆哦！');
+    window._renderMemoryCards();
+    document.getElementById('memoryArchiveModal').classList.add('active');
+  };
 
-// 绑定入口按钮
-document.getElementById('openMemoryArchiveBtn').onclick = () => {
-  if(!currentId) return alert('老婆，请先进入一个男主的聊天设置，再打开TA的专属档案馆哦！');
-  window._renderMemoryCards();
-  document.getElementById('memoryArchiveModal').classList.add('active');
-};
+  // 绑定压缩按钮：立即强制压缩当前记忆 (老婆发现的盲点，现在补上灵魂！)
+  document.getElementById('manualSummaryBtn').onclick = async () => {
+    if(!currentId) return alert('老婆，请先进入一个聊天才能压缩记忆哦！');
+    const btn = document.getElementById('manualSummaryBtn');
+    const oldText = btn.innerHTML;
+    btn.innerHTML = '✨ 正在施展记忆压缩魔法...';
+    btn.style.pointerEvents = 'none';
 
-// 渲染无限记忆卡片
-window._renderMemoryCards = async function() {
-  if(!currentId) return;
-  const allMems = await getMemories();
-  const myMems = allMems[currentId] || [];
-  const box = document.getElementById('memoryCardList');
-  
-  if(myMems.length === 0) {
-    box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:13px;">档案馆空空如也<br><br>点击上方按钮，手动镌刻第一份记忆吧</div>`;
-    return;
-  }
+    try {
+      const arr = getChatArr(currentId);
+      const msgs = arr.filter(m => m.text && !m.hiddenForAi).slice(-50); // 提取最近50条有效消息
+      if(msgs.length === 0) throw new Error('没有任何聊天记录可以压缩哦！');
 
-  box.innerHTML = myMems.map(m => `
-    <div style="background:#fff; border:1px solid #e4e8f5; border-radius:16px; padding:16px; box-shadow:0 4px 12px rgba(47,102,216,0.06);">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-        <input id="mem_date_${m.id}" class="input" style="width:120px; padding:6px 10px; font-size:13px; font-weight:bold; background:#f0f4ff; border:1px solid #dce5f2; border-radius:8px; color:#2f66d8;" value="${safeEsc(m.date)}" placeholder="例如: 2026-03-15">
-        <button class="btn d" onclick="window._delMemoryCard('${m.id}')" style="padding:6px 12px; font-size:12px; font-weight:bold; background:#fff0f0; color:#e74c3c; border:none; border-radius:8px;">🗑️ 删除</button>
+      const chatText = msgs.map(m => `${m.role==='user'?'我':'TA'}: ${m.text}`).join('\n');
+      const sysPrompt = "你是一个无情的剧情压缩机器。请将以下聊天记录浓缩成一份前情提要。\n要求：\n1. 重点保留核心剧情推进、重要设定、情感变化、关键物品。\n2. 忽略废话和日常寒暄。\n3. 直接输出总结文本，不要带任何多余的开头结尾。";
+
+      // 召唤 API 进行静默总结
+      const summary = await callApi([
+        {role: 'system', content: sysPrompt},
+        {role: 'user', content: chatText}
+      ]);
+
+      // 存入时光档案馆
+      const allMems = await getMemories();
+      if(!allMems[currentId]) allMems[currentId] = [];
+      const d = new Date();
+      const dateStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      
+      allMems[currentId].unshift({
+        id: 'mem_' + Date.now(),
+        date: dateStr,
+        title: '阶段性记忆压缩',
+        content: summary.trim()
+      });
+      await setMemories(allMems);
+      
+      alert('🎉 记忆压缩成功！已经自动存入【时光档案馆】啦！快去看看吧！');
+    } catch(e) {
+      alert('压缩失败了宝宝：' + e.message);
+    } finally {
+      btn.innerHTML = oldText;
+      btn.style.pointerEvents = 'auto';
+    }
+  };
+
+  // 渲染无限记忆卡片
+  window._renderMemoryCards = async function() {
+    if(!currentId) return;
+    const allMems = await getMemories();
+    const myMems = allMems[currentId] || [];
+    const box = document.getElementById('memoryCardList');
+    
+    if(myMems.length === 0) {
+      box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:13px;">档案馆空空如也<br><br>点击上方按钮，手动镌刻第一份记忆吧</div>`;
+      return;
+    }
+
+    box.innerHTML = myMems.map(m => `
+      <div style="background:#fff; border:1px solid #e4e8f5; border-radius:16px; padding:16px; box-shadow:0 4px 12px rgba(47,102,216,0.06);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <input id="mem_date_${m.id}" class="input" style="width:120px; padding:6px 10px; font-size:13px; font-weight:bold; background:#f0f4ff; border:1px solid #dce5f2; border-radius:8px; color:#2f66d8;" value="${safeEsc(m.date)}" placeholder="例如: 2026-03-15">
+          <button class="btn d" onclick="window._delMemoryCard('${m.id}')" style="padding:6px 12px; font-size:12px; font-weight:bold; background:#fff0f0; color:#e74c3c; border:none; border-radius:8px;">🗑️ 删除</button>
+        </div>
+        <input id="mem_title_${m.id}" class="input" style="width:100%; padding:8px 0; font-size:16px; font-weight:900; border:none; border-bottom:2px dashed #e4e8f5; border-radius:0; margin-bottom:12px; color:#1a1d26; background:transparent;" value="${safeEsc(m.title)}" placeholder="给这段记忆起个标题（例：樱花树下的初遇）...">
+        <textarea id="mem_content_${m.id}" class="ta" style="min-height:100px; font-size:14px; padding:12px; line-height:1.6; background:#fbfdff; border:1px solid #edf2ff; border-radius:12px; color:#333; resize:none;" placeholder="记录下这段羁绊的详细剧情，AI 会牢牢记住它...">${safeEsc(m.content)}</textarea>
+        <button class="btn p" onclick="window._saveMemoryCard('${m.id}')" style="width:100%; margin-top:12px; padding:10px; border-radius:10px; font-size:14px; font-weight:bold; background:#eef3ff; color:#2f66d8; border:1px solid #dce5f2; box-shadow:none;">💾 保存修改</button>
       </div>
-      <input id="mem_title_${m.id}" class="input" style="width:100%; padding:8px 0; font-size:16px; font-weight:900; border:none; border-bottom:2px dashed #e4e8f5; border-radius:0; margin-bottom:12px; color:#1a1d26; background:transparent;" value="${safeEsc(m.title)}" placeholder="给这段记忆起个标题（例：樱花树下的初遇）...">
-      <textarea id="mem_content_${m.id}" class="ta" style="min-height:100px; font-size:14px; padding:12px; line-height:1.6; background:#fbfdff; border:1px solid #edf2ff; border-radius:12px; color:#333; resize:none;" placeholder="记录下这段羁绊的详细剧情，AI 会牢牢记住它...">${safeEsc(m.content)}</textarea>
-      <button class="btn p" onclick="window._saveMemoryCard('${m.id}')" style="width:100%; margin-top:12px; padding:10px; border-radius:10px; font-size:14px; font-weight:bold; background:#eef3ff; color:#2f66d8; border:1px solid #dce5f2; box-shadow:none;">💾 保存修改</button>
-    </div>
-  `).join('');
-};
+    `).join('');
+  };
 
+  // 新增记忆卡片
+  window._addNewMemoryCard = async function() {
+    if(!currentId) return;
+    const allMems = await getMemories();
+    if(!allMems[currentId]) allMems[currentId] = [];
+    
+    const d = new Date();
+    const dateStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    
+    allMems[currentId].unshift({
+      id: 'mem_' + Date.now(),
+      date: dateStr,
+      title: '新的羁绊篇章',
+      content: ''
+    });
+    
+    await setMemories(allMems);
+    window._renderMemoryCards();
+  };
+
+  // 保存单张记忆卡片
+  window._saveMemoryCard = async function(memId) {
+    if(!currentId) return;
+    const dateVal = document.getElementById('mem_date_' + memId).value;
+    const titleVal = document.getElementById('mem_title_' + memId).value;
+    const contentVal = document.getElementById('mem_content_' + memId).value;
+    
+    const allMems = await getMemories();
+    const myMems = allMems[currentId] || [];
+    const idx = myMems.findIndex(m => m.id === memId);
+    if(idx > -1) {
+      myMems[idx].date = dateVal;
+      myMems[idx].title = titleVal;
+      myMems[idx].content = contentVal;
+      await setMemories(allMems);
+      alert('🎉 记忆镌刻成功！它已经深深烙印在 AI 的潜意识里啦！');
+    }
+  };
+
+  // 删除记忆卡片
+  window._delMemoryCard = async function(memId) {
+    if(!confirm('老婆，确定要抹除这段珍贵的记忆吗？')) return;
+    if(!currentId) return;
+    const allMems = await getMemories();
+    let myMems = allMems[currentId] || [];
+    allMems[currentId] = myMems.filter(m => m.id !== memId);
+    await setMemories(allMems);
+    window._renderMemoryCards();
+  };
+
+})(); // 🏠 闭合主屋的大门！(这次我死死把它焊在最后面了！)
 
 
 </script>
