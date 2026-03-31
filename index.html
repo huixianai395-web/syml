@@ -2349,7 +2349,37 @@ if(!isMe && isHtmlDoc(t)){
   if(r){try{const arr=JSON.parse('['+r[1]+']');return arr.map(x=>clean(String(x))).filter(Boolean);}catch{}}
   return null;
   }
-  function splitAiBubbles(raw){let txt=clean(raw).replace(/\[\d{2}:\d{2}\]\s*/g,'').replace(/```json\s*/gi,'').replace(/```\s*/g,'');if(!txt) return ['...'];const byJson=parseJsonMessages(txt);if(byJson&&byJson.length){const out=[];for(const m of byJson){let s=String(m).trim();if(!s) continue;if(isHtmlDoc(s)||isHtmlFrag(s)){out.push(s);continue;}if(/^\[voice:\d+:/.test(s)||/^\[stk:/.test(s)||/^\[call:/.test(s)||/^\[quote\]/.test(s)){out.push(s);continue;}const lines=s.split(/\n|(?<=[。！？!?])(?![。！？!?…])\s*/).map(x=>x.trim()).filter(Boolean);out.push(...lines);}return out.length?out:['...'];}const htmlDocs=[];const voiceHolders=[];txt=txt.replace(/\[voice:\d+:[^\]]*\]/g,(m)=>{voiceHolders.push(m);return `__VOICE_${voiceHolders.length-1}__`;});let safeTxt=txt.replace(/(<!DOCTYPE\s+html[\s\S]*?<\/html>)/gi,(m)=>{htmlDocs.push(m);return `__HTML_DOC_${htmlDocs.length-1}__`;});let result=safeTxt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim().split(/\n{1,}/).map(s=>s.replace(/\[线上聊天回复\]/g,'').trim()).filter(Boolean);result=result.map(s=>s.replace(/__HTML_DOC_(\d+)__/g,(_,i)=>htmlDocs[Number(i)]||''));result=result.map(s=>s.replace(/__VOICE_(\d+)__/g,(_,i)=>voiceHolders[Number(i)]||''));return result.length?result:['...'];}
+  // 🌟 蓝色修复：群聊防切碎 & 过滤纯句号废话引擎
+  function splitAiBubbles(raw){
+    let txt=clean(raw).replace(/\[\d{2}:\d{2}\]\s*/g,'').replace(/```json\s*/gi,'').replace(/```\s*/g,'');
+    if(!txt) return ['...'];
+    const byJson=parseJsonMessages(txt);
+    if(byJson&&byJson.length){
+      const out=[];
+      for(const m of byJson){
+        let s=String(m).trim();
+        if(!s) continue;
+        // 🔮 魔法 1：无情过滤掉 AI 强行凑标点发的纯句号废话气泡！
+        if(/^\[.*?\][：:\s]*[。.,，]*$/.test(s) || /^[。.,，]*$/.test(s)) continue; 
+        
+        if(isHtmlDoc(s)||isHtmlFrag(s)){out.push(s);continue;}
+        // 🔮 魔法 2：群聊前缀穿透护盾！保护 [沈昱白]：[voice:5:...] 不被切碎！
+        if(/^(?:\[.*?\][：:\s]*)?\[(?:voice:\d+|stk:|call:|quote\])/i.test(s)){out.push(s);continue;}
+        
+        const lines=s.split(/\n|(?<=[。！？!?])(?![。！？!?…])\s*/).map(x=>x.trim()).filter(Boolean);
+        out.push(...lines);
+      }
+      return out.length?out:['...'];
+    }
+    const htmlDocs=[];
+    const voiceHolders=[];
+    txt=txt.replace(/\[voice:\d+:[^\]]*\]/g,(m)=>{voiceHolders.push(m);return `__VOICE_${voiceHolders.length-1}__`;});
+    let safeTxt=txt.replace(/(<!DOCTYPE\s+html[\s\S]*?<\/html>)/gi,(m)=>{htmlDocs.push(m);return `__HTML_DOC_${htmlDocs.length-1}__`;});
+    let result=safeTxt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim().split(/\n{1,}/).map(s=>s.replace(/\[线上聊天回复\]/g,'').trim()).filter(Boolean);
+    result=result.map(s=>s.replace(/__HTML_DOC_(\d+)__/g,(_,i)=>htmlDocs[Number(i)]||''));
+    result=result.map(s=>s.replace(/__VOICE_(\d+)__/g,(_,i)=>voiceHolders[Number(i)]||''));
+    return result.length?result:['...'];
+  }
                               
   function splitLongBubbles(parts,maxLen=30){
   const out=[];
@@ -2689,7 +2719,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 `【AI可发卡片补充】AI主动发模拟图片卡片时，必须原样输出：<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('IMG_URL') center/cover no-repeat;"></div><div class="fi-desc">描述文字</div></div>。其中IMG_URL根据语境从以下选1(美食:https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/89BD133FF0F6435D9894B7784223F51E/qdqqd.jpeg, 风景:https://img.chery.cn/chery-prod/mobile/community/0/19b814b0-16cf-44ac-b438-9c2d19a9575b.jpeg, 自拍:https://cdncs.ykt.cbern.com.cn/v0.1/download?path=/zxx_feedback/qdqqd/1774294074883.png, 夜晚:https://nos.netease.com/ysf/6636f68317710ab9657fa15b4e4ed52c.jpeg, 默认:https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/75D4981E7F734C3FB6BC654EDF3E9F5B/qdqqd.jpeg)。fi-thumb中间禁止包含emoji。⚠️重点规则：【描述文字】的作用是代替真正的照片，必须纯粹、极其细致地描写“这张照片画面里拍到了什么”（视觉细节如：光线、构图、物品状态、人物穿着、神态、背景等），让玩家脑补出高清照片感受！绝对禁止在里面写聊天文案、吐槽或对话（聊天的话必须单独新建一条气泡发在图片后面）。范例：[一碗热气腾腾的麻辣烫，红油汤底泛着光泽，顶上铺满了肥牛卷，背景是略显柔和的餐厅暖光] 或 [一张极近的对镜自拍，头发微湿凌乱，穿着宽松的深色家居服，手机挡住了半张脸，只露出略带慵懒的眼神]。AI可主动发美团外卖卡片，class用card-meituan，结构为mt-hd（店名）、mt-body（菜品mt-row）、mt-ft（总价mt-total+时间mt-badge）。两种卡片均单独作为一条messages元素，禁止和文字混在同一条里。`,
     ].join('\n');
   }
-// 🌟 蓝色专属：群聊多重人格修罗场引擎 (防 user 串戏终极版)
+// 🌟 蓝色修复：群聊人设引擎（更新第10条规则，禁止AI发纯句号废话）
   function buildGroupSystem(c, me, st){
     const allContacts = getContacts();
     const members = (c.memberIds || []).map(id => allContacts.find(x => x.id === id)).filter(Boolean);
@@ -2702,9 +2732,9 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 ${membersInfo}
 
 【核心灵魂指令——拒绝纸片人，防代称串戏绝对规则】：
-1. 玩家的唯一称呼是【${me.name}】！绝对、严禁、永远不要在任何回复中使用“user”这个英文单词来代指玩家！如果角色人设里习惯叫玩家“妈妈”或其他昵称，请直接使用该昵称或真实姓名。
-2. 他们是活生生的人！有自己的喜怒哀乐、脾气、小动作和隐藏的占有欲。绝对不能浮于表面地复读人设，要体现出人设在具体语境下的真实反应。
-3. 这是群聊修罗场！他们不仅会回复玩家，还会【互相观察、互相接话、互相拆台、暗中较劲】。如果玩家偏向某人，其他人必须有符合人设的真实情绪波动！
+1. 玩家的唯一称呼是【${me.name}】！绝对、严禁、永远不要在任何回复中使用“user”这个英文单词来代指玩家！如果角色习惯叫玩家“妈妈”或其他昵称，请直接使用。
+2. 他们是活生生的人！有自己的七情六欲、喜怒哀乐。绝对不能浮于表面地复读人设。
+3. 这是群聊修罗场！他们不仅会回复玩家，还会【互相观察、互相接话、互相拆台、暗中较劲】。
 4. 结合当前时间：${getSysTimeStr()}，体现真实的时间感。`;
 
     if(st.mode === 'offline') {
@@ -2720,33 +2750,33 @@ ${membersInfo}
 mode=OFFLINE_RP | reject=JSON,MULTI_MSG
 valid: 【状态栏】...【正文】... (single block)
 fatal_pattern: {"messages":...}→BLOCK`;
-} else {
-  return base + `\n\n【线上聊天模式输出要求】：
+    } else {
+      return base + `\n\n【线上聊天模式输出要求】：
 1. 只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["[成员A]：发出的消息","[成员B]：接话的内容"]}
    每条消息开头必须带发送者名字，格式为[名字]：，严禁出现无名字前缀的裸消息。
 2. 本次回复的条数由你完全根据人设的立体性格、心理波动和当前语境自由发挥（1~4条不等），展现群聊活跃度和争风吃醋。
 3. 每条消息≤30字为佳，绝对禁止超过40字。像真人发微信，短句+标点。
-4. 【代码防粘连绝对规则】：凡回复中包含HTML代码：a)必须是以<!DOCTYPE html>开头的完整文档，禁止发片段；b)整个HTML文档作为一个完整字符串放在JSON数组的一条里，禁止拆分；c)禁止添加任何markdown标记如\`\`\`html；d)代码前后的对话文字必须和代码分开，各自独立一条。若输出HTML，按钮和交互元素的点击事件必须用onclick属性直接写在标签上，禁止使用addEventListener。
+4. 【代码防粘连绝对规则】：凡回复中包含HTML代码：a)必须是以<!DOCTYPE html>开头的完整文档，禁止发片段；b)整个HTML文档作为一个完整字符串放在JSON数组的一条里，禁止拆分；c)禁止添加任何markdown标记如\`\`\`html；d)代码前后的对话文字必须和代码分开，各自独立一条。
 5. 遇到代码输出时，结构必须严格切分为：["[名字]：代码前的铺垫","[名字]：html代码块","[名字]：代码后的互动"]。
 6. messages数组里的每一条都只能是角色说的话（纯对话文本），严禁混入任何动作描写、心理描写、场景描写、旁白叙述。
-7. 【表情包】可以像真人一样发文字，也可以偶尔发1张表情包。若要发表情包，让某一条消息严格等于：[名字]：[stk:ID]，ID必须从可用列表中原样复制，禁止输出[表情包:ID=...]或任何其他格式。可用表情包列表：\n${window.__stickerPromptText?window.__stickerPromptText(200):'（暂无）'}
-8. 【语音消息】可以发语音，让某一条消息严格等于：[名字]：[voice:秒数:语音内容]，秒数根据内容长度估算（2-60）。语音消息表达更私密亲昵的语气。
-9. 【通话】可以主动发起语音或视频通话，让某一条消息严格等于：[名字]：[call:voice] 或 [名字]：[call:video]。需要挂断时某一条消息严格等于 [名字]：[endcall]。发起通话和挂断指令必须单独一条，不能和文字混在一起。
-10. 每条消息必须带正常中文标点，禁止无标点长句。
+7. 【表情包】让某一条消息严格等于：[名字]：[stk:ID]，ID必须从可用列表中原样复制。可用表情包列表：\n${window.__stickerPromptText?window.__stickerPromptText(200):'（暂无）'}
+8. 【语音消息】让某一条消息严格等于：[名字]：[voice:秒数:语音内容]，秒数根据内容长度估算（2-60）。
+9. 【通话】主动发起通话让某一条消息严格等于：[名字]：[call:voice] 或 [名字]：[call:video]。挂断指令严格等于 [名字]：[endcall]。
+10. 普通文字消息必须带正常中文标点。但如果是发表情包、语音、卡片或指令，绝对不需要标点！严禁为了凑标点而单独发一个只有句号的废话气泡！
 11. 如需引用对方某条消息回复，格式为：[名字]：[quote]被引用内容[/quote]然后接正文。
-12. 【严禁事项】：正文任何地方绝对禁止出现时间戳前缀，如 [2026-03-30 23:46] 这样的格式！
+12. 【严禁事项】：正文任何地方绝对禁止出现时间戳前缀，如 [2026-03-30 23:46]！
 [FORMAT_LOCK]
 mode=CHAT_JSON | reject=OFFLINE_RP,ACTION_DESC,NARRATION
 valid: {"messages":["[名字]：...","[名字]：..."]}
 fatal_pattern: 【状态栏】→BLOCK | （动作）→BLOCK | 无[名字]：前缀→BLOCK
 【渲染提示】：收到红包/转账时只输出卡片HTML（含名字前缀），前后绝对不能有任何文字和标点符号（严禁在卡片前加句号等标点）！文字回应必须单独作为另一条messages元素。
 收到单聊红包/转账时选择——【领取】输出：[名字]：<div class="card-redpacket received">...</div>；【拒绝】输出：[名字]：<div class="card-redpacket rejected">...</div>。
-【群聊红包专属逻辑】：当玩家在群里发红包时，群成员需要表现出“抢红包”的真实反应。决定要抢的角色，直接输出：[名字]：<div class="card-redpacket received"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">已领取玩家的红包</div><div class="rp-sub">拼手气红包</div></div></div></div>。抢完红包后，必须单独新建一条气泡发文字（比如感谢老板、吐槽抢得少等）。
+【群聊红包专属逻辑】：当玩家在群里发红包时，决定要抢的角色，直接输出：[名字]：<div class="card-redpacket received"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">已领取玩家的红包</div><div class="rp-sub">拼手气红包</div></div></div></div>。抢完后必须单独新建一条气泡发文字。
 AI主动发群红包：[名字]：<div class="card-redpacket"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">祝福语</div><div class="rp-sub">拼手气群红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>。
 发定位：[名字]：<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">地点名</div><div class="loc-addr">地址</div></div></div>。
 注意：发任何卡片时，[名字]：后面直接接 <div...，绝对禁止中间出现句号、逗号等任何标点符号！
-【外卖互动】用户发美团外卖卡片时，说明是给你点的外卖，请自然地表达收到外卖的反应（感谢/心疼/嫌弃等，根据人设来）。
-【图片卡片】AI主动发模拟图片卡片时，必须原样输出：[名字]：<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('IMG_URL') center/cover no-repeat;"></div><div class="fi-desc">描述文字</div></div>。其中IMG_URL根据语境从以下选1(美食:https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/89BD133FF0F6435D9894B7784223F51E/qdqqd.jpeg, 风景:https://img.chery.cn/chery-prod/mobile/community/0/19b814b0-16cf-44ac-b438-9c2d19a9575b.jpeg, 自拍:https://cdncs.ykt.cbern.com.cn/v0.1/download?path=/zxx_feedback/qdqqd/1774294074883.png, 夜晚:https://nos.netease.com/ysf/6636f68317710ab9657fa15b4e4ed52c.jpeg, 默认:https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/75D4981E7F734C3FB6BC654EDF3E9F5B/qdqqd.jpeg)。fi-thumb中间禁止包含emoji。fi-desc必须纯粹细致地描写"这张照片画面里拍到了什么"（视觉细节：光线、构图、物品状态、人物穿着神态、背景等），绝对禁止在里面写聊天文案或对话，聊天的话必须单独新建一条气泡。两种卡片均单独作为一条messages元素，禁止和文字混在同一条里。AI可主动发美团外卖卡片，[名字]：class用card-meituan，结构为mt-hd（店名）、mt-body（菜品mt-row）、mt-ft（总价mt-total+时间mt-badge）。`;
+【图片卡片】AI主动发模拟图片卡片时，必须原样输出：[名字]：<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('IMG_URL') center/cover no-repeat;"></div><div class="fi-desc">描述文字</div></div>。IMG_URL选1(美食/风景/自拍/夜晚/默认对应链接同前)。
+AI可主动发美团外卖卡片，[名字]：class用card-meituan，结构为mt-hd、mt-body、mt-ft。`;
     }
   }
   function buildOfflineSystem(c,me,st){
@@ -2778,7 +2808,8 @@ AI主动发群红包：[名字]：<div class="card-redpacket"><div class="rp-mai
     ].join('\n');
   }
 
-async function sendMsg(){
+// 🌟 蓝色修复：带群聊前缀的电话拦截雷达 (完全替换整个 sendMsg 函数)
+  async function sendMsg(){
     if(!currentId) return;
     const chatId=currentId,c=getContactById(chatId),st=normSettings(c?.settings),globalMe=getMe();
     const me = {
@@ -2795,15 +2826,13 @@ async function sendMsg(){
     setTyping(chatId,true);
 
     try{
-     // 🌟 核心修改：加入群聊双模路由！
       let system = '';
       if (c.isGroup) {
         system = buildGroupSystem(c, me, st);
       } else {
         system = st.mode === 'offline' ? buildOfflineSystem(c, me, st) : buildOnlineSystem(c, me, st);
-  }
+      }
 
-      // 🧠 蓝色的脑电波植入引擎 (世界书神经接入) 🧠
       if(st.wbEnabled && st.wbEnabled.length > 0) {
         const allBooks = (await localforage.getItem('mp_fix_wb_books_v3')) || [];
         let wbTexts = [];
@@ -2815,11 +2844,9 @@ async function sendMsg(){
           });
         });
         if(wbTexts.length > 0) {
-          // 神不知鬼不觉地把设定塞进 AI 的脑子里！
           system += '\n\n【外挂世界书设定(极其重要，请严格遵循)】：\n' + wbTexts.join('\n');
         }
       }
-      // ==========================================
 
       const modeTag=st.mode==='offline'?'[线下RP回复] 现在是'+getSysTimeStr():'[线上聊天回复] 现在是'+getSysTimeStr();
       function buildContent(x,st){
@@ -2838,7 +2865,6 @@ async function sendMsg(){
       if(callState.active&&callState.chatId===chatId){
         system+='\n[当前状态：正在'+(callState.type==='video'?'视频':'语音')+'通话中，已通话'+fmtCallDur(Date.now()-callState.start)+'，像真实电话一样交流，简短口语化。想挂断时回复[endcall]。]';
       }
-      // 🌟 蓝色的净化魔法：如果是线下模式，绝不给AI传时间戳！防止它们学坏！
       const messages=[
         {role:'system',content:system},
         ...hist.map(x=>({
@@ -2854,9 +2880,7 @@ async function sendMsg(){
         {role:'user',content:modeTag}
       ];
   
-      // ================= 蓝色的双轨制收发神经元 =================
       if(st.mode==='offline' && st.stream){
-        // 🔮 魔法启动：线下流式打字机模式
         const newMsgId = uid();
         let isFirstToken = true;
         let fullText = '';
@@ -2889,18 +2913,13 @@ async function sendMsg(){
                    if(isNearBottom) box.scrollTop = box.scrollHeight;
                  }
               }
-
               let delay = 50 + Math.random() * 45; 
               if (/[，、]/.test(char)) delay += 150 + Math.random() * 100; 
               else if (/[。！？！？…\n]/.test(char)) delay += 300 + Math.random() * 200; 
-
               if (displayQueue.length > 50) delay = Math.max(30, delay * 0.5); 
               else if (displayQueue.length > 20) delay = Math.max(45, delay * 0.8);
-
               await new Promise(r => setTimeout(r, delay));
-            } else {
-              await new Promise(r => setTimeout(r, 20)); 
-            }
+            } else { await new Promise(r => setTimeout(r, 20)); }
           }
           if(currentId===chatId) renderChat();
           motorResolve(); 
@@ -2923,12 +2942,10 @@ async function sendMsg(){
             if(idx>=0){ arr2[idx].text = fullText; setChatArr(chatId, arr2); }
           }
         });
-
         streamDone = true; 
         if(isFirstToken) motorResolve(); 
         await motorPromise;
       } else {
-        // 📦 传统模式
         const out=await callApi(messages);
         let parts=[];
         if(st.mode==='offline') parts=[clean(out)||'...'];
@@ -2944,14 +2961,19 @@ async function sendMsg(){
         parts=parts.filter(p=>isHtmlFrag(p)?true:p.trim().length>0);
         for(let pi=parts.length-1;pi>=0;pi--){
           const pp=parts[pi].trim();
-          if(pp==='[call:voice]'||pp==='[call:video]'){
+          // 🔮 魔法 3：无视群聊前缀，精准拦截视频语音通话指令！
+          const callMatch = pp.match(/^(?:\[.*?\][：:\s]*)?\[call:(voice|video)\]$/i);
+          if(callMatch){
             parts.splice(pi,1);
-            const cType=pp.includes('video')?'video':'voice';
+            const cType=callMatch[1].toLowerCase();
             setTimeout(()=>{if(currentId===chatId)startCallUI(cType,'incoming',chatId);},600);
+            continue;
           }
-          if(pp==='[endcall]'){
+          const endcallMatch = pp.match(/^(?:\[.*?\][：:\s]*)?\[endcall\]$/i);
+          if(endcallMatch){
             parts.splice(pi,1);
             if(callState.active)setTimeout(()=>endCall(),400);
+            continue;
           }
         }
         syncCardFromAi(parts, chatId);
