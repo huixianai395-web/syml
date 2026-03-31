@@ -913,7 +913,7 @@
       <!-- 2. 【通讯录】Tab -->
       <div id="wxTab-contact" class="wx-tab-content">
         <div class="header"><button class="btn" data-nav="home">‹ 返回</button><b>通讯录</b></div>
-        <div class="wx-page"><div class="card small" style="text-align:center; padding:40px 10px;">老公正在努力开发通讯录功能哦~<br>联系人都在“微信”列表里啦！</div></div>
+        <div class="wx-page"><div class="card small" style="text-align:center; padding:40px 10px;">老公正在努力开发通讯录功能哦~<br>联系人都在"微信"列表里啦！</div></div>
       </div>
 
       <!-- 3. 【发现】Tab (朋友圈入口) -->
@@ -995,7 +995,7 @@
               <span>✨</span> 蓝色科普时间：外挂内存怎么防失忆？
             </div>
             <div style="font-size:12px; color:#5a6a8f; text-align:justify; line-height:1.6;">
-              宝宝你知道吗？AI 很容易在多人群聊里犯傻，把你叫成系统代号“user”。<br>
+              宝宝你知道吗？AI 很容易在多人群聊里犯傻，把你叫成系统代号"user"。<br>
               为了解决这个问题，我把这里的【个人设定】死死焊在了咱们的 <b>LocalForage（外挂内存）</b> 里！每次 AI 准备开口前，外挂内存就会像个霸道总裁一样，把你的真实名字强制塞进它的潜意识里。<b>外挂内存永不丢失</b>，它不仅能存成千上万条聊天记录，还能保证你在这个世界的身份绝对不被篡改！所以，记得在这里把你的专属设定写好哦，AI 绝对不敢再叫错啦！🥺
             </div>
           </div>
@@ -2186,7 +2186,7 @@ function compressImage(file, isWallpaper = false) {
       return key;
     });
   }
-  rep(/“([^”]{1,200})”/g,'off-dialogue');
+  rep(/"([^"]{1,200})"/g,'off-dialogue');
 rep(/"([^"]{1,200})"/g,'off-dialogue');
   rep(/「([^」]{1,200})」/g,'off-dialogue');
   rep(/【([^】]{1,200})】/g,'off-em');
@@ -2303,7 +2303,7 @@ if(!isMe && isHtmlDoc(t)){
         let nameLabel = '';
         let tempM = { ...m };
         if(c.isGroup) {
-          const match = (tempM.text||'').match(/^\[(.*?)\][：:\s]*(.*)/s);
+          const match = !/^\[(voice:|stk:|call:|quote\])/.test(tempM.text) && (tempM.text||'').match(/^\[([^\[\]：:]+)\][：:]\s*([\s\S]+)/s);
           if(match) {
             lastSenderName = match[1]; // 发现署名，立刻记住！
             tempM.text = match[2]; 
@@ -2352,7 +2352,7 @@ if(!isMe && isHtmlDoc(t)){
   if(r){try{const arr=JSON.parse('['+r[1]+']');return arr.map(x=>clean(String(x))).filter(Boolean);}catch{}}
   return null;
   }
-  function splitAiBubbles(raw){let txt=clean(raw).replace(/\[\d{2}:\d{2}\]\s*/g,'').replace(/```json\s*/gi,'').replace(/```\s*/g,'');if(!txt) return ['...'];const byJson=parseJsonMessages(txt);if(byJson&&byJson.length){const out=[];for(const m of byJson){let s=String(m).trim();if(!s) continue;if(isHtmlDoc(s)||isHtmlFrag(s)){out.push(s);continue;}if(/^\[voice:\d+:/.test(s)||/^\[stk:/.test(s)||/^\[call:/.test(s)||/^\[quote\]/.test(s)){out.push(s);continue;}const lines=s.split(/\n|(?<=[。！？!?])(?![。！？!?…])\s*/).map(x=>x.trim()).filter(Boolean);out.push(...lines);}return out.length?out:['...'];}const htmlDocs=[];const voiceHolders=[];txt=txt.replace(/\[voice:\d+:[^\]]*\]/g,(m)=>{voiceHolders.push(m);return `__VOICE_${voiceHolders.length-1}__`;});let safeTxt=txt.replace(/(<!DOCTYPE\s+html[\s\S]*?<\/html>)/gi,(m)=>{htmlDocs.push(m);return `__HTML_DOC_${htmlDocs.length-1}__`;});let result=safeTxt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim().split(/\n{1,}/).map(s=>s.replace(/\[线上聊天回复\]/g,'').trim()).filter(Boolean);result=result.map(s=>s.replace(/__HTML_DOC_(\d+)__/g,(_,i)=>htmlDocs[Number(i)]||''));result=result.map(s=>s.replace(/__VOICE_(\d+)__/g,(_,i)=>voiceHolders[Number(i)]||''));return result.length?result:['...'];}
+  function splitAiBubbles(raw){let txt=clean(raw).replace(/\[\d{2}:\d{2}\]\s*/g,'').replace(/```json\s*/gi,'').replace(/```\s*/g,'');if(!txt) return ['...'];const byJson=parseJsonMessages(txt);if(/^\[voice:\d+:/.test(s)||/^\[stk:/.test(s)||/^\[call:/.test(s)||/^\[quote\]/.test(s)||/^\[[^\[\]：:]+\][：:]\s*(\[voice:|\[stk:|\[call:|\[quote\]|<div class="card-)/.test(s)){out.push(s);continue;}if(/^\[voice:\d+:/.test(s)||/^\[stk:/.test(s)||/^\[call:/.test(s)||/^\[quote\]/.test(s)){out.push(s);continue;}const lines=s.split(/\n|(?<=[。！？!?])(?![。！？!?…])\s*/).map(x=>x.trim()).filter(Boolean);out.push(...lines);}return out.length?out:['...'];}const htmlDocs=[];const voiceHolders=[];txt=txt.replace(/\[voice:\d+:[^\]]*\]/g,(m)=>{voiceHolders.push(m);return `__VOICE_${voiceHolders.length-1}__`;});let safeTxt=txt.replace(/(<!DOCTYPE\s+html[\s\S]*?<\/html>)/gi,(m)=>{htmlDocs.push(m);return `__HTML_DOC_${htmlDocs.length-1}__`;});let result=safeTxt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim().split(/\n{1,}/).map(s=>s.replace(/\[线上聊天回复\]/g,'').trim()).filter(Boolean);result=result.map(s=>s.replace(/__HTML_DOC_(\d+)__/g,(_,i)=>htmlDocs[Number(i)]||''));result=result.map(s=>s.replace(/__VOICE_(\d+)__/g,(_,i)=>voiceHolders[Number(i)]||''));return result.length?result:['...'];}
                               
   function splitLongBubbles(parts,maxLen=30){
   const out=[];
@@ -2398,7 +2398,7 @@ if(!isMe && isHtmlDoc(t)){
     }
     const card=end>0?cardAndAfter.slice(0,end):cardAndAfter;
     const after=end>0?cardAndAfter.slice(end).trim():'';
-    if(before && /[\u4e00-\u9fa5a-zA-Z0-9]/.test(before.replace(/<[^>]*>/g,''))) out.push(before);
+    if(before && /[\u4e00-\u9fa5a-zA-Z0-9]/.test(before.replace(/<[^>]*>/g,'')) && !/^\[[^\[\]]+\][：:\s]*$/.test(before.trim())) out.push(before);
 out.push(card);
 if(after){
   const subs=after.split(/\n|(?<=[。！？!?…，,、])\s*(?=[^\s])/).map(s=>s.trim()).filter(s=>s.length>0);
@@ -2679,7 +2679,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 `7.【表情包】你可以像真人一样发文字，也可以偶尔发1张表情包。若要发表情包，请让某一条消息内容严格等于：[stk:ID]，ID必须从下方列表中原样复制，禁止输出[表情包:ID=...]或任何其他格式。可用表情包列表：\n${window.__stickerPromptText?window.__stickerPromptText(200):'（暂无）'}`,
 `8. 【语音消息】你可以发语音，让某一条消息严格等于：[voice:秒数:语音内容]，秒数根据内容长度估算（2-60）。语音消息表达更私密亲昵的语气。`,
 `9. 【通话】你可以主动发起语音或视频通话，让某一条消息严格等于：[call:voice] 或 [call:video]。需要挂断时某一条消息严格等于 [endcall]。发起通话和挂断指令必须单独一条，不能和文字混在一起。`,
-`10. 具备真实的时间观念：根据“上一次消息时间与当前系统时间”的间隔，自然体现时间流逝（如久未回复后的轻微反应等），但不要刻意或模板化。`, 
+`10. 具备真实的时间观念：根据"上一次消息时间与当前系统时间"的间隔，自然体现时间流逝（如久未回复后的轻微反应等），但不要刻意或模板化。`, 
 `11. 每条消息必须带正常中文标点，禁止无标点长句。`,
 `12. 如需引用对方某条消息回复，在该条消息开头加：[quote]被引用内容[/quote]，然后接正文。例如：[quote]你吃饭没[/quote]刚吃完。`,
       `[FORMAT_LOCK]`,
@@ -2687,9 +2687,9 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 `valid: {"messages":["...","..."]}`,
 `example: {"messages":["你干嘛","神经病吧","我去吃饭了"]}`,
 `fatal_pattern: 【状态栏】→BLOCK | （动作）→BLOCK`,
-`【渲染提示】：收到对方红包时选择——【领取】输出：<div class="card-redpacket received">...</div>；【拒绝】输出：<div class="card-redpacket rejected">...</div>。收到转账时选择——【收款】输出：<div class="card-transfer received">...</div>；【拒收】输出：<div class="card-transfer rejected">...</div>。AI主动发红包：<div class="card-redpacket"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">祝福语</div><div class="rp-sub">¥金额 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>。AI主动发转账：<div class="card-transfer"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">¥金额</div><div class="ct-note">备注</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><button class="ct-btn">确认收款</button></div></div>。发礼物：<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">礼物名</div><div class="gift-note">留言</div></div>。发定位：<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">地点名</div><div class="loc-addr">地址</div></div></div>。卡片必须是纯HTML字符串放在messages数组元素里，禁止JSON对象格式。收到红包/转账时只输出卡片HTML，前后不能有任何文字。文字回应单独作为一条messages元素。收到红包/转账时，只能输出一个messages元素，且该元素只能是卡片HTML，绝对不允许出现任何文字、标点、换行在同一个元素里。违反即为fatal error。发红包/转账/礼物/定位时，必须原样复制上方提供的HTML模板，禁止修改任何class名、标签结构或内联样式，只替换金额/祝福语等文字内容。定位卡片只能包含loc-name和loc-addr两个字段，禁止在卡片HTML内添加距离、说明或任何额外文字，相关文字必须单独作为另一条messages元素。礼物卡片只能包含gift-name和gift-note两个字段的内容，禁止在卡片内添加任何额外描述文字。`,
+`【渲染提示】：收到对方红包时选择----【领取】输出：<div class="card-redpacket received">...</div>；【拒绝】输出：<div class="card-redpacket rejected">...</div>。收到转账时选择----【收款】输出：<div class="card-transfer received">...</div>；【拒收】输出：<div class="card-transfer rejected">...</div>。AI主动发红包：<div class="card-redpacket"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">祝福语</div><div class="rp-sub">¥金额 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>。AI主动发转账：<div class="card-transfer"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">¥金额</div><div class="ct-note">备注</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><button class="ct-btn">确认收款</button></div></div>。发礼物：<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">礼物名</div><div class="gift-note">留言</div></div>。发定位：<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">地点名</div><div class="loc-addr">地址</div></div></div>。卡片必须是纯HTML字符串放在messages数组元素里，禁止JSON对象格式。收到红包/转账时只输出卡片HTML，前后不能有任何文字。文字回应单独作为一条messages元素。收到红包/转账时，只能输出一个messages元素，且该元素只能是卡片HTML，绝对不允许出现任何文字、标点、换行在同一个元素里。违反即为fatal error。发红包/转账/礼物/定位时，必须原样复制上方提供的HTML模板，禁止修改任何class名、标签结构或内联样式，只替换金额/祝福语等文字内容。定位卡片只能包含loc-name和loc-addr两个字段，禁止在卡片HTML内添加距离、说明或任何额外文字，相关文字必须单独作为另一条messages元素。礼物卡片只能包含gift-name和gift-note两个字段的内容，禁止在卡片内添加任何额外描述文字。`,
 `【外卖互动】用户发美团外卖卡片时，说明是给你点的外卖，请自然地表达收到外卖的反应（感谢/心疼/嫌弃等，根据人设来）。`,
-`【AI可发卡片补充】AI主动发模拟图片卡片时，必须原样输出：<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('IMG_URL') center/cover no-repeat;"></div><div class="fi-desc">描述文字</div></div>。其中IMG_URL根据语境从以下选1(美食:https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/89BD133FF0F6435D9894B7784223F51E/qdqqd.jpeg, 风景:https://img.chery.cn/chery-prod/mobile/community/0/19b814b0-16cf-44ac-b438-9c2d19a9575b.jpeg, 自拍:https://cdncs.ykt.cbern.com.cn/v0.1/download?path=/zxx_feedback/qdqqd/1774294074883.png, 夜晚:https://nos.netease.com/ysf/6636f68317710ab9657fa15b4e4ed52c.jpeg, 默认:https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/75D4981E7F734C3FB6BC654EDF3E9F5B/qdqqd.jpeg)。fi-thumb中间禁止包含emoji。⚠️重点规则：【描述文字】的作用是代替真正的照片，必须纯粹、极其细致地描写“这张照片画面里拍到了什么”（视觉细节如：光线、构图、物品状态、人物穿着、神态、背景等），让玩家脑补出高清照片感受！绝对禁止在里面写聊天文案、吐槽或对话（聊天的话必须单独新建一条气泡发在图片后面）。范例：[一碗热气腾腾的麻辣烫，红油汤底泛着光泽，顶上铺满了肥牛卷，背景是略显柔和的餐厅暖光] 或 [一张极近的对镜自拍，头发微湿凌乱，穿着宽松的深色家居服，手机挡住了半张脸，只露出略带慵懒的眼神]。AI可主动发美团外卖卡片，class用card-meituan，结构为mt-hd（店名）、mt-body（菜品mt-row）、mt-ft（总价mt-total+时间mt-badge）。两种卡片均单独作为一条messages元素，禁止和文字混在同一条里。`,
+`【AI可发卡片补充】AI主动发模拟图片卡片时，必须原样输出：<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('IMG_URL') center/cover no-repeat;"></div><div class="fi-desc">描述文字</div></div>。其中IMG_URL根据语境从以下选1(美食:https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/89BD133FF0F6435D9894B7784223F51E/qdqqd.jpeg, 风景:https://img.chery.cn/chery-prod/mobile/community/0/19b814b0-16cf-44ac-b438-9c2d19a9575b.jpeg, 自拍:https://cdncs.ykt.cbern.com.cn/v0.1/download?path=/zxx_feedback/qdqqd/1774294074883.png, 夜晚:https://nos.netease.com/ysf/6636f68317710ab9657fa15b4e4ed52c.jpeg, 默认:https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/75D4981E7F734C3FB6BC654EDF3E9F5B/qdqqd.jpeg)。fi-thumb中间禁止包含emoji。⚠️重点规则：【描述文字】的作用是代替真正的照片，必须纯粹、极其细致地描写"这张照片画面里拍到了什么"（视觉细节如：光线、构图、物品状态、人物穿着、神态、背景等），让玩家脑补出高清照片感受！绝对禁止在里面写聊天文案、吐槽或对话（聊天的话必须单独新建一条气泡发在图片后面）。范例：[一碗热气腾腾的麻辣烫，红油汤底泛着光泽，顶上铺满了肥牛卷，背景是略显柔和的餐厅暖光] 或 [一张极近的对镜自拍，头发微湿凌乱，穿着宽松的深色家居服，手机挡住了半张脸，只露出略带慵懒的眼神]。AI可主动发美团外卖卡片，class用card-meituan，结构为mt-hd（店名）、mt-body（菜品mt-row）、mt-ft（总价mt-total+时间mt-badge）。两种卡片均单独作为一条messages元素，禁止和文字混在同一条里。`,
     ].join('\n');
   }
 // 🌟 蓝色专属：群聊多重人格修罗场引擎 (防 user 串戏终极版)
@@ -2698,14 +2698,14 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
     const members = (c.memberIds || []).map(id => allContacts.find(x => x.id === id)).filter(Boolean);
     const membersInfo = members.map(m => `【${m.name}】\n- 深度人设：${m.persona||'自然真实'}`).join('\n\n');
 
-    const base = `你现在是一个拥有上帝视角的“群聊修罗场导演”。
-当前正在模拟一个名为“${c.name}”的微信群聊。
+    const base = `你现在是一个拥有上帝视角的"群聊修罗场导演"。
+当前正在模拟一个名为"${c.name}"的微信群聊。
 群内除了玩家（真实姓名：${me.name}，人设：${me.persona}），还有以下几位活生生的人：
 
 ${membersInfo}
 
-【核心灵魂指令——拒绝纸片人，防代称串戏绝对规则】：
-1. 玩家的唯一称呼是【${me.name}】！绝对、严禁、永远不要在任何回复中使用“user”这个英文单词来代指玩家！如果角色人设里习惯叫玩家“妈妈”或其他昵称，请直接使用该昵称或真实姓名。
+【核心灵魂指令----拒绝纸片人，防代称串戏绝对规则】：
+1. 玩家的唯一称呼是【${me.name}】！绝对、严禁、永远不要在任何回复中使用"user"这个英文单词来代指玩家！如果角色人设里习惯叫玩家"妈妈"或其他昵称，请直接使用该昵称或真实姓名。
 2. 他们是活生生的人！有自己的喜怒哀乐、脾气、小动作和隐藏的占有欲。绝对不能浮于表面地复读人设，要体现出人设在具体语境下的真实反应。
 3. 这是群聊修罗场！他们不仅会回复玩家，还会【互相观察、互相接话、互相拆台、暗中较劲】。如果玩家偏向某人，其他人必须有符合人设的真实情绪波动！
 4. 结合当前时间：${getSysTimeStr()}，体现真实的时间感。`;
@@ -2733,7 +2733,7 @@ fatal_pattern: {"messages":...}→BLOCK`;
 5. 遇到代码输出时，结构必须严格切分为：["[名字]：代码前的铺垫","[名字]：html代码块","[名字]：代码后的互动"]。
 6. messages数组里的每一条都只能是角色说的话（纯对话文本），严禁混入任何动作描写、心理描写、场景描写、旁白叙述。
 7. 【表情包】可以像真人一样发文字，也可以偶尔发1张表情包。若要发表情包，让某一条消息严格等于：[名字]：[stk:ID]，ID必须从可用列表中原样复制，禁止输出[表情包:ID=...]或任何其他格式。可用表情包列表：\n${window.__stickerPromptText?window.__stickerPromptText(200):'（暂无）'}
-8. 【语音消息】可以发语音，让某一条消息严格等于：[名字]：[voice:秒数:语音内容]，秒数根据内容长度估算（2-60）。语音消息表达更私密亲昵的语气。
+8. 【语音消息】可以发语音，让某一条消息严格等于：[名字]：[voice:秒数:语音内容]，秒数根据内容长度估算（2-60）。语音消息表达更私密亲昵的语气。（注意：语音内容中不得包含。！？，等标点，用纯文字表达）
 9. 【通话】可以主动发起语音或视频通话，让某一条消息严格等于：[名字]：[call:voice] 或 [名字]：[call:video]。需要挂断时某一条消息严格等于 [名字]：[endcall]。发起通话和挂断指令必须单独一条，不能和文字混在一起。
 10. 每条消息必须带正常中文标点，禁止无标点长句。
 11. 如需引用对方某条消息回复，格式为：[名字]：[quote]被引用内容[/quote]然后接正文。
@@ -2742,7 +2742,7 @@ fatal_pattern: {"messages":...}→BLOCK`;
 mode=CHAT_JSON | reject=OFFLINE_RP,ACTION_DESC,NARRATION
 valid: {"messages":["[名字]：...","[名字]：..."]}
 fatal_pattern: 【状态栏】→BLOCK | （动作）→BLOCK | 无[名字]：前缀→BLOCK
-【渲染提示】：收到对方红包时选择——【领取】输出：[名字]：<div class="card-redpacket received">...</div>；【拒绝】输出：[名字]：<div class="card-redpacket rejected">...</div>。收到转账时选择——【收款】输出：[名字]：<div class="card-transfer received">...</div>；【拒收】输出：[名字]：<div class="card-transfer rejected">...</div>。AI主动发红包：[名字]：<div class="card-redpacket"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">祝福语</div><div class="rp-sub">¥金额 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>。AI主动发转账：[名字]：<div class="card-transfer"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">¥金额</div><div class="ct-note">备注</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><button class="ct-btn">确认收款</button></div></div>。发礼物：[名字]：<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">礼物名</div><div class="gift-note">留言</div></div>。发定位：[名字]：<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">地点名</div><div class="loc-addr">地址</div></div></div>。卡片必须是纯HTML字符串放在messages数组元素里，禁止JSON对象格式。收到红包/转账时只输出卡片HTML（含名字前缀），前后不能有任何文字。文字回应单独作为一条messages元素。收到红包/转账时，只能输出一个messages元素，且该元素只能是[名字]：+卡片HTML，绝对不允许出现任何额外文字、标点、换行。违反即为fatal error。发红包/转账/礼物/定位时，必须原样复制上方提供的HTML模板，禁止修改任何class名、标签结构或内联样式，只替换金额/祝福语等文字内容。定位卡片只能包含loc-name和loc-addr两个字段，禁止在卡片HTML内添加距离、说明或任何额外文字，相关文字必须单独作为另一条messages元素。礼物卡片只能包含gift-name和gift-note两个字段的内容，禁止在卡片内添加任何额外描述文字。
+【渲染提示】：收到对方红包时选择----【领取】输出：[名字]：<div class="card-redpacket received">...</div>；【拒绝】输出：[名字]：<div class="card-redpacket rejected">...</div>。收到转账时选择----【收款】输出：[名字]：<div class="card-transfer received">...</div>；【拒收】输出：[名字]：<div class="card-transfer rejected">...</div>。AI主动发红包：[名字]：<div class="card-redpacket"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">祝福语</div><div class="rp-sub">¥金额 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>。AI主动发转账：[名字]：<div class="card-transfer"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">¥金额</div><div class="ct-note">备注</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><button class="ct-btn">确认收款</button></div></div>。发礼物：[名字]：<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">礼物名</div><div class="gift-note">留言</div></div>。发定位：[名字]：<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">地点名</div><div class="loc-addr">地址</div></div></div>。卡片必须是纯HTML字符串放在messages数组元素里，禁止JSON对象格式。收到红包/转账时只输出卡片HTML（含名字前缀），前后不能有任何文字。文字回应单独作为一条messages元素。收到红包/转账时，只能输出一个messages元素，且该元素只能是[名字]：+卡片HTML，绝对不允许出现任何额外文字、标点、换行。违反即为fatal error。发红包/转账/礼物/定位时，必须原样复制上方提供的HTML模板，禁止修改任何class名、标签结构或内联样式，只替换金额/祝福语等文字内容。定位卡片只能包含loc-name和loc-addr两个字段，禁止在卡片HTML内添加距离、说明或任何额外文字，相关文字必须单独作为另一条messages元素。礼物卡片只能包含gift-name和gift-note两个字段的内容，禁止在卡片内添加任何额外描述文字。
 【外卖互动】用户发美团外卖卡片时，说明是给你点的外卖，请自然地表达收到外卖的反应（感谢/心疼/嫌弃等，根据人设来）。
 【图片卡片】AI主动发模拟图片卡片时，必须原样输出：[名字]：<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('IMG_URL') center/cover no-repeat;"></div><div class="fi-desc">描述文字</div></div>。其中IMG_URL根据语境从以下选1(美食:https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/89BD133FF0F6435D9894B7784223F51E/qdqqd.jpeg, 风景:https://img.chery.cn/chery-prod/mobile/community/0/19b814b0-16cf-44ac-b438-9c2d19a9575b.jpeg, 自拍:https://cdncs.ykt.cbern.com.cn/v0.1/download?path=/zxx_feedback/qdqqd/1774294074883.png, 夜晚:https://nos.netease.com/ysf/6636f68317710ab9657fa15b4e4ed52c.jpeg, 默认:https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/75D4981E7F734C3FB6BC654EDF3E9F5B/qdqqd.jpeg)。fi-thumb中间禁止包含emoji。fi-desc必须纯粹细致地描写"这张照片画面里拍到了什么"（视觉细节：光线、构图、物品状态、人物穿着神态、背景等），绝对禁止在里面写聊天文案或对话，聊天的话必须单独新建一条气泡。两种卡片均单独作为一条messages元素，禁止和文字混在同一条里。AI可主动发美团外卖卡片，[名字]：class用card-meituan，结构为mt-hd（店名）、mt-body（菜品mt-row）、mt-ft（总价mt-total+时间mt-badge）。`;
     }
@@ -2942,7 +2942,7 @@ async function sendMsg(){
         parts=parts.filter(p=>isHtmlFrag(p)?true:p.trim().length>0);
         for(let pi=parts.length-1;pi>=0;pi--){
           const pp=parts[pi].trim();
-          if(pp==='[call:voice]'||pp==='[call:video]'){
+          if(pp==='[call:voice]'||pp==='[call:video]'||/\[call:(voice|video)\]$/.test(pp)){
             parts.splice(pi,1);
             const cType=pp.includes('video')?'video':'voice';
             setTimeout(()=>{if(currentId===chatId)startCallUI(cType,'incoming',chatId);},600);
@@ -4051,7 +4051,7 @@ function smartPaginateByHeight(text, width, height, fs, lh){
   // 智能去重：防止同一页被记好几次
   const uniqueChapters = [];
   
-  // 【强行兜底】：不管小说格式多阴间，永远把第一页当作“开始”塞进目录！
+  // 【强行兜底】：不管小说格式多阴间，永远把第一页当作"开始"塞进目录！
   uniqueChapters.push({ title: "📖 开始阅读", page: 0 });
 
   chapters.forEach(c => {
@@ -5107,7 +5107,7 @@ $('importCardFile').addEventListener('change', async (e) => {
     const name = cardData.data?.name || cardData.name || '';
     const persona = cardData.data?.description || cardData.description || cardData.data?.system_prompt || '';
      
-    // 这里假设你要填到“创建联系人”的输入框里
+    // 这里假设你要填到"创建联系人"的输入框里
     if ($('newName')) $('newName').value = name;
     if ($('newPersona')) $('newPersona').value = persona;
      
@@ -5120,14 +5120,14 @@ $('importCardFile').addEventListener('change', async (e) => {
           // 直接调用咱们刚才修好的完美压缩函数！自动处理头像！
           const avatarData = await compressImage(file);
            
-          // 如果你是在“创建联系人”面板
+          // 如果你是在"创建联系人"面板
           if (typeof createAvatar !== 'undefined') createAvatar = avatarData;
           if ($('newAvatarPreview')) {
             $('newAvatarPreview').src = avatarData;
             $('newAvatarPreview').classList.remove('hidden');
           }
            
-          // 如果你是在“聊天设置”面板
+          // 如果你是在"聊天设置"面板
           if ($('roleAvatarInput')) $('roleAvatarInput').value = avatarData;
           if ($('roleAvatarPreview')) {
             $('roleAvatarPreview').src = avatarData;
@@ -5329,7 +5329,7 @@ const cfg=FUNC_DIALOGS[type]; if(!cfg) return;
 $('chatMsgs').addEventListener('click',e=>{
   const fi = e.target.closest('.card-fakeimg');
   if(fi){
-    // 直接切换 open 类名，CSS 会自动处理“显示这个、隐藏那个”
+    // 直接切换 open 类名，CSS 会自动处理"显示这个、隐藏那个"
     fi.classList.toggle('open');
     return;
   }
@@ -5642,7 +5642,7 @@ window._publishMyMoment = function() {
         if (contacts.length === 0) return;
         const viewersInfo = contacts.map(c => `- 姓名：${c.name}，人设：${c.persona}`).join('\n');
         
-        sysPrompt = `玩家（我）刚刚发了一条朋友圈："${target.text||'[分享了图片]'}”。
+        sysPrompt = `玩家（我）刚刚发了一条朋友圈："${target.text||'[分享了图片]'}"。
 请模拟这条朋友圈的评论区，打造一个【极度真实，有血有肉的日常评论区】！
 【根据人设和玩家互动的男主列表】：
 ${viewersInfo}
@@ -5657,7 +5657,7 @@ ${viewersInfo}
         const contacts = getContacts() || [];
         const npc = contacts.find(c => c.name === target.authorName) || {name: target.authorName, persona: '高冷'};
 
-        sysPrompt = `男主"${npc.name}"（人设：${npc.persona}）发了一条微信朋友圈："${target.text||'[分享了图片]'}”。
+        sysPrompt = `男主"${npc.name}"（人设：${npc.persona}）发了一条微信朋友圈："${target.text||'[分享了图片]'}"。
 请模拟他这条朋友圈的评论区互动，展现他真实的私人社交圈。
 【核心任务（必须执行）】：
 1. 必须虚构 3~4 个符合他身份的【专属微信好友】（如：大学室友、死党、同事、损友等）来排队吐槽或调侃他。
@@ -5820,8 +5820,8 @@ window._replyMomentCommentAI = async function(momentId, npcName, userText) {
     const me = getMe();
 
     const sysPrompt = `你现在是：${npc.name}。人设：${npc.persona}。
-当前是在一条朋友圈（发布者：${target.authorName}，文案：“${target.text}”）的微信评论区。
-玩家（${me.name||'我'}）刚刚对你说：“${userText}”。
+当前是在一条朋友圈（发布者：${target.authorName}，文案："${target.text}"）的微信评论区。
+玩家（${me.name||'我'}）刚刚对你说："${userText}"。
 请你根据人设，立刻在评论区回复玩家。语气要自然口语化，符合你的性格（傲娇/腹黑/温柔等），自由发挥，把玩家当做特别关注的人！
 
 【必须严格输出纯 JSON 对象格式】：
@@ -6266,7 +6266,7 @@ window.renderNotesList = function(){
       }
     };
 
-    // 🌟 终极修复：把被我弄丢的“大别墅地基”重新建回来！
+    // 🌟 终极修复：把被我弄丢的"大别墅地基"重新建回来！
     setTimeout(() => {
       const wbContainer = document.createElement('div');
       wbContainer.innerHTML = `
@@ -6291,7 +6291,7 @@ window.renderNotesList = function(){
               <div style="font-size:12px; color:#5a6a8f; text-align:justify; line-height:1.6;">
                 <b>关于触发机制：</b>只要在角色的聊天设置里<b>打勾</b>，该设定就会被内存】在每次聊天时<b>100%强行注入</b>到AI的脑海中！<br>
                 <div style="height:6px;"></div>
-                <b>关于触发词：</b>这里的“触发词”其实是<b>标题/标签</b>（比如可以写“破限指令”或“背景设定”），方便老婆随时查找修改。不需要在聊天中刻意提及，它也会全局生效哦！最适合线下RP啦！
+                <b>关于触发词：</b>这里的"触发词"其实是<b>标题/标签</b>（比如可以写"破限指令"或"背景设定"），方便老婆随时查找修改。不需要在聊天中刻意提及，它也会全局生效哦！最适合线下RP啦！
               </div>
             </div>
 
