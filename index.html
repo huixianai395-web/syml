@@ -2321,7 +2321,19 @@ if(!isMe && isHtmlDoc(t)){
     const _msgs=$('chatMsgs');
     if(!selectMode){requestAnimationFrame(()=>{_msgs.scrollTop=_msgs.scrollHeight;setTimeout(()=>{_msgs.scrollTop=_msgs.scrollHeight;},120);});}
   }
-  function clearCurrentChat(){if(!currentId) return;if(!confirm('清空当前聊天？')) return;setChatArr(currentId,[]);updateContact(currentId,{preview:'',time:''});selectMode=false;selectedIds.clear();renderChat();renderContacts($('searchInput').value||'');}
+  function clearCurrentChat(){
+  if(!currentId) return;
+  if(!confirm('清空当前聊天？')) return;
+  setChatArr(currentId,[]);
+  const c=getContactById(currentId);
+  if(c&&c.isGroup){
+    const groups=window.getGroups(),idx=groups.findIndex(g=>g.id===currentId);
+    if(idx>-1){groups[idx].preview='';groups[idx].time='';window.setGroups(groups);}
+  }else{
+    updateContact(currentId,{preview:'',time:''});
+  }
+  selectMode=false;selectedIds.clear();renderChat();renderContacts($('searchInput').value||'');
+  }
   function deleteCurrentContact(){if(!currentId) return;if(!confirm('删除当前好友及聊天记录？')) return;setContacts(getContacts().filter(c=>c.id!==currentId));const map=getChats();delete map[currentId];setChats(map);currentId=null;renderContacts($('searchInput').value||'');show('wechat');}
 
   function resetInputH(){ $('chatInput').style.height='44px';}
@@ -2355,7 +2367,7 @@ if(!isMe && isHtmlDoc(t)){
   function splitLongBubbles(parts,maxLen=30){
   const out=[];
   for(const p of parts){
-    if(p.length<=maxLen || isHtmlDoc(p) || isHtmlFrag(p)){out.push(p);continue;}
+    if(p.length<=maxLen || isHtmlDoc(p) || isHtmlFrag(p) || /^\[voice:/.test(p) || /^\[stk:/.test(p) || /^\[call:/.test(p)){out.push(p);continue;}
     const segs=p.split(/(?<=[。！？!?…\n])/g).filter(Boolean);
     let buf='';
     for(const s of segs){
