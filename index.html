@@ -5347,31 +5347,40 @@ async function applyChatBg() {
   let el = document.getElementById('chatBgStyleOverride');
   if(!el){ el = document.createElement('style'); el.id = 'chatBgStyleOverride'; document.head.appendChild(el); }
 
+  // ✨ 全局兜底魔法：不管有没有背景图，永远把丑蓝色封印起来！
+  let baseCss = `
+    #chatRoom .bubble.me {
+      background: #e6efff !important; /* 极简低饱和灰蓝 */
+      border: 1px solid #dce5f2 !important;
+      color: #2b3a60 !important;
+      box-shadow: 0 2px 8px rgba(47,102,216,0.04) !important;
+    }
+  `;
+
   if(glassBg) {
-    // 🌊 琉璃仙气背景：不仅AI，老婆的专属气泡也必须是绝美毛玻璃！
-    el.textContent = `
+    // 🌊 琉璃仙气背景
+    el.textContent = baseCss + `
       #chatRoom.offline #chatMsgs,
       #chatRoom:not(.offline) #chatMsgs {
         background: url(${glassBg}) center/cover fixed no-repeat !important;
       }
-      /* AI的卡片 */
+      /* AI的卡片：冷白灰冰透毛玻璃 */
       #chatRoom:not(.offline) .bubble.ai { background: rgba(244,246,251,0.65) !important; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6) !important; }
       #chatRoom.offline .offline-card { background: rgba(244,246,251,0.65) !important; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6) !important; box-shadow: 0 4px 16px rgba(47,102,216,0.05) !important; }
       #chatRoom.offline .offline-state { background: rgba(255,255,255,0.4) !important; border-bottom: 1px solid rgba(255,255,255,0.3) !important; }
       
-      /* ✨ 老婆的专属气泡（低饱和度冰透蓝）✨ */
+      /* ✨ 老婆的专属气泡：冰透海盐蓝毛玻璃，和AI完美区分！ */
       #chatRoom .bubble.me { 
-        background: rgba(225,235,250,0.55) !important; 
+        background: rgba(205, 225, 255, 0.55) !important; 
         backdrop-filter: blur(12px); 
         -webkit-backdrop-filter: blur(12px); 
         border: 1px solid rgba(255,255,255,0.5) !important; 
-        color: #2b3a60 !important; 
         box-shadow: 0 4px 16px rgba(47,102,216,0.05) !important; 
       }
     `;
   } else if(normalBg) {
-    // 🏞️ 普通背景：扎实、不透底、随屏滚动
-    el.textContent = `
+    // 🏞️ 普通背景：扎实不透底
+    el.textContent = baseCss + `
       #chatRoom.offline #chatMsgs,
       #chatRoom:not(.offline) #chatMsgs {
         background: url(${normalBg}) center/cover no-repeat !important;
@@ -5381,17 +5390,10 @@ async function applyChatBg() {
       #chatRoom:not(.offline) .bubble.ai { background: #ffffff !important; box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important; }
       #chatRoom.offline .offline-card { background: #fffdf9 !important; box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important; border: 1px solid #e8dccb !important; }
       #chatRoom.offline .offline-state { background: linear-gradient(180deg,#fff7ea,#f8efdf) !important; border-bottom: 1px solid #efe4d5 !important; }
-      
-      /* ✨ 老婆的专属气泡（极简低饱和度灰蓝）✨ */
-      #chatRoom .bubble.me { 
-        background: #eef3ff !important; 
-        border: 1px solid #dce5f2 !important; 
-        color: #2b3a60 !important; 
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important; 
-      }
     `;
   } else {
-    el.textContent = '';
+    // 🧹 恢复纯色背景时，只应用 baseCss！
+    el.textContent = baseCss;
   }
 }
 // 监听普通背景上传
