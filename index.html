@@ -5339,7 +5339,6 @@ $('importCardFile').addEventListener('change', async (e) => {
 });
   // ================= 遇见贴心加的：单独【聊天背景】模块 (外挂内存双模版) =================
 async function applyChatBg() {
-  // 核心：从外挂大仓库里异步读取，再大的图也不怕！
   const glassBg = await localforage.getItem('mp_fix_chat_bg');
   const normalBg = await localforage.getItem('mp_fix_chat_normal_bg');
   let el = document.getElementById('chatBgStyleOverride');
@@ -5357,7 +5356,10 @@ async function applyChatBg() {
       #chatRoom.offline #chatMsgs,
       #chatRoom:not(.offline) #chatMsgs {
         background: url(${normalBg}) center/cover no-repeat !important;
+        background-attachment: scroll !important;
       }
+      /* 配合普通背景，给气泡加一点点低饱和度的高级白，防透底 */
+      #chatRoom:not(.offline) .bubble.ai { background: rgba(248,250,255,0.95) !important; border: 1px solid rgba(220,229,242,0.8) !important; }
     `;
   } else {
     el.textContent = '';
