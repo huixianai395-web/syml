@@ -2016,11 +2016,17 @@ function refreshFontSizeUI(){
     if(i>-1){ arr[i]={...arr[i],...v}; setContacts(arr); }
   }
   
+  // 🌟 蓝色紧急修复：时间戳乱码与列表不刷新 Bug
   function updateContactPreview(id){
     const arr=getChatArr(id), c=getContactById(id); 
     if(!c) return;
     let p='', t='';
-    if(arr.length){ const last=arr[arr.length-1]; p=last.text||'[图片/特殊消息]'; t=last.time||''; }
+    if(arr.length){ 
+      const last=arr[arr.length-1]; 
+      p=last.text||'[图片/特殊消息]'; 
+      // 🛠️ 修复1：给机器时间套上人类翻译器 fmtTs，变成 12:00 这种格式！
+      t=fmtTs(last.time)||''; 
+    }
     
     // 🌟 蓝色的群聊兼容魔法：如果是群聊，去群聊抽屉里更新摘要！
     if(c.isGroup) {
@@ -2028,6 +2034,11 @@ function refreshFontSizeUI(){
        if(idx>-1){ groups[idx].preview=p; groups[idx].time=t; window.setGroups(groups); }
     } else {
        updateContact(id,{preview:p,time:t});
+    }
+
+    // 🛠️ 修复2：强制唤醒雷达，只要数据变了，立刻让微信列表在后台实时重绘！
+    if(typeof renderContacts === 'function' && document.getElementById('searchInput')){
+       renderContacts(document.getElementById('searchInput').value || '');
     }
   }
   // ===================================================
