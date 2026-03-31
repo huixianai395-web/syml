@@ -2393,27 +2393,27 @@ if(!isMe && isHtmlDoc(t)){
 
     if(st.mode==='offline'){
       $('chatMsgs').innerHTML=arr.map((m, index)=>{
-        // 🌟 蓝色魔法：计算楼层和字数！
         const floorNum = index + 1;
-        const wordCount = (m.text || '').replace(/<[^>]*>/g, '').length; // 剔除代码标签后的纯字数
+        const wordCount = (m.text || '').replace(/<[^>]*>/g, '').length;
+        const isMe = m.role === 'user';
         
-        // 绝美的毛玻璃元数据条 (调用了老婆之前贴的 CSS)
-        const metaHtml = `
-          <div class="rp-meta-bar">
-            <div class="rp-meta-item">#${floorNum} 楼</div>
-            <div class="rp-meta-divider"></div>
-            <div class="rp-meta-item">${wordCount} 字</div>
-          </div>
-        `;
+        // 🌟 蓝色高定：二次元清透琉璃风 + 强制内联防失效！(悬浮在气泡上方)
+        const metaHtml = `<div style="display:inline-flex; align-items:center; gap:10px; margin-bottom:6px; padding:4px 14px; border-radius:8px 8px 8px 2px; background:${isMe ? 'rgba(255,255,255,0.5)' : 'rgba(244,246,251,0.5)'}; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.8); box-shadow:0 2px 10px rgba(47,102,216,0.04); font-size:11px; color:#5a6a8f; align-self:flex-start; letter-spacing:0.5px;">
+          <span style="font-family:ui-monospace,monospace; font-weight:600; color:#4a67a8;">#${floorNum} 楼</span>
+          <div style="width:1px; height:10px; background:rgba(122,134,168,0.25);"></div>
+          <span>${wordCount} 字</span>
+        </div>`;
 
-        const cls=m.role==='user'?'me':'ai',av=m.role==='user'?meAvatar:roleAvatar,selected=selectedIds.has(m.id),sCls=selectMode?' selecting':'',cHtml=selectMode?`<div class="msg-check">✓</div>`:'';
+        const cls=isMe?'me':'ai', av=isMe?meAvatar:roleAvatar, selected=selectedIds.has(m.id), sCls=selectMode?' selecting':'', cHtml=selectMode?`<div class="msg-check">✓</div>`:'';
         
-        if(m.role==='user') {
-          return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}"><div class="bubble-wrap me">${renderBubbleContent(m,true,pref)}</div>${metaHtml}</div></div>`;
+        if(isMe) {
+          // 放在头像下面，气泡的正上方！
+          return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}">${metaHtml}<div class="bubble-wrap me">${renderBubbleContent(m,true,pref)}</div></div></div>`;
         }
-        return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}">${renderOfflineAssistant(m.text,m.time,pref,m)}${metaHtml}</div></div>`;
+        // 放在头像下面，气泡的正上方！
+        return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}">${metaHtml}${renderOfflineAssistant(m.text,m.time,pref,m)}</div></div>`;
       }).join('');
-    }else{
+  }else{
       $('chatMsgs').innerHTML=arr.map(m=>{
         const selected=selectedIds.has(m.id),sCls=selectMode?' selecting':'',cHtml=selectMode?`<div class="msg-check">✓</div>`:'';
         if(m.role==='user') {
