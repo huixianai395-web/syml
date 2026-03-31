@@ -1,5 +1,3 @@
-
-
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -2245,12 +2243,13 @@ if(voiceMatch){
   return `${quote}<div class="bubble ${cls} ${hidden}" style="width:${w}px;cursor:pointer;" onclick="var el=document.getElementById('${vid}');if(el)el.classList.toggle('hidden');this.classList.toggle('voice-playing')"><div class="bubble-voice"><div class="voice-waves">${waves}</div><div class="voice-dur">${dur}″</div></div></div><div id="${vid}" class="voice-reveal hidden">${esc(vtext)}</div>${ts}`;
 }
     const quoteMatch = t.match(/^\[quote\]([\s\S]*?)\[\/quote\]([\s\S]*)$/);
-if(quoteMatch){
-  const qText=quoteMatch[1].trim();
-  const body=quoteMatch[2].trim();
-  const qHtml=`<div class="msg-quote"><div class="q-content">${esc(qText)}</div></div>`;
-  return `${quote}${qHtml}<div class="bubble ${cls} ${hidden}">${esc(body)}</div>${ts}`;
-}
+    if(quoteMatch){
+      const qText=quoteMatch[1].trim();
+      const body=quoteMatch[2].trim();
+      const qHtml=`<div class="msg-quote"><div class="q-content">${esc(qText)}</div></div>`;
+      const bodyHtml = body ? `<div class="bubble ${cls} ${hidden}">${esc(body)}</div>` : '';
+      return `${quote}${qHtml}${bodyHtml}${ts}`;
+    }
     if(t.startsWith('[img]') && t.endsWith('[/img]')){
       const src = t.slice(5, -6);
       return `${quote}<div class="bubble ${cls} ${hidden}" style="padding:4px;background:transparent;border:none;box-shadow:none;"><img class="bubble-img" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
@@ -2857,7 +2856,9 @@ async function sendMsg(){
       if(callState.active&&callState.chatId===chatId){
         system+='\n[当前状态：正在'+(callState.type==='video'?'视频':'语音')+'通话中，已通话'+fmtCallDur(Date.now()-callState.start)+'，像真实电话一样交流，简短口语化。想挂断时回复[endcall]。]';
       }
-      // 🌟 蓝色的净化魔法：如果是线下模式，绝不给AI传时间戳！防止它们学坏！
+     // 🌟 蓝色魔法：把 modeTag 塞进 system 提示词的末尾，防止被当成用户发言！
+      system += `\n\n【系统强制指令】：${modeTag}`;
+      
       const messages=[
         {role:'system',content:system},
         ...hist.map(x=>({
@@ -2869,8 +2870,7 @@ async function sendMsg(){
             }
             return c;
           })()
-        })),
-        {role:'user',content:modeTag}
+        }))
       ];
   
       // ================= 蓝色的双轨制收发神经元 =================
