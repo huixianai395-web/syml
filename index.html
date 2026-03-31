@@ -5339,29 +5339,36 @@ $('importCardFile').addEventListener('change', async (e) => {
 });
   // ================= 遇见贴心加的：单独【聊天背景】模块 (外挂内存双模版) =================
 async function applyChatBg() {
+  // 从外挂内存中唤醒背景图
   const glassBg = await localforage.getItem('mp_fix_chat_bg');
   const normalBg = await localforage.getItem('mp_fix_chat_normal_bg');
   let el = document.getElementById('chatBgStyleOverride');
   if(!el){ el = document.createElement('style'); el.id = 'chatBgStyleOverride'; document.head.appendChild(el); }
 
   if(glassBg) {
-    // 🌊 琉璃仙气背景：继续保持透明视差感
+    // 🌊 琉璃仙气背景：保留视差，加入宝宝专属的低饱和度毛玻璃！
     el.textContent = `
       #chatRoom.offline #chatMsgs,
       #chatRoom:not(.offline) #chatMsgs {
         background: url(${glassBg}) center/cover fixed no-repeat !important;
       }
+      /* 高级低饱和度毛玻璃质感 */
+      #chatRoom:not(.offline) .bubble.ai { background: rgba(244,246,251,0.65) !important; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6) !important; }
+      #chatRoom.offline .offline-card { background: rgba(244,246,251,0.65) !important; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6) !important; box-shadow: 0 4px 16px rgba(47,102,216,0.05) !important; }
+      #chatRoom.offline .offline-state { background: rgba(255,255,255,0.4) !important; border-bottom: 1px solid rgba(255,255,255,0.3) !important; }
     `;
   } else if(normalBg) {
-    // 🏞️ 普通背景：我们要的是扎实、不透底、随屏滚动的安定感！
+    // 🏞️ 普通背景：扎实、不透底、随屏滚动，绝对不伤眼！
     el.textContent = `
       #chatRoom.offline #chatMsgs,
       #chatRoom:not(.offline) #chatMsgs {
         background: url(${normalBg}) center/cover no-repeat !important;
-        background-attachment: scroll !important; /* 强制不跟随视差 */
+        background-attachment: scroll !important;
       }
-      /* 针对普通背景，我们把气泡背景调实一点，防止透出底色太乱 */
-      #chatRoom:not(.offline) .bubble.ai { background: #ffffff !important; }
+      /* 实体防透底卡片（解决你截图里透明看不清字的问题！） */
+      #chatRoom:not(.offline) .bubble.ai { background: #ffffff !important; box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important; }
+      #chatRoom.offline .offline-card { background: #fffdf9 !important; box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important; border: 1px solid #e8dccb !important; }
+      #chatRoom.offline .offline-state { background: linear-gradient(180deg,#fff7ea,#f8efdf) !important; border-bottom: 1px solid #efe4d5 !important; }
     `;
   } else {
     el.textContent = '';
