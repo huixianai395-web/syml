@@ -216,10 +216,26 @@
     #chatRoom.select-mode #chatInputWrap{display:none}
     #chatRoom.select-mode #chatMsgs{height:calc(100% - (52px + var(--safe-top)) - (92px + var(--safe-bottom)))}
 
-    .fav-item{background:#fff;border:1px solid #ececf2;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px;}
-    .fav-meta{font-size:12px;color:#6f7b98;display:flex;justify-content:space-between;gap:8px}
-    .fav-text{font-size:14px;color:#1f2430;line-height:1.45;white-space:pre-wrap;word-break:break-word}
-    .fav-actions{display:flex;gap:8px;justify-content:flex-end}
+   /* 💌 拾光珍藏馆专属美学 (低饱和度、层次感) */
+    .fav-item {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: 16px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 4px 20px rgba(74, 103, 168, 0.04), inset 0 2px 0 rgba(255, 255, 255, 0.8);
+      position: relative;
+    }
+    .fav-item::before { content: ""; position: absolute; left: 14px; top: 0; width: 30px; height: 3px; background: #e2e8f0; border-radius: 0 0 4px 4px; }
+    .fav-meta { font-size: 11px; color: #8892a8; display: flex; justify-content: space-between; gap: 8px; font-family: ui-monospace, monospace; border-bottom: 1px dashed #edf2ff; padding-bottom: 6px; }
+    .fav-text { font-size: 14px; color: #3d4a6a; line-height: 1.6; white-space: pre-wrap; word-break: break-word; text-align: justify; }
+    .fav-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+    .fav-actions .btn { background: #f8fafc; border: 1px solid #e2e8f0; color: #5a6a8f; border-radius: 8px; font-size: 11px; padding: 4px 10px; }
+    .fav-actions .btn.d { background: #fff0f0; color: #d94343; border-color: #fce8e8; }
 
     .fav-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
     .fav-check-btn{min-width:62px}
@@ -1171,7 +1187,7 @@
       <button class="btn" data-nav="wechat">‹ 返回</button>
       <div class="chat-head-center"><div class="chat-head-title" id="chatTitle">聊天</div><div class="chat-head-sub" id="chatSub"></div></div>
       <div class="head-right">
-        <button class="icon-btn" id="favEntryBtn" title="收藏夹">★</button>
+        
         <button class="icon-btn" id="chatSettingBtn" aria-label="设置">⋯</button>
       </div>
     </div>
@@ -1241,9 +1257,16 @@
   <section id="chatSetting" class="screen">
     <div class="header"><button class="btn" data-nav="chatRoom">‹ 返回</button><b>聊天设置</b><button class="btn p" id="saveChatSettingBtn">保存</button></div>
     <div class="page">
-      <div class="card">
-        <div class="small">收藏夹（单独入口，避免误触）</div>
-        <div class="row" style="margin-top:8px;"><button class="btn" id="openFavBtn">打开收藏夹</button></div>
+      <!-- 💎 拾光珍藏馆入口 (低饱和度高级版) -->
+      <div class="card" style="background: linear-gradient(145deg, #fdfbfb, #f4f6fb); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 4px 16px rgba(47,102,216,0.04); position: relative; overflow: hidden;">
+        <div style="position: absolute; top: -10px; right: -10px; font-size: 50px; opacity: 0.03; pointer-events: none;">💌</div>
+        <div class="small" style="font-weight: bold; color: #5a6a8f; font-size: 13px;">拾光珍藏馆</div>
+        <div style="font-size: 11px; color: #8892a8; margin-top: 4px; line-height: 1.5;">那些被岁月打捞起的碎片，都静静安睡在这里。</div>
+        <div class="row" style="margin-top: 12px;">
+          <button class="btn p" id="openFavBtn" style="width: 100%; background: rgba(255,255,255,0.65); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: #4a67a8; border: 1px solid rgba(220,229,242,0.8); border-radius: 10px; padding: 10px 0; font-weight: bold; box-shadow: 0 2px 8px rgba(47,102,216,0.03); transition: transform 0.1s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+            <span style="font-size: 14px;">✨</span> 轻轻开启匣子
+          </button>
+        </div>
       </div>
 <div class="card">
   <div class="small">头像高清模式</div>
