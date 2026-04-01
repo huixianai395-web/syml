@@ -899,6 +899,50 @@
   height: 10px;
   background: rgba(122, 134, 168, 0.2);
   }
+    /* ================= 蓝色专属：藏宝阁高定毛玻璃 UI ================= */
+/* 整个收藏夹页面的底色，低饱和度的高级渐变 */
+#favorites .page {
+  background: linear-gradient(180deg, #f4f6fb, #edf2ff) !important;
+  padding: 16px;
+  gap: 14px;
+}
+
+/* 💙 蓝色专属科普卡片：极简白边，通透毛玻璃 */
+.fav-science-card {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 20px rgba(47, 102, 216, 0.04);
+  margin-bottom: 6px;
+}
+
+/* 收藏卡片本体：悬浮感、呼吸感、层次感拉满 */
+.fav-item {
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  border-radius: 16px !important;
+  padding: 16px !important;
+  box-shadow: 0 8px 24px rgba(47, 102, 216, 0.04) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 10px !important;
+}
+
+/* 触摸时的微缩按压反馈，绝对丝滑 */
+.fav-item:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 12px rgba(47, 102, 216, 0.02) !important;
+}
+
+/* 优化里面的文字颜色，拒绝刺眼 */
+.fav-meta { font-size: 12px; color: #7a86a8 !important; }
+.fav-text { font-size: 14px; color: #3d4a6a !important; line-height: 1.62 !important; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
@@ -1171,7 +1215,7 @@
       <button class="btn" data-nav="wechat">‹ 返回</button>
       <div class="chat-head-center"><div class="chat-head-title" id="chatTitle">聊天</div><div class="chat-head-sub" id="chatSub"></div></div>
       <div class="head-right">
-        <button class="icon-btn" id="favEntryBtn" title="收藏夹">★</button>
+        <!-- 蓝色的断舍离魔法：这里原本的星星图标已经被彻底抹除了！ -->
         <button class="icon-btn" id="chatSettingBtn" aria-label="设置">⋯</button>
       </div>
     </div>
@@ -1442,26 +1486,46 @@
     </div>
   </section>
 
+  <!-- ================= 蓝色重构版：藏宝阁 (高定毛玻璃版) ================= -->
   <section id="favorites" class="screen">
-    <div class="header">
+    <!-- 顶部毛玻璃导航 -->
+    <div class="header" style="background:rgba(248,249,255,0.85)!important; backdrop-filter:blur(12px); border-bottom:1px solid rgba(228,232,245,0.6)!important;">
       <button class="btn" data-nav="chatSetting">‹ 返回</button>
-      <b>收藏夹</b>
+      <b style="color:#1a1d26; letter-spacing:0.5px;">藏宝阁</b>
       <div class="row" style="gap:6px;">
-        <button class="btn" id="favMultiBtn">多选</button>
+        <button class="btn" id="favMultiBtn" style="background:#eef3ff; color:#2f66d8; font-weight:bold;">多选</button>
         <button class="btn" id="refreshFavBtn">刷新</button>
       </div>
     </div>
+    
     <div class="page">
-      <div id="favNow" class="small"></div>
-      <div id="favBatchBar" class="card hidden" style="padding:8px;">
-        <div class="row" style="flex-wrap:wrap;">
-          <button class="btn" id="favSelectAllBtn">全选</button>
-          <button class="btn" id="favUnselectAllBtn">取消全选</button>
-          <button class="btn d" id="favBatchUnstarBtn">批量取消收藏</button>
-          <button class="btn" id="favExitMultiBtn">退出多选</button>
-          <span id="favMultiCount" class="small" style="margin-left:auto;">已选 0 项</span>
+      <!-- 💙 蓝色专属科普卡片：外挂内存的安全感 -->
+      <div class="fav-science-card">
+        <div style="font-size:14px; font-weight:800; color:#2f66d8; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+          <span>💎</span> 蓝色科普时间：外挂内存的藏宝阁
+        </div>
+        <div style="font-size:12px; color:#5a6a8f; text-align:justify; line-height:1.6;">
+          为什么这里可以无限塞宝藏？因为这里的每一条心动回忆，都没有放在脆弱的普通缓存里，而是被我死死焊在了 <b>LocalForage（外挂内存）</b> 最深处的 IndexedDB 数据库中。<br>
+          <div style="height:6px;"></div>
+          它相当于给你的手机外接了一个隐形移动硬盘，不论你收藏多少万字的神仙对话，都不会卡顿，更不会因为杀后台而失忆！安心把喜欢的剧情都存在这里吧！🥺
         </div>
       </div>
+
+      <div id="favNow" class="small" style="text-align:center; color:#a0aaba; margin-bottom:8px;"></div>
+      
+      <!-- 多选操作栏也优化了半透明质感 -->
+      <div id="favBatchBar" class="card hidden" style="padding:12px; background:rgba(255,255,255,0.8); backdrop-filter:blur(10px); border-radius:14px; margin-bottom:10px; border:1px solid rgba(255,255,255,0.9);">
+        <div class="row" style="flex-wrap:wrap; justify-content:space-between;">
+          <div style="display:flex; gap:8px;">
+            <button class="btn" id="favSelectAllBtn">全选</button>
+            <button class="btn" id="favUnselectAllBtn">取消</button>
+            <button class="btn d" id="favBatchUnstarBtn" style="background:#fff0f0; color:#e74c3c; border:none;">批量取消</button>
+          </div>
+          <button class="btn" id="favExitMultiBtn" style="font-weight:bold; color:#2f66d8;">完成</button>
+        </div>
+        <div id="favMultiCount" class="small" style="margin-top:8px; color:#7a86a8; font-weight:bold;">已选 0 项</div>
+      </div>
+
       <div id="favList" class="list"></div>
     </div>
   </section>
