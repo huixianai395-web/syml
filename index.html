@@ -6784,48 +6784,70 @@ window.renderNotesList = function(){
       btn.style.pointerEvents = 'auto';
     }
   };
-  // 🌟 蓝色高定：绝美宽屏呼吸感档案馆 & 记忆注入引擎
+  // 🌟 蓝色高定修复：取消横向霸屏，拉伸纵向空间，注入清透古风！
   window._renderMemoryCards = async function() {
     if(!currentId) return;
     const allMems = await getMemories();
     const myMems = allMems[currentId] || [];
     const box = document.getElementById('memoryCardList');
-    
-    // 强制把弹窗变宽，给老婆最大的写作空间！
+
+    // 🌟 蓝色抢救：把撑爆屏幕的宽度改掉，拉满上下高度！
     const modalInner = document.querySelector('#memoryArchiveModal .modal-card');
     if(modalInner) {
-      modalInner.style.width = '640px';
-      modalInner.style.maxWidth = '95%';
+      modalInner.style.width = '100%';
+      modalInner.style.maxWidth = '420px'; // 适配手机屏幕
+      modalInner.style.height = '90dvh';   // 纵向空间拉满，看着不累！
+      modalInner.style.background = 'linear-gradient(160deg, #f0f4fb, #e8eef8)';
+    }
+
+    // 把顶部的死板按钮也顺手美化一下，带点古风仪式感
+    const topBtn = document.querySelector('#memoryArchiveModal button[onclick="window._addNewMemoryCard()"]');
+    if(topBtn) {
+      topBtn.style.background = 'rgba(255,255,255,0.6)';
+      topBtn.style.border = '1px solid rgba(255,255,255,0.9)';
+      topBtn.style.color = '#4a67a8';
+      topBtn.style.fontFamily = '"STZhongsong", "KaiTi", serif';
+      topBtn.style.letterSpacing = '2px';
+      topBtn.style.backdropFilter = 'blur(10px)';
+      topBtn.innerHTML = '🖋️ 提笔新卷';
     }
 
     if(myMems.length === 0) {
-      box.innerHTML = `<div style="text-align:center; padding:80px 0; color:#a0aaba; font-size:14px; letter-spacing:1px;">档案馆空空如也<br><br>点击上方按钮，手动镌刻第一份记忆吧</div>`;
+      box.innerHTML = `<div style="text-align:center; padding:80px 0; color:#8f9dbd; font-size:14px; font-family:'STZhongsong','KaiTi',serif; letter-spacing:2px;">卷宗空空如也<br><br>提笔写下你们的第一段羁绊吧</div>`;
       return;
     }
 
     box.innerHTML = myMems.map(m => {
-      const isInject = m.injectEnabled !== false; // 默认是开启注入的
+      const isInject = m.injectEnabled !== false;
       return `
-      <div style="background:linear-gradient(145deg, rgba(255,255,255,0.85), rgba(246,249,255,0.55)); border:1px solid rgba(255,255,255,0.9); border-radius:20px; padding:24px; margin-bottom:20px; box-shadow:0 8px 24px rgba(47,102,216,0.04); backdrop-filter:blur(12px);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <input id="mem_date_${m.id}" class="input" style="width:130px; padding:8px 12px; font-size:14px; font-weight:bold; background:rgba(240,244,255,0.6); border:1px solid rgba(220,229,242,0.8); border-radius:10px; color:#4a67a8; font-family:ui-monospace,monospace;" value="${safeEsc(m.date)}" placeholder="2026-04-01">
-            
-            <!-- 🌟 蓝色魔法：记忆注入潜意识开关！ -->
-            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; background:${isInject ? 'rgba(47,102,216,0.08)' : 'rgba(160,170,186,0.1)'}; padding:6px 14px; border-radius:999px; transition:all 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
-              <input type="checkbox" ${isInject ? 'checked' : ''} onchange="window._toggleMemoryInject('${m.id}', this.checked)" style="accent-color:#2f66d8; width:16px; height:16px;">
-              <span style="font-size:13px; font-weight:bold; color:${isInject ? '#2f66d8' : '#7a86a8'};">${isInject ? '✨ 已注入潜意识' : '🔒 记忆已封存'}</span>
-            </label>
+      <div style="position:relative; background:linear-gradient(145deg, rgba(255,255,255,0.7), rgba(246,249,255,0.4)); border:1px solid rgba(255,255,255,0.9); border-radius:16px; padding:20px; margin-bottom:20px; box-shadow:0 8px 24px rgba(74,103,168,0.06); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); overflow:hidden;">
+        
+        <!-- 🌟 古风暗纹水印 -->
+        <div style="position:absolute; right:-10px; bottom:-10px; font-size:80px; opacity:0.04; font-family:'KaiTi',serif; pointer-events:none; transform:rotate(-10deg);">忆</div>
+        
+        <!-- 🌟 左侧清透琉璃装订线 -->
+        <div style="position:absolute; left:12px; top:20px; bottom:20px; width:3px; background:linear-gradient(to bottom, rgba(143,168,198,0.1), rgba(143,168,198,0.5), rgba(143,168,198,0.1)); border-radius:2px;"></div>
+
+        <div style="padding-left:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px dashed rgba(176,196,222,0.4); padding-bottom:12px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <input id="mem_date_${m.id}" class="input" style="width:110px; padding:4px 8px; font-size:12px; font-weight:bold; background:transparent; border:none; color:#5a6a8f; font-family:'STZhongsong', 'KaiTi', serif; letter-spacing:1px;" value="${safeEsc(m.date)}" placeholder="落笔之日">
+              
+              <!-- 🌟 记忆开关：清透古风版 -->
+              <label style="display:flex; align-items:center; gap:4px; cursor:pointer; background:${isInject ? 'rgba(255,255,255,0.7)' : 'rgba(230,235,245,0.4)'}; padding:4px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.6); box-shadow:0 2px 6px rgba(0,0,0,0.02); transition:all 0.2s;">
+                <input type="checkbox" ${isInject ? 'checked' : ''} onchange="window._toggleMemoryInject('${m.id}', this.checked)" style="accent-color:#4a67a8; width:14px; height:14px;">
+                <span style="font-size:11px; color:${isInject ? '#4a67a8' : '#8892a8'}; font-family:'STZhongsong', 'KaiTi', serif;">${isInject ? '✨ 潜意识入梦' : '卷宗已尘封'}</span>
+              </label>
+            </div>
+            <button class="btn" onclick="window._delMemoryCard('${m.id}')" style="padding:4px 8px; font-size:11px; background:transparent; color:#d94343; border:none; font-family:'STZhongsong', 'KaiTi', serif;">抹除</button>
           </div>
           
-          <button class="btn d" onclick="window._delMemoryCard('${m.id}')" style="padding:8px 14px; font-size:13px; font-weight:bold; background:rgba(255,240,240,0.6); color:#d94343; border:1px solid rgba(255,224,224,0.8); border-radius:10px;">🗑️ 抹除</button>
+          <input id="mem_title_${m.id}" class="input" style="width:100%; padding:4px 0; font-size:16px; font-weight:bold; border:none; margin-bottom:10px; color:#2b3a60; background:transparent; font-family:'STZhongsong', 'KaiTi', serif; letter-spacing:1px;" value="${safeEsc(m.title)}" placeholder="卷宗名（例：初遇）...">
+          
+          <textarea id="mem_content_${m.id}" class="ta" style="min-height:180px; font-size:14px; padding:12px; line-height:1.8; background:rgba(255,255,255,0.4); border:1px solid rgba(255,255,255,0.6); border-radius:12px; color:#3d4a6a; resize:vertical; text-align:justify; font-family:-apple-system, 'PingFang SC', serif;" placeholder="落笔生花...">${safeEsc(m.content)}</textarea>
+          
+          <button class="btn" onclick="window._saveMemoryCard('${m.id}')" style="width:100%; margin-top:12px; padding:10px; border-radius:10px; font-size:13px; letter-spacing:2px; background:rgba(255,255,255,0.6); color:#4a67a8; border:1px solid rgba(255,255,255,0.8); box-shadow:0 4px 12px rgba(74,103,168,0.05); font-family:'STZhongsong', 'KaiTi', serif;">落印保存</button>
         </div>
-        
-        <input id="mem_title_${m.id}" class="input" style="width:100%; padding:12px 0; font-size:18px; font-weight:900; border:none; border-bottom:2px solid rgba(220,229,242,0.5); border-radius:0; margin-bottom:16px; color:#1a1d26; background:transparent; letter-spacing:0.5px;" value="${safeEsc(m.title)}" placeholder="给这段记忆起个标题（例：樱花树下的初遇）...">
-        
-        <textarea id="mem_content_${m.id}" class="ta" style="min-height:160px; font-size:15px; padding:16px; line-height:1.8; background:rgba(255,255,255,0.5); border:1px solid rgba(220,229,242,0.6); border-radius:16px; color:#3d4a6a; resize:vertical; text-align:justify;" placeholder="记录下这段羁绊的详细剧情，AI 会牢牢记住它...">${safeEsc(m.content)}</textarea>
-        
-        <button class="btn p" onclick="window._saveMemoryCard('${m.id}')" style="width:100%; margin-top:16px; padding:12px; border-radius:12px; font-size:15px; font-weight:bold; background:linear-gradient(135deg, rgba(240,244,255,0.8), rgba(230,239,255,0.8)); color:#2f66d8; border:1px solid rgba(200,217,248,0.8); box-shadow:0 4px 12px rgba(47,102,216,0.05);">💾 封存修改</button>
       </div>
       `;
     }).join('');
