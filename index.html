@@ -1257,16 +1257,20 @@
   <section id="chatSetting" class="screen">
     <div class="header"><button class="btn" data-nav="chatRoom">‹ 返回</button><b>聊天设置</b><button class="btn p" id="saveChatSettingBtn">保存</button></div>
     <div class="page">
+      
       <!-- 💎 拾光珍藏馆入口 (低饱和度高级版) -->
-      <div class="card" style="background: linear-gradient(145deg, #fdfbfb, #f4f6fb); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 4px 16px rgba(47,102,216,0.04); position: relative; overflow: hidden;">
-        <div style="position: absolute; top: -10px; right: -10px; font-size: 50px; opacity: 0.03; pointer-events: none;">💌</div>
-        <div class="small" style="font-weight: bold; color: #5a6a8f; font-size: 13px;">拾光珍藏馆</div>
-        <div style="font-size: 11px; color: #8892a8; margin-top: 4px; line-height: 1.5;">那些被岁月打捞起的碎片，都静静安睡在这里。</div>
-        <div class="row" style="margin-top: 12px;">
-          <button class="btn p" id="openFavBtn" style="width: 100%; background: rgba(255,255,255,0.65); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: #4a67a8; border: 1px solid rgba(220,229,242,0.8); border-radius: 10px; padding: 10px 0; font-weight: bold; box-shadow: 0 2px 8px rgba(47,102,216,0.03); transition: transform 0.1s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
-            <span style="font-size: 14px;">✨</span> 轻轻开启匣子
-          </button>
+      <div class="card" style="background: linear-gradient(145deg, #fdfbfb, #f4f6fb); border: 1px solid rgba(220,229,242,0.6); box-shadow: 0 4px 20px rgba(47,102,216,0.03); position: relative; overflow: hidden; padding: 16px;">
+        <div style="position: absolute; top: -15px; right: -15px; font-size: 64px; opacity: 0.04; pointer-events: none; transform: rotate(15deg);">💌</div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+          <span style="font-size: 16px;">🕰️</span>
+          <b style="color: #4a5c82; font-size: 14px; letter-spacing: 0.5px;">拾光珍藏馆</b>
         </div>
+        <div style="font-size: 11px; color: #8892a8; line-height: 1.5; margin-bottom: 14px; text-align: justify;">
+          那些被岁月打捞起的碎片，都静静安睡在这里。
+        </div>
+        <button class="btn p" id="openFavBtn" style="width: 100%; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: #4a67a8; border: 1px solid rgba(220,229,242,0.8); border-radius: 12px; padding: 10px 0; font-weight: bold; box-shadow: 0 2px 10px rgba(47,102,216,0.04); transition: all 0.2s ease;" onmousedown="this.style.transform='scale(0.98)'; this.style.background='#f0f4ff';" onmouseup="this.style.transform='scale(1)'; this.style.background='rgba(255,255,255,0.8)';">
+          轻轻开启匣子
+        </button>
       </div>
 <div class="card">
   <div class="small">头像高清模式</div>
@@ -3551,13 +3555,7 @@ document.getElementById('globalImportFile').onchange = async function(e) {
     favNowTimer=setInterval(updateFavNow,1000);
     show('favorites');
   };
-  $('favEntryBtn').onclick=()=>{
-    renderFavorites();
-    updateFavNow();
-    if(favNowTimer) clearInterval(favNowTimer);
-    favNowTimer=setInterval(updateFavNow,1000);
-    show('favorites');
-  };
+  
   $('refreshFavBtn').onclick=()=>{updateFavNow();renderFavorites();};
 
   $('favMultiBtn').onclick=()=>setFavSelectMode(!favSelectMode);
