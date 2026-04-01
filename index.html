@@ -1053,7 +1053,9 @@
             <input type="file" id="mePageAvatarFile" accept="image/*" class="hidden">
             <div style="flex:1;">
               <input id="mePageName" class="input" placeholder="输入昵称" style="font-size:24px; font-weight:800; color:#1a1d26; border:none; padding:0; background:transparent; width:100%; letter-spacing:0.5px;" value="弥洛">
-              <div style="font-size:13px; color:#8892a8; margin-top:4px;">微信号：milo_baby</div>
+              <div style="font-size:13px; color:#8892a8; margin-top:4px; display:flex; align-items:center;">
+  微信号：<input id="mePageWxID" class="input" placeholder="设置微信号" style="font-size:13px; color:#5c7094; border:none; padding:0; background:transparent; width:150px; font-family:ui-monospace, monospace; letter-spacing:0.5px;" value="milo_baby">
+              </div>
             </div>
             <div style="color:#c5cddb; font-size:24px;">›</div>
           </div>
@@ -6318,6 +6320,7 @@ window._replyMomentCommentAI = async function(momentId, npcName, userText) {
     const cur = data.list.find(x => x.id === data.currentId) || data.list[0];
     $('mePresetSelect').innerHTML = data.list.map(p => `<option value="${p.id}" ${p.id === data.currentId ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
     $('mePageName').value = cur.name || '';
+    $('mePageWxID').value = cur.wxid || 'milo_baby';
     $('mePagePersona').value = cur.persona || '';
     $('mePageAvatar').src = cur.avatar || 'https://via.placeholder.com/64x64?text=我';
     meAvatarDraftGlobal = cur.avatar || '';
@@ -6338,12 +6341,13 @@ window._replyMomentCommentAI = async function(momentId, npcName, userText) {
     const idx = data.list.findIndex(x => x.id === data.currentId);
     if(idx > -1) {
       data.list[idx].name = clean($('mePageName').value) || '未命名';
+      data.list[idx].wxid = clean($('mePageWxID').value) || 'zidingyi_baby';
       data.list[idx].persona = clean($('mePagePersona').value);
       data.list[idx].avatar = meAvatarDraftGlobal;
       setMePresets(data);
       setMe({ name: data.list[idx].name, persona: data.list[idx].persona, avatar: data.list[idx].avatar, note: '' });
       renderMePresetsUI();
-      alert('保存成功！AI现在死死记住这个设定了！');
+      alert('保存成功！');
     }
   };
 
