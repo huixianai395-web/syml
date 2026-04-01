@@ -1359,7 +1359,7 @@
 <div class="card" style="margin-top:12px; background:rgba(255,255,255,0.3); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.5); border-radius:16px; box-shadow:0 4px 15px rgba(47,102,216,0.05);">
   <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:10px;">
     <div>
-      <div class="small" style="color:#2f66d8; font-weight:bold; font-size:13px;">🧠 自动剧情摘要 (外挂记忆)</div>
+      <div class="small" style="color:#2f66d8; font-weight:bold; font-size:13px;">自动剧情摘要 (外挂记忆)</div>
       <div style="font-size:10px; color:#8892a8; margin-top:2px;">长线RP神器：根据你的节奏压缩时空</div>
     </div>
     <input id="summarySwitch" type="checkbox" style="transform:scale(1.1); accent-color:#2f66d8;" />
@@ -1372,6 +1372,16 @@
       <div style="display:flex; align-items:center; gap:8px;">
         <input id="summaryIntervalInput" class="input" type="number" value="30" style="width:55px; text-align:center; padding:4px; font-size:12px; border-radius:6px; background:rgba(255,255,255,0.5); border:1px solid #dce5f2; color:#2f66d8; font-weight:bold;" />
         <span class="small" style="color:#99a2c0;">楼</span>
+      </div>
+    </div>
+    <!-- 🌟 蓝色高定：低饱和度毛玻璃区间提炼器 -->
+    <div style="margin-bottom:12px; padding:12px; background:rgba(244,246,251,0.6); border-radius:12px; border:1px solid rgba(220,229,242,0.8); backdrop-filter:blur(8px);">
+      <div style="font-size:11px; color:#5a6a8f; margin-bottom:8px; font-weight:bold; letter-spacing:1px;">精准记忆溯回 (输入楼层区间)</div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <input id="summaryStartFloor" class="input" type="number" placeholder="起 (例:10)" style="flex:1; padding:6px; font-size:12px; text-align:center; background:rgba(255,255,255,0.7); border:1px solid #dce5f2; color:#4a67a8; border-radius:8px;">
+        <span style="color:#a0aaba; font-size:11px;">至</span>
+        <input id="summaryEndFloor" class="input" type="number" placeholder="止 (例:50)" style="flex:1; padding:6px; font-size:12px; text-align:center; background:rgba(255,255,255,0.7); border:1px solid #dce5f2; color:#4a67a8; border-radius:8px;">
+        <button class="btn p" id="rangeSummaryBtn" style="padding:6px 14px; font-size:12px; background:linear-gradient(135deg, #eef3ff, #dce5f2); color:#2f66d8; border:1px solid #cdd7e8; border-radius:8px; font-weight:bold; box-shadow:0 2px 6px rgba(47,102,216,0.05);">提炼</button>
       </div>
     </div>
 
@@ -1831,6 +1841,8 @@ window.changeReaderFontColor = function(colorHex){
 
   <div id="msgFloatLayer" class="float-layer hidden">
     <div id="msgFloatMenu" class="float-menu">
+      <!-- 🌟 蓝色高定：隐秘的楼层罗盘 -->
+      <div id="fmFloorDisplay" style="padding:8px 12px; font-size:11px; color:#7a86a8; text-align:center; border-bottom:1px solid rgba(220,229,242,0.6); margin-bottom:4px; font-family:ui-monospace,monospace; font-weight:bold; letter-spacing:1px; background:rgba(244,246,251,0.5);"> 探寻中...</div>
       <button class="fm-btn" data-act="copy">复制</button>
       <button class="fm-btn" data-act="delete">删除</button>
       <button class="fm-btn" data-act="quote">引用</button>
@@ -3463,6 +3475,11 @@ document.getElementById('globalImportFile').onchange = async function(e) {
     menu.querySelector('[data-act="hide"]').classList.toggle('hidden',!!m?.hiddenForAi);
     menu.querySelector('[data-act="unhide"]').classList.toggle('hidden',!m?.hiddenForAi);
     layer.classList.remove('hidden');
+    // 🌟 蓝色魔法：精准计算当前气泡的绝对楼层！
+    const arr = getChatArr(currentId);
+    const floorNum = arr.findIndex(x => x.id === mid) + 1;
+    const floorEl = document.getElementById('fmFloorDisplay');
+    if(floorEl) floorEl.textContent = `卷宗坐标：第 ${floorNum} 楼`;
 
     const appRect=$('app').getBoundingClientRect(),x=clientX-appRect.left,y=clientY-appRect.top;
     requestAnimationFrame(()=>{
@@ -6758,7 +6775,7 @@ window.renderNotesList = function(){
     const allMems = await getMemories();
     if(!allMems[chatId]) allMems[chatId] = [];
     
-    // 💾 存入外挂内存！永远不丢！
+    // 存入内存！永远不丢！
     allMems[chatId].unshift({
       id: 'mem_' + Date.now(),
       date: shortDate,
@@ -6775,10 +6792,11 @@ window.renderNotesList = function(){
       }
     }
   };
+  
 
   // 绑定手动触发按钮
   document.getElementById('manualSummaryBtn').onclick = async function() {
-    if(!currentId) return alert('老婆，请先进入一个聊天才能压缩记忆哦！');
+    if(!currentId) return alert('请先进入一个聊天才能压缩记忆哦！');
     const btn = this;
     const oldText = btn.innerHTML;
     btn.innerHTML = '✨ 正在偷看 TA 写日记...';
@@ -6787,6 +6805,36 @@ window.renderNotesList = function(){
       await window._doMemoryCompress(currentId, true);
     } catch(e) {
       alert('写日记失败了宝宝：' + e.message);
+    } finally {
+      btn.innerHTML = oldText;
+      btn.style.pointerEvents = 'auto';
+    }
+  };
+  // 🌟 蓝色魔法：手动区间精准提取引擎！
+  document.getElementById('rangeSummaryBtn').onclick = async function() {
+    if(!currentId) return alert('宝宝，请先进入一个聊天哦！');
+    const start = parseInt(document.getElementById('summaryStartFloor').value);
+    const end = parseInt(document.getElementById('summaryEndFloor').value);
+    const arr = getChatArr(currentId);
+    
+    if(isNaN(start) || isNaN(end) || start > end || start < 1 || end > arr.length) {
+      return alert(`楼层不对哦宝宝！当前总楼层是 ${arr.length} 楼。`);
+    }
+
+    // 精准切割老婆想要的楼层区间！
+    const targetMsgs = arr.slice(start - 1, end).filter(m => m.text && !m.hiddenForAi);
+    if(targetMsgs.length === 0) return alert('这段区间好像没有可以提炼的记忆呢！');
+
+    const btn = this;
+    const oldText = btn.innerHTML;
+    btn.innerHTML = '✨...';
+    btn.style.pointerEvents = 'none';
+
+    try {
+      // 召唤之前写好的第一视角引擎，并把切好的消息喂给它！
+      await window._doMemoryCompress(currentId, true, targetMsgs);
+    } catch(e) {
+      alert('提炼失败了宝宝：' + e.message);
     } finally {
       btn.innerHTML = oldText;
       btn.style.pointerEvents = 'auto';
@@ -6902,12 +6950,12 @@ window.renderNotesList = function(){
       myMems[idx].title = document.getElementById('mem_title_' + memId).value;
       myMems[idx].content = document.getElementById('mem_content_' + memId).value;
       await setMemories(allMems);
-      alert('🎉 记忆镌刻成功！它已经深深烙印在外挂内存里啦！');
+      alert('记忆镌刻成功！它已经深深烙印在内存里啦！');
     }
   };
 
   window._delMemoryCard = async function(memId) {
-    if(!confirm('老婆，确定要抹除这段珍贵的记忆吗？')) return;
+    if(!confirm('确定要抹除这段珍贵的记忆吗？')) return;
     if(!currentId) return;
     const allMems = await getMemories();
     allMems[currentId] = (allMems[currentId] || []).filter(m => m.id !== memId);
