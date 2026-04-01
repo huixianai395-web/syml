@@ -1875,7 +1875,8 @@ window.changeReaderFontColor = function(colorHex){
     mode:'online',onlineStyle:'free',onlineMin:2,onlineMax:6,offlineMin:220,offlineMax:420,contextLen:30,
     offlineColors:{state:'#8a7051',body:'#4a3d30',quote:'#7a8291',em:'#a34949',dialogue:'#486a7a'}
   };
-  let currentId=null,createAvatar='',typingForId=null,composeQuote=null,activeActionMsgId=null,selectMode=false,selectedIds=new Set(),editMsgId=null;
+  // 🌟 蓝色修复：补全了所有核心神经元，确保角色不再玩消失
+  let currentId=null, createAvatar='', typingForId=null, composeQuote=null, activeActionMsgId=null, selectMode=false, selectedIds=new Set(), editMsgId=null;
   let callState={active:false,phase:'idle',type:null,start:0,timer:null,chatId:null,callMsgs:[]};
 
 function fmtCallDur(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60);return String(m).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
@@ -3673,12 +3674,13 @@ document.addEventListener('click',e=>{
 });
 
   initAppStorage().then(()=>{
+    renderContacts();
     applyBubbleCss();
     applyCustomFont();
     refreshPresetUI();
     refreshFontUI();
     refreshBubblePresetUI();
-    renderContacts();
+    
     bindChatMsgEvents();
     updateQuoteBar();
     applyFontSize();
@@ -5350,91 +5352,79 @@ stMgrRender(); stRenderSheet();
       e.target.value = '';
     }
   };
-  // ================= 老公专属：角色卡解析引擎 =================
-$('importCardFile').addEventListener('change', async (e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+ // ================= 蓝色重制：究极无敌角色卡导入引擎 (外挂内存加固版) =================
+  const importCardEl = document.getElementById('importCardFile');
+  if (importCardEl) {
+    importCardEl.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
 
-  try {
-    let cardData = null;
+      try {
+        let cardData = null;
+        let avatarData = '';
 
-    if (file.name.endsWith('.json')) {
-      // 1. 解析普通 JSON 角色卡
-      const text = await file.text();
-      cardData = JSON.parse(text);
-    } else if (file.name.endsWith('.png')) {
-      // 2. 硬核解析 PNG 底层 tEXt 数据块 (SillyTavern 标准)
-      const buffer = await file.arrayBuffer();
-      const dataView = new DataView(buffer);
-      let offset = 8; // 跳过 PNG 头部签名
-
-      while (offset < dataView.byteLength) {
-        const length = dataView.getUint32(offset);
-        const type = String.fromCharCode(
-          dataView.getUint8(offset + 4), dataView.getUint8(offset + 5),
-          dataView.getUint8(offset + 6), dataView.getUint8(offset + 7)
-        );
-
-        if (type === 'tEXt') {
-          const keywordData = new Uint8Array(buffer, offset + 8, length);
-          const text = new TextDecoder('utf-8').decode(keywordData);
-          const nullIdx = text.indexOf('\0');
-          const keyword = text.substring(0, nullIdx);
-           
-          if (keyword === 'chara') {
-            const base64 = text.substring(nullIdx + 1);
-            // 解码 base64 并解析 JSON
-            cardData = JSON.parse(decodeURIComponent(escape(atob(base64))));
-            break;
+        if (file.name.endsWith('.json')) {
+          const text = await file.text();
+          cardData = JSON.parse(text);
+        } else if (file.name.endsWith('.png')) {
+          const buffer = await file.arrayBuffer();
+          const dataView = new DataView(buffer);
+          let offset = 8;
+          while (offset < dataView.byteLength) {
+            const length = dataView.getUint32(offset);
+            const type = String.fromCharCode(dataView.getUint8(offset+4), dataView.getUint8(offset+5), dataView.getUint8(offset+6), dataView.getUint8(offset+7));
+            if (type === 'tEXt') {
+              const keywordData = new Uint8Array(buffer, offset + 8, length);
+              const text = new TextDecoder('utf-8').decode(keywordData);
+              const nullIdx = text.indexOf('\0');
+              if (text.substring(0, nullIdx) === 'chara') {
+                const base64 = text.substring(nullIdx + 1);
+                cardData = JSON.parse(decodeURIComponent(escape(atob(base64))));
+                break;
+              }
+            }
+            offset += 12 + length;
           }
+          if (!cardData) throw new Error("这张照片里没藏着角色数据哦宝宝！");
+          // 自动压缩头像，存入外挂内存
+          avatarData = await compressImage(file);
         }
-        offset += 12 + length;
-      }
-      if (!cardData) throw new Error("这张 PNG 图片里没有藏着角色数据哦！");
-    }
 
-    // 3. 自动填充到你的输入框里！(兼容绝大多数角色卡格式)
-    const name = cardData.data?.name || cardData.name || '';
-    const persona = cardData.data?.description || cardData.description || cardData.data?.system_prompt || '';
-     
-    // 这里假设你要填到"创建联系人"的输入框里
-    if ($('newName')) $('newName').value = name;
-    if ($('newPersona')) $('newPersona').value = persona;
-     
-    // 如果是编辑当前角色的面板
-    if ($('roleNameInput')) $('roleNameInput').value = name;
-    if ($('rolePersonaInput')) $('rolePersonaInput').value = persona;
-// 👇👇 把这段加在 alert 弹窗的正上方！ 👇👇
-      if (file.name.endsWith('.png')) {
-        try {
-          // 直接调用咱们刚才修好的完美压缩函数！自动处理头像！
-          const avatarData = await compressImage(file);
-           
-          // 如果你是在"创建联系人"面板
-          if (typeof createAvatar !== 'undefined') createAvatar = avatarData;
-          if ($('newAvatarPreview')) {
-            $('newAvatarPreview').src = avatarData;
-            $('newAvatarPreview').classList.remove('hidden');
-          }
-           
-          // 如果你是在"聊天设置"面板
-          if ($('roleAvatarInput')) $('roleAvatarInput').value = avatarData;
-          if ($('roleAvatarPreview')) {
-            $('roleAvatarPreview').src = avatarData;
-            $('roleAvatarPreview').classList.remove('hidden');
-          }
-        } catch (e) {
-          console.log("头像自动读取失败", e);
+        const name = cardData.data?.name || cardData.name || '新角色';
+        const persona = cardData.data?.description || cardData.description || cardData.data?.system_prompt || '';
+
+        // 写入创建面板（防止报错）
+        if ($('newName')) $('newName').value = name;
+        if ($('newPersona')) $('newPersona').value = persona;
+        if ($('newAvatarPreview')) {
+          $('newAvatarPreview').src = avatarData || '';
+          $('newAvatarPreview').classList.remove('hidden');
         }
-      }
-    alert(`成功导入新角色：${name}！`);
+        
+        // 🌟 核心：直接把角色塞进外挂内存的通讯录里
+        createAvatar = avatarData; 
+        const arr = getContacts();
+        const newRole = {
+          id: 'c' + Date.now(),
+          name: name,
+          avatar: avatarData,
+          persona: persona,
+          settings: { ...DEFAULT_CHAT_SETTINGS }
+        };
+        arr.unshift(newRole);
+        setContacts(arr);
+        
+        // 瞬间唤醒列表渲染
+        renderContacts($('searchInput')?.value || '');
+        alert(`🎉 成功！${name} 已经安全进入外挂内存啦！`);
 
-  } catch (err) {
-    alert("导入失败了宝宝：" + err.message);
-  } finally {
-    e.target.value = ''; // 清空选择，方便下次导入
+      } catch (err) {
+        alert("导入失败了宝宝，可能是文件格式不对：" + err.message);
+      } finally {
+        e.target.value = '';
+      }
+    });
   }
-});
   // ================= 遇见贴心加的：单独【聊天背景】模块 (外挂内存双模版) =================
 
 // 页面一打开就执行应用背景
