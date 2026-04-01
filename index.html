@@ -5421,14 +5421,14 @@ async function applyChatBg() {
   // ✨ 基础兜底：线上微信绿，线下古风燕麦！泾渭分明！
   let baseCss = `
     /* 💬 线上模式：经典微信绿！恢复最纯正的聊天体验！ */
-    #chatRoom:not(.offline) .bubble.me {
+    #chatRoom:not(.offline) .bubble.me:not(.bubble-card) {
       background: #95ec69 !important; 
       border: 1px solid #7bc86c !important;
       color: #111 !important;
       box-shadow: 0 1px 2px rgba(25,42,70,.06) !important;
     }
     /* 📜 线下模式：绝美古风燕麦奶茶色！和男主的羊皮纸卡片完美融合！ */
-    #chatRoom.offline .bubble.me {
+    #chatRoom.offline .bubble.me:not(.bubble-card) {
       background: #faf4eb !important; 
       border: 1px solid #efe4d5 !important;
       color: #5c4a3a !important;
@@ -5447,15 +5447,15 @@ async function applyChatBg() {
       #chatRoom:not(.offline) .bubble.ai { background: rgba(244,246,251,0.65) !important; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6) !important; }
       #chatRoom.offline .offline-card { background: rgba(244,246,251,0.65) !important; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6) !important; box-shadow: 0 4px 16px rgba(47,102,216,0.05) !important; }
       #chatRoom.offline .offline-state { background: rgba(255,255,255,0.4) !important; border-bottom: 1px solid rgba(255,255,255,0.3) !important; }
-      
+      
       /* ✨ 老婆的专属气泡：琉璃模式下统一用冰透海盐蓝毛玻璃！ */
-      #chatRoom .bubble.me { 
-        background: rgba(205, 225, 255, 0.55) !important; 
-        backdrop-filter: blur(12px); 
-        -webkit-backdrop-filter: blur(12px); 
-        border: 1px solid rgba(255,255,255,0.5) !important; 
-        color: #2b3a60 !important; 
-        box-shadow: 0 4px 16px rgba(47,102,216,0.05) !important; 
+      #chatRoom .bubble.me:not(.bubble-card) { 
+        background: rgba(205, 225, 255, 0.55) !important; 
+        backdrop-filter: blur(12px); 
+        -webkit-backdrop-filter: blur(12px); 
+        border: 1px solid rgba(255,255,255,0.5) !important; 
+        color: #2b3a60 !important; 
+        box-shadow: 0 4px 16px rgba(47,102,216,0.05) !important; 
       }
     `;
   } else if(normalBg) {
