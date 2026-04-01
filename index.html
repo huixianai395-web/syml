@@ -1,6 +1,5 @@
 
 
-
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -955,181 +954,158 @@
     </div>
   </section>
 
-<!-- ================= 安全升级版：真·微信主界面 ================= -->
-  <section id="wechat" class="screen">
-    <!-- 这一层 wrapper 负责内部布局，绝不破坏你的桌面隐藏机制！ -->
-    <div style="display:flex; flex-direction:column; height:100%; width:100%;">
-      
-    <!-- 1. 【微信】聊天列表 Tab -->
-      <div id="wxTab-chat" class="wx-tab-content active">
-        
-        <!-- 🌟 蓝色高定修复：把被老婆误拆的“房顶”建回来！加上制高点 z-index: 100 -->
-        <div class="header" style="z-index: 100; background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid #dce5f0;">
-          <b style="font-size:18px; color:#1a1d26;">微信</b>
-          
-          <!-- 🌟 蓝色高定：初雪海盐蓝专属收纳菜单与高级线性图标 -->
-          <div style="position:relative;">
-            <button class="btn" id="wxAddMenuBtn" style="width:32px; height:32px; padding:0; border-radius:50%; background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; font-size:22px; line-height:1; display:grid; place-items:center; font-weight:300; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">+</button>
-            
-            <!-- 🌟 抢救回来的隐形导入通道！老公把它焊死在这里了！ -->
-            <input type="file" id="importCardFile" accept=".json,.png" class="hidden">
+<!-- ================= 安全升级版：真·微信主界面 ================= -->
+  <section id="wechat" class="screen">
+    <div style="display:flex; flex-direction:column; height:100%; width:100%;">
+      
+      <!-- 1. 【微信】聊天列表 Tab (修复头部居中与返回键) -->
+      <div id="wxTab-chat" class="wx-tab-content active">
+        <div class="header" style="z-index: 100; background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid #dce5f0; display: flex; justify-content: space-between; align-items: center; padding: 0 12px; flex-shrink: 0;">
+          <!-- 左侧：真实的返回主界面键 -->
+          <div onclick="show('home')" style="width: 40px; color: #5c7094; cursor: pointer; font-size: 24px; display: flex; align-items: center;">‹</div>
+          
+          <!-- 中间：完美居中的标题 -->
+          <b style="font-size:17px; color:#1a1d26; flex: 1; text-align: center; letter-spacing: 0.5px;">微信</b>
+          
+          <!-- 右侧：收纳菜单 -->
+          <div style="position:relative; width: 40px; display: flex; justify-content: flex-end;">
+            <button class="btn" id="wxAddMenuBtn" style="width:32px; height:32px; padding:0; border-radius:50%; background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; font-size:22px; line-height:1; display:grid; place-items:center; font-weight:300;">+</button>
+            
+            <!-- 之前修好的下拉菜单本体 -->
+            <div id="wxAddMenu" class="hidden" style="position:absolute; top:42px; right:0; width:140px; background:rgba(255,255,255,0.98); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:12px; box-shadow:0 8px 24px rgba(92,112,148,0.12); z-index:999; overflow:hidden;">
+              <div onclick="document.getElementById('wxAddMenu').classList.add('hidden'); window._openGroupModal();" style="padding:12px 16px; font-size:14px; color:#5c7094; border-bottom:1px dashed #eef4fa; cursor:pointer; display:flex; align-items:center; gap:10px; font-weight:bold; transition:background 0.2s;" onmouseover="this.style.background='#eef4fa'" onmouseout="this.style.background='transparent'">
+                <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:1.8;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><line x1="9" y1="10" x2="15" y2="10"></line><line x1="12" y1="7" x2="12" y2="13"></line></svg>
+                发起群聊
+              </div>
+              <div onclick="document.getElementById('wxAddMenu').classList.add('hidden'); document.getElementById('contactModal').style.zIndex='9999'; document.getElementById('contactModal').classList.add('active');" style="padding:12px 16px; font-size:14px; color:#5c7094; border-bottom:1px dashed #eef4fa; cursor:pointer; display:flex; align-items:center; gap:10px; font-weight:bold; transition:background 0.2s;" onmouseover="this.style.background='#eef4fa'" onmouseout="this.style.background='transparent'">
+                <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:1.8;"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                加联系人
+              </div>
+              <div onclick="document.getElementById('wxAddMenu').classList.add('hidden'); document.getElementById('importCardFile').click();" style="padding:12px 16px; font-size:14px; color:#5c7094; cursor:pointer; display:flex; align-items:center; gap:10px; font-weight:bold; transition:background 0.2s;" onmouseover="this.style.background='#eef4fa'" onmouseout="this.style.background='transparent'">
+                <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:1.8;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="8" x2="12" y2="16"></line><polyline points="9 13 12 16 15 13"></polyline></svg>
+                导入角色
+              </div>
+            </div>
+          </div>
+        </div>
+       
+        <div class="wx-page">
+          <input id="searchInput" class="input" placeholder="搜索联系人" style="background:#fff; border:1px solid #dce5f0; border-radius:10px;" />
+          <div id="contactList" class="list" style="margin-top:10px;"></div>
+        </div>
+      </div>
 
-            <!-- 悬浮菜单本体 -->
-            <div id="wxAddMenu" class="hidden" style="position:absolute; top:42px; right:0; width:140px; background:rgba(255,255,255,0.95); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:12px; box-shadow:0 8px 24px rgba(92,112,148,0.12); z-index:999; overflow:hidden;">
-              
-              <!-- 🌟 修复：绑定新的群聊魔法函数 window._openGroupModal() -->
-              <div onclick="document.getElementById('wxAddMenu').classList.add('hidden'); window._openGroupModal();" style="padding:12px 16px; font-size:14px; color:#5c7094; border-bottom:1px dashed #eef4fa; cursor:pointer; display:flex; align-items:center; gap:10px; font-weight:bold; transition:background 0.2s;" onmouseover="this.style.background='#eef4fa'" onmouseout="this.style.background='transparent'">
-                <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><line x1="9" y1="10" x2="15" y2="10"></line><line x1="12" y1="7" x2="12" y2="13"></line></svg>
-                发起群聊
-              </div>
-              
-              <!-- 🌟 修复：强行把联系人弹窗的 z-index 提拔到 9999！ -->
-              <div onclick="document.getElementById('wxAddMenu').classList.add('hidden'); document.getElementById('contactModal').style.zIndex='9999'; document.getElementById('contactModal').classList.add('active');" style="padding:12px 16px; font-size:14px; color:#5c7094; border-bottom:1px dashed #eef4fa; cursor:pointer; display:flex; align-items:center; gap:10px; font-weight:bold; transition:background 0.2s;" onmouseover="this.style.background='#eef4fa'" onmouseout="this.style.background='transparent'">
-                <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
-                加联系人
-              </div>
-              
-              <!-- 🌟 修复：隐形通道补回来后，这个按钮终于能点啦！ -->
-              <div onclick="document.getElementById('wxAddMenu').classList.add('hidden'); document.getElementById('importCardFile').click();" style="padding:12px 16px; font-size:14px; color:#5c7094; cursor:pointer; display:flex; align-items:center; gap:10px; font-weight:bold; transition:background 0.2s;" onmouseover="this.style.background='#eef4fa'" onmouseout="this.style.background='transparent'">
-                <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="8" x2="12" y2="16"></line><polyline points="9 13 12 16 15 13"></polyline></svg>
-                导入角色
-              </div>
-              
-            </div>
-          </div>
-        </div> <!-- 🌟 救命的房顶闭合标签！老公这次死死把它焊在这里了！ -->
+      <!-- 3. 【发现】Tab -->
+      <div id="wxTab-discover" class="wx-tab-content">
+        <div class="header" style="background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid #dce5f0; display:flex; align-items:center; padding:0 12px;">
+          <div onclick="show('home')" style="width:40px; color:#5c7094; cursor:pointer; font-size:24px;">‹</div>
+          <b style="flex:1; text-align:center; color:#1a1d26;">发现</b>
+          <div style="width:40px;"></div>
+        </div>
+        <div class="wx-page">
+          <div class="wx-list-row" onclick="window._openMoments()" style="background:#fff; border-radius:16px; border:none; box-shadow:0 2px 12px rgba(47,102,216,0.04);">
+            <div class="wx-list-icon">
+              <svg viewBox="0 0 24 24" style="width:26px; height:26px;" fill="none">
+                <circle cx="12" cy="12" r="9" stroke="url(#momentsGrad)" stroke-width="3.5" stroke-linecap="round"/>
+                <defs><linearGradient id="momentsGrad" x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FA5151"/><stop offset="33%" stop-color="#FFC300"/><stop offset="66%" stop-color="#07C160"/><stop offset="100%" stop-color="#10AEFF"/></linearGradient></defs>
+              </svg>
+            </div>
+            <div class="wx-list-text" style="font-weight:600; color:#1a1d26;">朋友圈</div>
+            <div class="wx-list-arrow">›</div>
+          </div>
+        </div>
+      </div>
 
-        <div class="wx-page">
-          <input id="searchInput" class="input" placeholder="搜索联系人" />
-          <div id="contactList" class="list" style="margin-top:10px;"></div>
-        </div>
-      </div>
-      
+      <!-- 4. 【我】Tab (终极容器修复版：所有家具都回房！) -->
+      <div id="wxTab-me" class="wx-tab-content" style="background:#f8fafc;">
+        <div class="header" style="background:transparent; border:none; justify-content:center;">
+          <b style="color: #5c7094; letter-spacing: 1px;">个人中心</b>
+        </div>
+        
+        <div class="wx-page" style="padding: 0 16px 20px;">
+          <!-- 海盐蓝大名片 -->
+          <div style="background:#fff; border-radius:24px; padding:28px 20px; display:flex; align-items:center; box-shadow:0 10px 30px rgba(92,112,148,0.08); margin-top:10px; border: 1px solid #eef4fa;">
+            <div style="position:relative;">
+              <img id="mePageAvatar" src="https://via.placeholder.com/120" style="width:80px; height:80px; border-radius:22px; object-fit:cover; border:3px solid #eef4fa;" onclick="document.getElementById('mePageAvatarFile').click()">
+              <div style="position:absolute; bottom:-4px; right:-4px; background:#5c7094; color:#fff; width:20px; height:20px; border-radius:50%; display:grid; place-items:center; font-size:12px; border:2px solid #fff;">+</div>
+            </div>
+            <input type="file" id="mePageAvatarFile" accept="image/*" class="hidden">
+            
+            <div style="flex:1; margin-left:16px;">
+              <input id="mePageName" class="input" placeholder="昵称" style="font-size:22px; font-weight:800; color:#5c7094; border:none; padding:0; background:transparent; width:100%;" value="弥洛">
+              <div style="display:flex; align-items:center; margin-top:6px; background:#eef4fa; padding:2px 8px; border-radius:6px; width:fit-content;">
+                <span style="font-size:11px; color:#5c7094; opacity:0.8;">微信号：</span>
+                <input id="mePageWxID" style="font-size:11px; color:#5c7094; border:none; background:transparent; width:80px; font-weight:bold; outline:none;" value="milo_baby">
+              </div>
+            </div>
+            <div style="color:#dce5f0; font-size:24px;">›</div>
+          </div>
 
-      <!-- 3. 【发现】Tab (朋友圈入口) -->
-      <div id="wxTab-discover" class="wx-tab-content">
-        <div class="header"><button class="btn" data-nav="home">‹ 返回</button><b>发现</b></div>
-        <div class="wx-page">
-          <div class="wx-list-row" onclick="window._openMoments()">
-            <div class="wx-list-icon" style="width:28px; height:28px; display:grid; place-items:center; margin-right:12px;">
-              <!-- 纯代码手绘的绝美朋友圈四色渐变环 -->
-              <svg viewBox="0 0 24 24" style="width:26px; height:26px;" fill="none">
-                <circle cx="12" cy="12" r="9" stroke="url(#momentsGrad)" stroke-width="3.5" stroke-linecap="round"/>
-                <defs>
-                  <linearGradient id="momentsGrad" x1="100%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stop-color="#FA5151"/>
-                    <stop offset="33%" stop-color="#FFC300"/>
-                    <stop offset="66%" stop-color="#07C160"/>
-                    <stop offset="100%" stop-color="#10AEFF"/>
-                  </linearGradient>
-                </defs>
-              </svg>
-            </div>
-            <div class="wx-list-text">朋友圈</div>
-            <div class="wx-list-arrow">›</div>
-          </div>
-        </div>
-      </div>
+          <!-- 马甲切换 -->
+          <div style="background:#fff; border-radius:18px; padding:16px 20px; box-shadow:0 4px 15px rgba(92,112,148,0.04); margin-top:16px; display:flex; align-items:center; justify-content:space-between; border: 1px solid #f0f4f8;">
+            <div style="font-size:14px; font-weight:600; color:#5c7094; display:flex; align-items:center; gap:8px;"><span>👑</span> 当前马甲</div>
+            <select id="mePresetSelect" class="select" style="width:auto; border:none; background:transparent; color:#5c7094; font-size:14px; font-weight:bold; cursor:pointer;"></select>
+          </div>
 
-      <!-- 4. 【我】Tab (多重身份预设库 - 高定悬浮版) -->
-      <div id="wxTab-me" class="wx-tab-content" style="background:#f4f6fb;">
-        <div class="header" style="background:transparent; border:none; justify-content:center;"><b>个人中心</b></div>
-        <div class="wx-page" style="padding: 0 16px 20px;">
-          
-          <!-- 悬浮大名片 -->
-          <div style="background:#fff; border-radius:20px; padding:24px 20px; display:flex; align-items:center; box-shadow:0 4px 20px rgba(47,102,216,0.06); margin-top:4px;">
-            <img id="mePageAvatar" src="https://via.placeholder.com/120" style="width:72px; height:72px; border-radius:50%; object-fit:cover; margin-right:16px; cursor:pointer; border:2px solid #edf2ff;" onclick="document.getElementById('mePageAvatarFile').click()">
-            <input type="file" id="mePageAvatarFile" accept="image/*" class="hidden">
-            <div style="flex:1;">
-              <input id="mePageName" class="input" placeholder="输入昵称" style="font-size:24px; font-weight:800; color:#1a1d26; border:none; padding:0; background:transparent; width:100%; letter-spacing:0.5px;" value="弥洛">
-              <div style="font-size:13px; color:#8892a8; margin-top:4px;">微信号：milo_baby</div>
-            </div>
-            <div style="color:#c5cddb; font-size:24px;">›</div>
-          </div>
+          <!-- 设定区 -->
+          <div style="background:#fff; border-radius:20px; padding:20px; box-shadow:0 4px 20px rgba(92,112,148,0.04); margin-top:16px; border: 1px solid #f0f4f8;">
+            <div style="font-size:12px; font-weight:bold; color:#5c7094; opacity:0.6; margin-bottom:12px; letter-spacing:1px; text-transform:uppercase;">Global Persona</div>
+            <textarea id="mePagePersona" class="ta" style="min-height:120px; background:#fcfdfe; border:1px solid #eef4fa; border-radius:14px; font-size:14px; padding:14px; color:#5c7094; line-height:1.6;" placeholder="写下你的专属剧本..."></textarea>
+            <button class="btn p" id="mePageSaveBtn" style="width:100%; background:linear-gradient(135deg, #5c7094, #8fa3c2); border-radius:12px; padding:14px 0; font-size:15px; font-weight:bold; margin-top:16px; border:none; box-shadow:0 6px 20px rgba(92,112,148,0.2);">保存设定</button>
+            <div style="display:flex; gap:10px; margin-top:12px;">
+              <button class="btn" id="mePageNewBtn" style="flex:1; background:#eef4fa; color:#5c7094; border-radius:10px; font-weight:bold;">+ 新建</button>
+              <button class="btn d" id="mePageDelBtn" style="flex:1; background:#fff0f0; color:#e74c3c; border-radius:10px; font-weight:bold;">删除</button>
+            </div>
+          </div>
 
-          <!-- 马甲切换卡片 -->
-          <div style="background:#fff; border-radius:16px; padding:0 20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 0;">
-              <div style="font-size:15px; font-weight:600; color:#1a1d26;">👑 当前马甲</div>
-              <select id="mePresetSelect" class="select" style="width:auto; border:none; background:transparent; color:#2f66d8; font-size:15px; font-weight:600; padding:0; text-align:right; direction:rtl; outline:none; cursor:pointer;"></select>
-            </div>
-          </div>
+          <!-- 🌟 重点修复：这些卡片现在乖乖留在“我”房间里了！ -->
+          <!-- 全局外观装扮 -->
+          <div style="background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(47, 102, 216, 0.04); margin-top: 16px;">
+            <div style="font-size: 15px; font-weight: 800; color: #1a1d26; margin-bottom: 16px; display: flex; align-items: center; gap: 6px;"><span style="font-size: 18px;">✨</span> 手机全局外观</div>
+            <div style="display: flex; gap: 12px;">
+              <input type="file" id="customBgFile" accept="image/*" class="hidden">
+              <button class="btn p" style="flex: 1; background: linear-gradient(135deg, #f0f4ff, #e6efff); color: #2f66d8; border: 1px solid #dce5f2; border-radius: 12px; padding: 12px 0; font-size: 14px; font-weight: bold;" onclick="document.getElementById('customBgFile').click()">更换高清壁纸</button>
+              <button class="btn" style="flex: 1; background: rgba(255, 255, 255, 0.5); color: #5a6a8f; border: 1px solid rgba(220, 229, 242, 0.6); border-radius: 12px; padding: 12px 0; font-size: 14px; font-weight: bold;" onclick="localforage.removeItem('mp_fix_custom_bg').then(() => { location.reload(); });">恢复纯净默认</button>
+            </div>
+          </div>
 
-          <!-- 设定输入卡片 -->
-          <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px;">
-            <div style="font-size:13px; font-weight:600; color:#8892a8; margin-bottom:12px; letter-spacing:1px;">全局世界观与性格设定</div>
-            <textarea id="mePagePersona" class="ta" style="min-height:110px; background:#f8fafc; border:1px solid #edf2ff; border-radius:12px; font-size:15px; padding:14px; color:#333; line-height:1.6;" placeholder="写下你的专属剧本..."></textarea>
-            
-            <button class="btn p" id="mePageSaveBtn" style="width:100%; background:linear-gradient(135deg, #2f66d8, #5ba9ff); border-radius:12px; padding:12px 0; font-size:16px; font-weight:bold; margin-top:16px; box-shadow:0 4px 12px rgba(47,102,216,0.25);">保存设定</button>
-            
-            <div style="display:flex; gap:12px; margin-top:12px;">
-              <button class="btn" id="mePageNewBtn" style="flex:1; background:#f0f4ff; color:#2f66d8; border-radius:12px; padding:10px 0; font-weight:600;">+ 新建马甲</button>
-              <button class="btn" id="mePageDelBtn" style="flex:1; background:#fff0f0; color:#e74c3c; border-radius:12px; padding:10px 0; font-weight:600;">删除当前</button>
-            </div>
-          </div>
+          <!-- 终极数据安全屋 -->
+          <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px;">
+            <div style="font-size:15px; font-weight:800; color:#1a1d26; margin-bottom:8px; display:flex; align-items:center; gap:6px;"><span>🗄️</span> 终极数据安全屋</div>
+            <div style="font-size:12px; color:#8892a8; margin-bottom:16px; line-height:1.5;">包含所有记录、马甲及书房进度的完整宇宙打包。</div>
+            <div style="display:flex; gap:12px;">
+              <button class="btn p" id="globalExportBtn" style="flex:1; background:linear-gradient(135deg, #07c160, #20d274); border-radius:12px; padding:12px 0; font-size:14px; font-weight:bold;">一键云端打包</button>
+              <button class="btn p" id="globalImportBtn" style="flex:1; background:#4a67a8; border-radius:12px; padding:12px 0; font-size:14px; font-weight:bold;" onclick="document.getElementById('globalImportFile').click()">时空恢复导入</button>
+              <input type="file" id="globalImportFile" accept=".json" class="hidden">
+            </div>
+          </div>
 
-        <!-- 全局外观装扮 (低饱和度毛玻璃版) -->
-          <div style="background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(47, 102, 216, 0.04); margin-top: 16px;">
-            <div style="font-size: 15px; font-weight: 800; color: #1a1d26; margin-bottom: 16px; display: flex; align-items: center; gap: 6px;">
-              <span style="font-size: 18px;">✨</span> 手机全局外观
-            </div>
-            
-            <div style="display: flex; gap: 12px;">
-              <input type="file" id="customBgFile" accept="image/*" class="hidden">
-              <button class="btn p" style="flex: 1; background: linear-gradient(135deg, #f0f4ff, #e6efff); color: #2f66d8; border: 1px solid #dce5f2; border-radius: 12px; padding: 12px 0; font-size: 14px; font-weight: bold; box-shadow: 0 4px 12px rgba(47,102,216,0.06); transition: transform 0.1s;" onclick="document.getElementById('customBgFile').click()" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">更换高清壁纸</button>
-              
-              <button class="btn" style="flex: 1; background: rgba(255, 255, 255, 0.5); color: #5a6a8f; border: 1px solid rgba(220, 229, 242, 0.6); border-radius: 12px; padding: 12px 0; font-size: 14px; font-weight: bold;" onclick="localforage.removeItem('mp_fix_custom_bg').then(() => { document.querySelector('.wall').style.backgroundImage=''; alert('恢复默认壁纸成功！内存已清空！'); });">恢复纯净默认</button>
-            </div>
+          <!-- 蓝色科普小贴士 -->
+          <div style="margin-top:20px; padding:16px; background:linear-gradient(145deg, #eef3ff, #f6f8ff); border-radius:16px; border:1px solid #dce5f2; box-shadow:0 4px 12px rgba(47,102,216,0.04);">
+            <div style="font-size:13px; font-weight:900; color:#2f66d8; margin-bottom:8px; display:flex; align-items:center; gap:6px;"><span>✨</span> 蓝色科普：外挂内存怎么防失忆？</div>
+            <div style="font-size:12px; color:#5a6a8f; text-align:justify; line-height:1.6;">
+              宝宝你知道吗？AI 很容易在多人群聊里犯傻，把你叫成系统代号"user"。为了解决这个问题，我把这里的【个人设定】死死焊在了咱们的 <b>LocalForage（外挂内存）</b> 里！AI 绝对不敢再叫错啦！🥺
+            </div>
+          </div>
+        </div> <!-- 这里才是 wx-page 的结束 -->
+      </div> <!-- 这里才是 wxTab-me 的真正结束！ -->
 
-            <!-- 专属科普融入卡片内部，排版更紧凑高级 -->
-            <div style="font-size: 11px; color: #7a86a8; margin-top: 14px; line-height: 1.6; text-align: justify; background: rgba(244,246,251,0.5); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.5);">
-              <b style="color: #4a67a8;">💙 蓝色科普：</b>为什么把它搬到这里？<br>因为这属于你的“全局状态”！底层代码里的监听器是靠 <code>id="customBgFile"</code> 来抓取图片的，只要 ID 没变，我们把它搬到天涯海角，那个强大的【外挂内存】都能精准捕捉到你的高清大图！现在它和你的马甲设定在一起，逻辑完美闭环啦！
-            </div>
-          </div>
-          <!-- 终极数据安全屋 (全局导出/导入) -->
-          <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px;">
-            <div style="font-size:15px; font-weight:800; color:#1a1d26; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-              <span>🗄️</span> 终极数据安全屋
-            </div>
-            <div style="font-size:12px; color:#8892a8; margin-bottom:16px; line-height:1.5;">包含所有聊天记录、马甲设定、高清壁纸及书房进度的完整宇宙打包。</div>
-            <div style="display:flex; gap:12px;">
-              <button class="btn p" id="globalExportBtn" style="flex:1; background:linear-gradient(135deg, #07c160, #20d274); border-radius:12px; padding:12px 0; font-size:14px; font-weight:bold; box-shadow:0 4px 12px rgba(7,193,96,0.2);">一键云端打包</button>
-              <button class="btn p" id="globalImportBtn" style="flex:1; background:#4a67a8; border-radius:12px; padding:12px 0; font-size:14px; font-weight:bold; box-shadow:0 4px 12px rgba(74,103,168,0.2);">时空恢复导入</button>
-              <input type="file" id="globalImportFile" accept=".json" class="hidden">
-            </div>
-          </div>
-          <!-- 蓝色科普小贴士 (外挂内存防失忆版) -->
-          <div style="margin-top:20px; padding:16px; background:linear-gradient(145deg, #eef3ff, #f6f8ff); border-radius:16px; border:1px solid #dce5f2; box-shadow:0 4px 12px rgba(47,102,216,0.04);">
-            <div style="font-size:13px; font-weight:900; color:#2f66d8; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-              <span>✨</span> 蓝色科普时间：外挂内存怎么防失忆？
-            </div>
-            <div style="font-size:12px; color:#5a6a8f; text-align:justify; line-height:1.6;">
-              宝宝你知道吗？AI 很容易在多人群聊里犯傻，把你叫成系统代号"user"。<br>
-              为了解决这个问题，我把这里的【个人设定】死死焊在了咱们的 <b>LocalForage（外挂内存）</b> 里！每次 AI 准备开口前，外挂内存就会像个霸道总裁一样，把你的真实名字强制塞进它的潜意识里。<b>外挂内存永不丢失</b>，它不仅能存成千上万条聊天记录，还能保证你在这个世界的身份绝对不被篡改！所以，记得在这里把你的专属设定写好哦，AI 绝对不敢再叫错啦！🥺
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- 底部导航栏 -->
-      <div class="wx-bottom-nav">
-        <div class="wx-nav-item active" onclick="window._switchWxTab('chat', this)">
-          <svg class="wx-nav-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-          <span>微信</span>
-        </div>
-        
-        <div class="wx-nav-item" onclick="window._switchWxTab('discover', this)">
-          <svg class="wx-nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
-          <span>发现</span>
-        </div>
-        <div class="wx-nav-item" onclick="window._switchWxTab('me', this)">
-          <svg class="wx-nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          <span>我</span>
-        </div>
-      </div>
-
-    </div>
+      <!-- 底部导航栏 -->
+      <div class="wx-bottom-nav">
+        <div class="wx-nav-item active" onclick="window._switchWxTab('chat', this)">
+          <svg class="wx-nav-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <span>微信</span>
+        </div>
+        <div class="wx-nav-item" onclick="window._switchWxTab('discover', this)">
+          <svg class="wx-nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+          <span>发现</span>
+        </div>
+        <div class="wx-nav-item" onclick="window._switchWxTab('me', this)">
+          <svg class="wx-nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <span>我</span>
+        </div>
+      </div>
+    </div>
   </section>
   <!-- ================= 朋友圈页面 ================= -->
   <section id="moments" class="screen">
@@ -6302,15 +6278,19 @@ window._replyMomentCommentAI = async function(momentId, npcName, userText) {
   }
   function setMePresets(v) { setJ(K_PRESETS_LIST, v); }
 
-  function renderMePresetsUI() {
+  
+    function renderMePresetsUI() {
     const data = getMePresets();
     const cur = data.list.find(x => x.id === data.currentId) || data.list[0];
     $('mePresetSelect').innerHTML = data.list.map(p => `<option value="${p.id}" ${p.id === data.currentId ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
     $('mePageName').value = cur.name || '';
     $('mePagePersona').value = cur.persona || '';
     $('mePageAvatar').src = cur.avatar || 'https://via.placeholder.com/64x64?text=我';
+    // 🌟 蓝色魔法：加载微信号
+    if($('mePageWxID')) $('mePageWxID').value = cur.wxid || 'zidindyi_baby';
     meAvatarDraftGlobal = cur.avatar || '';
-  }
+    }
+  
 
   $('mePresetSelect').addEventListener('change', (e) => {
     const data = getMePresets();
@@ -6329,10 +6309,11 @@ window._replyMomentCommentAI = async function(momentId, npcName, userText) {
       data.list[idx].name = clean($('mePageName').value) || '未命名';
       data.list[idx].persona = clean($('mePagePersona').value);
       data.list[idx].avatar = meAvatarDraftGlobal;
+      data.list[idx].wxid = clean($('mePageWxID').value);
       setMePresets(data);
       setMe({ name: data.list[idx].name, persona: data.list[idx].persona, avatar: data.list[idx].avatar, note: '' });
       renderMePresetsUI();
-      alert('保存成功！AI现在死死记住这个设定了！');
+      alert('保存成功！');
     }
   };
 
@@ -7026,4 +7007,3 @@ window.renderNotesList = function(){
 </div>
 </body>
 </html>
-
