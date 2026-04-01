@@ -1283,12 +1283,22 @@
           <div style="color: #8f9dbd; font-size: 26px; font-weight: 300; margin-right: 4px;">›</div>
         </div>
       </div>
+     <!-- 🚑 补回被误删的头像高清模式 -->
       <div class="card">
-  <div class="small">头像裁剪为正方形</div>
-  <div class="row" style="margin-top:8px;justify-content:space-between;">
-    <span class="small">开启后头像更满框（可能裁掉边缘）</span>
-    <input id="avatarCropSwitch" type="checkbox" />
-  </div>
+        <div class="small">头像高清模式</div>
+        <div class="row" style="margin-top:8px;justify-content:space-between;">
+          <span class="small">开启后头像更清晰，但占用更多空间</span>
+          <input id="avatarHQSwitch" type="checkbox" />
+        </div>
+      </div>
+
+      <!-- 🚑 修复脑袋被削掉的头像裁剪开关 -->
+      <div class="card">
+        <div class="small">头像裁剪为正方形</div>
+        <div class="row" style="margin-top:8px;justify-content:space-between;">
+          <span class="small">开启后头像更满框（可能裁掉边缘）</span>
+          <input id="avatarCropSwitch" type="checkbox" />
+        </div>
       </div>
       <div class="card">
         <div class="small">我方名称</div><input id="meNameInput" class="input" />
@@ -3554,7 +3564,16 @@ document.getElementById('globalImportFile').onchange = async function(e) {
 
   
   $('refreshFavBtn').onclick=()=>{updateFavNow();renderFavorites();};
-
+// 💌 唤醒拾光珍藏馆的专属神经元 (带防爆盾版)
+  if($('openFavBtn')) {
+    $('openFavBtn').onclick=()=>{
+      renderFavorites();
+      updateFavNow();
+      if(window.favNowTimer) clearInterval(window.favNowTimer);
+      window.favNowTimer=setInterval(updateFavNow,1000);
+      show('favorites');
+    };
+                                           }
   $('favMultiBtn').onclick=()=>setFavSelectMode(!favSelectMode);
   $('favExitMultiBtn').onclick=()=>setFavSelectMode(false);
   $('favSelectAllBtn').onclick=()=>{
