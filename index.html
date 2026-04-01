@@ -6718,7 +6718,7 @@ window.renderNotesList = function(){
     document.getElementById('memoryArchiveModal').classList.add('active');
   };
 
-  // 🌟 蓝色高定：创世神级第一视角记忆压缩引擎
+  // 🌟 蓝色高定：创世神级第一视角记忆压缩引擎（带精准时间锚定）
   window._doMemoryCompress = async function(chatId, isManual = false) {
     const c = getContactById(chatId);
     const st = normSettings(c?.settings);
@@ -6726,7 +6726,7 @@ window.renderNotesList = function(){
     const meName = st.meName || globalMe.name || '我';
     
     const arr = getChatArr(chatId);
-    const msgs = arr.filter(m => m.text && !m.hiddenForAi).slice(-50); // 提取最近50条有效消息
+    const msgs = arr.filter(m => m.text && !m.hiddenForAi).slice(-50);
     if(msgs.length === 0) {
       if(isManual) alert('没有任何聊天记录可以写日记哦！');
       return;
@@ -6734,34 +6734,42 @@ window.renderNotesList = function(){
 
     const chatText = msgs.map(m => `${m.role==='user' ? meName : c.name}: ${m.text}`).join('\n');
     
-    // 🌟 核心魔法：第一视角沉浸式日记 Prompt！
+    // 🌟 蓝色魔法：获取真实的今天日期和星期几！
+    const d = new Date();
+    const dateStr = d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日';
+    const weekStr = ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
+    const todayFull = dateStr + ' ' + weekStr;
+    const shortDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+
+    // 🌟 核心魔法：强行注入真实时间，并规范日记开头！
     const sysPrompt = `你现在是${c.name}。请以你的【第一人称视角】，写下一篇关于你和${meName}最近互动的【私密日记】作为记忆存档。
+当前真实时间是：${todayFull}。
 要求：
 1. 极度沉浸，带有强烈的个人情感偏向和心理活动（心动、吃醋、无奈、宠溺等，必须符合你的人设）。
 2. 提炼核心剧情推进和关键细节，但绝不能写成冷冰冰的流水账。
-3. 语气要像真人在写日记，直接输出正文，绝对不要带任何前缀或多余的解释。`;
+3. 语气要像真人在写日记，绝对不要带任何前缀或多余的解释。
+4. 【格式铁律】：正文的第一行必须严格以“${dateStr}”开头，并自己根据刚才的剧情脑补加上天气和心情。例如：“${dateStr} 晴转多云 我今天真的快被她气笑了……”`;
 
     const summary = await callApi([
       {role: 'system', content: sysPrompt},
-      {role: 'user', content: "请根据以下聊天记录，写下你的专属日记：\n" + chatText}
+      {role: 'user', content: "请根据以下聊天记录，立刻写下你的专属日记：\n" + chatText}
     ]);
 
     const allMems = await getMemories();
     if(!allMems[chatId]) allMems[chatId] = [];
-    const d = new Date();
-    const dateStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
     
     // 💾 存入外挂内存！永远不丢！
     allMems[chatId].unshift({
       id: 'mem_' + Date.now(),
-      date: dateStr,
+      date: shortDate,
       title: isManual ? '手动镌刻的记忆' : '时光自动封存',
-      content: summary.trim()
+      content: summary.trim(),
+      injectEnabled: true
     });
     await setMemories(allMems);
     
     if(isManual) {
-      alert(' 记忆压缩成功！TA 已经把日记偷偷写进了【时光档案馆】啦！');
+      alert('记忆压缩成功！TA 已经把带真实日期的日记偷偷写进档案馆啦！');
       if(document.getElementById('memoryArchiveModal').classList.contains('active')) {
         window._renderMemoryCards();
       }
