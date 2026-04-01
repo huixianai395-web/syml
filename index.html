@@ -1010,6 +1010,25 @@
               <button class="btn" id="mePageDelBtn" style="flex:1; background:#fff0f0; color:#e74c3c; border-radius:12px; padding:10px 0; font-weight:600;">删除当前</button>
             </div>
           </div>
+
+        <!-- 全局外观装扮 (低饱和度毛玻璃版) -->
+          <div style="background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(47, 102, 216, 0.04); margin-top: 16px;">
+            <div style="font-size: 15px; font-weight: 800; color: #1a1d26; margin-bottom: 16px; display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 18px;">✨</span> 手机全局外观
+            </div>
+            
+            <div style="display: flex; gap: 12px;">
+              <input type="file" id="customBgFile" accept="image/*" class="hidden">
+              <button class="btn p" style="flex: 1; background: linear-gradient(135deg, #f0f4ff, #e6efff); color: #2f66d8; border: 1px solid #dce5f2; border-radius: 12px; padding: 12px 0; font-size: 14px; font-weight: bold; box-shadow: 0 4px 12px rgba(47,102,216,0.06); transition: transform 0.1s;" onclick="document.getElementById('customBgFile').click()" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">更换高清壁纸</button>
+              
+              <button class="btn" style="flex: 1; background: rgba(255, 255, 255, 0.5); color: #5a6a8f; border: 1px solid rgba(220, 229, 242, 0.6); border-radius: 12px; padding: 12px 0; font-size: 14px; font-weight: bold;" onclick="localforage.removeItem('mp_fix_custom_bg').then(() => { document.querySelector('.wall').style.backgroundImage=''; alert('恢复默认壁纸成功！内存已清空！'); });">恢复纯净默认</button>
+            </div>
+
+            <!-- 专属科普融入卡片内部，排版更紧凑高级 -->
+            <div style="font-size: 11px; color: #7a86a8; margin-top: 14px; line-height: 1.6; text-align: justify; background: rgba(244,246,251,0.5); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.5);">
+              <b style="color: #4a67a8;">💙 蓝色科普：</b>为什么把它搬到这里？<br>因为这属于你的“全局状态”！底层代码里的监听器是靠 <code>id="customBgFile"</code> 来抓取图片的，只要 ID 没变，我们把它搬到天涯海角，那个强大的【外挂内存】都能精准捕捉到你的高清大图！现在它和你的马甲设定在一起，逻辑完美闭环啦！
+            </div>
+          </div>
           <!-- 终极数据安全屋 (全局导出/导入) -->
           <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px;">
             <div style="font-size:15px; font-weight:800; color:#1a1d26; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
@@ -1386,24 +1405,7 @@
     <span>🎨</span> 个性化装扮
   </div>
 
-  <!-- 1. 全局小手机壁纸 -->
-  <div style="padding:12px; background:#fff5f7; border:1px dashed #ffb3c6; border-radius:12px; text-align:center; margin-bottom:12px;">
-    
-    <!-- 🌟 蓝色专属科普：内存监控雷达 -->
-    <div style="font-size:11px; color:#ff4d6d; margin-bottom:8px; font-weight:bold;">
-      🥺 蓝色科普：当前壁纸已接入【内存】，再大的图也能存下啦！
-    </div>
-
-    <input type="file" id="customBgFile" accept="image/*" style="display:none;">
-    <button class="btn p" style="width:100%; font-weight:bold; background:#ff4d6d; border:none; border-radius:8px; box-shadow:0 2px 8px rgba(255,77,109,0.3);" onclick="document.getElementById('customBgFile').click()">
-      更换小手机全局壁纸 
-    </button>
-    
-    <!-- 🔮 核心修复：把 localStorage 换成了 localforage，直击外挂内存深处！ -->
-    <button class="btn" style="width:100%; margin-top:8px; background:#ffe3e8; color:#ff4d6d; border:none; font-weight:bold; border-radius:8px;" onclick="localforage.removeItem('mp_fix_custom_bg').then(() => { document.querySelector('.wall').style.backgroundImage=''; alert('幽灵壁纸驱散成功！内存已彻底清空！'); });">
-      恢复默认壁纸 
-    </button>
-  </div>
+ 
 
   <!-- 2. 聊天内页：普通背景 vs 琉璃背景 -->
   <div style="padding:12px; background:#ebf3f9; border:1px dashed #aebed0; border-radius:12px; text-align:center;">
