@@ -216,26 +216,33 @@
     #chatRoom.select-mode #chatInputWrap{display:none}
     #chatRoom.select-mode #chatMsgs{height:calc(100% - (52px + var(--safe-top)) - (92px + var(--safe-bottom)))}
 
-   /* 💌 拾光珍藏馆专属美学 (低饱和度、层次感) */
+  /* 📜 拾光珍藏馆专属美学 (二次元清透古风版) */
     .fav-item {
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.9);
+      background: linear-gradient(145deg, rgba(255,255,255,0.65), rgba(246,249,255,0.45));
+      backdrop-filter: blur(16px) saturate(120%);
+      -webkit-backdrop-filter: blur(16px) saturate(120%);
+      border: 1px solid rgba(255, 255, 255, 0.8);
       border-radius: 16px;
-      padding: 14px;
+      padding: 16px 18px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      box-shadow: 0 4px 20px rgba(74, 103, 168, 0.04), inset 0 2px 0 rgba(255, 255, 255, 0.8);
+      gap: 12px;
+      box-shadow: 0 8px 24px rgba(74, 103, 168, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.9);
       position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .fav-item::before { content: ""; position: absolute; left: 14px; top: 0; width: 30px; height: 3px; background: #e2e8f0; border-radius: 0 0 4px 4px; }
-    .fav-meta { font-size: 11px; color: #8892a8; display: flex; justify-content: space-between; gap: 8px; font-family: ui-monospace, monospace; border-bottom: 1px dashed #edf2ff; padding-bottom: 6px; }
-    .fav-text { font-size: 14px; color: #3d4a6a; line-height: 1.6; white-space: pre-wrap; word-break: break-word; text-align: justify; }
-    .fav-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
-    .fav-actions .btn { background: #f8fafc; border: 1px solid #e2e8f0; color: #5a6a8f; border-radius: 8px; font-size: 11px; padding: 4px 10px; }
-    .fav-actions .btn.d { background: #fff0f0; color: #d94343; border-color: #fce8e8; }
+    .fav-item:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(74, 103, 168, 0.08); }
+    /* 左侧古风信笺装订线 */
+    .fav-item::before { content: ""; position: absolute; left: 0; top: 15%; bottom: 15%; width: 3px; background: linear-gradient(to bottom, rgba(143,168,198,0.2), rgba(143,168,198,0.8), rgba(143,168,198,0.2)); border-radius: 0 2px 2px 0; }
+    /* 右下角暗纹水印 */
+    .fav-item::after { content: "印"; position: absolute; right: 10px; bottom: 10px; font-size: 40px; color: #b0c4de; opacity: 0.08; font-family: 'KaiTi', serif; border: 2px solid rgba(176,196,222,0.3); border-radius: 8px; padding: 4px; pointer-events: none; transform: rotate(-5deg); }
+    .fav-meta { font-size: 11px; color: #7a86a8; display: flex; justify-content: space-between; gap: 8px; font-family: 'STZhongsong', 'KaiTi', serif; border-bottom: 1px dashed rgba(176,196,222,0.4); padding-bottom: 8px; position: relative; z-index: 1; }
+    .fav-text { font-size: 14px; color: #2b3a60; line-height: 1.7; white-space: pre-wrap; word-break: break-word; text-align: justify; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", serif; text-shadow: 0 1px 1px rgba(255,255,255,0.5); position: relative; z-index: 1; }
+    .fav-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; position: relative; z-index: 1; }
+    .fav-actions .btn { background: rgba(255,255,255,0.5); border: 1px solid rgba(220,229,242,0.8); color: #5a6a8f; border-radius: 8px; font-size: 11px; padding: 5px 12px; backdrop-filter: blur(4px); transition: all 0.2s; }
+    .fav-actions .btn:active { background: rgba(235,240,250,0.8); transform: scale(0.95); }
+    .fav-actions .btn.d { background: rgba(255,240,240,0.5); color: #d94343; border-color: rgba(255,224,224,0.8); }
 
     .fav-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
     .fav-check-btn{min-width:62px}
@@ -1258,20 +1265,23 @@
     <div class="header"><button class="btn" data-nav="chatRoom">‹ 返回</button><b>聊天设置</b><button class="btn p" id="saveChatSettingBtn">保存</button></div>
     <div class="page">
       
-     <!-- 💎 拾光珍藏馆入口 (极简高级防撞版) -->
-      <div class="card" style="background: linear-gradient(145deg, #fdfbfb, #f4f6fb); border: 1px solid rgba(220,229,242,0.8); box-shadow: 0 4px 16px rgba(47,102,216,0.04); padding: 16px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 10px;">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 18px;">🕰️</span>
-            <b style="color: #4a5c82; font-size: 15px; letter-spacing: 0.5px;">拾光珍藏馆</b>
+    <!-- 💎 拾光珍藏馆入口 (二次元清透古风版) -->
+      <div class="card" style="background: linear-gradient(135deg, rgba(253,254,255,0.7), rgba(240,244,251,0.5)); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.9); border-radius: 16px; box-shadow: 0 8px 32px rgba(74,103,168,0.05), inset 0 2px 0 rgba(255,255,255,0.8); padding: 20px; position: relative; overflow: hidden; margin-bottom: 12px;">
+        <!-- 装饰性古风水印 -->
+        <div style="position: absolute; right: -10px; bottom: -15px; font-size: 80px; opacity: 0.03; transform: rotate(-10deg); pointer-events: none;">🎐</div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <span style="font-size: 18px; filter: drop-shadow(0 2px 4px rgba(74,103,168,0.2));">📜</span>
+              <b style="color: #3d4a6a; font-size: 16px; font-family: 'STZhongsong', 'KaiTi', serif; letter-spacing: 2px; text-shadow: 0 1px 2px rgba(255,255,255,0.8);">拾光珍藏馆</b>
+            </div>
+            <div style="font-size: 11px; color: #7a86a8; line-height: 1.6; letter-spacing: 0.5px; max-width: 85%;">
+              琉璃匣底，岁月生香。<br>这里安放着你与他最珍贵的羁绊。
+            </div>
           </div>
-          <div style="font-size: 24px; opacity: 0.1; transform: rotate(15deg);">💌</div>
         </div>
-        <div style="font-size: 12px; color: #8892a8; line-height: 1.5;">
-          那些被岁月打捞起的碎片，都静静安睡在这里。
-        </div>
-        <button class="btn p" id="openFavBtn" style="width: 100%; background: #f0f4ff; color: #4a67a8; border: 1px solid #dce5f2; border-radius: 12px; padding: 10px 0; font-weight: bold; transition: all 0.2s ease;">
-          ✨ 轻轻开启匣子
+        <button class="btn p" id="openFavBtn" style="margin-top: 16px; width: 100%; background: linear-gradient(90deg, rgba(255,255,255,0.4), rgba(255,255,255,0.8), rgba(255,255,255,0.4)); color: #4a67a8; border: 1px solid rgba(255,255,255,0.6); border-radius: 12px; padding: 10px 0; font-weight: bold; font-family: 'STZhongsong', 'KaiTi', serif; letter-spacing: 1px; box-shadow: 0 2px 10px rgba(47,102,216,0.04); transition: all 0.3s ease; position: relative; z-index: 1;" onmousedown="this.style.transform='scale(0.98)'; this.style.background='rgba(255,255,255,0.9)';" onmouseup="this.style.transform='scale(1)'; this.style.background='linear-gradient(90deg, rgba(255,255,255,0.4), rgba(255,255,255,0.8), rgba(255,255,255,0.4))';">
+          开启琉璃匣
         </button>
       </div>
 <div class="card">
