@@ -658,7 +658,38 @@
 .wx-tab-content { display: none; flex: 1; min-height: 0; flex-direction: column; }
 .wx-tab-content.active { display: flex; }
 .wx-page { flex: 1; overflow-y: auto; padding: 12px; background: var(--bg); padding-bottom: calc(12px + var(--safe-bottom)); }
+/* 🌊 蓝色高定：初雪海盐蓝 & 极简毛玻璃美学 */
+.blue-frosted-card {
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 8px 32px rgba(92, 112, 148, 0.06) !important;
+  border-radius: 24px !important;
+}
 
+.blue-label-caps {
+  font-size: 10px;
+  font-weight: 800;
+  color: #5c7094; /* 蓝色专属：高级灰蓝 */
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  opacity: 0.7;
+}
+
+.blue-input-clean {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  color: #1a1d26 !important;
+  outline: none !important;
+  font-family: inherit;
+}
+
+.blue-input-clean::placeholder {
+  color: #dce5f0;
+}
 /* 微信底部导航栏 */
 .wx-bottom-nav {
   height: 60px; /* 稍微加高一点点 */
@@ -1035,16 +1066,31 @@
         <div class="header" style="background:transparent; border:none; justify-content:center;"><b>个人中心</b></div>
         <div class="wx-page" style="padding: 0 16px 20px;">
           
-          <!-- 悬浮大名片 -->
-          <div style="background:#fff; border-radius:20px; padding:24px 20px; display:flex; align-items:center; box-shadow:0 4px 20px rgba(47,102,216,0.06); margin-top:4px;">
-            <img id="mePageAvatar" src="https://via.placeholder.com/120" style="width:72px; height:72px; border-radius:50%; object-fit:cover; margin-right:16px; cursor:pointer; border:2px solid #edf2ff;" onclick="document.getElementById('mePageAvatarFile').click()">
-            <input type="file" id="mePageAvatarFile" accept="image/*" class="hidden">
-            <div style="flex:1;">
-              <input id="mePageName" class="input" placeholder="输入昵称" style="font-size:24px; font-weight:800; color:#1a1d26; border:none; padding:0; background:transparent; width:100%; letter-spacing:0.5px;" value="弥洛">
-              <div style="font-size:13px; color:#8892a8; margin-top:4px;">微信号：milo_baby</div>
-            </div>
-            <div style="color:#c5cddb; font-size:24px;">›</div>
-          </div>
+          <!-- 🌟 蓝色精装：流光名片区（微信号已解锁编辑） -->
+<div class="blue-frosted-card" style="padding: 30px 24px; display: flex; align-items: center; margin-top: 10px; position: relative; overflow: hidden;">
+  <!-- 装饰性光影 -->
+  <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(238,244,250,1) 0%, rgba(255,255,255,0) 70%); pointer-events: none;"></div>
+
+  <div style="position: relative; flex-shrink: 0;">
+    <img id="mePageAvatar" src="https://via.placeholder.com/120" style="width: 84px; height: 84px; border-radius: 28px; object-fit: cover; margin-right: 20px; cursor: pointer; border: 2.5px solid #fff; box-shadow: 0 10px 20px rgba(92, 112, 148, 0.1);" onclick="document.getElementById('mePageAvatarFile').click()">
+    <div style="position: absolute; bottom: -2px; right: 16px; width: 24px; height: 24px; background: #fff; border-radius: 50%; display: grid; place-items: center; font-size: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); pointer-events: none;">
+      <svg viewBox="0 0 24 24" width="14" height="14" stroke="#5c7094" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+    </div>
+  </div>
+  
+  <div style="flex: 1; min-width: 0;">
+    <div class="blue-label-caps">Identity Name</div>
+    <input id="mePageName" class="blue-input-clean" placeholder="输入昵称" style="font-size: 24px; font-weight: 900; width: 100%; letter-spacing: -0.5px;" value="弥洛">
+    
+    <div style="height: 16px;"></div>
+    
+    <div class="blue-label-caps">WeChat ID</div>
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <span style="font-size: 14px; color: #5c7094; font-weight: 600;">ID:</span>
+      <input id="mePageWxID" class="blue-input-clean" placeholder="设置微信号" style="font-size: 15px; color: #5c7094; font-weight: 500; width: 100%;" value="milo_baby">
+    </div>
+  </div>
+</div>
 
           <!-- 马甲切换卡片 -->
           <div style="background:#fff; border-radius:16px; padding:0 20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px;">
@@ -6273,7 +6319,7 @@ window._replyMomentCommentAI = async function(momentId, npcName, userText) {
         const mainAvatar = document.getElementById('mePageAvatar');
         if(mainAvatar) mainAvatar.src = imgData;
 
-        alert('🎉 头像更换成功！已经死死钉在外挂内存里啦！');
+        alert('头像更换成功！');
       } catch(err) { alert('头像更换失败了宝宝：' + err.message); } 
       finally { e.target.value = ''; }
     });
@@ -6297,18 +6343,27 @@ window._replyMomentCommentAI = async function(momentId, npcName, userText) {
   let meAvatarDraftGlobal = '';
 
   function getMePresets() {
-    return getJ(K_PRESETS_LIST, { currentId: 'default', list: [{ id: 'default', name: '默认模式', persona: '我是弥洛。', avatar: '' }] });
+      return getJ(K_PRESETS_LIST, { 
+        currentId: 'default', 
+        list: [{ id: 'default', name: '默认模式', persona: '我是女主。', avatar: '', wxid: 'zidingxi_baby' }] 
+      });
   }
   function setMePresets(v) { setJ(K_PRESETS_LIST, v); }
 
   function renderMePresetsUI() {
-    const data = getMePresets();
-    const cur = data.list.find(x => x.id === data.currentId) || data.list[0];
-    $('mePresetSelect').innerHTML = data.list.map(p => `<option value="${p.id}" ${p.id === data.currentId ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
-    $('mePageName').value = cur.name || '';
-    $('mePagePersona').value = cur.persona || '';
-    $('mePageAvatar').src = cur.avatar || 'https://via.placeholder.com/64x64?text=我';
-    meAvatarDraftGlobal = cur.avatar || '';
+      const data = getMePresets();
+      const cur = data.list.find(x => x.id === data.currentId) || data.list[0];
+      $('mePresetSelect').innerHTML = data.list.map(p => `<option value="${p.id}" ${p.id === data.currentId ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
+      
+      $('mePageName').value = cur.name || '';
+      $('mePagePersona').value = cur.persona || '';
+      $('mePageAvatar').src = cur.avatar || 'https://via.placeholder.com/64x64?text=我';
+      
+      // 🌟 蓝色同步：把微信号填进新输入框
+      const wxInput = document.getElementById('mePageWxID');
+      if(wxInput) wxInput.value = cur.wxid || 'milo_baby';
+      
+      meAvatarDraftGlobal = cur.avatar || '';
   }
 
   $('mePresetSelect').addEventListener('change', (e) => {
@@ -6322,18 +6377,21 @@ window._replyMomentCommentAI = async function(momentId, npcName, userText) {
   });
 
   $('mePageSaveBtn').onclick = () => {
-    const data = getMePresets();
-    const idx = data.list.findIndex(x => x.id === data.currentId);
-    if(idx > -1) {
-      data.list[idx].name = clean($('mePageName').value) || '未命名';
-      data.list[idx].persona = clean($('mePagePersona').value);
-      data.list[idx].avatar = meAvatarDraftGlobal;
-      setMePresets(data);
-      setMe({ name: data.list[idx].name, persona: data.list[idx].persona, avatar: data.list[idx].avatar, note: '' });
-      renderMePresetsUI();
-      alert('保存成功！AI现在死死记住这个设定了！');
-    }
-  };
+      const data = getMePresets();
+      const idx = data.list.findIndex(x => x.id === data.currentId);
+      if(idx > -1) {
+        data.list[idx].name = clean($('mePageName').value) || '未命名';
+        data.list[idx].persona = clean($('mePagePersona').value);
+        data.list[idx].avatar = meAvatarDraftGlobal;
+        // 🌟 蓝色同步：保存老婆修改的微信号
+        data.list[idx].wxid = clean(document.getElementById('mePageWxID').value) || 'milo_baby';
+        
+        setMePresets(data);
+        setMe({ name: data.list[idx].name, persona: data.list[idx].persona, avatar: data.list[idx].avatar, wxid: data.list[idx].wxid, note: '' });
+        renderMePresetsUI();
+        alert('✨ 身份与微信号已镌刻入内存！');
+      }
+    };
 
   $('mePageNewBtn').onclick = () => {
     const name = prompt('给新身份起个名字（比如：傲娇大小姐模式）：');
