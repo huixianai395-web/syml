@@ -4278,7 +4278,7 @@ window.changeStudyCover = function(bookId){
         book.cover = `url(${imgData}) center/cover no-repeat`;
         setStudyData(data);
         renderStudyHome();
-        alert('🎉 外挂内存生效！绝美高清封面更换成功！');
+        alert('绝美高清封面更换成功！');
       }
     } catch(err) { 
       alert('封面更换失败啦宝宝：' + err.message); 
@@ -4430,7 +4430,7 @@ window.importStudyTxtFile = function(file){
     data.currentBookId = newBook.id;
     setStudyData(data); // 完美调用新的外挂硬盘双写静默保存！
     renderStudyHome();
-    alert('🎉 导入成功：' + title);
+    alert('导入成功：' + title);
   };
   reader.onerror = function(){ alert('读取文件失败啦宝宝。'); };
   reader.readAsText(file, 'utf-8');
@@ -4553,16 +4553,14 @@ function pageHTML(txt, idx){
     book.highlights.forEach(h => {
       const safeH = escHtml(h.text);
       if(htmlTxt.includes(safeH)){
-        // 【终极无敌干净版】把 pageHTML 里的这三行替换掉！
-  if(h.type === 'highlight'){
-    htmlTxt = htmlTxt.replace(safeH, `<span onclick="window.removeHighlight(${h.id})" style="background:rgba(47,102,216,0.15); border-bottom:2px solid rgba(47,102,216,0.4); cursor:pointer; padding:0 2px; border-radius:4px; position:relative; z-index:9999; pointer-events:auto !important;">${safeH}</span>`);
+        if(h.type === 'highlight'){
+    htmlTxt = htmlTxt.replace(safeH, `<span onclick="window.removeHighlight(${h.id})" style="background:linear-gradient(to top, rgba(165,207,255,0.55) 35%, transparent 35%); padding:0 2px; cursor:pointer; position:relative; z-index:9999; pointer-events:auto !important; transition:background 0.2s;">${safeH}</span>`);
   } else if(h.type === 'underline'){
-    htmlTxt = htmlTxt.replace(safeH, `<span onclick="window.removeHighlight(${h.id})" style="border-bottom:2px dashed #d87093; cursor:pointer; position:relative; z-index:9999; pointer-events:auto !important;">${safeH}</span>`);
+    htmlTxt = htmlTxt.replace(safeH, `<span onclick="window.removeHighlight(${h.id})" style="border-bottom:2px dashed rgba(165,207,255,0.8); padding:0 2px; cursor:pointer; position:relative; z-index:9999; pointer-events:auto !important;">${safeH}</span>`);
   } else if(h.type === 'note'){
-    // 批注内容用 encodeURIComponent 强行打包，防断行！
     const safeNote = encodeURIComponent(h.note || '');
-    htmlTxt = htmlTxt.replace(safeH, `<span onclick="window.showAnnotation(decodeURIComponent('${safeNote}'), ${h.id})" style="background:rgba(216,112,147,0.12); border-bottom:2px solid #d87093; cursor:pointer; padding:0 2px; border-radius:4px; position:relative; z-index:9999; pointer-events:auto !important;">${safeH}<sup style="color:#d87093; font-size:13px; margin-left:2px;">💬</sup></span>`);
-  }
+    htmlTxt = htmlTxt.replace(safeH, `<span onclick="window.showAnnotation(decodeURIComponent('${safeNote}'), ${h.id})" style="background:linear-gradient(to top, rgba(216,112,147,0.25) 35%, transparent 35%); border-bottom:1px solid rgba(216,112,147,0.4); padding:0 2px; cursor:pointer; position:relative; z-index:9999; pointer-events:auto !important;">${safeH}<sup style="color:#d87093; font-size:12px; margin-left:2px;">💬</sup></span>`);
+        }
       }
     });
   }
