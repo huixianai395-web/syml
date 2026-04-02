@@ -1439,18 +1439,26 @@ button[onclick*="ClearGroup"],
       </div>
       <div class="date" id="homeDate"></div><div class="time" id="homeTime"></div>
       <div class="widgets">
-        <div class="widget"><div class="t">纪念日</div><div class="v">第 233 天</div></div>
+        <div class="widget"><div class="t">纪念日</div><div class="v">第 500 天</div></div>
         <div class="widget"><div class="t">天气</div><div class="v">22°C 晴</div></div>
       </div>
       <div class="grid">
-        <div class="icon" data-nav="wechat"><div class="ibox">💬</div><div class="lab">微信</div></div>
-        <div class="icon" data-nav="api"><div class="ibox">🔑</div><div class="lab">API</div></div>
-        <div class="icon" data-nav="fontCenter"><div class="ibox">🔤</div><div class="lab">字体</div></div>
-        <div class="icon" id="phoneCheckIcon"><div class="ibox">🔍</div><div class="lab">查手机</div></div>
+        <div class="icon" data-nav="wechat"><div class="ibox></div><div class="lab">微信</div></div>
+        <div class="icon" data-nav="api"><div class="ibox"></div><div class="lab">API</div></div>
+        <div class="icon" data-nav="fontCenter"><div class="ibox"></div><div class="lab">字体</div></div>
+        <div class="icon" id="phoneCheckIcon"><div class="ibox"></div><div class="lab">查手机</div></div>
         <div class="icon" onclick="show('worldbook'); if(window._renderGlobalWb) window._renderGlobalWb();"><div class="ibox">📚</div><div class="lab">世界书</div></div>
         <div class="icon" onclick="show('study');renderStudyHome();">
-          <div class="ibox ibox-book">📖</div>
+          <div class="ibox ibox-book"></div>
           <div class="lab">书房</div>
+        </div>
+        <div class="icon" onclick="show('themeLab'); if(window._renderThemeLab) window._renderThemeLab();">
+  <div class="ibox" style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.4); backdrop-filter:blur(12px);">
+    <svg viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#ffffff; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
+      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+    </svg>
+  </div>
+  <div class="lab" style="color:#ffffff; text-shadow:0 1px 4px rgba(0,0,0,0.2);">美学实验</div>
         </div>
       </div>
     </div>
@@ -7271,12 +7279,36 @@ window.renderNotesList = function(){
             <div id="globalWbList" class="list" style="gap:14px;"></div>
           </div>
         </section>
+        <section id="themeLab" class="screen">
+  <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
+    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">‹ 返回</button>
+    <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">美学实验室</b>
+    <button class="btn p" onclick="window._createThemeModule()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">+ 新建</button>
+  </div>
+  
+  <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px;">
+    <!-- 专属温柔科普卡片 -->
+    <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:0 4px 16px rgba(92,112,148,0.04);">
+      <div style="font-size:13px; font-weight:800; color:#5c7094; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+        <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+        全站外观覆写引擎
+      </div>
+      <div style="font-size:12px; color:#7a86a8; line-height:1.6; text-align:justify;">
+        在这里，你可以将复杂的 CSS 代码拆分成无数个小模块。每个模块都可以独立命名、独立开关。所有代码都会被 <b>内存</b> 永久保护。
+      </div>
+    </div>
+
+    <!-- 模块列表容器 -->
+    <div id="themeLabList" style="display:flex; flex-direction:column; gap:12px;"></div>
+  </div>
+</section>
+        
 
         <!-- 2. 角色挑选面板弹窗 -->
         <div id="roleWbModal" class="modal" style="z-index:100;" onclick="if(event.target===this) this.classList.remove('active')">
           <div class="modal-card" style="max-width:380px; background:#fcfdff; padding:0; overflow:hidden; display:flex; flex-direction:column; max-height:85dvh;">
             <div style="padding:16px; background:linear-gradient(180deg,#f8f9ff,#f4f6fb); border-bottom:1px solid #e4e8f5; display:flex; justify-content:space-between; align-items:center;">
-              <div style="font-size:16px; font-weight:800; color:#1a1d26;">📌 为当前角色挑选设定</div>
+              <div style="font-size:16px; font-weight:800; color:#1a1d26;">为当前角色挑选设定</div>
               <button class="btn" onclick="document.getElementById('roleWbModal').classList.remove('active')" style="background:transparent; color:#888; font-size:20px; padding:0 8px;">×</button>
             </div>
             <div style="padding:8px 16px; font-size:12px; color:#4a67a8; background:#eef3ff;">打勾的条目将会被注入到当前 AI 的脑海中。</div>
@@ -7576,6 +7608,97 @@ window.renderNotesList = function(){
   };
 
 })(); // 🏠 闭合主屋的大门！(这次我死死把它焊在最后面了！)
+  <script>
+  const K_THEME_LAB = 'mp_fix_theme_lab_v1';
+  
+  // 核心：读取与保存到外挂内存
+  async function getThemeModules() { return (await localforage.getItem(K_THEME_LAB)) || []; }
+  async function setThemeModules(data) { await localforage.setItem(K_THEME_LAB, data); window._applyAllThemes(); }
+
+  // 核心：将所有开启的 CSS 模块实时注入到系统中！
+  window._applyAllThemes = async function() {
+    const modules = await getThemeModules();
+    let styleTag = document.getElementById('aestheticLabStyles');
+    if (!styleTag) {
+      styleTag = document.createElement('style');
+      styleTag.id = 'aestheticLabStyles';
+      document.head.appendChild(styleTag);
+    }
+    // 过滤出已开启的模块，拼合 CSS
+    const activeCss = modules.filter(m => m.enabled).map(m => `/* [${m.title}] */\n${m.css}`).join('\n\n');
+    styleTag.textContent = activeCss;
+  };
+
+  // 渲染列表 UI：极致的海盐扁平风
+  window._renderThemeLab = async function() {
+    const modules = await getThemeModules();
+    const box = document.getElementById('themeLabList');
+    if (!box) return;
+
+    if (modules.length === 0) {
+      box.innerHTML = `<div style="text-align:center; padding:60px 0; color:#a0aaba; font-size:13px;">实验室空空如也<br>快去新建你的第一个美化补丁吧~</div>`;
+      return;
+    }
+
+    box.innerHTML = modules.map(m => `
+      <div style="background:rgba(250,252,255,0.8); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:16px; padding:16px; box-shadow:0 4px 12px rgba(92,112,148,0.03); transition:transform 0.2s;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px dashed #eef4fa; padding-bottom:12px;">
+          <input id="theme_title_${m.id}" class="input" style="flex:1; background:transparent; border:none; padding:0; font-size:15px; font-weight:800; color:#3d4a6a;" value="${safeEsc(m.title)}" placeholder="模块名称 (例：聊天气泡美化)" onchange="window._saveThemeTitle('${m.id}', this.value)">
+          
+          <!-- 海盐蓝高级开关 -->
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer; background:${m.enabled ? '#eef4fa' : '#fcf2f2'}; padding:4px 10px; border-radius:8px; border:1px solid ${m.enabled ? '#dce5f0' : '#f2dcdc'}; transition:all 0.2s;">
+            <input type="checkbox" ${m.enabled ? 'checked' : ''} onchange="window._toggleTheme('${m.id}', this.checked)" style="accent-color:${m.enabled ? '#5c7094' : '#b57b7b'};">
+            <span style="font-size:11px; font-weight:bold; color:${m.enabled ? '#5c7094' : '#b57b7b'};">${m.enabled ? '已启用' : '已停用'}</span>
+          </label>
+        </div>
+        
+        <textarea id="theme_css_${m.id}" class="ta" style="min-height:100px; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; border-radius:10px; padding:10px; font-size:12px; color:#5c7094; font-family:monospace; line-height:1.5; resize:vertical;" placeholder="在这里粘贴你的 CSS 代码...">${safeEsc(m.css)}</textarea>
+        
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+          <button class="btn d" onclick="window._deleteTheme('${m.id}')" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:8px; padding:6px 14px; font-weight:bold;">删除</button>
+          <button class="btn p" onclick="window._saveThemeCss('${m.id}')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:6px 14px; font-weight:bold;">保存代码</button>
+        </div>
+      </div>
+    `).join('');
+  };
+
+  window._createThemeModule = async function() {
+    const modules = await getThemeModules();
+    modules.unshift({ id: 'theme_' + Date.now(), title: '未命名美化模块', css: '/* 在此写入你的 CSS */', enabled: true });
+    await setThemeModules(modules);
+    window._renderThemeLab();
+  };
+
+  window._saveThemeTitle = async function(id, newTitle) {
+    const modules = await getThemeModules();
+    const target = modules.find(m => m.id === id);
+    if(target) { target.title = newTitle; await setThemeModules(modules); }
+  };
+
+  window._saveThemeCss = async function(id) {
+    const newCss = document.getElementById('theme_css_' + id).value;
+    const modules = await getThemeModules();
+    const target = modules.find(m => m.id === id);
+    if(target) { target.css = newCss; await setThemeModules(modules); alert('美化代码保存成功！瞬间生效！'); }
+  };
+
+  window._toggleTheme = async function(id, isEnabled) {
+    const modules = await getThemeModules();
+    const target = modules.find(m => m.id === id);
+    if(target) { target.enabled = isEnabled; await setThemeModules(modules); window._renderThemeLab(); }
+  };
+
+  window._deleteTheme = async function(id) {
+    if(!confirm('宝宝，确定要删除这个美化模块吗？')) return;
+    let modules = await getThemeModules();
+    modules = modules.filter(m => m.id !== id);
+    await setThemeModules(modules);
+    window._renderThemeLab();
+  };
+
+  // 页面加载时自动注入已保存的样式
+  setTimeout(window._applyAllThemes, 500);
+</script>
 
 
 </script>
