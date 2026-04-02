@@ -959,6 +959,16 @@
     padding: 0 !important;
     gap: 8px !important;
 }
+    /* === 蓝色书房海盐蓝高定重塑 === */
+#study .page, #studyReader .page { background: #eef4fa !important; }
+#study .header, #studyReader .header { background: rgba(250,252,255,0.85) !important; backdrop-filter: blur(24px) !important; -webkit-backdrop-filter: blur(24px) !important; border-bottom: 1px solid #dce5f0 !important; }
+#study .header b, #studyReader .header b { color: #5c7094 !important; letter-spacing: 1px !important; }
+#study .card { background: rgba(255,255,255,0.7) !important; backdrop-filter: blur(16px) !important; border: 1px solid #dce5f0 !important; box-shadow: 0 8px 24px rgba(92,112,148,0.05) !important; }
+.study-hero-title, .study-book-title { color: #3d4a6a !important; }
+.study-hero-meta, .study-kicker, .study-book-author { color: #7a86a8 !important; }
+.study-hero-badge { background: rgba(238,244,250,0.8) !important; color: #5c7094 !important; box-shadow: none !important; border: 1px solid #dce5f0 !important; }
+#studyReader .header .btn, #study .header .btn { background: rgba(238,244,250,0.6) !important; color: #5c7094 !important; border: 1px solid #dce5f0 !important; box-shadow: none !important; font-weight: bold !important; }
+#tocDrawer, #notesDrawer { background: rgba(250,252,255,0.92) !important; border-color: #dce5f0 !important; color: #5c7094 !important; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
@@ -1712,8 +1722,11 @@
     <button class="btn" onclick="closeStudyReader()">&#8249; 返回</button>
     <button class="btn" onclick="toggleToc()">目录</button>
     
-    <!-- 【神级修复】：老婆最爱的加书签按钮回来啦！ -->
-    <button class="btn" onclick="addBookmark()" style="color:#d87093; font-weight:bold;">🔖 书签</button>
+   <!-- 【神级修复】：老婆最爱的加书签按钮回来啦！(海盐蓝SVG版) -->
+  <button class="btn" onclick="addBookmark()" style="display:flex; align-items:center; gap:4px; background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; font-weight:bold; padding:6px 10px; border-radius:8px;">
+    <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:#5c7094; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+    书签
+  </button>
     
     <b id="readerBookTitle" style="flex:1; text-align:center; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 10px;">阅读中</b>
     
@@ -1732,13 +1745,22 @@
     <div id="pageUnder" style="position:absolute;inset:0;z-index:2;display:none;"></div>
 
     <div id="readerShade" style="position:absolute;inset:0;z-index:4;pointer-events:none;"></div>
-    <!-- 选区悬浮工具栏（终极适配版：固定底部，绝不与系统菜单重叠！瞬间截获点击！） -->
-  <div id="readerSelectionBar" style="display:none; position:fixed; bottom:calc(40px + var(--safe-bottom)); left:50%; transform:translateX(-50%); background:rgba(255,255,255,0.95); backdrop-filter:blur(20px); border-radius:16px; box-shadow:0 12px 40px rgba(47,102,216,0.15); border:1px solid rgba(255,255,255,0.8); z-index:9999; padding:8px 12px; gap:12px; align-items:center;">
-    <div onpointerdown="event.preventDefault(); addHighlight('highlight')" style="padding:8px 16px; font-size:14px; color:#2f66d8; font-weight:600; cursor:pointer; border-radius:10px; background:#f0f4ff;">✨ 高亮</div>
-    <div style="width:1px; height:18px; background:rgba(0,0,0,0.1);"></div>
-    <div onpointerdown="event.preventDefault(); addHighlight('underline')" style="padding:8px 16px; font-size:14px; color:#d87093; font-weight:600; cursor:pointer; border-radius:10px; background:#fff0f5;">〰️ 划线</div>
-    <div style="width:1px; height:18px; background:rgba(0,0,0,0.1);"></div>
-    <div onpointerdown="event.preventDefault(); addHighlight('note')" style="padding:8px 16px; font-size:14px; color:#3b2f22; font-weight:600; cursor:pointer; border-radius:10px; background:#fff8f0;">📝 批注</div>
+   <!-- 🌟 蓝色高定：海盐蓝纯净选区工具栏 -->
+  <div id="readerSelectionBar" style="display:none; position:fixed; bottom:calc(40px + var(--safe-bottom)); left:50%; transform:translateX(-50%); background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-radius:16px; box-shadow:0 10px 30px rgba(92,112,148,0.15); border:1px solid #dce5f0; z-index:9999; padding:8px 12px; gap:12px; align-items:center;">
+    <div onpointerdown="event.preventDefault(); addHighlight('highlight')" style="display:flex; align-items:center; gap:6px; padding:8px 16px; font-size:14px; color:#5c7094; font-weight:bold; cursor:pointer; border-radius:10px; background:rgba(238,244,250,0.8); border:1px solid #dce5f0; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+      <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
+      高亮
+    </div>
+    <div style="width:1px; height:18px; background:#dce5f0;"></div>
+    <div onpointerdown="event.preventDefault(); addHighlight('underline')" style="display:flex; align-items:center; gap:6px; padding:8px 16px; font-size:14px; color:#5c7094; font-weight:bold; cursor:pointer; border-radius:10px; background:rgba(238,244,250,0.8); border:1px solid #dce5f0; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+      <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><line x1="4" y1="20" x2="20" y2="20"></line><polyline points="4 14 12 6 20 14"></polyline></svg>
+      划线
+    </div>
+    <div style="width:1px; height:18px; background:#dce5f0;"></div>
+    <div onpointerdown="event.preventDefault(); addHighlight('note')" style="display:flex; align-items:center; gap:6px; padding:8px 16px; font-size:14px; color:#5c7094; font-weight:bold; cursor:pointer; border-radius:10px; background:rgba(238,244,250,0.8); border:1px solid #dce5f0; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+      <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+      批注
+    </div>
   </div>
 
   <!-- 批注查看弹窗（复古纸张质感！） -->
