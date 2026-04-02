@@ -1563,45 +1563,80 @@
   </section>
 
   <section id="api" class="screen">
-    <div class="header"><button class="btn" data-nav="home">‹ 返回</button><b>API 设置</b><button class="btn p" id="saveApiBtn">保存</button></div>
-    <div class="page">
-      <div class="card"><div class="small">API预设</div><div class="row" style="margin-top:8px;"><select id="apiPresetSelect" class="select"></select><button class="btn" id="newPresetBtn">新建</button><button class="btn d" id="delPresetBtn">删</button></div></div>
-      <div class="card"><div class="small">Base URL</div><input id="apiBase" class="input" placeholder="https://api.xxx.com" /></div>
-      <div class="card"><div class="small">API Key</div><input id="apiKey" class="input" type="password" /></div>
-      <div class="card"><div class="small">Model</div><select id="apiModel" class="select"></select><div style="margin-top:8px"><button class="btn" id="fetchModelsBtn">拉取模型</button></div></div>
-      <div class="card"><div class="small">Temperature</div><input id="apiTemp" class="input" type="number" min="0" max="2" step="0.1" value="0.8" /></div>
-      <div class="card"><button class="btn" id="testApiBtn">测试连接</button><div id="apiStatus" class="small" style="margin-top:8px;">状态：未测试</div></div>
+  <div class="header" style="background:rgba(255,255,255,0.85); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid #dce5f0;">
+    <button class="btn" data-nav="home" style="background:#f4f6fb; color:#5c7094; border:1px solid #dce5f0; font-weight:600; border-radius:10px; padding:6px 12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 返回</button>
+    <b style="color:#1a1d26; font-size:16px;">API 设置</b>
+    <button class="btn" id="saveApiBtn" style="background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; font-weight:600; border-radius:10px; padding:6px 14px; box-shadow:0 2px 6px rgba(92,112,148,0.05); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">保存</button>
+  </div>
+  <div class="page">
+    <div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none;">
+      <div style="font-size:13px; font-weight:600; color:#5c7094; margin-bottom:10px;">API预设</div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <select id="apiPresetSelect" class="select" style="flex:1; border:1px solid #dce5f0; background:#f8fafc; color:#5c7094; border-radius:10px; font-size:13px; padding:8px 12px;"></select>
+        <button class="btn" id="newPresetBtn" style="background:#f8fafc; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:8px 12px; font-weight:600;">新建</button>
+        <button class="btn" id="delPresetBtn" style="background:rgba(252,242,242,0.6); color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; padding:8px 12px; font-weight:600;">删除</button>
+      </div>
     </div>
+    
+    <div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none;">
+      <div style="font-size:13px; font-weight:600; color:#5c7094; margin-bottom:10px;">Base URL</div>
+      <input id="apiBase" class="input" placeholder="https://api.xxx.com" style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:14px; padding:10px 12px; width:100%;" />
+      
+      <div style="font-size:13px; font-weight:600; color:#5c7094; margin-top:16px; margin-bottom:10px;">API Key</div>
+      <input id="apiKey" class="input" type="password" style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:14px; padding:10px 12px; width:100%;" />
+    </div>
+
+    <div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none;">
+      <div style="font-size:13px; font-weight:600; color:#5c7094; margin-bottom:10px;">Model</div>
+      <select id="apiModel" class="select" style="width:100%; border:1px solid #dce5f0; background:#f8fafc; color:#5c7094; border-radius:10px; font-size:13px; padding:10px 12px; margin-bottom:12px;"></select>
+      <button class="btn" id="fetchModelsBtn" style="width:100%; background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:10px 0; font-weight:600; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">拉取模型</button>
+      
+      <div style="font-size:13px; font-weight:600; color:#5c7094; margin-top:16px; margin-bottom:10px;">Temperature</div>
+      <input id="apiTemp" class="input" type="number" min="0" max="2" step="0.1" value="0.8" style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:14px; padding:10px 12px; width:100%;" />
+    </div>
+
+    <div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none; text-align:center;">
+      <button class="btn" id="testApiBtn" style="width:100%; background:#5c7094; color:#fff; border:none; border-radius:10px; padding:12px 0; font-weight:bold; font-size:14px; box-shadow:0 4px 12px rgba(92,112,148,0.2); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">测试连接</button>
+      <div id="apiStatus" style="margin-top:12px; font-size:12px; color:#8892a8;">状态：未测试</div>
+    </div>
+  </div>
   </section>
 
   <section id="fontCenter" class="screen">
-    <div class="header"><button class="btn" data-nav="home">‹ 返回</button><b>字体库</b><button class="btn p" id="saveFontBtn">保存</button></div>
-    <div class="page">
-      <div class="card">
-        <div class="small">字体预设</div>
-        <div class="row" style="margin-top:8px;">
-          <select id="fontPresetSelect" class="select"></select>
-          <button class="btn" id="newFontPresetBtn">新建</button>
-          <button class="btn d" id="delFontPresetBtn">删</button>
-        </div>
-      </div>
-      <div class="card">
-        <div class="small">字体文件 URL（.ttf / .otf / .woff / .woff2）</div>
-        <input id="fontUrlInput" class="input" placeholder="https://.../font.woff2" />
-        <div class="small" style="margin-top:6px;">支持公开可访问的字体文件链接</div>
-      </div>
-      <div class="card">
-        <div class="small">预览</div>
-        <div id="fontPreview" class="font-preview">春风十里不如你。The quick brown fox jumps over the lazy dog. 0123456789</div>
-      </div>
-      <div class="card">
-        <div class="small">当前使用：<span id="fontCurrentText">系统默认</span></div>
-        <div class="row" style="margin-top:8px;flex-wrap:wrap;">
-          <button class="btn p" id="applyFontBtn">应用当前预设</button>
-          <button class="btn d" id="resetFontBtn">恢复默认</button>
-        </div>
+  <div class="header" style="background:rgba(255,255,255,0.85); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid #dce5f0;">
+    <button class="btn" data-nav="home" style="background:#f4f6fb; color:#5c7094; border:1px solid #dce5f0; font-weight:600; border-radius:10px; padding:6px 12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 返回</button>
+    <b style="color:#1a1d26; font-size:16px;">字体库</b>
+    <button class="btn" id="saveFontBtn" style="background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; font-weight:600; border-radius:10px; padding:6px 14px; box-shadow:0 2px 6px rgba(92,112,148,0.05); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">保存</button>
+  </div>
+  <div class="page">
+    <div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none;">
+      <div style="font-size:13px; font-weight:600; color:#5c7094; margin-bottom:10px;">字体预设</div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <select id="fontPresetSelect" class="select" style="flex:1; border:1px solid #dce5f0; background:#f8fafc; color:#5c7094; border-radius:10px; font-size:13px; padding:8px 12px;"></select>
+        <button class="btn" id="newFontPresetBtn" style="background:#f8fafc; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:8px 12px; font-weight:600;">新建</button>
+        <button class="btn" id="delFontPresetBtn" style="background:rgba(252,242,242,0.6); color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; padding:8px 12px; font-weight:600;">删除</button>
       </div>
     </div>
+
+    <div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none;">
+      <div style="font-size:13px; font-weight:600; color:#5c7094; margin-bottom:10px;">字体文件 URL（.ttf / .otf / .woff / .woff2）</div>
+      <input id="fontUrlInput" class="input" placeholder="https://.../font.woff2" style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:14px; padding:10px 12px; width:100%;" />
+      <div style="font-size:11px; color:#8892a8; margin-top:8px;">支持公开可访问的字体文件链接</div>
+    </div>
+
+    <div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none;">
+      <div style="font-size:13px; font-weight:600; color:#5c7094; margin-bottom:12px;">预览</div>
+      <div id="fontPreview" class="font-preview" style="background:rgba(244,246,251,0.6); border:1px dashed #dce5f0; border-radius:12px; padding:16px; font-size:15px; color:#1a1d26; line-height:1.6;">春风十里不如你。The quick brown fox jumps over the lazy dog. 0123456789</div>
+    </div>
+
+    <div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none;">
+      <div style="font-size:13px; font-weight:600; color:#5c7094; margin-bottom:12px;">当前使用：<span id="fontCurrentText" style="color:#1a1d26;">系统默认</span></div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn" id="applyFontBtn" style="flex:1; background:#5c7094; color:#fff; border:none; border-radius:10px; padding:10px 0; font-weight:bold; font-size:13px; box-shadow:0 4px 12px rgba(92,112,148,0.2); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">应用当前预设</button>
+        <button class="btn" id="resetFontBtn" style="flex:1; background:rgba(252,242,242,0.6); color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; padding:10px 0; font-weight:bold; font-size:13px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">恢复默认</button>
+      </div>
+    </div>
+  </div>
   </section>
   <section id="study" class="screen">
   <div class="header">
