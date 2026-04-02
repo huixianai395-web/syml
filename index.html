@@ -7608,11 +7608,16 @@ window.renderNotesList = function(){
   };
 
 })(); // 🏠 闭合主屋的大门！(这次我死死把它焊在最后面了！)
+</script>
 
-  // 🌟 蓝色紧急修复：把多余的 script 标签全部剥离，完美融入主程序！
+<!-- 🌟 蓝色专属：美学实验室独立驱动引擎 -->
+<script>
+(function() {
   const K_THEME_LAB = 'mp_fix_theme_lab_v1';
   
-  // 核心：读取与保存到外挂内存
+  // 专属内置防爆盾：防止找不到主程序的 safeEsc 导致按钮失效崩溃！
+  const escapeHtml = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+
   async function getThemeModules() { return (await localforage.getItem(K_THEME_LAB)) || []; }
   async function setThemeModules(data) { await localforage.setItem(K_THEME_LAB, data); window._applyAllThemes(); }
 
@@ -7644,15 +7649,16 @@ window.renderNotesList = function(){
     box.innerHTML = modules.map(m => `
       <div style="background:rgba(250,252,255,0.8); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:16px; padding:16px; box-shadow:0 4px 12px rgba(92,112,148,0.03); transition:transform 0.2s;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px dashed #eef4fa; padding-bottom:12px;">
-          <input id="theme_title_${m.id}" class="input" style="flex:1; background:transparent; border:none; padding:0; font-size:15px; font-weight:800; color:#3d4a6a;" value="${safeEsc(m.title)}" placeholder="模块名称 (例：聊天气泡美化)" onchange="window._saveThemeTitle('${m.id}', this.value)">
+          <input id="theme_title_${m.id}" class="input" style="flex:1; background:transparent; border:none; padding:0; font-size:15px; font-weight:800; color:#3d4a6a;" value="${escapeHtml(m.title)}" placeholder="模块名称 (例：聊天气泡美化)" onchange="window._saveThemeTitle('${m.id}', this.value)">
           
+          <!-- 海盐蓝高级开关 -->
           <label style="display:flex; align-items:center; gap:6px; cursor:pointer; background:${m.enabled ? '#eef4fa' : '#fcf2f2'}; padding:4px 10px; border-radius:8px; border:1px solid ${m.enabled ? '#dce5f0' : '#f2dcdc'}; transition:all 0.2s;">
             <input type="checkbox" ${m.enabled ? 'checked' : ''} onchange="window._toggleTheme('${m.id}', this.checked)" style="accent-color:${m.enabled ? '#5c7094' : '#b57b7b'};">
             <span style="font-size:11px; font-weight:bold; color:${m.enabled ? '#5c7094' : '#b57b7b'};">${m.enabled ? '已启用' : '已停用'}</span>
           </label>
         </div>
         
-        <textarea id="theme_css_${m.id}" class="ta" style="min-height:100px; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; border-radius:10px; padding:10px; font-size:12px; color:#5c7094; font-family:monospace; line-height:1.5; resize:vertical;" placeholder="在这里粘贴你的 CSS 代码...">${safeEsc(m.css)}</textarea>
+        <textarea id="theme_css_${m.id}" class="ta" style="min-height:100px; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; border-radius:10px; padding:10px; font-size:12px; color:#5c7094; font-family:monospace; line-height:1.5; resize:vertical;" placeholder="在这里粘贴你的 CSS 代码...">${escapeHtml(m.css)}</textarea>
         
         <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
           <button class="btn d" onclick="window._deleteTheme('${m.id}')" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:8px; padding:6px 14px; font-weight:bold;">删除</button>
@@ -7698,7 +7704,7 @@ window.renderNotesList = function(){
 
   // 页面加载时自动注入已保存的样式
   setTimeout(window._applyAllThemes, 500);
-
+})();
 </script>
 <!-- ================= 绝美群聊创建弹窗 ================= -->
   <div id="groupModal" class="modal" style="z-index: 9999;">
