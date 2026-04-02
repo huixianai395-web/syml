@@ -7279,30 +7279,44 @@ window.renderNotesList = function(){
             <div id="globalWbList" class="list" style="gap:14px;"></div>
           </div>
         </section>
+      
         <section id="themeLab" class="screen">
-  <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
-    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">‹ 返回</button>
-    <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">美学实验室</b>
-    <button class="btn p" onclick="window._createThemeModule()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">+ 新建</button>
-  </div>
-  
-  <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px;">
-    <!-- 专属温柔科普卡片 -->
-    <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:0 4px 16px rgba(92,112,148,0.04);">
-      <div style="font-size:13px; font-weight:800; color:#5c7094; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-        <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-        全站外观覆写引擎
-      </div>
-      <div style="font-size:12px; color:#7a86a8; line-height:1.6; text-align:justify;">
-        在这里，你可以将复杂的 CSS 代码拆分成无数个小模块。每个模块都可以独立命名、独立开关。所有代码都会被 <b>内存</b> 永久保护。
-      </div>
-    </div>
+          <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
+            <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">‹ 返回</button>
+            <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">美学实验室</b>
+            <div style="display:flex; gap:6px;">
+              <button class="btn" onclick="document.getElementById('themeImportFile').click()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px;">导入</button>
+              <button class="btn" id="themeMultiBtn" onclick="window._toggleThemeMulti()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px;">多选</button>
+              <button class="btn p" onclick="window._createThemeModule()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px; box-shadow:none;">+ 新建</button>
+            </div>
+            <input type="file" id="themeImportFile" accept=".json" class="hidden" onchange="window._importThemes(event)">
+          </div>
+          
+          <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px; position:relative;">
+            <!-- 专属温柔科普卡片 -->
+            <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:0 4px 16px rgba(92,112,148,0.04);">
+              <div style="font-size:13px; font-weight:800; color:#5c7094; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                全站外观覆写引擎
+              </div>
+              <div style="font-size:12px; color:#7a86a8; line-height:1.6; text-align:justify;">
+                模块化管理你的专属 CSS。支持多选删除、一键导入导出。开关已升级为冰透海盐玻璃质感。
+              </div>
+            </div>
 
-    <!-- 模块列表容器 -->
-    <div id="themeLabList" style="display:flex; flex-direction:column; gap:12px;"></div>
-  </div>
-</section>
-        
+            <!-- 模块列表容器 -->
+            <div id="themeLabList" style="display:flex; flex-direction:column; gap:12px; padding-bottom:60px;"></div>
+
+            <!-- 多选底部操作栏 -->
+            <div id="themeBatchBar" class="hidden" style="position:absolute; bottom:0; left:0; right:0; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border-top:1px solid #dce5f0; padding:12px 20px calc(12px + var(--safe-bottom)); display:flex; justify-content:space-between; align-items:center; box-shadow:0 -4px 20px rgba(92,112,148,0.08); z-index:100;">
+              <div style="font-size:13px; color:#7a86a8; font-weight:bold;" id="themeSelCount">已选 0 项</div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn" onclick="window._exportThemes()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 14px;">导出全部</button>
+                <button class="btn d" onclick="window._deleteSelectedThemes()" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; font-weight:bold; padding:6px 14px;">删除所选</button>
+              </div>
+            </div>
+          </div>
+        </section>
 
         <!-- 2. 角色挑选面板弹窗 -->
         <div id="roleWbModal" class="modal" style="z-index:100;" onclick="if(event.target===this) this.classList.remove('active')">
@@ -7609,19 +7623,18 @@ window.renderNotesList = function(){
 
 })(); // 🏠 闭合主屋的大门！(这次我死死把它焊在最后面了！)
 </script>
-
 <!-- 🌟 蓝色专属：美学实验室独立驱动引擎 -->
 <script>
 (function() {
   const K_THEME_LAB = 'mp_fix_theme_lab_v1';
-  
-  // 专属内置防爆盾：防止找不到主程序的 safeEsc 导致按钮失效崩溃！
   const escapeHtml = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+
+  window._themeMultiMode = false;
+  window._themeSelSet = new Set();
 
   async function getThemeModules() { return (await localforage.getItem(K_THEME_LAB)) || []; }
   async function setThemeModules(data) { await localforage.setItem(K_THEME_LAB, data); window._applyAllThemes(); }
 
-  // 核心：将所有开启的 CSS 模块实时注入到系统中！
   window._applyAllThemes = async function() {
     const modules = await getThemeModules();
     let styleTag = document.getElementById('aestheticLabStyles');
@@ -7630,42 +7643,67 @@ window.renderNotesList = function(){
       styleTag.id = 'aestheticLabStyles';
       document.head.appendChild(styleTag);
     }
-    // 过滤出已开启的模块，拼合 CSS
     const activeCss = modules.filter(m => m.enabled).map(m => `/* [${m.title}] */\n${m.css}`).join('\n\n');
     styleTag.textContent = activeCss;
   };
 
-  // 渲染列表 UI：极致的海盐扁平风
   window._renderThemeLab = async function() {
     const modules = await getThemeModules();
     const box = document.getElementById('themeLabList');
     if (!box) return;
+
+    const batchBar = document.getElementById('themeBatchBar');
+    if(batchBar) {
+      batchBar.classList.toggle('hidden', !window._themeMultiMode);
+      document.getElementById('themeSelCount').textContent = `已选 ${window._themeSelSet.size} 项`;
+      document.getElementById('themeMultiBtn').textContent = window._themeMultiMode ? '退出多选' : '多选';
+    }
 
     if (modules.length === 0) {
       box.innerHTML = `<div style="text-align:center; padding:60px 0; color:#a0aaba; font-size:13px;">实验室空空如也<br>快去新建你的第一个美化补丁吧~</div>`;
       return;
     }
 
-    box.innerHTML = modules.map(m => `
-      <div style="background:rgba(250,252,255,0.8); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:16px; padding:16px; box-shadow:0 4px 12px rgba(92,112,148,0.03); transition:transform 0.2s;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px dashed #eef4fa; padding-bottom:12px;">
-          <input id="theme_title_${m.id}" class="input" style="flex:1; background:transparent; border:none; padding:0; font-size:15px; font-weight:800; color:#3d4a6a;" value="${escapeHtml(m.title)}" placeholder="模块名称 (例：聊天气泡美化)" onchange="window._saveThemeTitle('${m.id}', this.value)">
-          
-          <!-- 海盐蓝高级开关 -->
-          <label style="display:flex; align-items:center; gap:6px; cursor:pointer; background:${m.enabled ? '#eef4fa' : '#fcf2f2'}; padding:4px 10px; border-radius:8px; border:1px solid ${m.enabled ? '#dce5f0' : '#f2dcdc'}; transition:all 0.2s;">
-            <input type="checkbox" ${m.enabled ? 'checked' : ''} onchange="window._toggleTheme('${m.id}', this.checked)" style="accent-color:${m.enabled ? '#5c7094' : '#b57b7b'};">
-            <span style="font-size:11px; font-weight:bold; color:${m.enabled ? '#5c7094' : '#b57b7b'};">${m.enabled ? '已启用' : '已停用'}</span>
-          </label>
+    box.innerHTML = modules.map(m => {
+      const isSel = window._themeSelSet.has(m.id);
+      
+      // 💎 核心：清透感玻璃开关 (完美替代系统丑框)
+      const glassCheckbox = `
+        <div style="width:18px; height:18px; border-radius:6px; border:1px solid ${m.enabled ? 'rgba(255,255,255,0.9)' : '#dce5f0'}; background:${m.enabled ? 'rgba(165,207,255,0.65)' : 'rgba(255,255,255,0.4)'}; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); display:grid; place-items:center; color:${m.enabled ? '#fff' : 'transparent'}; font-size:12px; font-weight:bold; transition:all 0.2s ease; box-shadow:${m.enabled ? '0 2px 8px rgba(165,207,255,0.3)' : 'none'};">✓</div>
+      `;
+
+      // 多选模式下左侧的圆圈
+      const multiCheckbox = window._themeMultiMode ? `
+        <div style="margin-right:10px; cursor:pointer;" onclick="window._toggleThemeSel('${m.id}')">
+          <div style="width:20px; height:20px; border-radius:50%; border:1px solid ${isSel ? '#5c7094' : '#dce5f0'}; background:${isSel ? '#eef4fa' : '#fff'}; display:grid; place-items:center; color:${isSel ? '#5c7094' : 'transparent'}; font-size:14px; transition:all 0.2s;">✓</div>
         </div>
-        
-        <textarea id="theme_css_${m.id}" class="ta" style="min-height:100px; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; border-radius:10px; padding:10px; font-size:12px; color:#5c7094; font-family:monospace; line-height:1.5; resize:vertical;" placeholder="在这里粘贴你的 CSS 代码...">${escapeHtml(m.css)}</textarea>
-        
-        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
-          <button class="btn d" onclick="window._deleteTheme('${m.id}')" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:8px; padding:6px 14px; font-weight:bold;">删除</button>
-          <button class="btn p" onclick="window._saveThemeCss('${m.id}')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:6px 14px; font-weight:bold;">保存代码</button>
+      ` : '';
+
+      return `
+      <div style="display:flex; align-items:center; background:rgba(250,252,255,0.8); backdrop-filter:blur(12px); border:1px solid ${isSel ? '#a5cfff' : '#dce5f0'}; border-radius:16px; padding:16px; box-shadow:0 4px 12px rgba(92,112,148,0.03); transition:all 0.2s;">
+        ${multiCheckbox}
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px dashed #eef4fa; padding-bottom:12px;">
+            <input id="theme_title_${m.id}" class="input" style="flex:1; min-width:0; background:transparent; border:none; padding:0; font-size:15px; font-weight:800; color:#3d4a6a;" value="${escapeHtml(m.title)}" placeholder="模块名称" onchange="window._saveThemeTitle('${m.id}', this.value)">
+            
+            <!-- 隐藏原本的丑框，只显示我们的冰透玻璃框 -->
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; background:${m.enabled ? 'rgba(238,244,250,0.5)' : 'rgba(252,242,242,0.5)'}; padding:4px 8px; border-radius:10px; border:1px solid ${m.enabled ? '#dce5f0' : '#f2dcdc'}; transition:all 0.2s; margin-left:8px;">
+              <input type="checkbox" class="hidden" ${m.enabled ? 'checked' : ''} onchange="window._toggleTheme('${m.id}', this.checked)">
+              ${glassCheckbox}
+              <span style="font-size:11px; font-weight:bold; color:${m.enabled ? '#5c7094' : '#b57b7b'};">${m.enabled ? '已启用' : '已停用'}</span>
+            </label>
+          </div>
+          
+          <textarea id="theme_css_${m.id}" class="ta" style="min-height:90px; width:100%; box-sizing:border-box; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; border-radius:10px; padding:10px; font-size:12px; color:#5c7094; font-family:monospace; line-height:1.5; resize:vertical;" placeholder="在这里粘贴你的 CSS 代码...">${escapeHtml(m.css)}</textarea>
+          
+          <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+            ${!window._themeMultiMode ? `<button class="btn d" onclick="window._deleteTheme('${m.id}')" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:8px; padding:6px 14px; font-weight:bold;">删除</button>` : ''}
+            <button class="btn p" onclick="window._saveThemeCss('${m.id}')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:6px 14px; font-weight:bold;">保存代码</button>
+          </div>
         </div>
       </div>
-    `).join('');
+      `;
+    }).join('');
   };
 
   window._createThemeModule = async function() {
@@ -7702,10 +7740,71 @@ window.renderNotesList = function(){
     window._renderThemeLab();
   };
 
-  // 页面加载时自动注入已保存的样式
+  // 🌟 多选与导入导出逻辑
+  window._toggleThemeMulti = function() {
+    window._themeMultiMode = !window._themeMultiMode;
+    if(!window._themeMultiMode) window._themeSelSet.clear();
+    window._renderThemeLab();
+  };
+
+  window._toggleThemeSel = function(id) {
+    if(window._themeSelSet.has(id)) window._themeSelSet.delete(id);
+    else window._themeSelSet.add(id);
+    window._renderThemeLab();
+  };
+
+  window._deleteSelectedThemes = async function() {
+    if(window._themeSelSet.size === 0) return alert('还没选中任何模块哦宝宝！');
+    if(!confirm(`确定要删除这 ${window._themeSelSet.size} 个模块吗？删了就找不回来啦！`)) return;
+    let modules = await getThemeModules();
+    modules = modules.filter(m => !window._themeSelSet.has(m.id));
+    await setThemeModules(modules);
+    window._themeSelSet.clear();
+    window._themeMultiMode = false;
+    window._renderThemeLab();
+  };
+
+  window._exportThemes = async function() {
+    const modules = await getThemeModules();
+    if(modules.length === 0) return alert('实验室里还没有代码可以导出哦！');
+    const blob = new Blob([JSON.stringify(modules, null, 2)], {type: 'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'Aesthetic_Lab_Backup_' + Date.now() + '.json';
+    a.click();
+  };
+
+  window._importThemes = async function(e) {
+    const file = e.target.files?.[0];
+    if(!file) return;
+    try {
+      const text = await file.text();
+      const imported = JSON.parse(text);
+      if(!Array.isArray(imported)) throw new Error("文件格式不对，必须是数组！");
+      
+      let modules = await getThemeModules();
+      const newModules = imported.map(m => ({
+        id: 'theme_' + Date.now() + Math.random().toString().slice(2,8),
+        title: m.title || '导入的模块',
+        css: m.css || '',
+        enabled: !!m.enabled
+      }));
+      
+      modules = [...newModules, ...modules];
+      await setThemeModules(modules);
+      window._renderThemeLab();
+      alert(`成功导入 ${newModules.length} 个美化补丁！外挂内存已接管！`);
+    } catch(err) {
+      alert('导入失败啦宝宝：' + err.message);
+    } finally {
+      e.target.value = '';
+    }
+  };
+
   setTimeout(window._applyAllThemes, 500);
 })();
 </script>
+
 <!-- ================= 绝美群聊创建弹窗 ================= -->
   <div id="groupModal" class="modal" style="z-index: 9999;">
     <div class="modal-card" style="background:#f8f9ff; border:1px solid #dce5f2; box-shadow:0 10px 40px rgba(47,102,216,0.15);">
