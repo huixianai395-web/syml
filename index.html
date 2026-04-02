@@ -554,18 +554,25 @@
 .bubble-file .bf-icon { font-size: 28px; line-height: 1; }
 .bubble-file .bf-info { flex: 1; min-width: 0; }
 .bubble-file .bf-name { font-size: 14px; font-weight: 600; color: #1f2430; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bubble-file .bf-size { font-size: 11px; color: #8899bb; margin-top: 4px; }
-/* --- 高冷干净风：功能面板线性图标 --- */
+.bubble-file .bf-size { font-size: 11px; color: #8899bb; margin-top: /* --- 初雪海盐蓝：功能面板与图标大一统 --- */
+.func-panel { background:rgba(250,252,255,0.75) !important; backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-top:1px solid #dce5f0 !important; }
 .func-icon .ibox2 {
-  background: #f8fafc; /* 背景改成更高级的冷白灰色 */
-  border: 1px solid #e2e8f0;
+  background: rgba(238,244,250,0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid #dce5f0;
+  box-shadow: 0 4px 12px rgba(92,112,148,0.04);
+  border-radius: 16px;
+  transition: all 0.2s ease;
 }
+.func-icon:active .ibox2 { transform: scale(0.92); background: rgba(220,229,240,0.8); }
 .func-icon .ibox2 svg {
   width: 24px; height: 24px;
-  stroke: #4a5c82; /* 高级的灰蓝色 */
-  fill: none; stroke-width: 1.8;
+  stroke: #5c7094;
+  fill: none; stroke-width: 2;
   stroke-linecap: round; stroke-linejoin: round;
 }
+.func-icon .lab2 { font-size: 11px; color: #7a86a8; margin-top: 6px; font-weight: 600; letter-spacing: 0.5px; }
 /* --- 模拟图片卡片（老婆专属图床・丝滑滚动版） --- */
 .card-fakeimg {
   width: 176px; height: 180px;
@@ -1239,13 +1246,14 @@
   <!-- ================= 升级版结束 ================= -->
 
   <section id="chatRoom" class="screen">
-    <div class="header">
-      <button class="btn" data-nav="wechat">‹ 返回</button>
-      <div class="chat-head-center"><div class="chat-head-title" id="chatTitle">聊天</div><div class="chat-head-sub" id="chatSub"></div></div>
-      <div class="head-right">
-        
-        <button class="icon-btn" id="chatSettingBtn" aria-label="设置">⋯</button>
-      </div>
+    <div class="header" style="background:rgba(255,255,255,0.85); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid #dce5f0;">
+  <button class="btn" data-nav="wechat" style="background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; font-weight:600; border-radius:10px; padding:6px 12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 返回</button>
+  <div class="chat-head-center"><div class="chat-head-title" id="chatTitle" style="color:#1a1d26; font-size:16px; font-weight:bold;">聊天</div><div class="chat-head-sub" id="chatSub" style="color:#8892a8; font-size:11px;"></div></div>
+  <div class="head-right">
+    <button class="icon-btn" id="chatSettingBtn" aria-label="设置" style="background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; width:32px; height:32px; display:grid; place-items:center; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+      <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#5c7094;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+    </button>
+  </div>
     </div>
     <div id="chatMsgs"></div><div id="offlinePalettePanel" class="off-palette-panel global">
   <div class="off-palette-row"><span>状态栏</span><input type="color" data-key="state"></div>
@@ -1256,15 +1264,13 @@
 </div>
     <div class="chatInputBar" id="chatInputWrap">
       <div id="quoteBar" class="quote-bar hidden"><div id="quoteText" class="quote-text"></div><button id="clearQuoteBtn" class="quote-close">×</button></div>
-      <div class="left-tools">
-        <button class="btn-circle hidden" id="moreToolsBtn" aria-label="更多">＋</button>
-        <button class="btn-circle" id="stickerBtn" aria-label="表情包">
-          <svg viewBox="0 0 24 24" aria-hidden="true" style="width:20px;height:20px;stroke:#5a6a8f;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;">
-            <path d="M8 3h8a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5z"/><path d="M15 3v6a3 3 0 0 1-3 3H6"/><path d="M9 11h.01M15 11h.01"/><path d="M9 15c1.5 1.8 4.5 1.8 6 0"/>
-          </svg>
-        </button>
-        <button class="btn-circle hidden" id="emojiBtn">☺</button>
-        <button class="btn" id="funcToggleBtn" style="width:40px;height:40px;padding:0;border-radius:999px;font-size:20px;">+</button>
+      <div class="left-tools" style="display:flex; gap:8px; align-items:center; margin-right:8px;">
+  <button class="btn-circle hidden" id="moreToolsBtn" aria-label="更多">＋</button>
+  <button class="btn-circle" id="stickerBtn" aria-label="表情包" style="width:36px; height:36px; padding:0; border-radius:50%; border:1px solid #dce5f0; background:rgba(244,246,251,0.9); box-shadow:0 2px 6px rgba(92,112,148,0.05); display:grid; place-items:center; transition:all 0.2s ease; cursor:pointer;" onmousedown="this.style.transform='scale(0.92)'; this.style.background='#eef4fa';" onmouseup="this.style.transform='scale(1)'; this.style.background='rgba(244,246,251,0.9)';">
+    <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:#5c7094;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><path d="M8 3h8a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5z"/><path d="M15 3v6a3 3 0 0 1-3 3H6"/><path d="M9 11h.01M15 11h.01"/><path d="M9 15c1.5 1.8 4.5 1.8 6 0"/></svg>
+  </button>
+  <button class="btn-circle hidden" id="emojiBtn">☺</button>
+  <button class="btn" id="funcToggleBtn" style="width:36px; height:36px; padding:0; border-radius:50%; border:1px solid #dce5f0; background:rgba(244,246,251,0.9); color:#5c7094; font-size:22px; font-weight:300; line-height:1; display:grid; place-items:center; box-shadow:0 2px 6px rgba(92,112,148,0.05); transition:all 0.2s ease; cursor:pointer;" onmousedown="this.style.transform='scale(0.92)'; this.style.background='#eef4fa';" onmouseup="this.style.transform='scale(1)'; this.style.background='rgba(244,246,251,0.9)';">+</button>
       </div>
 
       <div id="funcPanel" class="func-panel">
