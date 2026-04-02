@@ -1365,8 +1365,8 @@
         <div class="small">我方名称</div><input id="meNameInput" class="input" />
         <div class="small" style="margin-top:8px;">我方备注（可选）</div><input id="meNoteInput" class="input" />
         <div class="small" style="margin-top:8px;">我方头像（上传 或 URL）</div>
-        <div class="row"><button class="btn" id="meAvatarPickBtn">上传</button><input id="meAvatarInput" class="input" placeholder="https://..." /></div>
-        <input id="meAvatarFile" type="file" accept="image/*" class="hidden" />
+        <!-- 我方头像 -->
+<div class="row"><button class="btn" id="meAvatarPickBtn" style="background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:600; padding:8px 14px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">上传</button><input id="meAvatarInput" class="input" placeholder="https://..." style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px;" /></div>
         <img id="meAvatarPreview" class="preview-img hidden" style="margin-top:8px;" />
         <div class="small" style="margin-top:8px;">我方人设</div><textarea id="mePersonaInput" class="ta" style="min-height:90px;"></textarea>
       </div>
@@ -1376,8 +1376,8 @@
         <div class="small">对方名称（当前联系人）</div><input id="roleNameInput" class="input" />
         <div class="small" style="margin-top:8px;">对方备注（可选）</div><input id="roleNoteInput" class="input" />
         <div class="small" style="margin-top:8px;">对方头像（上传 或 URL）</div>
-        <div class="row"><button class="btn" id="roleAvatarPickBtn">上传</button><input id="roleAvatarInput" class="input" placeholder="https://..." /></div>
-        <input id="roleAvatarFile" type="file" accept="image/*" class="hidden" />
+        <!-- 对方头像 -->
+<div class="row"><button class="btn" id="roleAvatarPickBtn" style="background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:600; padding:8px 14px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">上传</button><input id="roleAvatarInput" class="input" placeholder="https://..." style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px;" /></div>
         <img id="roleAvatarPreview" class="preview-img hidden" style="margin-top:8px;" />
         <div class="small" style="margin-top:8px;">对方人设</div><textarea id="rolePersonaInput" class="ta" style="min-height:95px;"></textarea>
       </div>
@@ -1449,7 +1449,7 @@
       </div>
     </div>
 
-    <button class="btn" id="manualSummaryBtn" style="width:100%; background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; font-weight:bold; padding:12px 0; border-radius:12px; font-size:14px; transition:transform 0.1s; letter-spacing:0.5px;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">立即强制压缩当前记忆</button>
+    <button class="btn" id="rangeSummaryBtn" style="padding:8px 14px; font-size:12px; background:rgba(238,244,250,0.6); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-weight:bold; box-shadow:none; transition:all 0.2s ease;" onmousedown="this.style.transform='scale(0.95)'; this.style.background='rgba(220,229,240,0.8)';" onmouseup="this.style.transform='scale(1)'; this.style.background='rgba(238,244,250,0.6)';">提炼</button>
     
     <div style="margin-top:20px; padding-top:16px; border-top:1px dashed #eef4fa;">
       <div style="font-size:12px; color:#8892a8; margin-bottom:12px; line-height:1.6;">
@@ -1486,7 +1486,10 @@
       </div>
 
       <div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none;">
-  <div style="font-size:13px; font-weight:600; color:#5c7094; margin-bottom:8px;">时间戳</div>
+  <div style="font-size:13px; font-weight:600; color:#5c7094; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+  <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+  时间戳
+  </div>
   <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
     <span style="font-size:13px; color:#7a86a8;">显示每条消息时间</span>
     <input id="showTsSwitch" type="checkbox" style="transform:scale(1.1); accent-color:#5c7094; cursor:pointer;" />
@@ -1512,7 +1515,7 @@
     <select id="bubblePresetSelect" class="select" style="flex:1; border:1px solid #dce5f0; background:#f8fafc; color:#5c7094; border-radius:10px; font-size:13px; padding:8px 12px;"></select>
     <button class="btn" id="newBubblePresetBtn" style="background:#f8fafc; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:8px 12px; font-weight:600;">新建</button>
     <button class="btn" id="delBubblePresetBtn" style="background:rgba(252,242,242,0.6); color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; padding:8px 12px; font-weight:600;">删除</button>
-    <button class="btn" id="applyBubblePresetBtn" style="background:#5c7094; color:#fff; border:none; border-radius:10px; padding:8px 12px; font-weight:600; box-shadow:0 2px 8px rgba(92,112,148,0.2);">应用</button>
+    <button class="btn" id="applyBubblePresetBtn" style="background:rgba(238,244,250,0.6); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:8px 14px; font-weight:bold; box-shadow:none; transition:all 0.2s ease;" onmousedown="this.style.transform='scale(0.95)'; this.style.background='rgba(220,229,240,0.8)';" onmouseup="this.style.transform='scale(1)'; this.style.background='rgba(238,244,250,0.6)';">应用</button>
   </div>
   <textarea id="bubbleCssInput" class="ta" style="min-height:100px; background:#f8fafc; border:1px solid #dce5f0; border-radius:12px; font-size:13px; padding:12px; color:#5c7094; line-height:1.5; font-family:monospace;" placeholder=".bubble.ai { ... }"></textarea>
   <div style="font-size:11px; color:#8892a8; margin-top:8px;">保存后立即生效，可随时清空恢复。</div>
