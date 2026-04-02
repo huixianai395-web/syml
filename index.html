@@ -5798,11 +5798,11 @@ if(type==='image'){$('chatImgInput').click();$('funcPanel').classList.remove('sh
     if(type==='voicecall'){$('funcPanel').classList.remove('show');if(!currentId)return;startCallUI('voice','outgoing',currentId);return;}
 if(type==='videocall'){$('funcPanel').classList.remove('show');if(!currentId)return;startCallUI('video','outgoing',currentId);return;}
 const cfg=FUNC_DIALOGS[type]; if(!cfg) return;
-    let html=`<b>${cfg.title}</b><br><br>`;
-    cfg.fields.forEach(f=>{ html+=`<div style="margin-bottom:8px;"><div class="small">${f.label}</div><input id="fd_${f.key}" class="input" type="${f.type||'text'}" placeholder="${f.placeholder}" style="margin-top:4px;"></div>`; });
+    let html=`<b style="color:#5c7094; font-size:16px; display:block; margin-bottom:16px; text-align:center; letter-spacing:1px;">${cfg.title}</b>`;
+    cfg.fields.forEach(f=>{ html+=`<div style="margin-bottom:12px;"><div class="small" style="color:#7a86a8; font-weight:600; margin-bottom:6px;">${f.label}</div><input id="fd_${f.key}" class="input" type="${f.type||'text'}" placeholder="${f.placeholder}" style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; padding:10px 12px; width:100%; box-sizing:border-box; font-size:14px; outline:none; transition:all 0.2s;"></div>`; });
     const modal=document.createElement('div');
     modal.className='modal active';modal.style.zIndex='9999';
-    modal.innerHTML=`<div class="modal-card" style="max-width:320px;">${html}<div class="row" style="justify-content:flex-end;margin-top:10px;"><button class="btn" id="fdCancelBtn">取消</button><button class="btn p" id="fdSendBtn">发送</button></div></div>`;
+    modal.innerHTML=`<div class="modal-card" style="max-width:320px; background:rgba(255,255,255,0.95); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid #dce5f0; box-shadow:0 10px 30px rgba(92,112,148,0.15); border-radius:16px; padding:20px;">${html}<div class="row" style="justify-content:flex-end; margin-top:20px; gap:10px;"><button class="btn" id="fdCancelBtn" style="background:#f4f6fb; color:#7a86a8; border:1px solid #dce5f0; border-radius:10px; padding:8px 18px; font-weight:600; transition:all 0.2s ease;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">取消</button><button class="btn p" id="fdSendBtn" style="background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:8px 18px; font-weight:bold; box-shadow:0 2px 6px rgba(92,112,148,0.05); transition:all 0.2s ease;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">发送</button></div></div>`;
     $('app').appendChild(modal);
     modal.querySelector('#fdCancelBtn').onclick=()=>modal.remove();
     modal.querySelector('#fdSendBtn').onclick=()=>{
