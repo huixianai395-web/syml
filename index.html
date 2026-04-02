@@ -1060,8 +1060,11 @@
           <!-- 马甲切换卡片 -->
           <div style="background:#fff; border-radius:16px; padding:0 20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px;">
             <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 0;">
-              <div style="font-size:15px; font-weight:600; color:#1a1d26;">当前预设</div>
-              <select id="mePresetSelect" class="select" style="width:auto; border:none; background:transparent; color:#2f66d8; font-size:15px; font-weight:600; padding:0; text-align:right; direction:rtl; outline:none; cursor:pointer;"></select>
+  <div style="font-size:15px; font-weight:600; color:#5c7094; display:flex; align-items:center; gap:6px; letter-spacing:1px;">
+    <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+    当前预设
+  </div>
+  <select id="mePresetSelect" class="select" style="width:auto; border:none; background:transparent; color:#5c7094; font-size:15px; font-weight:600; padding:0; text-align:right; direction:rtl; outline:none; cursor:pointer;"></select>
             </div>
           </div>
 
@@ -1073,8 +1076,8 @@
             <button class="btn p" id="mePageSaveBtn" style="width:100%; background:rgba(238,244,250,0.6); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; padding:12px 0; font-size:15px; font-weight:bold; letter-spacing:1px; margin-top:16px; box-shadow:none; transition:all 0.2s ease;" onmousedown="this.style.transform='scale(0.98)'; this.style.background='rgba(220,229,240,0.8)';" onmouseup="this.style.transform='scale(1)'; this.style.background='rgba(238,244,250,0.6)';">保存设定</button>
             
             <div style="display:flex; gap:12px; margin-top:12px;">
-              <button class="btn" id="mePageNewBtn" style="flex:1; background:#f0f4ff; color:#2f66d8; border-radius:12px; padding:10px 0; font-weight:600;">新建预设</button>
-              <button class="btn" id="mePageDelBtn" style="flex:1; background:#fff0f0; color:#e74c3c; border-radius:12px; padding:10px 0; font-weight:600;">删除当前</button>
+  <button class="btn" id="mePageNewBtn" style="flex:1; background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; border-radius:12px; padding:10px 0; font-weight:600; letter-spacing:1px; box-shadow:none; transition:all 0.2s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">新建预设</button>
+  <button class="btn" id="mePageDelBtn" style="flex:1; background:rgba(252,242,242,0.6); color:#b57b7b; border:1px solid #f2dcdc; border-radius:12px; padding:10px 0; font-weight:600; letter-spacing:1px; box-shadow:none; transition:all 0.2s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">删除当前</button>
             </div>
           </div>
 
@@ -5915,7 +5918,7 @@ function syncCardFromAi(parts,chatId){
 
   // ================= 2. 删除朋友圈 =================
   window._delMoment = function(id) {
-    if(!confirm('老婆，确定要删除这条朋友圈吗？')) return;
+    if(!confirm('宝宝，确定要删除这条朋友圈吗？')) return;
     let ms = getMoments();
     ms = ms.filter(m => m.id !== id);
     setMoments(ms);
@@ -6048,7 +6051,7 @@ window._publishMyMoment = function() {
 【根据人设和玩家互动的男主列表】：
 ${viewersInfo}
 【核心任务（必须严格执行，字数要足！）】：
-1. 必须虚构 1～3个玩家的【普通微信好友】（如：女闺蜜、朋友等）和男主们穿插排队评论回复，点赞速度前后位置看男主人设决定，回复也一定要极度贴合人设。
+1. 必须虚构 1～4个玩家的【普通微信好友】（如：女闺蜜、朋友等）和男主们穿插排队评论回复，点赞速度前后位置看男主人设决定，回复也一定要极度贴合人设。
 
 2. 男主们也可以看人设偶尔【亲自回复】那些玩家的虚构配角，必须贴合根据人设来，活人感强一点）！
 3. 男主们也要看自己的人设给玩家留言或者点赞，一定要一切符合人设。
@@ -6061,8 +6064,8 @@ ${viewersInfo}
         sysPrompt = `男主"${npc.name}"（人设：${npc.persona}）发了一条微信朋友圈："${target.text||'[分享了图片]'}"。
 请模拟他这条朋友圈的评论区互动，展现他真实的私人社交圈。
 【核心任务（必须执行）】：
-1. 必须虚构 3~4 个符合他身份的【专属微信好友】（如：大学室友、死党、同事、损友等）来排队吐槽或调侃他。
-2. 男主"${npc.name}"看到后，必须【亲自回复】其中至少 2 个路人好友！语气是熟人间的互怼、高冷或玩笑。
+1. 必须虚构 3~5个符合他身份的【专属微信好友】（如：大学室友、死党、同事、损友等）来排队吐槽或调侃他。
+2. 男主"${npc.name}"看到后，看人设可以【亲自回复】路人好友，具体回复谁回复什么贴合人设，不用全都回，一切以人设为主。语气是熟人间的互怼、高冷或玩笑。
 3. 整个评论区总数必须在 5 到 8 条之间。
 4. 【绝对禁止】提其他男主！这是他的私人圈子！`;
       }
@@ -6114,7 +6117,7 @@ ${viewersInfo}
 // ================= 6. 批量发朋友圈 (一次性生成动态+评论，省额度) =================
 window._generateNPCMoment = async function() {
   const contacts = getContacts() || [];
-  if (contacts.length === 0) return alert('老婆，你还没加联系人呢！');
+  if (contacts.length === 0) return alert('宝宝，你还没加联系人呢！');
 
   const shuffled = [...contacts].sort(() => 0.5 - Math.random());
   const posters = shuffled.slice(0, Math.floor(Math.random() * 3) + 2);
@@ -6205,7 +6208,7 @@ ${postersInfo}
 
   } catch(e) {
     if($(loadingId)) $(loadingId).remove();
-    alert('⚠️ 刷新失败：\n' + e.message); 
+    alert('刷新失败：\n' + e.message); 
   }
 };
 // ================= 3. 玩家评论后，角色秒回！(互动完美保留) =================
@@ -6305,7 +6308,7 @@ window._replyMomentCommentAI = async function(momentId, npcName, userText) {
   let meAvatarDraftGlobal = '';
 
   function getMePresets() {
-    return getJ(K_PRESETS_LIST, { currentId: 'default', list: [{ id: 'default', name: '默认模式', persona: ' 女主。', avatar: '' }] });
+    return getJ(K_PRESETS_LIST, { currentId: 'default', list: [{ id: 'default', name: ',,ᗜ - ᗜ,,', persona: ' 女主。', avatar: '' }] });
   }
   function setMePresets(v) { setJ(K_PRESETS_LIST, v); }
 
@@ -6397,7 +6400,7 @@ window.jumpToHighlightText = function(text){
     if(overlay) { overlay.style.opacity = '0'; setTimeout(()=> overlay.style.display = 'none', 300); }
     window.jumpToPage(foundPage); 
   } else {
-    alert('老婆，这段字可能被外星人抓走了，雷达被彻底干扰啦！');
+    alert('宝宝，这段字可能被外星人抓走了，雷达被彻底干扰啦！');
   }
 };
 
@@ -6533,7 +6536,7 @@ window.renderNotesList = function(){
     window._wbBackToList = () => { currentViewBookId = null; window._renderGlobalWb(); };
 
     window._wbCreateBook = async () => {
-      const name = prompt('给这本新的世界书起个好听的名字吧（比如：霸总日常设定）：');
+      const name = prompt('给这本新的世界书起个好听的名字吧（比如：日常设定）：');
       if(!name || !name.trim()) return;
       const books = await getWbBooks();
       const newBookId = 'bk_' + Date.now();
@@ -6570,7 +6573,7 @@ window.renderNotesList = function(){
           e.content = vText.trim();
         }
         await setWbBooks(books);
-        alert('🎉 词条修改保存成功！外挂内存已死死记住它啦！');
+        alert(' 词条修改保存成功！内存已死死记住它啦！');
       }
     };
 
