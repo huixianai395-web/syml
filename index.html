@@ -121,18 +121,8 @@
     #chatRoom.offline .bubble-wrap,#chatRoom.offline .bubble,#chatRoom.offline .offline-card{width:100%!important;max-width:100%!important}
     #chatRoom.offline .bubble{border-radius:14px;line-height:1.62}
      
-    .offline-card{border:1px solid #e8dccb;background:linear-gradient(180deg,#fffdf9,#fbf6ef);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(110,78,42,.08);}
-   /* 线下调色盘 (复古手账高级版) */
-.offline-card{
-  position:relative;
-  --off-state:#8a7051;
-  --off-body:#4a3d30;
-  --off-quote:#7a8291;
-  --off-em:#a34949;
-  --off-dialogue:#486a7a;
-}
-.offline-state{color:var(--off-state);}
-.offline-body{color:var(--off-body);}
+   .offline-card{border:1px solid #e8dccb;background:linear-gradient(180deg,#fffdf9,#fbf6ef);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(110,78,42,.08); max-width:100% !important; box-sizing:border-box !important; overflow-wrap:anywhere !important; word-break:break-all !important;}
+.offline-body{padding:12px 14px 14px;color:var(--off-body);white-space:pre-wrap;line-height:1.62;text-align:justify; overflow-wrap:anywhere !important; word-break:break-all !important;}
 .offline-body .off-quote{color:var(--off-quote);}
 .offline-body .off-em{color:var(--off-em);font-weight:600;}
 .offline-body .off-dialogue{color:var(--off-dialogue);}
@@ -2222,7 +2212,7 @@ window._callHangup=()=>endCall();
   const clean=s=>String(s||'').trim();
   const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;' }[m]));
   // HTML检测与封装
-  function isHtmlDoc(s){s=String(s||'');return /^\s*<!doctype html/i.test(s)||/<html[\s>]/i.test(s);} 
+  function isHtmlDoc(s){s=String(s||'');return /^\s*<!doctype html/i.test(s);}
   function isHtmlFrag(s){s=String(s||'');return /<([a-z][\w-]*)(\s|>)/i.test(s)&&!isHtmlDoc(s);} 
   function toHtmlDataUrl(s){return 'data:text/html;charset=utf-8,'+encodeURIComponent(String(s||''));}
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -2550,8 +2540,10 @@ function compressImage(file, isWallpaper = false) {
 
   function renderQuote(q){ if(!q||!q.text) return ''; return `<div class="msg-quote"><div class="q-content">${esc(q.text)}</div></div>`; }
   function formatOfflineText(text){
-  let t=String(text||'');
-  const marks=[];
+  if(t.includes('\`\`\`') || t.includes('function(') || t.includes('style=')) {
+      return esc(t).replace(/\\n/g,'<br>');
+    }
+    const marks=[];
   function rep(re,cls){
     t=t.replace(re,(m,inner)=>{
       const key=`__MARK_${marks.length}__`;
@@ -2599,7 +2591,7 @@ function compressImage(file, isWallpaper = false) {
     </div>`;
   }
   // 增加HTML检测
-  function isHtmlDoc(s){s=String(s||'');return /^\s*<!doctype html/i.test(s)||/<html[\s>]/i.test(s);}
+  
   function isHtmlFrag(s){s=String(s||'');return /<([a-z][\w-]*)(\s|>)/i.test(s)&&!isHtmlDoc(s);}
   function toHtmlDataUrl(s){return 'data:text/html;charset=utf-8,'+encodeURIComponent(String(s||''));}
 
