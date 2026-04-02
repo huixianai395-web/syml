@@ -6929,22 +6929,7 @@ window.renderNotesList = function(){
   };
   
 
-  // 绑定手动触发按钮
-  document.getElementById('manualSummaryBtn').onclick = async function() {
-    if(!currentId) return alert('请先进入一个聊天才能压缩记忆哦！');
-    const btn = this;
-    const oldText = btn.innerHTML;
-    btn.innerHTML = '✨ 正在偷看 TA 写日记...';
-    btn.style.pointerEvents = 'none';
-    try {
-      await window._doMemoryCompress(currentId, true);
-    } catch(e) {
-      alert('写日记失败了宝宝：' + e.message);
-    } finally {
-      btn.innerHTML = oldText;
-      btn.style.pointerEvents = 'auto';
-    }
-  };
+
   // 🌟 蓝色魔法：手动区间精准提取引擎！
   document.getElementById('rangeSummaryBtn').onclick = async function() {
     if(!currentId) return alert('宝宝，请先进入一个聊天哦！');
