@@ -7297,6 +7297,18 @@ window.renderNotesList = function(){
             <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:0 4px 16px rgba(92,112,148,0.04);">
               <div style="font-size:13px; font-weight:800; color:#5c7094; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
                 <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                <!-- 🌟 蓝色高定：美学套装一键切换区 -->
+    <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-radius:16px; padding:16px; margin-bottom:16px; border:1px solid #dce5f0; box-shadow:0 4px 16px rgba(92,112,148,0.04);">
+      <div style="font-size:13px; font-weight:800; color:#5c7094; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+        <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M20 7h-7L10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"></path></svg>
+        美学套装预设 (一键换装)
+      </div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <select id="themePresetSelect" class="select" onchange="window._switchThemePreset(this.value)" style="flex:1; border:1px solid #dce5f0; background:rgba(248,250,252,0.8); color:#5c7094; border-radius:10px; font-size:13px; padding:8px 12px; outline:none;"></select>
+        <button class="btn" onclick="window._saveThemePreset()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:8px 12px; font-weight:bold; transition:all 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">存为套装</button>
+        <button class="btn d" onclick="window._delThemePreset()" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; padding:8px 12px; font-weight:bold; transition:all 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">删除</button>
+      </div>
+    </div>
                 全站外观覆写引擎
               </div>
               <div style="font-size:12px; color:#7a86a8; line-height:1.6; text-align:justify;">
@@ -7620,7 +7632,54 @@ window.renderNotesList = function(){
     await setMemories(allMems);
     window._renderMemoryCards();
   };
+// 🌟 蓝色独家：美学套装一键换装引擎
+  const K_THEME_PRESETS = 'mp_fix_theme_presets_v1';
+  async function getThemePresets() { return (await localforage.getItem(K_THEME_PRESETS)) || { current: '默认', list: { '默认': [] } }; }
+  async function setThemePresets(data) { await localforage.setItem(K_THEME_PRESETS, data); window._renderThemePresets(); }
 
+  window._renderThemePresets = async function() {
+    const data = await getThemePresets();
+    const sel = document.getElementById('themePresetSelect');
+    if(!sel) return;
+    sel.innerHTML = Object.keys(data.list).map(k => `<option value="${escapeHtml(k)}" ${k === data.current ? 'selected' : ''}>${escapeHtml(k)}</option>`).join('');
+  };
+
+  window._switchThemePreset = async function(presetName) {
+    const data = await getThemePresets();
+    data.current = presetName;
+    const activeIds = data.list[presetName] || [];
+    let modules = await getThemeModules();
+    // 核心魔法：只开启属于这个套装的补丁，其他的全部关掉！
+    modules.forEach(m => m.enabled = activeIds.includes(m.id));
+    await setThemeModules(modules);
+    await setThemePresets(data);
+    window._renderThemeLab();
+    alert(`已一键换装至：${presetName}！`);
+  };
+
+  window._saveThemePreset = async function() {
+    const name = prompt('给当前的绝美搭配起个套装名吧（如：暗黑冰透风 / 猛男粉）：');
+    if(!name || !name.trim()) return;
+    const modules = await getThemeModules();
+    const activeIds = modules.filter(m => m.enabled).map(m => m.id); // 提取当前所有打勾的补丁ID
+    const data = await getThemePresets();
+    data.list[name.trim()] = activeIds;
+    data.current = name.trim();
+    await setThemePresets(data);
+    alert('套装保存成功！以后可以一键换装啦！');
+  };
+
+  window._delThemePreset = async function() {
+    const data = await getThemePresets();
+    if(Object.keys(data.list).length <= 1) return alert('至少保留一个套装预设哦宝宝！');
+    if(!confirm(`确定要删除套装 [${data.current}] 吗？`)) return;
+    delete data.list[data.current];
+    data.current = Object.keys(data.list)[0];
+    await setThemePresets(data);
+    alert('套装已删除！');
+  };
+
+  setTimeout(window._renderThemePresets, 600);
 })(); // 🏠 闭合主屋的大门！(这次我死死把它焊在最后面了！)
 </script>
 <!-- 🌟 蓝色专属：美学实验室独立驱动引擎 -->
