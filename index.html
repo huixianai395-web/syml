@@ -85,9 +85,9 @@
   flex-shrink:0;
   display:block;
  }
-    .bubble-wrap{display:flex;flex-direction:column;max-width:calc(100% - 48px)}
+    .bubble-wrap{display:flex;flex-direction:column;max-width:calc(100% - 48px);min-width:0;}
     .bubble-wrap.me{align-items:flex-end}.bubble-wrap.ai{align-items:flex-start}
-    .bubble{max-width:100%;padding:10px 12px;border-radius:14px;line-height:1.45;word-break:break-word;white-space:pre-wrap;}
+    .bubble{max-width:100%;padding:10px 12px;border-radius:14px;line-height:1.45;word-break:break-word;overflow-wrap:anywhere;white-space:pre-wrap;min-width:0;}
     .bubble.me{background:#2f66d8;color:#fff;border-bottom-right-radius:6px}
     .bubble.ai{background:#fff;border:1px solid #e8e8ef;border-bottom-left-radius:6px}
     .msg-time{font-size:10px;color:#96a0b9;margin-top:4px;padding:0 2px}
@@ -2579,7 +2579,10 @@ function compressImage(file, isWallpaper = false) {
 
 
   function renderOfflineAssistant(text,ts,pref,msg){
-  const raw=String(text||''),m=raw.match(/【状态栏】\s*([\s\S]*?)\s*【正文】\s*([\s\S]*)/);
+  let raw=String(text||'');
+  /* 🌟 蓝色高定修复：自动砍掉 AI 脑抽复读的底层代码！ */
+  if(raw.includes('[FORMAT_LOCK]')) raw = raw.split('[FORMAT_LOCK]')[0].trim();
+  const m=raw.match(/【状态栏】\s*([\s\S]*?)\s*【正文】\s*([\s\S]*)/);
   if(!m) return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}<div class="bubble ai ${msg.hiddenForAi?'ai-hidden':''}">${esc(raw)}</div>${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}</div>`;
   const state=clean(m[1]),body=clean(m[2]);
 
@@ -2606,7 +2609,14 @@ function compressImage(file, isWallpaper = false) {
     const ts=pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:'';
     const quote=renderQuote(m.quote);
     const hidden=m.hiddenForAi?'ai-hidden':'';
-    const t=String(m.text||'');
+    let t=String(m.text||'');
+
+    /* 🌟 蓝色高定修复：线下切线上时的智能净化滤镜！ */
+    if(t.includes('【状态栏】') && t.includes('【正文】')) {
+      const mMatch = t.match(/【正文】\s*([\s\S]*)/);
+      if(mMatch) t = mMatch[1].trim();
+    }
+    if(t.includes('[FORMAT_LOCK]')) t = t.split('[FORMAT_LOCK]')[0].trim();
     // --- 解析文件格式 ---
     const fileMatch = t.match(/^\[file:(.+?)\]([\s\S]*?)\[\/file\]$/);
     if(fileMatch){
