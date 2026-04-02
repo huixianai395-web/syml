@@ -7667,10 +7667,7 @@ window.renderNotesList = function(){
     box.innerHTML = modules.map(m => {
       const isSel = window._themeSelSet.has(m.id);
       
-      // 💎 核心：清透感玻璃开关 (完美替代系统丑框)
-      const glassCheckbox = `
-        <div style="width:18px; height:18px; border-radius:6px; border:1px solid ${m.enabled ? 'rgba(255,255,255,0.9)' : '#dce5f0'}; background:${m.enabled ? 'rgba(165,207,255,0.65)' : 'rgba(255,255,255,0.4)'}; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); display:grid; place-items:center; color:${m.enabled ? '#fff' : 'transparent'}; font-size:12px; font-weight:bold; transition:all 0.2s ease; box-shadow:${m.enabled ? '0 2px 8px rgba(165,207,255,0.3)' : 'none'};">✓</div>
-      `;
+     
 
       // 多选模式下左侧的圆圈
       const multiCheckbox = window._themeMultiMode ? `
@@ -7686,12 +7683,10 @@ window.renderNotesList = function(){
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px dashed #eef4fa; padding-bottom:12px;">
             <input id="theme_title_${m.id}" class="input" style="flex:1; min-width:0; background:transparent; border:none; padding:0; font-size:15px; font-weight:800; color:#3d4a6a;" value="${escapeHtml(m.title)}" placeholder="模块名称" onchange="window._saveThemeTitle('${m.id}', this.value)">
             
-            <!-- 隐藏原本的丑框，只显示我们的冰透玻璃框 -->
-            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; background:${m.enabled ? 'rgba(238,244,250,0.5)' : 'rgba(252,242,242,0.5)'}; padding:4px 8px; border-radius:10px; border:1px solid ${m.enabled ? '#dce5f0' : '#f2dcdc'}; transition:all 0.2s; margin-left:8px;">
-              <input type="checkbox" class="hidden" ${m.enabled ? 'checked' : ''} onchange="window._toggleTheme('${m.id}', this.checked)">
-              ${glassCheckbox}
-              <span style="font-size:11px; font-weight:bold; color:${m.enabled ? '#5c7094' : '#b57b7b'};">${m.enabled ? '已启用' : '已停用'}</span>
-            </label>
+           <label style="display:flex; align-items:center; gap:6px; cursor:pointer; background:${m.enabled ? '#eef4fa' : '#fcf2f2'}; padding:4px 10px; border-radius:8px; border:1px solid ${m.enabled ? '#dce5f0' : '#f2dcdc'}; transition:all 0.2s; margin-left:8px;">
+            <input type="checkbox" ${m.enabled ? 'checked' : ''} onchange="window._toggleTheme('${m.id}', this.checked)" style="accent-color:${m.enabled ? '#5c7094' : '#b57b7b'};">
+            <span style="font-size:11px; font-weight:bold; color:${m.enabled ? '#5c7094' : '#b57b7b'};">${m.enabled ? '已启用' : '已停用'}</span>
+          </label>
           </div>
           
           <textarea id="theme_css_${m.id}" class="ta" style="min-height:90px; width:100%; box-sizing:border-box; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; border-radius:10px; padding:10px; font-size:12px; color:#5c7094; font-family:monospace; line-height:1.5; resize:vertical;" placeholder="在这里粘贴你的 CSS 代码...">${escapeHtml(m.css)}</textarea>
