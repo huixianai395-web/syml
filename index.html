@@ -1,3 +1,5 @@
+
+
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -85,9 +87,9 @@
   flex-shrink:0;
   display:block;
  }
-    .bubble-wrap{display:flex;flex-direction:column;max-width:calc(100% - 48px);min-width:0;}
+    .bubble-wrap{display:flex;flex-direction:column;max-width:calc(100% - 48px)}
     .bubble-wrap.me{align-items:flex-end}.bubble-wrap.ai{align-items:flex-start}
-    .bubble{max-width:100%;padding:10px 12px;border-radius:14px;line-height:1.45;word-break:break-word;overflow-wrap:anywhere;white-space:pre-wrap;min-width:0;}
+    .bubble{max-width:100%;padding:10px 12px;border-radius:14px;line-height:1.45;word-break:break-word;white-space:pre-wrap;}
     .bubble.me{background:#2f66d8;color:#fff;border-bottom-right-radius:6px}
     .bubble.ai{background:#fff;border:1px solid #e8e8ef;border-bottom-left-radius:6px}
     .msg-time{font-size:10px;color:#96a0b9;margin-top:4px;padding:0 2px}
@@ -121,8 +123,18 @@
     #chatRoom.offline .bubble-wrap,#chatRoom.offline .bubble,#chatRoom.offline .offline-card{width:100%!important;max-width:100%!important}
     #chatRoom.offline .bubble{border-radius:14px;line-height:1.62}
      
-   .offline-card{border:1px solid #e8dccb;background:linear-gradient(180deg,#fffdf9,#fbf6ef);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(110,78,42,.08); max-width:100% !important; box-sizing:border-box !important; overflow-wrap:anywhere !important; word-break:break-all !important;}
-.offline-body{padding:12px 14px 14px;color:var(--off-body);white-space:pre-wrap;line-height:1.62;text-align:justify; overflow-wrap:anywhere !important; word-break:break-all !important;}
+    .offline-card{border:1px solid #e8dccb;background:linear-gradient(180deg,#fffdf9,#fbf6ef);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(110,78,42,.08);}
+   /* 线下调色盘 (复古手账高级版) */
+.offline-card{
+  position:relative;
+  --off-state:#8a7051;
+  --off-body:#4a3d30;
+  --off-quote:#7a8291;
+  --off-em:#a34949;
+  --off-dialogue:#486a7a;
+}
+.offline-state{color:var(--off-state);}
+.offline-body{color:var(--off-body);}
 .offline-body .off-quote{color:var(--off-quote);}
 .offline-body .off-em{color:var(--off-em);font-weight:600;}
 .offline-body .off-dialogue{color:var(--off-dialogue);}
@@ -2212,7 +2224,7 @@ window._callHangup=()=>endCall();
   const clean=s=>String(s||'').trim();
   const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;' }[m]));
   // HTML检测与封装
-  function isHtmlDoc(s){s=String(s||'');return /^\s*<!doctype html/i.test(s);}
+  function isHtmlDoc(s){s=String(s||'');return /^\s*<!doctype html/i.test(s)||/<html[\s>]/i.test(s);} 
   function isHtmlFrag(s){s=String(s||'');return /<([a-z][\w-]*)(\s|>)/i.test(s)&&!isHtmlDoc(s);} 
   function toHtmlDataUrl(s){return 'data:text/html;charset=utf-8,'+encodeURIComponent(String(s||''));}
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -2540,10 +2552,8 @@ function compressImage(file, isWallpaper = false) {
 
   function renderQuote(q){ if(!q||!q.text) return ''; return `<div class="msg-quote"><div class="q-content">${esc(q.text)}</div></div>`; }
   function formatOfflineText(text){
-  if(t.includes('\`\`\`') || t.includes('function(') || t.includes('style=')) {
-      return esc(t).replace(/\\n/g,'<br>');
-    }
-    const marks=[];
+  let t=String(text||'');
+  const marks=[];
   function rep(re,cls){
     t=t.replace(re,(m,inner)=>{
       const key=`__MARK_${marks.length}__`;
@@ -2571,10 +2581,7 @@ function compressImage(file, isWallpaper = false) {
 
 
   function renderOfflineAssistant(text,ts,pref,msg){
-  let raw=String(text||'');
-  /* 🌟 蓝色高定修复：自动砍掉 AI 脑抽复读的底层代码！ */
-  if(raw.includes('[FORMAT_LOCK]')) raw = raw.split('[FORMAT_LOCK]')[0].trim();
-  const m=raw.match(/【状态栏】\s*([\s\S]*?)\s*【正文】\s*([\s\S]*)/);
+  const raw=String(text||''),m=raw.match(/【状态栏】\s*([\s\S]*?)\s*【正文】\s*([\s\S]*)/);
   if(!m) return `<div class="bubble-wrap ai">${renderQuote(msg.quote)}<div class="bubble ai ${msg.hiddenForAi?'ai-hidden':''}">${esc(raw)}</div>${pref.showTs?`<div class="msg-time">${fmtTs(ts)}</div>`:''}</div>`;
   const state=clean(m[1]),body=clean(m[2]);
 
@@ -2591,7 +2598,7 @@ function compressImage(file, isWallpaper = false) {
     </div>`;
   }
   // 增加HTML检测
-  
+  function isHtmlDoc(s){s=String(s||'');return /^\s*<!doctype html/i.test(s)||/<html[\s>]/i.test(s);}
   function isHtmlFrag(s){s=String(s||'');return /<([a-z][\w-]*)(\s|>)/i.test(s)&&!isHtmlDoc(s);}
   function toHtmlDataUrl(s){return 'data:text/html;charset=utf-8,'+encodeURIComponent(String(s||''));}
 
@@ -2601,14 +2608,7 @@ function compressImage(file, isWallpaper = false) {
     const ts=pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:'';
     const quote=renderQuote(m.quote);
     const hidden=m.hiddenForAi?'ai-hidden':'';
-    let t=String(m.text||'');
-
-    /* 🌟 蓝色高定修复：线下切线上时的智能净化滤镜！ */
-    if(t.includes('【状态栏】') && t.includes('【正文】')) {
-      const mMatch = t.match(/【正文】\s*([\s\S]*)/);
-      if(mMatch) t = mMatch[1].trim();
-    }
-    if(t.includes('[FORMAT_LOCK]')) t = t.split('[FORMAT_LOCK]')[0].trim();
+    const t=String(m.text||'');
     // --- 解析文件格式 ---
     const fileMatch = t.match(/^\[file:(.+?)\]([\s\S]*?)\[\/file\]$/);
     if(fileMatch){
