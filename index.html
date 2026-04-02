@@ -1393,13 +1393,13 @@
           <option value="offline">线下模式（RP）</option>
         </select>
         <!-- 蓝色的流式输出开关 -->
-        <div class="row" style="margin-top:12px; justify-content:space-between; padding-top:12px; border-top:1px solid #f0f4ff;">
-          <div>
-            <div class="small" style="color:#2f66d8; font-weight:bold;">开启打字机流式输出</div>
-            <div style="font-size:10px; color:#999; margin-top:2px;">仅建议在线下RP模式开启，沉浸感拉满</div>
-          </div>
-          <input id="streamSwitch" type="checkbox" style="transform:scale(1.1); accent-color:#2f66d8;" />
-        </div>
+       <div style="display:flex; justify-content:space-between; align-items:center; padding-top:16px; margin-top:16px; border-top:1px dashed #eef4fa;">
+  <div style="display:flex; flex-direction:column; gap:4px;">
+    <div style="font-size:14px; color:#5c7094; font-weight:bold; letter-spacing:0.5px;">开启打字机流式输出</div>
+    <div style="font-size:11px; color:#8892a8;">仅建议在线下RP模式开启，沉浸感更佳</div>
+  </div>
+  <input id="streamSwitch" type="checkbox" style="transform:scale(1.1); accent-color:#5c7094;" />
+       </div>
       </div>
 <div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none;">
   <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:12px;">
@@ -1479,63 +1479,59 @@
     <span id="fontSizeVal" class="small" style="min-width:42px;text-align:right;"></span>
   </div>
 </div>
-<div class="card">
-  <div class="small">线下调色板</div>
-  <div class="row" style="margin-top:8px;">
-    <button class="btn" id="openOfflinePaletteBtn">打开调色板</button>
-  </div>
+<div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none;">
+  <div style="font-size:13px; font-weight:600; color:#5c7094; margin-bottom:12px;">线下调色板</div>
+  <button class="btn" id="openOfflinePaletteBtn" style="background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:8px 16px; font-weight:600; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">打开调色板</button>
 </div>
-     <div class="card">
-  <div class="small">气泡CSS专区（可选）</div>
+```
 
-  <div class="row" style="margin-top:8px;">
-    <select id="bubblePresetSelect" class="select"></select>
-    <button class="btn" id="newBubblePresetBtn">新建</button>
-    <button class="btn d" id="delBubblePresetBtn">删</button>
-    <button class="btn p" id="applyBubblePresetBtn">应用</button>
+**2. 气泡CSS专区（替换原代码）：**
+```html
+<div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none;">
+  <div style="font-size:13px; font-weight:600; color:#5c7094; margin-bottom:12px;">气泡CSS专区（可选）</div>
+  <div style="display:flex; gap:8px; align-items:center; margin-bottom:12px;">
+    <select id="bubblePresetSelect" class="select" style="flex:1; border:1px solid #dce5f0; background:#f8fafc; color:#5c7094; border-radius:10px; font-size:13px; padding:8px 12px;"></select>
+    <button class="btn" id="newBubblePresetBtn" style="background:#f8fafc; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:8px 12px; font-weight:600;">新建</button>
+    <button class="btn" id="delBubblePresetBtn" style="background:rgba(252,242,242,0.6); color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; padding:8px 12px; font-weight:600;">删除</button>
+    <button class="btn" id="applyBubblePresetBtn" style="background:#5c7094; color:#fff; border:none; border-radius:10px; padding:8px 12px; font-weight:600; box-shadow:0 2px 8px rgba(92,112,148,0.2);">应用</button>
   </div>
-
-  <textarea id="bubbleCssInput" class="ta" style="min-height:130px;margin-top:8px;" placeholder=".bubble.ai{...}"></textarea>
-  <div class="small" style="margin-top:6px;">保存后立即生效，可随时清空恢复</div>
+  <textarea id="bubbleCssInput" class="ta" style="min-height:100px; background:#f8fafc; border:1px solid #dce5f0; border-radius:12px; font-size:13px; padding:12px; color:#5c7094; line-height:1.5; font-family:monospace;" placeholder=".bubble.ai { ... }"></textarea>
+  <div style="font-size:11px; color:#8892a8; margin-top:8px;">保存后立即生效，可随时清空恢复。</div>
 </div>
-<!-- ================= 绝美壁纸与聊天背景管理中心 ================= -->
-<div class="card" style="margin-top:16px; padding:16px; border-radius:16px; background:linear-gradient(180deg, #fff, #fcfdff); box-shadow:0 4px 16px rgba(47,102,216,0.05); border:1px solid #edf2ff;">
-  <div style="font-size:14px; font-weight:700; color:#1a1d26; margin-bottom:12px; display:flex; align-items:center; gap:6px;">
-     个性化装扮
+```
+
+**3. 个性化装扮（替换原代码，彻底消灭扫把 Emoji）：**
+```html
+<div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none;">
+  <div style="font-size:14px; font-weight:800; color:#5c7094; margin-bottom:16px; display:flex; align-items:center; gap:6px; letter-spacing:1px;">
+    <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M12 2.69l5.66 4.2c.38.28.55.77.43 1.23l-1.46 5.61a1.45 1.45 0 0 1-1.4 1.08H8.77a1.45 1.45 0 0 1-1.4-1.08L5.91 8.12c-.12-.46.05-.95.43-1.23L12 2.69z"></path><path d="M12 22v-8"></path></svg>
+    个性化装扮
   </div>
-
- 
-
-  <!-- 2. 聊天内页：普通背景 vs 琉璃背景 -->
-  <div style="padding:12px; background:#ebf3f9; border:1px dashed #aebed0; border-radius:12px; text-align:center;">
-    <div style="font-size:12px; color:#5a6a8f; margin-bottom:8px; font-weight:600;">聊天内页底图 (双模式)</div>
-    
-    <div style="display:flex; gap:10px; margin-bottom:8px;">
-      <input type="file" id="chatNormalBgFile" accept="image/*" style="display:none;">
-      <button class="btn p" style="flex:1; font-weight:bold; background:#4a67a8; border:none; border-radius:8px; box-shadow:0 2px 8px rgba(74,103,168,0.3); padding:8px 0;" onclick="document.getElementById('chatNormalBgFile').click()" title="普通不透底，适合日常聊天">
-        普通背景 
-      </button>
-
-      <input type="file" id="chatBgFile" accept="image/*" style="display:none;">
-      <button class="btn p" style="flex:1; font-weight:bold; background:#6b89a8; border:none; border-radius:8px; box-shadow:0 2px 8px rgba(107,137,168,0.3); padding:8px 0;" onclick="document.getElementById('chatBgFile').click()" title="固定视差，搭配半透明气泡绝美">
-        琉璃仙气 
-      </button>
+  <div style="padding:16px; background:rgba(244,246,251,0.5); border:1px solid #dce5f0; border-radius:12px; text-align:center;">
+    <div style="font-size:12px; color:#7a86a8; margin-bottom:12px; font-weight:600; letter-spacing:0.5px;">聊天内页底图 (双模式)</div>
+    <div style="display:flex; gap:10px; margin-bottom:12px;">
+      <input type="file" id="chatNormalBgFile" accept="image/*" class="hidden">
+      <button class="btn" style="flex:1; font-weight:600; background:rgba(255,255,255,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:10px 0; transition:all 0.2s;" onclick="document.getElementById('chatNormalBgFile').click()">普通背景</button>
+      <input type="file" id="chatBgFile" accept="image/*" class="hidden">
+      <button class="btn" style="flex:1; font-weight:600; background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:10px 0; transition:all 0.2s;" onclick="document.getElementById('chatBgFile').click()">琉璃仙气</button>
     </div>
-
-    <button class="btn" style="width:100%; background:#dce6ed; color:#4b5d6e; border:none; font-weight:bold; border-radius:8px;" onclick="removeChatBg()">
-      🧹 清理聊天背景 (恢复纯色)
-    </button>
+    <button class="btn" style="width:100%; background:rgba(252,242,242,0.5); color:#b57b7b; border:1px solid #f2dcdc; font-weight:600; border-radius:10px; padding:10px 0;" onclick="removeChatBg()">清理聊天背景 (恢复纯色)</button>
   </div>
 </div>
-<!-- 👆 贴完！收工！ 👆 -->
-      <div class="card">
-        <div class="small">数据工具</div>
-        <div class="row" style="margin-top:8px;flex-wrap:wrap;">
-          <button class="btn" id="exportBtn">导出数据</button><button class="btn" id="importBtn">导入数据</button>
-          <input id="importFile" type="file" accept="application/json" class="hidden" />
-          <button class="btn d" id="clearChatBtn2">清空当前聊天</button><button class="btn d" id="deleteContactBtn">删除当前好友</button>
-        </div>
-      </div>
+```
+
+**4. 数据工具（替换原代码）：**
+```html
+<div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none;">
+  <div style="font-size:13px; font-weight:600; color:#5c7094; margin-bottom:12px;">数据工具</div>
+  <div style="display:flex; flex-wrap:wrap; gap:10px;">
+    <button class="btn" id="exportBtn" style="flex:1; min-width:45%; background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:10px 0; font-weight:600;">导出数据</button>
+    <button class="btn" id="importBtn" style="flex:1; min-width:45%; background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:10px 0; font-weight:600;">导入数据</button>
+    <input id="importFile" type="file" accept="application/json" class="hidden" />
+    <button class="btn" id="clearChatBtn2" style="flex:1; min-width:45%; background:rgba(252,242,242,0.6); color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; padding:10px 0; font-weight:600;">清空当前聊天</button>
+    <button class="btn" id="deleteContactBtn" style="flex:1; min-width:45%; background:rgba(252,242,242,0.6); color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; padding:10px 0; font-weight:600;">删除当前好友</button>
+  </div>
+</div>
     </div>
   </section>
 
