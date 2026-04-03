@@ -1466,14 +1466,105 @@ button[onclick*="ClearGroup"],
   color: #5c7094 !important;
   box-shadow: none !important;
 }
-  
+  #bootScreen{
+  display:block;
+  z-index:999;
+  overflow:hidden;
+  background:linear-gradient(180deg,#edf4ff,#eaf2ff);
+}
+#bootScreen.hidden{display:none}
+.boot-bg{
+  position:absolute; inset:0;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255,255,255,.72), rgba(255,255,255,0) 38%),
+    linear-gradient(180deg,#edf4ff 0%, #e8f1ff 45%, #edf6ff 100%);
+}
+#bootScreen.night .boot-bg{
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255,255,255,.16), rgba(255,255,255,0) 36%),
+    linear-gradient(180deg,#182334 0%, #1d2b40 48%, #24354a 100%);
+}
+.boot-light,.boot-glow,.boot-ink{
+  position:absolute; border-radius:999px; pointer-events:none;
+}
+.boot-light{
+  width:120%; height:120%;
+  left:-10%; top:-8%;
+  background:radial-gradient(circle, rgba(255,255,255,.34), rgba(255,255,255,0) 55%);
+  animation:bootBreath 3s ease-in-out infinite;
+}
+.boot-glow{
+  width:56vw; height:56vw; max-width:240px; max-height:240px;
+  left:50%; top:38%; transform:translate(-50%,-50%);
+  background:radial-gradient(circle, rgba(165,207,255,.30), rgba(165,207,255,0) 68%);
+  filter:blur(8px);
+}
+.boot-ink1{
+  width:220px;height:120px;left:-30px;top:90px;
+  background:radial-gradient(circle at 40% 50%, rgba(120,140,170,.14), rgba(120,140,170,0) 70%);
+  filter:blur(18px);
+}
+.boot-ink2{
+  width:240px;height:140px;right:-40px;bottom:110px;
+  background:radial-gradient(circle at 50% 50%, rgba(90,110,140,.12), rgba(90,110,140,0) 72%);
+  filter:blur(22px);
+}
+.boot-center{
+  position:absolute; inset:0;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  z-index:2;
+}
+.boot-greeting{
+  font-size:30px; font-weight:700; letter-spacing:2px;
+  color:#5c7094;
+  opacity:0; transform:translateY(8px);
+  animation:bootTextIn .9s ease forwards .45s;
+  text-shadow:0 2px 10px rgba(255,255,255,.35);
+}
+#bootScreen.night .boot-greeting{ color:#dbe7ff; }
+.boot-sub{
+  margin-top:10px; font-size:12px; letter-spacing:3px;
+  color:#8da0bf; opacity:0;
+  animation:bootFade .9s ease forwards .95s;
+}
+#bootScreen.night .boot-sub{ color:#94a8c8; }
+@keyframes bootTextIn{
+  to{opacity:1; transform:translateY(0)}
+}
+@keyframes bootFade{
+  to{opacity:.9}
+}
+@keyframes bootBreath{
+  0%,100%{transform:scale(1); opacity:.9}
+  50%{transform:scale(1.04); opacity:1}
+}
+.boot-out{
+  animation:bootOut .8s ease forwards;
+}
+@keyframes bootOut{
+  to{opacity:0; transform:scale(1.02); filter:blur(6px)}
+}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
 </head>
 <body>
 <div id="app">
+<section id="bootScreen" class="screen active">
+  <div class="boot-bg">
+    <div class="boot-ink boot-ink1"></div>
+    <div class="boot-ink boot-ink2"></div>
+    <div class="boot-light"></div>
+    <div class="boot-glow"></div>
+  </div>
 
+  <div class="boot-center">
+    <div id="bootGreeting" class="boot-greeting">欢迎回来</div>
+    <div class="boot-sub">你的空间已准备好</div>
+  </div>
+</section>
   <section id="home" class="screen active">
     <div class="wall"></div>
     <div class="home-layer">
@@ -7901,6 +7992,58 @@ window.renderNotesList = function(){
     window._renderThemePresets();
   }, 500);
 })();
+  const K_BOOT = 'mp_fix_boot_config';
+
+async function getBootCfg(){
+  return (await localforage.getItem(K_BOOT)) || {
+    enabled:true,
+    autoDayNight:true,
+    dayText:'欢迎回来',
+    nightText:'到家了',
+    subText:'你的空间已准备好',
+    duration:2200
+  };
+}
+
+async function setBootCfg(v){
+  await localforage.setItem(K_BOOT, v);
+}
+
+async function runBootAnim(){
+  const boot = document.getElementById('bootScreen');
+  const home = document.getElementById('home');
+  if(!boot || !home) return;
+
+  const cfg = await getBootCfg();
+  if(!cfg.enabled){
+    boot.classList.add('hidden');
+    home.classList.add('active');
+    return;
+  }
+
+  const hour = new Date().getHours();
+  const isNight = cfg.autoDayNight ? (hour >= 18 || hour < 6) : false;
+
+  boot.classList.toggle('night', isNight);
+  document.getElementById('bootGreeting').textContent = isNight ? cfg.nightText : cfg.dayText;
+
+  document.querySelector('#bootScreen .boot-sub').textContent = cfg.subText || '你的空间已准备好';
+
+  setTimeout(() => {
+    boot.classList.add('boot-out');
+    setTimeout(() => {
+      boot.classList.remove('active');
+      boot.classList.add('hidden');
+      home.classList.add('active');
+    }, 800);
+  }, cfg.duration || 2200);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('bootScreen')?.classList.add('active');
+  runBootAnim();
+});
 </script>
 
 <!-- ================= 绝美群聊创建弹窗 ================= -->
