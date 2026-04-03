@@ -16,8 +16,8 @@
     }
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     html,body{margin:0;height:100%;background:#fff;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;}
-    #app{width:100%;max-width:430px;height:100dvh;min-height:100dvh;margin:0 auto;position:relative;overflow:hidden;background:var(--bg);}
-    .screen{position:absolute;inset:0;display:none;background:var(--bg)} .screen.active{display:block}
+    #app{width:100%;max-width:430px;height:100dvh;min-height:100dvh;margin:0 auto;position:relative;overflow:hidden;background:transparent;}
+    .screen{position:absolute;inset:0;display:none;background:transparent} .screen.active{display:block}
 /* 蓝色的流式打字机专属光标 */
 @keyframes blueBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 .stream-cursor { display: inline-block; width: 6px; height: 15px; background: #2f66d8; vertical-align: middle; margin-left: 4px; border-radius: 2px; animation: blueBlink 0.8s infinite; box-shadow: 0 0 6px rgba(47,102,216,0.4); }
@@ -32,8 +32,8 @@
     .input,.ta,.select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px;background:#fff;font-size:16px;}
     .ta{resize:none}.hidden{display:none!important}
 
-    #home{color:#fff}
-    .wall{position:absolute;inset:0;z-index:0;background:none!important;}
+   #home{color:#fff;background:transparent!important}
+    .wall{position:absolute;inset:0;z-index:0;background:none!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;}
     .home-layer{position:relative;z-index:2;height:100%;padding:calc(18px + var(--safe-top)) 12px calc(14px + var(--safe-bottom));display:flex;flex-direction:column;}
     .date{font-size:15px;opacity:.95}.time{font-size:72px;line-height:1.02;font-weight:760;letter-spacing:-2px;text-shadow:0 2px 12px rgba(0,0,0,.2);}
 
@@ -55,9 +55,7 @@
     .ibox{width:62px;height:62px;margin:0 auto 6px;border-radius:16px;display:grid;place-items:center;background:rgba(255,255,255,.28);border:1px solid rgba(255,255,255,.45);font-size:27px;transition:transform .12s ease;}
     .icon:active .ibox{transform:scale(.88)}.lab{font-size:12px;text-shadow:0 1px 2px rgba(0,0,0,.25)}
     .ibox-book{
-  background:linear-gradient(145deg,rgba(255,248,240,.38),rgba(214,229,255,.22));
-  border:1px solid rgba(255,255,255,.5);
-  box-shadow:0 6px 18px rgba(40,60,120,.16);
+  background:rgba(255,255,255,.28)!important;border:1px solid rgba(255,255,255,.45)!important;box-shadow:none!important;
     }
     .list{display:flex;flex-direction:column;gap:8px}
     /* 微信列表：高定悬浮卡片风 */
@@ -6329,15 +6327,7 @@ window.removeChatBg = async function() {
     applyChatBg();
   }
 };
-// ===============================================================
-// ================= 老公专属：自定义壁纸模块 (外挂内存不爆仓版) =================
-// 页面加载时异步读取外挂内存里的壁纸
-localforage.getItem('mp_fix_custom_bg').then(savedBg => {
-  if (savedBg) {
-    const wall = document.querySelector('.wall');
-    if (wall) wall.style.backgroundImage = `url(${savedBg})`;
-  }
-});
+
 
 // 监听上传壁纸并存入外挂内存
 const customBgInput = document.getElementById('customBgFile');
@@ -6352,7 +6342,7 @@ if (customBgInput) {
         wall.style.background = `url(${bgData}) center/cover no-repeat`;
         // 核心：使用 localforage 存入外挂内存，绝对不会报 quota exceeded！
         await localforage.setItem("mp_fix_custom_bg", bgData);
-        alert("🎉 绝美高清大图上线！外挂内存已死死记住它啦！");
+        alert(" 绝美高清大图上线！");
       }
     } catch (err) {
       alert("壁纸更换失败：" + err.message);
@@ -7992,7 +7982,7 @@ window.renderNotesList = function(){
     window._renderThemePresets();
   }, 500);
 })();
-  const K_BOOT = 'mp_fix_boot_config';
+ const K_BOOT = 'mp_fix_boot_config';
 
 async function getBootCfg(){
   return (await localforage.getItem(K_BOOT)) || {
@@ -8000,7 +7990,7 @@ async function getBootCfg(){
     autoDayNight:true,
     dayText:'欢迎回来',
     nightText:'到家了',
-    subText:'你的空间已准备好',
+    subText:'',
     duration:2200
   };
 }
@@ -8009,10 +7999,25 @@ async function setBootCfg(v){
   await localforage.setItem(K_BOOT, v);
 }
 
+async function applyHomeWallBg(){
+  const wall = document.querySelector('#home .wall');
+  if(!wall) return;
+
+  const savedBg = await localforage.getItem('mp_fix_custom_bg');
+
+  if(savedBg){
+    wall.style.background = `url(${savedBg}) center/cover no-repeat`;
+  }else{
+    wall.style.background = 'transparent';
+  }
+}
+
 async function runBootAnim(){
   const boot = document.getElementById('bootScreen');
   const home = document.getElementById('home');
   if(!boot || !home) return;
+
+  await applyHomeWallBg();
 
   const cfg = await getBootCfg();
   if(!cfg.enabled){
@@ -8027,7 +8032,8 @@ async function runBootAnim(){
   boot.classList.toggle('night', isNight);
   document.getElementById('bootGreeting').textContent = isNight ? cfg.nightText : cfg.dayText;
 
-  document.querySelector('#bootScreen .boot-sub').textContent = cfg.subText || '你的空间已准备好';
+  const sub = document.querySelector('#bootScreen .boot-sub');
+  if(sub) sub.textContent = cfg.subText || '';
 
   setTimeout(() => {
     boot.classList.add('boot-out');
@@ -8038,9 +8044,10 @@ async function runBootAnim(){
   }, cfg.duration || 2200);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('bootScreen')?.classList.add('active');
+  await applyHomeWallBg();
   runBootAnim();
 });
 </script>
