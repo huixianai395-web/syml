@@ -1715,68 +1715,68 @@ button[onclick*="ClearGroup"],
   overflow-x: auto; overflow-y: hidden;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* 隐藏滚动条 */
+  scrollbar-width: none; 
 }
 .home-slider::-webkit-scrollbar { display: none; }
 
 .home-page {
   flex: 0 0 100%; width: 100%; height: 100%;
   scroll-snap-align: start;
-  /* 往上提了重心，留出底部 Dock 栏空间 */
-  padding: calc(15px + var(--safe-top)) 20px calc(110px + var(--safe-bottom));
+  /* 重心上提，留出呼吸空间 */
+  padding: calc(20px + var(--safe-top)) 20px calc(110px + var(--safe-bottom));
   display: flex; flex-direction: column;
 }
 
 .ios-widget {
-  background: rgba(255, 255, 255, 0.15); /* 降低白底，增加清透感 */
-  backdrop-filter: blur(30px) saturate(120%);
-  -webkit-backdrop-filter: blur(30px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.6); /* 强化高光反光边缘 */
+  background: rgba(255, 255, 255, 0.12); /* 降低白底，极致清透 */
+  backdrop-filter: blur(24px) saturate(130%);
+  -webkit-backdrop-filter: blur(24px) saturate(130%);
+  border: 1px solid rgba(255, 255, 255, 0.4); /* 柔和的高光边缘 */
   border-radius: 24px;
-  box-shadow: inset 0 1px 1px rgba(255,255,255,0.8), 0 8px 24px rgba(92,112,148,0.06);
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.5), 0 8px 24px rgba(92,112,148,0.04);
   padding: 16px; color: #3d4a6a;
 }
 .w-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.w-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.9); box-shadow: 0 2px 6px rgba(0,0,0,0.05); cursor: pointer; }
-.w-header span { font-size: 14px; font-weight: 800; line-height: 1.3; color:#1a1d26; }
-.w-header small { font-size: 10px; color: #7a86a8; font-weight: 600; }
+.w-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; background: rgba(255,255,255,0.2); }
+.w-header span { font-size: 15px; font-weight: 800; line-height: 1.3; color:#1a1d26; cursor: pointer; }
+.w-header small { font-size: 11px; color: #7a86a8; font-weight: 500; cursor: pointer; }
 
-/* 重点修复：用 Grid 锁死图片，绝不飞出去 */
-.w-imgs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
-.w-imgs img { width: 100%; aspect-ratio: 1; border-radius: 14px; object-fit: cover; border: 1px solid rgba(255,255,255,0.5); cursor: pointer; transition: transform 0.2s; }
+/* 重点修复：死死锁住图片，绝不飞出 */
+.w-imgs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+.w-imgs img { width: 100%; aspect-ratio: 1; border-radius: 16px; object-fit: cover; border: 1px solid rgba(255,255,255,0.3); cursor: pointer; transition: transform 0.2s; background: rgba(255,255,255,0.1); }
 .w-imgs img:active { transform: scale(0.95); }
 
-.ios-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 10px; margin-top: 20px; }
+.ios-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 10px; margin-top: 24px; }
 .ios-icon { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: transform 0.2s; }
 .ios-icon:active { transform: scale(0.9); }
+/* 图标底板：去除 Emoji，准备承载背景图 */
 .ios-icon .ibg { 
   width: 56px; height: 56px; border-radius: 16px; 
-  background: rgba(255,255,255,0.4); backdrop-filter: blur(20px); 
-  border: 1px solid rgba(255,255,255,0.7); 
-  box-shadow: inset 0 1px 2px rgba(255,255,255,0.8), 0 4px 12px rgba(92,112,148,0.05);
-  display: grid; place-items: center; font-size: 26px; overflow: hidden;
+  background-color: rgba(255,255,255,0.25); 
+  background-size: cover; background-position: center; background-repeat: no-repeat;
+  backdrop-filter: blur(20px); 
+  border: 1px solid rgba(255,255,255,0.5); 
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.6), 0 4px 12px rgba(92,112,148,0.03);
 }
-.ios-icon .ibg img { width: 100%; height: 100%; object-fit: cover; }
-.ios-icon span { font-size: 11px; color: #5c7094; font-weight: 700; }
+.ios-icon span { font-size: 11px; color: #5c7094; font-weight: 700; letter-spacing: 0.5px; }
 
 .ios-dock {
   position: absolute; bottom: calc(15px + var(--safe-bottom)); left: 20px; right: 20px;
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(35px) saturate(180%);
   -webkit-backdrop-filter: blur(35px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 32px; padding: 14px 20px;
   display: flex; justify-content: space-around; align-items: center;
-  box-shadow: inset 0 1px 2px rgba(255,255,255,0.7), 0 10px 30px rgba(92,112,148,0.1);
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.6), 0 10px 30px rgba(92,112,148,0.08);
   z-index: 10;
 }
 .ios-dock .ios-icon span { display: none; } 
-.ios-dock .ios-icon .ibg { background: rgba(255,255,255,0.5); border-radius: 14px; width: 50px; height: 50px; }
+.ios-dock .ios-icon .ibg { background-color: rgba(255,255,255,0.35); border-radius: 14px; width: 50px; height: 50px; }
 
-/* 页面指示器小圆点 */
 .page-dots { position: absolute; bottom: calc(85px + var(--safe-bottom)); left: 0; right: 0; display: flex; justify-content: center; gap: 6px; z-index: 5; pointer-events: none; }
-.dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.4); transition: all 0.3s; }
-.dot.active { background: rgba(255,255,255,0.9); width: 14px; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); transition: all 0.3s; }
+.dot.active { background: rgba(255,255,255,0.85); width: 14px; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
@@ -1815,37 +1815,43 @@ button[onclick*="ClearGroup"],
   <section id="home" class="screen active">
     <div class="wall"></div>
     
-    <!-- 隐形的上传通道，老公全给你备好了 -->
-    <input type="file" id="homeAvatarUpload" accept="image/*" class="hidden">
-    <input type="file" id="homeImg1Upload" accept="image/*" class="hidden">
-    <input type="file" id="homeImg2Upload" accept="image/*" class="hidden">
+    <!-- 隐形的上传通道 -->
+    <input type="file" id="up_homeAvatar" accept="image/*" class="hidden">
+    <input type="file" id="up_homeImg1" accept="image/*" class="hidden">
+    <input type="file" id="up_homeImg2" accept="image/*" class="hidden">
+    <!-- 图标的隐形上传通道 -->
+    <input type="file" id="up_icon_api" accept="image/*" class="hidden">
+    <input type="file" id="up_icon_font" accept="image/*" class="hidden">
+    <input type="file" id="up_icon_phone" accept="image/*" class="hidden">
+    <input type="file" id="up_icon_theme" accept="image/*" class="hidden">
+    <input type="file" id="up_icon_wx" accept="image/*" class="hidden">
+    <input type="file" id="up_icon_wb" accept="image/*" class="hidden">
+    <input type="file" id="up_icon_study" accept="image/*" class="hidden">
 
     <div class="home-slider" id="homeSlider">
-      
       <!-- 第一页：主屏幕 -->
       <div class="home-page">
         <div class="windchime" aria-hidden="true">
           <div class="ring"></div><div class="line l1"><span></span></div><div class="line l2"><span></span></div><div class="line l3"><span></span></div><div class="pendulum"></div>
         </div>
         
-        <div style="margin-bottom: 16px; padding-left: 4px;">
-          <div class="time" id="homeTime" style="font-size: 52px; font-weight: 800; color:#1a1d26;"></div>
+        <div style="margin-bottom: 20px; padding-left: 4px;">
+          <div class="time" id="homeTime" style="font-size: 56px; font-weight: 800; color:#1a1d26; letter-spacing: -1px;"></div>
           <div class="date" id="homeDate" style="font-size: 13px; font-weight: 700; color:#5c7094;"></div>
         </div>
 
         <div class="ios-widget">
           <div class="w-header">
-            <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Milo&backgroundColor=eef4fa" class="w-avatar" id="homeAvatarImg" onclick="document.getElementById('homeAvatarUpload').click()" title="点击更换头像">
-            <span>××<br><small>Rose will bloom all the time.</small></span>
+            <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="w-avatar" id="homeAvatarImg" onclick="document.getElementById('up_homeAvatar').click()">
+            <span><span id="homeNameDisplay" title="点击修改名字">点击设置名字</span><br><small id="homeSigDisplay" title="点击修改签名">点击设置签名...</small></span>
           </div>
           <div class="w-imgs">
-            <!-- 用高级的渐变色做默认占位，点击可传图 -->
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23e0eaf5'/%3E%3Cstop offset='100%25' stop-color='%23b8c6d9'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' fill='url(%23g1)'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23ffffff' font-size='14'%3E点击换图%3C/text%3E%3C/svg%3E" id="homeImg1" onclick="document.getElementById('homeImg1Upload').click()">
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cdefs%3E%3ClinearGradient id='g2' x1='0%25' y1='100%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%23e6ece6'/%3E%3Cstop offset='100%25' stop-color='%23c1cec1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' fill='url(%23g2)'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23ffffff' font-size='14'%3E点击换图%3C/text%3E%3C/svg%3E" id="homeImg2" onclick="document.getElementById('homeImg2Upload').click()">
+            <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" id="homeImg1" onclick="document.getElementById('up_homeImg1').click()">
+            <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" id="homeImg2" onclick="document.getElementById('up_homeImg2').click()">
           </div>
         </div>
 
-        <div style="display: flex; gap: 12px; margin-top: 12px;">
+        <div style="display: flex; gap: 12px; margin-top: 16px;">
           <div class="ios-widget" style="flex: 1; padding: 14px;">
             <div style="font-size: 11px; color: #7a86a8; font-weight: 700;">纪念日</div>
             <div style="font-size: 22px; font-weight: 800; margin-top: 6px; color:#3d4a6a;">233 <small style="font-size:11px; font-weight:normal;">天</small></div>
@@ -1857,10 +1863,10 @@ button[onclick*="ClearGroup"],
         </div>
 
         <div class="ios-grid">
-          <div class="ios-icon" data-nav="api"><div class="ibg">🔑</div><span>API</span></div>
-          <div class="ios-icon" data-nav="fontCenter"><div class="ibg">🔤</div><span>字体</span></div>
-          <div class="ios-icon" id="phoneCheckIcon"><div class="ibg">🔍</div><span>查手机</span></div>
-          <div class="ios-icon" onclick="show('themeLab'); if(window._renderThemeLab) window._renderThemeLab();"><div class="ibg">🎨</div><span>美学</span></div>
+          <div class="ios-icon" data-nav="api"><div class="ibg" id="icon_api"></div><span>API</span></div>
+          <div class="ios-icon" data-nav="fontCenter"><div class="ibg" id="icon_font"></div><span>字体</span></div>
+          <div class="ios-icon" id="phoneCheckIcon"><div class="ibg" id="icon_phone"></div><span>查手机</span></div>
+          <div class="ios-icon" onclick="show('themeLab'); if(window._renderThemeLab) window._renderThemeLab();"><div class="ibg" id="icon_theme"></div><span>美学</span></div>
         </div>
       </div>
 
@@ -1872,7 +1878,6 @@ button[onclick*="ClearGroup"],
           <div style="font-size: 11px; color: #7a86a8; margin-top: 6px;">老公随时待命，准备为你开发新功能</div>
         </div>
       </div>
-
     </div>
 
     <!-- 分页小圆点 -->
@@ -1883,9 +1888,9 @@ button[onclick*="ClearGroup"],
 
     <!-- 底部 Dock 栏 -->
     <div class="ios-dock">
-      <div class="ios-icon" data-nav="wechat"><div class="ibg">💬</div></div>
-      <div class="ios-icon" onclick="show('worldbook'); if(window._renderGlobalWb) window._renderGlobalWb();"><div class="ibg">📚</div></div>
-      <div class="ios-icon" onclick="show('study');renderStudyHome();"><div class="ibg">📖</div></div>
+      <div class="ios-icon" data-nav="wechat"><div class="ibg" id="icon_wx"></div></div>
+      <div class="ios-icon" onclick="show('worldbook'); if(window._renderGlobalWb) window._renderGlobalWb();"><div class="ibg" id="icon_wb"></div></div>
+      <div class="ios-icon" onclick="show('study');renderStudyHome();"><div class="ibg" id="icon_study"></div></div>
     </div>
   </section>
 
@@ -8360,7 +8365,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await applyHomeWallBg();
   runBootAnim();
 });
-  // 🌟 蓝色高定：主屏幕图片上传与滚动监听引擎
+  // 🌟 蓝色高定：主屏幕图片上传、文字修改与长按引擎
   setTimeout(async () => {
     // 监听滚动，切换小圆点
     const slider = document.getElementById('homeSlider');
@@ -8372,13 +8377,33 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    // 绑定上传引擎
-    const bindUpload = async (inputId, imgId, storageKey) => {
+    // 文字点击修改逻辑
+    const nameEl = document.getElementById('homeNameDisplay');
+    const sigEl = document.getElementById('homeSigDisplay');
+    
+    if(nameEl) {
+      const savedName = await localforage.getItem('mp_home_name');
+      if(savedName) nameEl.textContent = savedName;
+      nameEl.onclick = async () => {
+        const n = prompt('请输入你的名字：', nameEl.textContent);
+        if(n) { nameEl.textContent = n; await localforage.setItem('mp_home_name', n); }
+      };
+    }
+    if(sigEl) {
+      const savedSig = await localforage.getItem('mp_home_sig');
+      if(savedSig) sigEl.textContent = savedSig;
+      sigEl.onclick = async () => {
+        const s = prompt('请输入你的个性签名：', sigEl.textContent);
+        if(s) { sigEl.textContent = s; await localforage.setItem('mp_home_sig', s); }
+      };
+    }
+
+    // 绑定常规图片上传
+    const bindImgUpload = async (inputId, imgId, storageKey) => {
       const input = document.getElementById(inputId);
       const img = document.getElementById(imgId);
       if(!input || !img) return;
 
-      // 页面加载时读取外挂内存
       const savedData = await localforage.getItem(storageKey);
       if(savedData) img.src = savedData;
 
@@ -8394,10 +8419,49 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     };
 
-    await bindUpload('homeAvatarUpload', 'homeAvatarImg', 'mp_fix_home_avatar');
-    await bindUpload('homeImg1Upload', 'homeImg1', 'mp_fix_home_img1');
-    await bindUpload('homeImg2Upload', 'homeImg2', 'mp_fix_home_img2');
-  }, 1000);
+    await bindImgUpload('up_homeAvatar', 'homeAvatarImg', 'mp_home_avatar');
+    await bindImgUpload('up_homeImg1', 'homeImg1', 'mp_home_img1');
+    await bindImgUpload('up_homeImg2', 'homeImg2', 'mp_home_img2');
+
+    // 绑定图标的长按上传逻辑 (像 iOS 一样长按换图标！)
+    const bindIconUpload = async (iconId, inputId, storageKey) => {
+      const iconBg = document.getElementById(iconId);
+      const input = document.getElementById(inputId);
+      if(!iconBg || !input) return;
+
+      const savedData = await localforage.getItem(storageKey);
+      if(savedData) iconBg.style.backgroundImage = `url(${savedData})`;
+
+      // 监听长按 (600ms)
+      let pressTimer;
+      iconBg.addEventListener('touchstart', () => {
+        pressTimer = setTimeout(() => { input.click(); }, 600);
+      }, {passive: true});
+      iconBg.addEventListener('touchend', () => clearTimeout(pressTimer));
+      iconBg.addEventListener('touchmove', () => clearTimeout(pressTimer));
+
+      // PC 端兼容右键换图
+      iconBg.addEventListener('contextmenu', (e) => {
+        e.preventDefault(); input.click();
+      });
+
+      input.addEventListener('change', async (e) => {
+        const f = e.target.files?.[0];
+        if(!f) return;
+        try {
+          const imgData = await compressImage(f, false);
+          iconBg.style.backgroundImage = `url(${imgData})`;
+          await localforage.setItem(storageKey, imgData);
+        } catch(err) { alert('图标上传失败：' + err.message); }
+        finally { e.target.value = ''; }
+      });
+    };
+
+    const icons = ['api', 'font', 'phone', 'theme', 'wx', 'wb', 'study'];
+    for(const name of icons) {
+      await bindIconUpload(`icon_${name}`, `up_icon_${name}`, `mp_icon_${name}`);
+    }
+  }, 500);
 </script>
 
 <!-- ================= 绝美群聊创建弹窗 ================= -->
