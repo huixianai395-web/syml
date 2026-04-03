@@ -1709,7 +1709,183 @@ button[onclick*="ClearGroup"],
     filter:blur(6px);
   }
 }
+    .home-shell{
+  padding:calc(14px + var(--safe-top)) 12px calc(18px + var(--safe-bottom));
+  overflow:hidden;
+}
+
+.home-topbar{
+  position:relative;
+  z-index:2;
+  margin-bottom:8px;
+}
+.home-topbar .date{
+  font-size:14px;
+  color:rgba(255,255,255,.95);
+}
+.home-topbar .time{
+  font-size:60px;
+  line-height:1;
+  font-weight:780;
+  letter-spacing:-2px;
+  color:#fff;
+  text-shadow:0 4px 18px rgba(0,0,0,.10);
+  margin-top:4px;
+}
+
+.home-pager{
+  position:relative;
+  z-index:2;
+  display:flex;
+  width:300%;
+  height:calc(100% - 120px);
+  transition:transform .35s cubic-bezier(.22,.78,.16,1);
+}
+.home-page{
+  width:33.3333%;
+  flex-shrink:0;
+  padding:0 2px;
+}
+
+.home-maincard,
+.home-subcard{
+  width:100%;
+  background:rgba(255,255,255,.30);
+  border:1px solid rgba(255,255,255,.46);
+  border-radius:28px;
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  box-shadow:0 8px 24px rgba(92,112,148,.08);
+  overflow:hidden;
+}
+.home-maincard{
+  padding:0 16px 18px;
+}
+.home-banner{
+  height:82px;
+  margin:0 -16px;
+  background:linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.06));
+}
+.home-avatar-wrap{
+  margin-top:-34px;
+  display:flex;
+  justify-content:center;
+}
+.home-center-avatar{
+  width:78px;
+  height:78px;
+  border-radius:50%;
+  object-fit:cover;
+  background:#eef4fa;
+  border:3px solid rgba(255,255,255,.90);
+  box-shadow:0 6px 18px rgba(92,112,148,.10);
+  cursor:pointer;
+}
+.home-center-name{
+  margin-top:10px;
+  text-align:center;
+  font-size:22px;
+  font-weight:800;
+  color:#3d4a6a;
+}
+.home-center-sub{
+  margin-top:6px;
+  text-align:center;
+  font-size:12px;
+  color:#7a86a8;
+  line-height:1.5;
+}
+.home-center-tag{
+  width:max-content;
+  max-width:100%;
+  margin:10px auto 0;
+  padding:5px 12px;
+  font-size:11px;
+  color:#5c7094;
+  background:rgba(255,255,255,.50);
+  border:1px solid rgba(255,255,255,.72);
+  border-radius:999px;
+}
+
+.home-grid{
+  margin-top:18px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px 12px;
+}
+.home-app{
+  text-align:center;
+  cursor:pointer;
+}
+.home-app-icon{
+  width:64px;
+  height:64px;
+  margin:0 auto 6px;
+  border-radius:20px;
+  background:rgba(255,255,255,.28);
+  border:1px solid rgba(255,255,255,.42);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  box-shadow:0 6px 18px rgba(92,112,148,.06);
+  display:grid;
+  place-items:center;
+  color:#5c7094;
+  font-size:26px;
+}
+.home-app-label{
+  font-size:12px;
+  color:#fff;
+  text-shadow:0 1px 4px rgba(0,0,0,.14);
+}
+
+.home-subcard{
+  padding:18px 16px;
+}
+.home-subtitle{
+  font-size:18px;
+  font-weight:800;
+  color:#3d4a6a;
+}
+.home-subdesc{
+  margin-top:8px;
+  font-size:12px;
+  color:#7a86a8;
+  line-height:1.6;
+}
+.home-empty-card{
+  min-height:170px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+.home-dots{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:calc(18px + var(--safe-bottom));
+  z-index:3;
+  display:flex;
+  justify-content:center;
+  gap:8px;
+}
+.home-dots span{
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background:rgba(255,255,255,.45);
+  transition:all .25s ease;
+}
+.home-dots span.active{
+  width:20px;
+  background:rgba(255,255,255,.92);
+}
+
+#home .windchime{
+  z-index:5;
+}
   </style>
+  
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
 </head>
@@ -1745,36 +1921,101 @@ button[onclick*="ClearGroup"],
   </div>
 </section>
   <section id="home" class="screen active">
-    <div class="wall"></div>
-    <div class="home-layer">
-      <div class="windchime" aria-hidden="true">
-        <div class="ring"></div><div class="line l1"><span></span></div><div class="line l2"><span></span></div><div class="line l3"><span></span></div><div class="pendulum"></div>
-      </div>
-      <div class="date" id="homeDate"></div><div class="time" id="homeTime"></div>
-      <div class="widgets">
-        <div class="widget"><div class="t">纪念日</div><div class="v">第 233 天</div></div>
-        <div class="widget"><div class="t">天气</div><div class="v">22°C 晴</div></div>
-      </div>
-      <div class="grid">
-        <div class="icon" data-nav="wechat"><div class="ibox">💬</div><div class="lab">微信</div></div>
-        <div class="icon" data-nav="api"><div class="ibox">🔑</div><div class="lab">API</div></div>
-        <div class="icon" data-nav="fontCenter"><div class="ibox">🔤</div><div class="lab">字体</div></div>
-        <div class="icon" id="phoneCheckIcon"><div class="ibox">🔍</div><div class="lab">查手机</div></div>
-        <div class="icon" onclick="show('worldbook'); if(window._renderGlobalWb) window._renderGlobalWb();"><div class="ibox">📚</div><div class="lab">世界书</div></div>
-        <div class="icon" onclick="show('study');renderStudyHome();">
-          <div class="ibox ibox-book">📖</div>
-          <div class="lab">书房</div>
+  <div class="wall"></div>
+
+  <div class="home-layer home-shell">
+    <div class="windchime" aria-hidden="true">
+      <div class="ring"></div>
+      <div class="line l1"><span></span></div>
+      <div class="line l2"><span></span></div>
+      <div class="line l3"><span></span></div>
+      <div class="pendulum"></div>
+    </div>
+
+    <div class="home-topbar">
+      <div class="date" id="homeDate"></div>
+      <div class="time" id="homeTime"></div>
+    </div>
+
+    <div id="homePager" class="home-pager">
+      <div class="home-page">
+        <div class="home-maincard">
+          <div class="home-banner"></div>
+
+          <div class="home-avatar-wrap">
+            <img id="homeCenterAvatar" class="home-center-avatar" src="https://via.placeholder.com/120" alt="avatar">
+            <input type="file" id="homeCenterAvatarFile" accept="image/*" class="hidden">
+          </div>
+
+          <div id="homeCenterName" class="home-center-name">弥洛</div>
+          <div id="homeCenterSub" class="home-center-sub">快去过闪闪发光的一天</div>
+          <div id="homeCenterTag" class="home-center-tag">今日状态：心情晴朗</div>
         </div>
-        <div class="icon" onclick="show('themeLab'); if(window._renderThemeLab) window._renderThemeLab();">
-  <div class="ibox" style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.4); backdrop-filter:blur(12px);">
-    <svg viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#ffffff; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
-      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
-    </svg>
-  </div>
-  <div class="lab" style="color:#ffffff; text-shadow:0 1px 4px rgba(0,0,0,0.2);">美学实验</div>
+
+        <div class="home-grid">
+          <div class="home-app" data-nav="wechat">
+            <div class="home-app-icon" id="iconWechat"></div>
+            <div class="home-app-label">微信</div>
+          </div>
+          <div class="home-app" data-nav="api">
+            <div class="home-app-icon" id="iconApi"></div>
+            <div class="home-app-label">API</div>
+          </div>
+          <div class="home-app" data-nav="fontCenter">
+            <div class="home-app-icon" id="iconFont"></div>
+            <div class="home-app-label">字体</div>
+          </div>
+          <div class="home-app" id="homeCheckPhoneBtn">
+            <div class="home-app-icon" id="iconSearch"></div>
+            <div class="home-app-label">查手机</div>
+          </div>
+          <div class="home-app" onclick="show('worldbook'); if(window._renderGlobalWb) window._renderGlobalWb();">
+            <div class="home-app-icon" id="iconBook"></div>
+            <div class="home-app-label">世界书</div>
+          </div>
+          <div class="home-app" onclick="show('study');renderStudyHome();">
+            <div class="home-app-icon" id="iconStudy"></div>
+            <div class="home-app-label">书房</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="home-page">
+        <div class="home-subcard">
+          <div class="home-subtitle">扩展功能</div>
+          <div class="home-subdesc">后面新功能继续往这里放，首页就不会挤乱。</div>
+        </div>
+
+        <div class="home-grid">
+          <div class="home-app" onclick="show('themeLab'); if(window._renderThemeLab) window._renderThemeLab();">
+            <div class="home-app-icon" id="iconTheme"></div>
+            <div class="home-app-label">美学实验</div>
+          </div>
+          <div class="home-app" onclick="show('favorites')">
+            <div class="home-app-icon" id="iconFav"></div>
+            <div class="home-app-label">珍藏馆</div>
+          </div>
+          <div class="home-app" onclick="show('chatSetting')">
+            <div class="home-app-icon" id="iconSetting"></div>
+            <div class="home-app-label">聊天设置</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="home-page">
+        <div class="home-subcard home-empty-card">
+          <div class="home-subtitle">第三页预留</div>
+          <div class="home-subdesc">以后要加新功能、收藏入口、快捷页，都可以继续长在这里。</div>
         </div>
       </div>
     </div>
+
+    <div class="home-dots" id="homeDots">
+      <span class="active"></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
   </section>
 
 <!-- ================= 安全升级版：真·微信主界面 ================= -->
@@ -8248,6 +8489,149 @@ document.addEventListener('DOMContentLoaded', async () => {
   await applyHomeWallBg();
   runBootAnim();
 });
+  (function(){
+  const K_HOME_UI = 'mp_fix_home_ui_v1';
+
+  async function getHomeUiCfg(){
+    return (await localforage.getItem(K_HOME_UI)) || {
+      name:'弥洛',
+      sub:'快去过闪闪发光的一天',
+      tag:'今日状态：心情晴朗',
+      avatar:''
+    };
+  }
+
+  async function setHomeUiCfg(v){
+    await localforage.setItem(K_HOME_UI, v);
+  }
+
+  function setHomeIcon(id, svg){
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = svg;
+  }
+
+  function applyHomeIcons(){
+    const common = 'style="width:28px;height:28px;stroke:#5c7094;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;"';
+
+    setHomeIcon('iconWechat', `<svg viewBox="0 0 24 24" ${common}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`);
+    setHomeIcon('iconApi', `<svg viewBox="0 0 24 24" ${common}><circle cx="7" cy="12" r="2"></circle><circle cx="17" cy="7" r="2"></circle><circle cx="17" cy="17" r="2"></circle><path d="M9 12h6M15.5 8.5l-5 3M15.5 15.5l-5-3"></path></svg>`);
+    setHomeIcon('iconFont', `<svg viewBox="0 0 24 24" ${common}><path d="M4 20h16"></path><path d="M8 20V6l4-2 4 2v14"></path><path d="M8 14h8"></path></svg>`);
+    setHomeIcon('iconSearch', `<svg viewBox="0 0 24 24" ${common}><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>`);
+    setHomeIcon('iconBook', `<svg viewBox="0 0 24 24" ${common}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>`);
+    setHomeIcon('iconStudy', `<svg viewBox="0 0 24 24" ${common}><path d="M12 6v15"></path><path d="M3 7.5C3 6.12 4.12 5 5.5 5H12v15H5.5A2.5 2.5 0 0 1 3 17.5v-10z"></path><path d="M21 7.5C21 6.12 19.88 5 18.5 5H12v15h6.5A2.5 2.5 0 0 0 21 17.5v-10z"></path></svg>`);
+    setHomeIcon('iconTheme', `<svg viewBox="0 0 24 24" ${common}><path d="M12 3a9 9 0 1 0 9 9c0-.6-.4-1-1-1h-2a2 2 0 0 1-2-2c0-1.1.9-2 2-2h1c.6 0 1-.4 1-1A9 9 0 0 0 12 3z"></path><circle cx="7.5" cy="10.5" r="1"></circle><circle cx="12" cy="7.5" r="1"></circle><circle cx="16.5" cy="10.5" r="1"></circle></svg>`);
+    setHomeIcon('iconFav', `<svg viewBox="0 0 24 24" ${common}><path d="M12 21s-6.7-4.35-9.33-8.06C.8 10.2 2.08 6.5 5.8 5.62A5.23 5.23 0 0 1 12 8.09a5.23 5.23 0 0 1 6.2-2.47c3.72.88 5 4.58 3.13 7.32C18.7 16.65 12 21 12 21z"></path></svg>`);
+    setHomeIcon('iconSetting', `<svg viewBox="0 0 24 24" ${common}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 1-3 0 1.65 1.65 0 0 0-1-.6 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 1 0-3 1.65 1.65 0 0 0 .6-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 1 3 0 1.65 1.65 0 0 0 1 .6 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c0 .39.14.76.4 1a1.65 1.65 0 0 1 0 3c-.26.24-.4.61-.4 1z"></path></svg>`);
+  }
+
+  async function applyHomeCard(){
+    const cfg = await getHomeUiCfg();
+    const me = getMe ? getMe() : {name:'弥洛',avatar:''};
+
+    document.getElementById('homeCenterName').textContent = cfg.name || me.name || '弥洛';
+    document.getElementById('homeCenterSub').textContent = cfg.sub || '快去过闪闪发光的一天';
+    document.getElementById('homeCenterTag').textContent = cfg.tag || '今日状态：心情晴朗';
+    document.getElementById('homeCenterAvatar').src = cfg.avatar || me.avatar || 'https://via.placeholder.com/120';
+  }
+
+  function initHomePager(){
+    const pager = document.getElementById('homePager');
+    const dots = document.querySelectorAll('#homeDots span');
+    if(!pager) return;
+
+    let page = 0;
+    let sx = 0, sy = 0;
+    let moving = false;
+
+    function go(n){
+      page = Math.max(0, Math.min(2, n));
+      pager.style.transform = `translateX(-${page * 33.3333}%)`;
+      dots.forEach((d,i)=>d.classList.toggle('active', i === page));
+    }
+
+    pager.addEventListener('touchstart', (e)=>{
+      const t = e.touches[0];
+      sx = t.clientX;
+      sy = t.clientY;
+      moving = true;
+    }, {passive:true});
+
+    pager.addEventListener('touchend', (e)=>{
+      if(!moving) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - sx;
+      const dy = t.clientY - sy;
+      moving = false;
+
+      if(Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)){
+        if(dx < 0) go(page + 1);
+        else go(page - 1);
+      }
+    }, {passive:true});
+
+    go(0);
+  }
+
+  function bindHomeNav(){
+    document.querySelectorAll('#home [data-nav]').forEach(el=>{
+      el.onclick = () => {
+        const to = el.getAttribute('data-nav');
+        if(to) show(to);
+      };
+    });
+
+    const btn = document.getElementById('homeCheckPhoneBtn');
+    if(btn){
+      btn.onclick = () => {
+        const old = document.getElementById('phoneCheckIcon');
+        if(old) old.click();
+      };
+    }
+  }
+
+  function bindHomeAvatar(){
+    const avatar = document.getElementById('homeCenterAvatar');
+    const file = document.getElementById('homeCenterAvatarFile');
+    if(!avatar || !file) return;
+
+    avatar.onclick = () => file.click();
+
+    file.onchange = async (e)=>{
+      const f = e.target.files?.[0];
+      if(!f) return;
+      try{
+        const dataUrl = await compressImage(f);
+        const cfg = await getHomeUiCfg();
+        cfg.avatar = dataUrl;
+        await setHomeUiCfg(cfg);
+
+        const me = getMe();
+        me.avatar = dataUrl;
+        setMe(me);
+
+        avatar.src = dataUrl;
+
+        const mePageAvatar = document.getElementById('mePageAvatar');
+        if(mePageAvatar) mePageAvatar.src = dataUrl;
+
+        const momentsMyAvatar = document.getElementById('momentsMyAvatar');
+        if(momentsMyAvatar) momentsMyAvatar.src = dataUrl;
+      }catch(err){
+        alert('头像上传失败：' + err.message);
+      }finally{
+        e.target.value = '';
+      }
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', async ()=>{
+    applyHomeIcons();
+    await applyHomeCard();
+    initHomePager();
+    bindHomeNav();
+    bindHomeAvatar();
+  });
+})();
 </script>
 
 <!-- ================= 绝美群聊创建弹窗 ================= -->
