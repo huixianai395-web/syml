@@ -1473,38 +1473,56 @@ button[onclick*="ClearGroup"],
 <body>
 <div id="app">
 
-  <section id="home" class="screen active">
-    <div class="wall"></div>
-    <div class="home-layer">
-      <div class="windchime" aria-hidden="true">
-        <div class="ring"></div><div class="line l1"><span></span></div><div class="line l2"><span></span></div><div class="line l3"><span></span></div><div class="pendulum"></div>
-      </div>
-      <div class="date" id="homeDate"></div><div class="time" id="homeTime"></div>
-      <div class="widgets">
-        <div class="widget"><div class="t">纪念日</div><div class="v">第 233 天</div></div>
-        <div class="widget"><div class="t">天气</div><div class="v">22°C 晴</div></div>
-      </div>
-      <div class="grid">
-        <div class="icon" data-nav="wechat"><div class="ibox">💬</div><div class="lab">微信</div></div>
-        <div class="icon" data-nav="api"><div class="ibox">🔑</div><div class="lab">API</div></div>
-        <div class="icon" data-nav="fontCenter"><div class="ibox">🔤</div><div class="lab">字体</div></div>
-        <div class="icon" id="phoneCheckIcon"><div class="ibox">🔍</div><div class="lab">查手机</div></div>
-        <div class="icon" onclick="show('worldbook'); if(window._renderGlobalWb) window._renderGlobalWb();"><div class="ibox">📚</div><div class="lab">世界书</div></div>
-        <div class="icon" onclick="show('study');renderStudyHome();">
-          <div class="ibox ibox-book">📖</div>
-          <div class="lab">书房</div>
-        </div>
-        <div class="icon" onclick="show('themeLab'); if(window._renderThemeLab) window._renderThemeLab();">
-  <div class="ibox" style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.4); backdrop-filter:blur(12px);">
-    <svg viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#ffffff; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
-      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
-    </svg>
-  </div>
-  <div class="lab" style="color:#ffffff; text-shadow:0 1px 4px rgba(0,0,0,0.2);">美学实验</div>
-        </div>
-      </div>
+<!-- 🌊 蓝色高定：主权级桌面 V3.0 (翻页+自定义图标+主权卡片) -->
+<section id="home" class="screen active">
+  <div class="wall"></div>
+  <div class="home-layer" style="padding-top:calc(16px + var(--safe-top));">
+    <!-- 风铃保留 -->
+    <div class="windchime" aria-hidden="true">
+      <div class="ring"></div><div class="line l1"><span></span></div><div class="line l2"><span></span></div><div class="line l3"><span></span></div><div class="pendulum"></div>
     </div>
-  </section>
+
+    <!-- 极简时间 (让位给主权卡片) -->
+    <div style="padding: 0 16px; margin-bottom: 16px; display:flex; align-items:baseline; gap:12px;">
+      <div class="time" id="homeTime" style="font-size:48px; line-height:1; letter-spacing:-1px;"></div>
+      <div class="date" id="homeDate" style="font-size:14px; opacity:0.85;"></div>
+    </div>
+
+    <!-- 👑 核心：主权宣誓卡片 -->
+    <div id="sovereigntyCard" style="margin: 0 16px 24px; background:rgba(255,255,255,0.15); backdrop-filter:blur(24px) saturate(150%); -webkit-backdrop-filter:blur(24px) saturate(150%); border:1px solid rgba(255,255,255,0.4); border-radius:24px; padding:18px; display:flex; align-items:center; gap:16px; box-shadow:inset 0 0 20px rgba(255,255,255,0.1), 0 8px 32px rgba(92,112,148,0.05); cursor:pointer; transition:transform 0.2s;" onclick="window._editSovereignty()" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
+      <img id="sovAvatar" src="https://via.placeholder.com/120" style="width:64px; height:64px; border-radius:20px; object-fit:cover; border:2px solid rgba(255,255,255,0.8); box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+      <div style="flex:1; min-width:0;">
+        <div id="sovName" style="font-size:18px; font-weight:800; color:#ffffff; text-shadow:0 1px 4px rgba(0,0,0,0.15); margin-bottom:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">弥洛的专属设备</div>
+        <div id="sovSign" style="font-size:12px; color:rgba(255,255,255,0.9); line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">「禁止触碰。这里是我的绝对领域。」</div>
+      </div>
+      <div style="color:rgba(255,255,255,0.5); font-size:24px;">›</div>
+    </div>
+
+    <!-- 📱 桌面图标翻页容器 -->
+    <div class="app-swiper" id="appSwiper" style="flex:1; display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; -webkit-overflow-scrolling:touch;" onscroll="window._updateAppPager()">
+      <!-- JS 将在这里渲染图标 -->
+    </div>
+    
+    <!-- 翻页指示器 -->
+    <div id="appPager" style="display:flex; justify-content:center; gap:8px; padding-bottom:calc(20px + var(--safe-bottom));"></div>
+  </div>
+  
+  <!-- 隐形上传通道 -->
+  <input type="file" id="sovAvatarUpload" accept="image/*" class="hidden">
+  <input type="file" id="customIconUpload" accept="image/*" class="hidden">
+</section>
+
+<!-- 🌟 桌面专属 CSS 补丁 -->
+<style>
+  .app-swiper::-webkit-scrollbar { display: none; }
+  .app-page { min-width: 100%; scroll-snap-align: start; padding: 0 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px 14px; align-content: start; }
+  #home .icon { text-align: center; cursor: pointer; position: relative; }
+  #home .ibox { width: 68px; height: 68px; margin: 0 auto 8px; border-radius: 20px; display: grid; place-items: center; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 8px 24px rgba(0,0,0,0.05); transition: transform 0.15s ease; overflow: hidden; }
+  #home .icon:active .ibox { transform: scale(0.88); }
+  #home .lab { font-size: 13px; font-weight: 600; text-shadow: 0 1px 4px rgba(0,0,0,0.25); color: #fff; }
+  .pager-dot { width: 6px; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.3); transition: all 0.3s ease; }
+  .pager-dot.active { width: 16px; background: #ffffff; box-shadow: 0 0 8px rgba(255,255,255,0.5); }
+               </style>
 
 <!-- ================= 安全升级版：真·微信主界面 ================= -->
   <section id="wechat" class="screen">
@@ -7899,6 +7917,150 @@ window.renderNotesList = function(){
     window._applyAllThemes();
     window._renderThemePresets();
   }, 500);
+})();
+  // ================= 👑 蓝色独家：主权宣誓与桌面引擎 =================
+(function() {
+  const K_SOV = 'mp_fix_sovereignty';
+  const K_ICONS = 'mp_fix_custom_icons';
+  
+  // 默认应用列表与纯净 SVG 图标
+  const APPS = [
+    { id: 'wechat', name: '微信', nav: 'wechat', svg: '<svg viewBox="0 0 24 24" style="width:32px;height:32px;stroke:#fff;fill:none;stroke-width:1.5;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>' },
+    { id: 'api', name: 'API', nav: 'api', svg: '<svg viewBox="0 0 24 24" style="width:32px;height:32px;stroke:#fff;fill:none;stroke-width:1.5;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>' },
+    { id: 'fontCenter', name: '字体', nav: 'fontCenter', svg: '<svg viewBox="0 0 24 24" style="width:32px;height:32px;stroke:#fff;fill:none;stroke-width:1.5;"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg>' },
+    { id: 'phoneCheck', name: '查手机', nav: 'phoneCheckIcon', svg: '<svg viewBox="0 0 24 24" style="width:32px;height:32px;stroke:#fff;fill:none;stroke-width:1.5;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>' },
+    { id: 'worldbook', name: '世界书', action: "show('worldbook'); if(window._renderGlobalWb) window._renderGlobalWb();", svg: '<svg viewBox="0 0 24 24" style="width:32px;height:32px;stroke:#fff;fill:none;stroke-width:1.5;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>' },
+    { id: 'study', name: '书房', action: "show('study');renderStudyHome();", svg: '<svg viewBox="0 0 24 24" style="width:32px;height:32px;stroke:#fff;fill:none;stroke-width:1.5;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>' },
+    { id: 'themeLab', name: '美学实验', action: "show('themeLab'); if(window._renderThemeLab) window._renderThemeLab();", svg: '<svg viewBox="0 0 24 24" style="width:32px;height:32px;stroke:#fff;fill:none;stroke-width:1.5;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>' }
+  ];
+
+  // 1. 主权卡片逻辑
+  async function renderSovereignty() {
+    const data = (await localforage.getItem(K_SOV)) || { name: '弥洛的专属设备', sign: '「禁止触碰。这里是我的绝对领域。」', avatar: 'https://via.placeholder.com/120' };
+    document.getElementById('sovName').textContent = data.name;
+    document.getElementById('sovSign').textContent = data.sign;
+    document.getElementById('sovAvatar').src = data.avatar;
+  }
+
+  window._editSovereignty = async function() {
+    const data = (await localforage.getItem(K_SOV)) || { name: '弥洛的专属设备', sign: '「禁止触碰。这里是我的绝对领域。」', avatar: '' };
+    const newName = prompt('宣告你的主权名称：', data.name);
+    if(newName === null) return;
+    const newSign = prompt('写下你的专属签名：', data.sign);
+    if(newSign === null) return;
+    
+    if(confirm('需要更换专属头像吗？(取消则只保存文字)')) {
+      document.getElementById('sovAvatarUpload').click();
+      document.getElementById('sovAvatarUpload').onchange = async (e) => {
+        const f = e.target.files?.[0];
+        if(f) {
+          try {
+            data.avatar = await compressImage(f, false);
+          } catch(err) { alert('头像压缩失败'); }
+        }
+        data.name = newName; data.sign = newSign;
+        await localforage.setItem(K_SOV, data);
+        renderSovereignty();
+        e.target.value = '';
+      };
+    } else {
+      data.name = newName; data.sign = newSign;
+      await localforage.setItem(K_SOV, data);
+      renderSovereignty();
+    }
+  };
+
+  // 2. 桌面图标渲染与滑动逻辑
+  window._renderHomeApps = async function() {
+    const customIcons = (await localforage.getItem(K_ICONS)) || {};
+    const swiper = document.getElementById('appSwiper');
+    const pager = document.getElementById('appPager');
+    
+    // 一页最多放 8 个图标 (2行4列)
+    const PAGE_SIZE = 8;
+    const pagesCount = Math.ceil(APPS.length / PAGE_SIZE);
+    
+    let html = '';
+    for(let p = 0; p < pagesCount; p++) {
+      html += `<div class="app-page">`;
+      const pageApps = APPS.slice(p * PAGE_SIZE, (p + 1) * PAGE_SIZE);
+      pageApps.forEach(app => {
+        const iconContent = customIcons[app.id] 
+          ? `<img src="${customIcons[app.id]}" style="width:100%; height:100%; object-fit:cover; border-radius:20px;">` 
+          : app.svg;
+        
+        const clickAction = app.action ? app.action : `show('${app.nav}')`;
+        
+        html += `
+          <div class="icon" 
+               onclick="if(!window._isLongPressing) { ${clickAction} }" 
+               ontouchstart="window._iconTouchStart('${app.id}')" 
+               ontouchend="window._iconTouchEnd()" 
+               oncontextmenu="event.preventDefault(); window._changeAppIcon('${app.id}')">
+            <div class="ibox">${iconContent}</div>
+            <div class="lab">${app.name}</div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+    }
+    
+    swiper.innerHTML = html;
+    pager.innerHTML = Array(pagesCount).fill(0).map((_, i) => `<div class="pager-dot ${i===0 ? 'active' : ''}" id="dot_${i}"></div>`).join('');
+  };
+
+  // 翻页点点联动
+  window._updateAppPager = function() {
+    const swiper = document.getElementById('appSwiper');
+    const pageIndex = Math.round(swiper.scrollLeft / swiper.clientWidth);
+    document.querySelectorAll('.pager-dot').forEach((dot, i) => {
+      dot.classList.toggle('active', i === pageIndex);
+    });
+  };
+
+  // 3. 长按更换图标魔法
+  let touchTimer = null;
+  window._isLongPressing = false;
+
+  window._iconTouchStart = function(appId) {
+    window._isLongPressing = false;
+    touchTimer = setTimeout(() => {
+      window._isLongPressing = true;
+      window._changeAppIcon(appId);
+    }, 600); // 长按 600ms 触发
+  };
+
+  window._iconTouchEnd = function() {
+    clearTimeout(touchTimer);
+    setTimeout(() => { window._isLongPressing = false; }, 100);
+  };
+
+  window._changeAppIcon = async function(appId) {
+    if(!confirm('宝宝，要为这个 App 换上你自定义的绝美图标吗？\n(支持透明底 PNG 哦！)')) return;
+    
+    const input = document.getElementById('customIconUpload');
+    input.click();
+    input.onchange = async (e) => {
+      const f = e.target.files?.[0];
+      if(!f) return;
+      try {
+        const imgData = await compressImage(f, false);
+        const customIcons = (await localforage.getItem(K_ICONS)) || {};
+        customIcons[appId] = imgData;
+        await localforage.setItem(K_ICONS, customIcons);
+        window._renderHomeApps();
+        alert('自定义图标更换成功！外挂内存已永久保存！');
+      } catch(err) { alert('图片处理失败了宝宝'); }
+      finally { e.target.value = ''; }
+    };
+  };
+
+  // 初始化
+  setTimeout(() => {
+    renderSovereignty();
+    window._renderHomeApps();
+  }, 500);
+
 })();
 </script>
 
