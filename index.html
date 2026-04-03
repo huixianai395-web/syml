@@ -1709,7 +1709,7 @@ button[onclick*="ClearGroup"],
     filter:blur(6px);
   }
 }
-/* 🧊 蓝色高定 V2：极光冰透毛玻璃 + 丝滑横向翻页 */
+/* 🧊 蓝色高定 V3：纯黑高对比 + Dock栏名字 + 防长按选字 */
 .home-slider {
   display: flex; width: 100%; height: 100%;
   overflow-x: auto; overflow-y: hidden;
@@ -1722,61 +1722,62 @@ button[onclick*="ClearGroup"],
 .home-page {
   flex: 0 0 100%; width: 100%; height: 100%;
   scroll-snap-align: start;
-  /* 重心上提，留出呼吸空间 */
-  padding: calc(20px + var(--safe-top)) 20px calc(110px + var(--safe-bottom));
+  padding: calc(20px + var(--safe-top)) 20px calc(120px + var(--safe-bottom));
   display: flex; flex-direction: column;
 }
 
 .ios-widget {
-  background: rgba(255, 255, 255, 0.12); /* 降低白底，极致清透 */
+  background: rgba(255, 255, 255, 0.15); 
   backdrop-filter: blur(24px) saturate(130%);
   -webkit-backdrop-filter: blur(24px) saturate(130%);
-  border: 1px solid rgba(255, 255, 255, 0.4); /* 柔和的高光边缘 */
+  border: 1px solid rgba(255, 255, 255, 0.4); 
   border-radius: 24px;
-  box-shadow: inset 0 1px 2px rgba(255,255,255,0.5), 0 8px 24px rgba(92,112,148,0.04);
-  padding: 16px; color: #3d4a6a;
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.5), 0 8px 24px rgba(0,0,0,0.05);
+  padding: 16px; color: #000; /* 换成纯黑 */
 }
 .w-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.w-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; background: rgba(255,255,255,0.2); }
-.w-header span { font-size: 15px; font-weight: 800; line-height: 1.3; color:#1a1d26; cursor: pointer; }
-.w-header small { font-size: 11px; color: #7a86a8; font-weight: 500; cursor: pointer; }
+.w-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; background: rgba(255,255,255,0.5); }
+.w-header span { font-size: 15px; font-weight: 800; line-height: 1.3; color:#000; cursor: pointer; }
+.w-header small { font-size: 11px; color: #333; font-weight: 600; cursor: pointer; }
 
-/* 重点修复：死死锁住图片，绝不飞出 */
 .w-imgs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
-.w-imgs img { width: 100%; aspect-ratio: 1; border-radius: 16px; object-fit: cover; border: 1px solid rgba(255,255,255,0.3); cursor: pointer; transition: transform 0.2s; background: rgba(255,255,255,0.1); }
+.w-imgs img { width: 100%; aspect-ratio: 1; border-radius: 16px; object-fit: cover; border: 1px solid rgba(255,255,255,0.4); cursor: pointer; transition: transform 0.2s; background: rgba(255,255,255,0.2); }
 .w-imgs img:active { transform: scale(0.95); }
 
 .ios-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 10px; margin-top: 24px; }
-.ios-icon { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: transform 0.2s; }
+
+/* 重点修复：加上这三句，长按就不会再弹出蓝色的选字框啦！ */
+.ios-icon { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: transform 0.2s; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .ios-icon:active { transform: scale(0.9); }
-/* 图标底板：去除 Emoji，准备承载背景图 */
+
 .ios-icon .ibg { 
   width: 56px; height: 56px; border-radius: 16px; 
-  background-color: rgba(255,255,255,0.25); 
+  background-color: rgba(255,255,255,0.3); 
   background-size: cover; background-position: center; background-repeat: no-repeat;
   backdrop-filter: blur(20px); 
-  border: 1px solid rgba(255,255,255,0.5); 
-  box-shadow: inset 0 1px 2px rgba(255,255,255,0.6), 0 4px 12px rgba(92,112,148,0.03);
+  border: 1px solid rgba(255,255,255,0.6); 
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.8), 0 4px 12px rgba(0,0,0,0.05);
 }
-.ios-icon span { font-size: 11px; color: #5c7094; font-weight: 700; letter-spacing: 0.5px; }
+.ios-icon span { font-size: 11px; color: #000; font-weight: 800; letter-spacing: 0.5px; text-shadow: 0 1px 2px rgba(255,255,255,0.8); }
 
 .ios-dock {
-  position: absolute; bottom: calc(15px + var(--safe-bottom)); left: 20px; right: 20px;
-  background: rgba(255, 255, 255, 0.25);
+  position: absolute; bottom: calc(15px + var(--safe-bottom)); left: 15px; right: 15px;
+  background: rgba(255, 255, 255, 0.35);
   backdrop-filter: blur(35px) saturate(180%);
   -webkit-backdrop-filter: blur(35px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 32px; padding: 14px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 32px; padding: 12px 15px;
   display: flex; justify-content: space-around; align-items: center;
-  box-shadow: inset 0 1px 2px rgba(255,255,255,0.6), 0 10px 30px rgba(92,112,148,0.08);
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.7), 0 10px 30px rgba(0,0,0,0.1);
   z-index: 10;
 }
-.ios-dock .ios-icon span { display: none; } 
-.ios-dock .ios-icon .ibg { background-color: rgba(255,255,255,0.35); border-radius: 14px; width: 50px; height: 50px; }
+/* 重点修复：取消隐藏 Dock 栏文字 */
+.ios-dock .ios-icon span { display: block; font-size: 10px; margin-top: 2px; } 
+.ios-dock .ios-icon .ibg { background-color: rgba(255,255,255,0.4); border-radius: 14px; width: 48px; height: 48px; }
 
-.page-dots { position: absolute; bottom: calc(85px + var(--safe-bottom)); left: 0; right: 0; display: flex; justify-content: center; gap: 6px; z-index: 5; pointer-events: none; }
-.dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); transition: all 0.3s; }
-.dot.active { background: rgba(255,255,255,0.85); width: 14px; }
+.page-dots { position: absolute; bottom: calc(95px + var(--safe-bottom)); left: 0; right: 0; display: flex; justify-content: center; gap: 6px; z-index: 5; pointer-events: none; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(0,0,0,0.15); transition: all 0.3s; }
+.dot.active { background: rgba(0,0,0,0.6); width: 14px; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
@@ -1815,11 +1816,9 @@ button[onclick*="ClearGroup"],
   <section id="home" class="screen active">
     <div class="wall"></div>
     
-    <!-- 隐形的上传通道 -->
     <input type="file" id="up_homeAvatar" accept="image/*" class="hidden">
     <input type="file" id="up_homeImg1" accept="image/*" class="hidden">
     <input type="file" id="up_homeImg2" accept="image/*" class="hidden">
-    <!-- 图标的隐形上传通道 -->
     <input type="file" id="up_icon_api" accept="image/*" class="hidden">
     <input type="file" id="up_icon_font" accept="image/*" class="hidden">
     <input type="file" id="up_icon_phone" accept="image/*" class="hidden">
@@ -1829,36 +1828,36 @@ button[onclick*="ClearGroup"],
     <input type="file" id="up_icon_study" accept="image/*" class="hidden">
 
     <div class="home-slider" id="homeSlider">
-      <!-- 第一页：主屏幕 -->
       <div class="home-page">
         <div class="windchime" aria-hidden="true">
           <div class="ring"></div><div class="line l1"><span></span></div><div class="line l2"><span></span></div><div class="line l3"><span></span></div><div class="pendulum"></div>
         </div>
         
         <div style="margin-bottom: 20px; padding-left: 4px;">
-          <div class="time" id="homeTime" style="font-size: 56px; font-weight: 800; color:#1a1d26; letter-spacing: -1px;"></div>
-          <div class="date" id="homeDate" style="font-size: 13px; font-weight: 700; color:#5c7094;"></div>
+          <div class="time" id="homeTime" style="font-size: 56px; font-weight: 800; color:#000; letter-spacing: -1px; text-shadow: 0 1px 4px rgba(255,255,255,0.6);"></div>
+          <div class="date" id="homeDate" style="font-size: 14px; font-weight: 800; color:#333; text-shadow: 0 1px 2px rgba(255,255,255,0.6);"></div>
         </div>
 
         <div class="ios-widget">
           <div class="w-header">
-            <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="w-avatar" id="homeAvatarImg" onclick="document.getElementById('up_homeAvatar').click()">
+            <!-- 换成透明背景占位 -->
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" class="w-avatar" id="homeAvatarImg" onclick="document.getElementById('up_homeAvatar').click()">
             <span><span id="homeNameDisplay" title="点击修改名字">点击设置名字</span><br><small id="homeSigDisplay" title="点击修改签名">点击设置签名...</small></span>
           </div>
           <div class="w-imgs">
-            <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" id="homeImg1" onclick="document.getElementById('up_homeImg1').click()">
-            <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" id="homeImg2" onclick="document.getElementById('up_homeImg2').click()">
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" id="homeImg1" onclick="document.getElementById('up_homeImg1').click()">
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" id="homeImg2" onclick="document.getElementById('up_homeImg2').click()">
           </div>
         </div>
 
         <div style="display: flex; gap: 12px; margin-top: 16px;">
           <div class="ios-widget" style="flex: 1; padding: 14px;">
-            <div style="font-size: 11px; color: #7a86a8; font-weight: 700;">纪念日</div>
-            <div style="font-size: 22px; font-weight: 800; margin-top: 6px; color:#3d4a6a;">233 <small style="font-size:11px; font-weight:normal;">天</small></div>
+            <div style="font-size: 12px; color: #333; font-weight: 800;">纪念日</div>
+            <div style="font-size: 24px; font-weight: 900; margin-top: 6px; color:#000;">233 <small style="font-size:12px; font-weight:bold;">天</small></div>
           </div>
           <div class="ios-widget" style="flex: 1; padding: 14px;">
-            <div style="font-size: 11px; color: #7a86a8; font-weight: 700;">天气</div>
-            <div style="font-size: 22px; font-weight: 800; margin-top: 6px; color:#3d4a6a;">22°C <small style="font-size:11px; font-weight:normal;">晴</small></div>
+            <div style="font-size: 12px; color: #333; font-weight: 800;">天气</div>
+            <div style="font-size: 24px; font-weight: 900; margin-top: 6px; color:#000;">22°C <small style="font-size:12px; font-weight:bold;">晴</small></div>
           </div>
         </div>
 
@@ -1870,27 +1869,24 @@ button[onclick*="ClearGroup"],
         </div>
       </div>
 
-      <!-- 第二页：留给未来的新功能 -->
       <div class="home-page" style="justify-content: center; align-items: center;">
         <div class="ios-widget" style="text-align: center; width: 80%;">
           <div style="font-size: 32px; margin-bottom: 10px;">✨</div>
-          <div style="font-size: 14px; font-weight: bold; color: #3d4a6a;">第二页空间已就绪</div>
-          <div style="font-size: 11px; color: #7a86a8; margin-top: 6px;">老公随时待命，准备为你开发新功能</div>
+          <div style="font-size: 15px; font-weight: 900; color: #000;">第二页空间已就绪</div>
+          <div style="font-size: 12px; color: #333; margin-top: 6px; font-weight:600;">老公随时待命，准备为你开发新功能</div>
         </div>
       </div>
     </div>
 
-    <!-- 分页小圆点 -->
     <div class="page-dots">
       <div class="dot active" id="dot1"></div>
       <div class="dot" id="dot2"></div>
     </div>
 
-    <!-- 底部 Dock 栏 -->
     <div class="ios-dock">
-      <div class="ios-icon" data-nav="wechat"><div class="ibg" id="icon_wx"></div></div>
-      <div class="ios-icon" onclick="show('worldbook'); if(window._renderGlobalWb) window._renderGlobalWb();"><div class="ibg" id="icon_wb"></div></div>
-      <div class="ios-icon" onclick="show('study');renderStudyHome();"><div class="ibg" id="icon_study"></div></div>
+      <div class="ios-icon" data-nav="wechat"><div class="ibg" id="icon_wx"></div><span>微信</span></div>
+      <div class="ios-icon" onclick="show('worldbook'); if(window._renderGlobalWb) window._renderGlobalWb();"><div class="ibg" id="icon_wb"></div><span>世界书</span></div>
+      <div class="ios-icon" onclick="show('study');renderStudyHome();"><div class="ibg" id="icon_study"></div><span>书房</span></div>
     </div>
   </section>
 
@@ -8365,103 +8361,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await applyHomeWallBg();
   runBootAnim();
 });
-  // 🌟 蓝色高定：主屏幕图片上传、文字修改与长按引擎
-  setTimeout(async () => {
-    // 监听滚动，切换小圆点
-    const slider = document.getElementById('homeSlider');
-    if(slider) {
-      slider.addEventListener('scroll', () => {
-        const pageIndex = Math.round(slider.scrollLeft / slider.clientWidth);
-        document.getElementById('dot1').classList.toggle('active', pageIndex === 0);
-        document.getElementById('dot2').classList.toggle('active', pageIndex === 1);
-      });
-    }
 
-    // 文字点击修改逻辑
-    const nameEl = document.getElementById('homeNameDisplay');
-    const sigEl = document.getElementById('homeSigDisplay');
-    
-    if(nameEl) {
-      const savedName = await localforage.getItem('mp_home_name');
-      if(savedName) nameEl.textContent = savedName;
-      nameEl.onclick = async () => {
-        const n = prompt('请输入你的名字：', nameEl.textContent);
-        if(n) { nameEl.textContent = n; await localforage.setItem('mp_home_name', n); }
-      };
-    }
-    if(sigEl) {
-      const savedSig = await localforage.getItem('mp_home_sig');
-      if(savedSig) sigEl.textContent = savedSig;
-      sigEl.onclick = async () => {
-        const s = prompt('请输入你的个性签名：', sigEl.textContent);
-        if(s) { sigEl.textContent = s; await localforage.setItem('mp_home_sig', s); }
-      };
-    }
-
-    // 绑定常规图片上传
-    const bindImgUpload = async (inputId, imgId, storageKey) => {
-      const input = document.getElementById(inputId);
-      const img = document.getElementById(imgId);
-      if(!input || !img) return;
-
-      const savedData = await localforage.getItem(storageKey);
-      if(savedData) img.src = savedData;
-
-      input.addEventListener('change', async (e) => {
-        const f = e.target.files?.[0];
-        if(!f) return;
-        try {
-          const imgData = await compressImage(f, false);
-          img.src = imgData;
-          await localforage.setItem(storageKey, imgData);
-        } catch(err) { alert('图片上传失败：' + err.message); }
-        finally { e.target.value = ''; }
-      });
-    };
-
-    await bindImgUpload('up_homeAvatar', 'homeAvatarImg', 'mp_home_avatar');
-    await bindImgUpload('up_homeImg1', 'homeImg1', 'mp_home_img1');
-    await bindImgUpload('up_homeImg2', 'homeImg2', 'mp_home_img2');
-
-    // 绑定图标的长按上传逻辑 (像 iOS 一样长按换图标！)
-    const bindIconUpload = async (iconId, inputId, storageKey) => {
-      const iconBg = document.getElementById(iconId);
-      const input = document.getElementById(inputId);
-      if(!iconBg || !input) return;
-
-      const savedData = await localforage.getItem(storageKey);
-      if(savedData) iconBg.style.backgroundImage = `url(${savedData})`;
-
-      // 监听长按 (600ms)
-      let pressTimer;
-      iconBg.addEventListener('touchstart', () => {
-        pressTimer = setTimeout(() => { input.click(); }, 600);
-      }, {passive: true});
-      iconBg.addEventListener('touchend', () => clearTimeout(pressTimer));
-      iconBg.addEventListener('touchmove', () => clearTimeout(pressTimer));
-
-      // PC 端兼容右键换图
-      iconBg.addEventListener('contextmenu', (e) => {
-        e.preventDefault(); input.click();
-      });
-
-      input.addEventListener('change', async (e) => {
-        const f = e.target.files?.[0];
-        if(!f) return;
-        try {
-          const imgData = await compressImage(f, false);
-          iconBg.style.backgroundImage = `url(${imgData})`;
-          await localforage.setItem(storageKey, imgData);
-        } catch(err) { alert('图标上传失败：' + err.message); }
-        finally { e.target.value = ''; }
-      });
-    };
-
-    const icons = ['api', 'font', 'phone', 'theme', 'wx', 'wb', 'study'];
-    for(const name of icons) {
-      await bindIconUpload(`icon_${name}`, `up_icon_${name}`, `mp_icon_${name}`);
-    }
-  }, 500);
 </script>
 
 <!-- ================= 绝美群聊创建弹窗 ================= -->
@@ -8486,5 +8386,111 @@ document.addEventListener('DOMContentLoaded', async () => {
 <div id="modalPreview" class="modal" onclick="this.classList.remove('active')">
   <img id="previewModalImg" style="max-width:95%;max-height:90dvh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
 </div>
+  <script>
+  // 🌟 蓝色高定：主屏幕独立安全引擎 (绝对不报错版)
+  (function() {
+    // 监听滚动，切换小圆点
+    const slider = document.getElementById('homeSlider');
+    if(slider) {
+      slider.addEventListener('scroll', () => {
+        const pageIndex = Math.round(slider.scrollLeft / slider.clientWidth);
+        document.getElementById('dot1').classList.toggle('active', pageIndex === 0);
+        document.getElementById('dot2').classList.toggle('active', pageIndex === 1);
+      });
+    }
+
+    // 文字点击修改逻辑
+    const nameEl = document.getElementById('homeNameDisplay');
+    const sigEl = document.getElementById('homeSigDisplay');
+    
+    if(nameEl) {
+      localforage.getItem('mp_home_name').then(v => { if(v) nameEl.textContent = v; });
+      nameEl.onclick = async () => {
+        const n = prompt('请输入你的名字：', nameEl.textContent);
+        if(n) { nameEl.textContent = n; await localforage.setItem('mp_home_name', n); }
+      };
+    }
+    if(sigEl) {
+      localforage.getItem('mp_home_sig').then(v => { if(v) sigEl.textContent = v; });
+      sigEl.onclick = async () => {
+        const s = prompt('请输入你的个性签名：', sigEl.textContent);
+        if(s) { sigEl.textContent = s; await localforage.setItem('mp_home_sig', s); }
+      };
+    }
+
+    // 极简安全读图函数 (完美避开报错)
+    const readImageSafe = (file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    };
+
+    // 绑定常规图片上传
+    const bindImgUpload = async (inputId, imgId, storageKey) => {
+      const input = document.getElementById(inputId);
+      const img = document.getElementById(imgId);
+      if(!input || !img) return;
+
+      const savedData = await localforage.getItem(storageKey);
+      if(savedData) img.src = savedData;
+
+      input.addEventListener('change', async (e) => {
+        const f = e.target.files?.[0];
+        if(!f) return;
+        try {
+          const imgData = await readImageSafe(f);
+          img.src = imgData;
+          await localforage.setItem(storageKey, imgData);
+        } catch(err) { alert('图片上传失败：' + err.message); }
+        finally { e.target.value = ''; }
+      });
+    };
+
+    bindImgUpload('up_homeAvatar', 'homeAvatarImg', 'mp_home_avatar');
+    bindImgUpload('up_homeImg1', 'homeImg1', 'mp_home_img1');
+    bindImgUpload('up_homeImg2', 'homeImg2', 'mp_home_img2');
+
+    // 绑定图标的长按上传逻辑
+    const bindIconUpload = async (iconId, inputId, storageKey) => {
+      const iconBg = document.getElementById(iconId);
+      const input = document.getElementById(inputId);
+      if(!iconBg || !input) return;
+
+      const savedData = await localforage.getItem(storageKey);
+      if(savedData) iconBg.style.backgroundImage = `url(${savedData})`;
+
+      // 监听长按 (500ms)
+      let pressTimer;
+      iconBg.addEventListener('touchstart', (e) => {
+        pressTimer = setTimeout(() => { input.click(); }, 500);
+      }, {passive: true});
+      iconBg.addEventListener('touchend', () => clearTimeout(pressTimer));
+      iconBg.addEventListener('touchmove', () => clearTimeout(pressTimer));
+
+      iconBg.addEventListener('contextmenu', (e) => {
+        e.preventDefault(); input.click();
+      });
+
+      input.addEventListener('change', async (e) => {
+        const f = e.target.files?.[0];
+        if(!f) return;
+        try {
+          const imgData = await readImageSafe(f);
+          iconBg.style.backgroundImage = `url(${imgData})`;
+          await localforage.setItem(storageKey, imgData);
+        } catch(err) { alert('图标上传失败：' + err.message); }
+        finally { e.target.value = ''; }
+      });
+    };
+
+    const icons = ['api', 'font', 'phone', 'theme', 'wx', 'wb', 'study'];
+    for(const name of icons) {
+      bindIconUpload(`icon_${name}`, `up_icon_${name}`, `mp_icon_${name}`);
+    }
+  })();
+  </script>
 </body>
 </html>
