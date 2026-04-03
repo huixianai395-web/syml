@@ -6630,7 +6630,7 @@ ${viewersInfo}
 
 2. 男主们也可以看人设偶尔【亲自回复】那些玩家的虚构配角，必须贴合根据人设来，活人感强一点）！
 3. 男主们也要看自己的人设给玩家留言或者点赞，一定要一切符合人设。
-4. 整个评论区的评论总数必须在 8到 10条之间，呈现出真实的微信感！`;
+4. 整个评论区的评论总数必须在 8到 12条之间，呈现出真实的微信感！`;
       }
       else {
         const contacts = getContacts() || [];
@@ -6641,7 +6641,7 @@ ${viewersInfo}
 【核心任务（必须执行）】：
 1. 必须虚构 3~5个符合他身份的【专属微信好友】（如：大学室友、死党、同事、损友等）来排队吐槽或调侃他。
 2. 男主"${npc.name}"看到后，看人设可以【亲自回复】路人好友，具体回复谁回复什么贴合人设，不用全都回，一切以人设为主。语气是熟人间的互怼、高冷或玩笑。
-3. 整个评论区总数必须在 5 到 8 条之间。
+3. 整个评论区总数必须在 5 到 10条之间。
 4. 【绝对禁止】提其他男主！这是他的私人圈子！`;
       }
 
@@ -7679,21 +7679,29 @@ window.renderNotesList = function(){
     alert('套装已删除！');
   };
 
-  setTimeout(window._renderThemePresets, 600);
+  setTimeout(window._renderThemePresets, 
+// (注意：这里是你原本代码的第 1444 行左右，保留这个大门闭合)
 })(); // 🏠 闭合主屋的大门！(这次我死死把它焊在最后面了！)
 </script>
-<!-- 🌟 蓝色专属：美学实验室独立驱动引擎 -->
+
+<!-- 🌟 蓝色专属：美学实验室 & 一键换装 终极统一驱动引擎 -->
 <script>
 (function() {
   const K_THEME_LAB = 'mp_fix_theme_lab_v1';
+  const K_THEME_PRESETS = 'mp_fix_theme_presets_v1';
   const escapeHtml = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 
   window._themeMultiMode = false;
   window._themeSelSet = new Set();
 
+  // ================= 1. 底层数据存取 =================
   async function getThemeModules() { return (await localforage.getItem(K_THEME_LAB)) || []; }
   async function setThemeModules(data) { await localforage.setItem(K_THEME_LAB, data); window._applyAllThemes(); }
+  
+  async function getThemePresets() { return (await localforage.getItem(K_THEME_PRESETS)) || { current: '默认', list: { '默认': [] } }; }
+  async function setThemePresets(data) { await localforage.setItem(K_THEME_PRESETS, data); window._renderThemePresets(); }
 
+  // ================= 2. 核心：全局样式注入 =================
   window._applyAllThemes = async function() {
     const modules = await getThemeModules();
     let styleTag = document.getElementById('aestheticLabStyles');
@@ -7706,6 +7714,50 @@ window.renderNotesList = function(){
     styleTag.textContent = activeCss;
   };
 
+  // ================= 3. 一键换装引擎 =================
+  window._renderThemePresets = async function() {
+    const data = await getThemePresets();
+    const sel = document.getElementById('themePresetSelect');
+    if(!sel) return;
+    sel.innerHTML = Object.keys(data.list).map(k => `<option value="${escapeHtml(k)}" ${k === data.current ? 'selected' : ''}>${escapeHtml(k)}</option>`).join('');
+  };
+
+  window._switchThemePreset = async function(presetName) {
+    const data = await getThemePresets();
+    data.current = presetName;
+    const activeIds = data.list[presetName] || [];
+    let modules = await getThemeModules();
+    // 魔法：瞬间将套装内的补丁全部开启，其他的全部关闭！
+    modules.forEach(m => m.enabled = activeIds.includes(m.id));
+    await setThemeModules(modules);
+    await setThemePresets(data);
+    window._renderThemeLab();
+    alert(`✨ 已一键换装至：${presetName}！`);
+  };
+
+  window._saveThemePreset = async function() {
+    const name = prompt('给当前的绝美搭配起个套装名吧（如：暗黑冰透风 / 猛男粉）：');
+    if(!name || !name.trim()) return;
+    const modules = await getThemeModules();
+    const activeIds = modules.filter(m => m.enabled).map(m => m.id);
+    const data = await getThemePresets();
+    data.list[name.trim()] = activeIds;
+    data.current = name.trim();
+    await setThemePresets(data);
+    alert('🎉 套装保存成功！以后可以一键换装啦！');
+  };
+
+  window._delThemePreset = async function() {
+    const data = await getThemePresets();
+    if(Object.keys(data.list).length <= 1) return alert('至少保留一个套装预设哦宝宝！');
+    if(!confirm(`确定要删除套装 [${data.current}] 吗？`)) return;
+    delete data.list[data.current];
+    data.current = Object.keys(data.list)[0];
+    await setThemePresets(data);
+    alert('🗑️ 套装已删除！');
+  };
+
+  // ================= 4. 美学实验室渲染引擎 =================
   window._renderThemeLab = async function() {
     const modules = await getThemeModules();
     const box = document.getElementById('themeLabList');
@@ -7725,10 +7777,6 @@ window.renderNotesList = function(){
 
     box.innerHTML = modules.map(m => {
       const isSel = window._themeSelSet.has(m.id);
-      
-     
-
-      // 多选模式下左侧的圆圈
       const multiCheckbox = window._themeMultiMode ? `
         <div style="margin-right:10px; cursor:pointer;" onclick="window._toggleThemeSel('${m.id}')">
           <div style="width:20px; height:20px; border-radius:50%; border:1px solid ${isSel ? '#5c7094' : '#dce5f0'}; background:${isSel ? '#eef4fa' : '#fff'}; display:grid; place-items:center; color:${isSel ? '#5c7094' : 'transparent'}; font-size:14px; transition:all 0.2s;">✓</div>
@@ -7760,6 +7808,7 @@ window.renderNotesList = function(){
     }).join('');
   };
 
+  // ================= 5. 卡片操作逻辑 =================
   window._createThemeModule = async function() {
     const modules = await getThemeModules();
     modules.unshift({ id: 'theme_' + Date.now(), title: '未命名美化模块', css: '/* 在此写入你的 CSS */', enabled: true });
@@ -7794,7 +7843,7 @@ window.renderNotesList = function(){
     window._renderThemeLab();
   };
 
-  // 🌟 多选与导入导出逻辑
+  // ================= 6. 多选与导入导出逻辑 =================
   window._toggleThemeMulti = function() {
     window._themeMultiMode = !window._themeMultiMode;
     if(!window._themeMultiMode) window._themeSelSet.clear();
@@ -7855,10 +7904,15 @@ window.renderNotesList = function(){
     }
   };
 
-  setTimeout(window._applyAllThemes, 500);
+  // ================= 启动初始化 =================
+  setTimeout(() => {
+    window._applyAllThemes();
+    window._renderThemePresets();
+  }, 500);
 })();
 </script>
 
+<!-- (如果下面还有弹窗代码，直接保留即可) -->
 <!-- ================= 绝美群聊创建弹窗 ================= -->
   <div id="groupModal" class="modal" style="z-index: 9999;">
     <div class="modal-card" style="background:#f8f9ff; border:1px solid #dce5f2; box-shadow:0 10px 40px rgba(47,102,216,0.15);">
