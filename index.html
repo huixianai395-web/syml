@@ -7632,56 +7632,8 @@ window.renderNotesList = function(){
     await setMemories(allMems);
     window._renderMemoryCards();
   };
-// 🌟 蓝色独家：美学套装一键换装引擎
-  const K_THEME_PRESETS = 'mp_fix_theme_presets_v1';
-  async function getThemePresets() { return (await localforage.getItem(K_THEME_PRESETS)) || { current: '默认', list: { '默认': [] } }; }
-  async function setThemePresets(data) { await localforage.setItem(K_THEME_PRESETS, data); window._renderThemePresets(); }
 
-  window._renderThemePresets = async function() {
-    const data = await getThemePresets();
-    const sel = document.getElementById('themePresetSelect');
-    if(!sel) return;
-    sel.innerHTML = Object.keys(data.list).map(k => `<option value="${escapeHtml(k)}" ${k === data.current ? 'selected' : ''}>${escapeHtml(k)}</option>`).join('');
-  };
-
-  window._switchThemePreset = async function(presetName) {
-    const data = await getThemePresets();
-    data.current = presetName;
-    const activeIds = data.list[presetName] || [];
-    let modules = await getThemeModules();
-    // 核心魔法：只开启属于这个套装的补丁，其他的全部关掉！
-    modules.forEach(m => m.enabled = activeIds.includes(m.id));
-    await setThemeModules(modules);
-    await setThemePresets(data);
-    window._renderThemeLab();
-    alert(`已一键换装至：${presetName}！`);
-  };
-
-  window._saveThemePreset = async function() {
-    const name = prompt('给当前的绝美搭配起个套装名吧（如：暗黑冰透风 / 猛男粉）：');
-    if(!name || !name.trim()) return;
-    const modules = await getThemeModules();
-    const activeIds = modules.filter(m => m.enabled).map(m => m.id); // 提取当前所有打勾的补丁ID
-    const data = await getThemePresets();
-    data.list[name.trim()] = activeIds;
-    data.current = name.trim();
-    await setThemePresets(data);
-    alert('套装保存成功！以后可以一键换装啦！');
-  };
-
-  window._delThemePreset = async function() {
-    const data = await getThemePresets();
-    if(Object.keys(data.list).length <= 1) return alert('至少保留一个套装预设哦宝宝！');
-    if(!confirm(`确定要删除套装 [${data.current}] 吗？`)) return;
-    delete data.list[data.current];
-    data.current = Object.keys(data.list)[0];
-    await setThemePresets(data);
-    alert('套装已删除！');
-  };
-
-  setTimeout(window._renderThemePresets, 
-// (注意：这里是你原本代码的第 1444 行左右，保留这个大门闭合)
-})(); // 🏠 闭合主屋的大门！(这次我死死把它焊在最后面了！)
+})(); // 🏠 闭合主屋的大门！(把之前断掉的尾巴统统扔掉，这次死死焊住！)
 </script>
 
 <!-- 🌟 蓝色专属：美学实验室 & 一键换装 终极统一驱动引擎 -->
@@ -7727,7 +7679,6 @@ window.renderNotesList = function(){
     data.current = presetName;
     const activeIds = data.list[presetName] || [];
     let modules = await getThemeModules();
-    // 魔法：瞬间将套装内的补丁全部开启，其他的全部关闭！
     modules.forEach(m => m.enabled = activeIds.includes(m.id));
     await setThemeModules(modules);
     await setThemePresets(data);
@@ -7744,7 +7695,7 @@ window.renderNotesList = function(){
     data.list[name.trim()] = activeIds;
     data.current = name.trim();
     await setThemePresets(data);
-    alert('🎉 套装保存成功！以后可以一键换装啦！');
+    alert(' 套装保存成功！以后可以一键换装啦！');
   };
 
   window._delThemePreset = async function() {
@@ -7912,7 +7863,6 @@ window.renderNotesList = function(){
 })();
 </script>
 
-<!-- (如果下面还有弹窗代码，直接保留即可) -->
 <!-- ================= 绝美群聊创建弹窗 ================= -->
   <div id="groupModal" class="modal" style="z-index: 9999;">
     <div class="modal-card" style="background:#f8f9ff; border:1px solid #dce5f2; box-shadow:0 10px 40px rgba(47,102,216,0.15);">
