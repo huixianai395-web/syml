@@ -1817,6 +1817,54 @@ button[onclick*="ClearGroup"],
 .page-dots { position: absolute; bottom: calc(95px + var(--safe-bottom)); left: 0; right: 0; display: flex; justify-content: center; gap: 6px; z-index: 5; pointer-events: none; }
 .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(26,29,38,0.15); transition: all 0.3s; }
 .dot.active { background: rgba(26,29,38,0.5); width: 14px; }
+    /* 🧊 蓝色高定 V12：查手机界面 - 沉浸式套娃小手机桌面 */
+#phoneCheck .page { padding: 0 !important; background: #eef4fa !important; }
+#pcResultPage { height: 100%; position: relative; overflow: hidden; background: #eef4fa; }
+
+/* 📱 模拟 TA 的手机桌面网格 */
+.pc-mini-home {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px 12px;
+  padding: 30px 16px; align-content: start; height: 100%; overflow-y: auto;
+  /* 给小手机加个淡淡的海盐渐变壁纸，区分层级 */
+  background: linear-gradient(180deg, #d3e3f2, #eef4fa); 
+}
+
+/* 桌面上的独立 App 图标 */
+.pc-mini-icon { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: transform 0.2s; }
+.pc-mini-icon:active { transform: scale(0.9); }
+.pc-m-ibg {
+  width: 52px; height: 52px; border-radius: 14px;
+  display: grid; place-items: center; font-size: 26px;
+  box-shadow: 0 4px 12px rgba(92,112,148,0.15), inset 0 1px 2px rgba(255,255,255,0.4);
+  filter: saturate(0.85); /* 降低高饱和土味，增加高级感 */
+}
+.pc-mini-icon span { font-size: 11px; color: #3d4a6a; font-weight: 800; letter-spacing: 0.5px; }
+
+/* 📱 点开 App 后的全屏沉浸视图 */
+.pc-app-views { position: absolute; inset: 0; background: #f4f6fb; z-index: 10; display: flex; flex-direction: column; }
+.pc-app-view { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; background: #f4f6fb; }
+.pc-app-view.hidden { display: none !important; }
+
+/* App 内部的顶部导航栏 */
+.pc-app-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 16px; background: rgba(250,252,255,0.85);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid #dce5f0; flex-shrink: 0;
+}
+.pc-app-content { flex: 1; overflow-y: auto; padding: 16px; }
+
+/* 优化 App 内部的内容卡片质感 */
+.pc-app-content > div { 
+  background: rgba(255,255,255,0.8); backdrop-filter: blur(10px);
+  border: 1px solid #dce5f0; border-radius: 16px; 
+  padding: 16px; box-shadow: 0 4px 16px rgba(92,112,148,0.03); 
+  margin-bottom: 12px; 
+}
+/* 修复内部条目的虚线边缘 */
+.pc-wx-item, .pc-diary-item, .pc-search-item, .pc-pay-item, .pc-music-item, .pc-call-item, .pc-sms-item, .pc-tl-item {
+  border-bottom: 1px dashed #eef4fa !important;
+}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
@@ -5163,8 +5211,19 @@ document.addEventListener('click',e=>{
         apps.push({icon:'🎬',bg:'#000',name:'抖音',desc:'最近看的',body:b});
       }
 
-      $('pcResultPage').innerHTML = apps.map((a,i) => '<div class="pc-app" id="pcApp'+i+'"><div class="pc-app-hd" onclick="this.parentElement.classList.toggle(\'open\')"><div class="pc-app-icon" style="background:'+a.bg+';">'+a.icon+'</div><div class="pc-app-info"><div class="pc-app-name">'+esc(a.name)+'</div><div class="pc-app-desc">'+esc(a.desc)+'</div></div><div class="pc-app-arrow">›</div></div><div class="pc-app-body">'+a.body+'</div></div>').join('');
-    }
+      // 🌟 蓝色高定：套娃小手机桌面引擎 (只替换原来 $('pcResultPage').innerHTML = apps.map... 那一段哦！)
+      let homeHtml = '<div id="pcMiniHome" class="pc-mini-home">';
+      let viewsHtml = '<div id="pcAppViews" class="pc-app-views hidden">';
+      apps.forEach((a, i) => {
+        // 生成桌面上的 App 图标
+        homeHtml += `<div class="pc-mini-icon" onclick="document.getElementById('pcMiniHome').classList.add('hidden'); document.getElementById('pcAppViews').classList.remove('hidden'); document.querySelectorAll('.pc-app-view').forEach(v=>v.classList.add('hidden')); document.getElementById('pc_app_view_${i}').classList.remove('hidden');"><div class="pc-m-ibg" style="background:${a.bg};">${a.icon}</div><span>${esc(a.name)}</span></div>`;
+        
+        // 生成点开后的全屏 App 视图，加入沉浸式返回顶栏
+        viewsHtml += `<div id="pc_app_view_${i}" class="pc-app-view hidden"><div class="pc-app-header"><button class="btn" onclick="document.getElementById('pcAppViews').classList.add('hidden'); document.getElementById('pcMiniHome').classList.remove('hidden');" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:6px 12px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 返回桌面</button><b style="color:#1a1d26; font-size:16px; letter-spacing:1px;">${esc(a.name)}</b><div style="width:70px;"></div></div><div class="pc-app-content">${a.body}</div></div>`;
+      });
+      homeHtml += '</div>';
+      viewsHtml += '</div>';
+      $('pcResultPage').innerHTML = homeHtml + viewsHtml;
     const K_STUDY='mp_fix_study_books';
 let readerFontSize=17, readerDarkMode=false;
 
