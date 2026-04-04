@@ -1984,36 +1984,20 @@ button[onclick*="ClearGroup"],
 .pc-wx-item, .pc-diary-item, .pc-search-item, .pc-pay-item, .pc-music-item, .pc-call-item, .pc-sms-item, .pc-tl-item, .pc-social-item, .pc-schedule-item {
   border-bottom: 1px solid #eef4fa !important; /* 强制把 dashed 改成干净的 solid 实线！ */
 }
-    /* === 💭 实时心声栏 === */
-.inner-voice-bar {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 14px; margin: 6px 12px;
-  background: rgba(245, 247, 250, 0.65);
-  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(220, 229, 240, 0.6);
-  border-radius: 14px;
-  box-shadow: 0 4px 12px rgba(92, 112, 148, 0.04);
-  transition: all 0.3s ease;
+  /* === 💭 悬浮心声胶囊 (初雪海盐蓝毛玻璃) === */
+.chat-inner-voice {
+  position: absolute; top: calc(52px + var(--safe-top) + 8px); left: 50%; transform: translateX(-50%);
+  background: rgba(250, 252, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(220, 229, 240, 0.8); border-radius: 20px;
+  padding: 6px 14px; font-size: 11px; color: #5c7094; z-index: 50;
+  box-shadow: 0 4px 16px rgba(92, 112, 148, 0.08); cursor: pointer;
+  max-width: 80%; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.inner-voice-bar .iv-icon { font-size: 14px; opacity: 0.8; }
-.inner-voice-bar .iv-text {
-  flex: 1; font-size: 12px; color: #7a86a8;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  font-style: italic; letter-spacing: 0.5px; transition: filter 0.3s ease;
-}
-.iv-switch-wrap { position: relative; width: 32px; height: 18px; display: inline-block; flex-shrink: 0; }
-.iv-switch-wrap input { opacity: 0; width: 0; height: 0; }
-.iv-slider {
-  position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(220, 229, 240, 0.6); border-radius: 18px; transition: .4s;
-}
-.iv-slider:before {
-  position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px;
-  background-color: white; border-radius: 50%; transition: .4s;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-.iv-switch-wrap input:checked + .iv-slider { background-color: #a5cfff; }
-.iv-switch-wrap input:checked + .iv-slider:before { transform: translateX(14px); }
+.chat-inner-voice.hidden { opacity: 0; pointer-events: none; transform: translate(-50%, -15px) scale(0.9); }
+.chat-inner-voice .iv-content { display: flex; align-items: center; gap: 6px; }
+.chat-inner-voice .iv-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; transition: all 0.3s; font-style: italic; }
+.chat-inner-voice.expanded { max-width: 90%; border-radius: 14px; background: rgba(255, 255, 255, 0.95); }
+.chat-inner-voice.expanded .iv-text { white-space: normal; max-width: 100%; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
@@ -2420,13 +2404,9 @@ button[onclick*="ClearGroup"],
     </button>
   </div>
     </div>
-    <div id="innerVoiceBar" class="inner-voice-bar">
-      <div class="iv-icon">💭</div>
-      <div class="iv-text" id="innerVoiceText">等待连接对方心跳频率...</div>
-      <label class="iv-switch-wrap">
-        <input type="checkbox" id="ivToggle" checked onchange="document.getElementById('innerVoiceText').style.filter = this.checked ? 'none' : 'blur(6px)';">
-        <span class="iv-slider"></span>
-      </label>
+    <!-- 🌟 蓝色高定：阅后即焚悬浮心声胶囊 -->
+    <div id="chatInnerVoice" class="chat-inner-voice hidden" onclick="this.classList.toggle('expanded')">
+      <div class="iv-content">💭 <span class="iv-text" id="ivText"></span></div>
     </div>
     <div id="chatMsgs"></div><div id="offlinePalettePanel" class="off-palette-panel global">
   <div class="off-palette-row"><span>状态栏</span><input type="color" data-key="state"></div>
@@ -2670,7 +2650,14 @@ button[onclick*="ClearGroup"],
           <input id="offlineMaxInput" class="input" type="number" min="100" max="10000" value="1500" placeholder="最多字数" />
         </div>
       </div>
-
+<!-- 🌟 读心术开关 -->
+      <div class="card">
+        <div class="small">实时读心术 (心声)</div>
+        <div class="row" style="margin-top:8px;justify-content:space-between;">
+          <span class="small" style="color:#888;">开启后，聊天界面顶部会闪现TA的真实内心OS</span>
+          <input id="innerVoiceSwitch" type="checkbox" style="transform:scale(1.1); accent-color:#5c7094;" />
+        </div>
+      </div>
       <div class="card">
         <div class="small">记忆轮数 (上下文长度)</div>
         <div class="row" style="margin-top:8px;"><input id="contextLenInput" class="input" type="number" min="5" max="500" value="30" placeholder="默认30条" /></div>
@@ -4266,7 +4253,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       
 
       `【输出格式铁律】：
-1. 只允许输出严格的JSON格式，包含一个"messages"数组：{"messages":["第一句...","第二句..."]}
+1. 只允许输出严格的JSON格式：{"inner_voice":"根据人设写内心OS(可选)","messages":["第一句...","第二句..."]}
 2. 本次回复的条数由你完全根据人设的立体性格、心理波动和当前语境自由发挥（拒绝刻板，气泡条数可多可少）。
 3. 每条消息≤30字为佳，绝对禁止超过40字。像真人发微信，短句+标点。
 4. 【代码防粘连绝对规则】：凡是回复中包含HTML代码，必须遵守以下全部要求：a)代码必须是以<!DOCTYPE html>开头的完整文档，禁止发片段；b)整个HTML文档必须作为一个完整字符串放在JSON数组的一条里，禁止拆分成多条；c)禁止添加任何markdown标记如\`\`\`html；d)代码前后的对话文字必须和代码分开，各自独立一条。
@@ -4561,6 +4548,15 @@ let reqStart = Date.now(); // 🌟 蓝色魔法：按下秒表，记录 AI 开�
      } else {
         // 📦 传统模式
         const out=await callApi(messages);
+       if(st.innerVoice) {
+          const ivMatch = out.match(/"inner_voice"\s*:\s*"([^"]+)"/);
+          if(ivMatch && ivMatch[1]) {
+            document.getElementById('ivText').textContent = ivMatch[1];
+            document.getElementById('chatInnerVoice').classList.remove('hidden');
+          } else {
+            document.getElementById('chatInnerVoice').classList.add('hidden');
+          }
+       }
         let parts=[];
         if(st.mode==='offline') parts=[clean(out)||'...'];
         else{
@@ -4680,6 +4676,7 @@ let reqStart = Date.now(); // 🌟 蓝色魔法：按下秒表，记录 AI 开�
     $('offlineMinInput').value=st.offlineMin; $('offlineMaxInput').value=st.offlineMax;
     $('contextLenInput').value=st.contextLen||30;
     $('showTsSwitch').checked=!!p.showTs; $('bubbleCssInput').value=p.bubbleCss||'';
+    $('innerVoiceSwitch').checked=!!st.innerVoice;
     $('avatarHQSwitch').checked=!!p.avatarHQ; $('streamSwitch').checked=!!st.stream;
     refreshFontSizeUI(); refreshSettingUI(); show('chatSetting');
   }
@@ -4715,6 +4712,7 @@ $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';
         meNote: clean($('meNoteInput').value),
         mePersona: clean($('mePersonaInput').value),
         meAvatar: clean($('meAvatarInput').value)||''
+        innerVoice: !!$('innerVoiceSwitch').checked,
       });
 
       if(c.isGroup) {
