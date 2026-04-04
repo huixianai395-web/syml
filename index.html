@@ -8304,9 +8304,15 @@ window.renderNotesList = function(){
     const text = document.getElementById('prologueTextInput').value.trim();
     if(!text) return alert('序言是空的，写点什么再发吧~');
     
+    // 🌟 蓝色魔法：把输入框里的回车换行，完美翻译成网页的换行符
+    const formattedText = safeEsc(text).replace(/\n/g, '<br>');
+
     // 把纯净的 HTML 结构作为消息发出去
-    const html = `<div class="msg-prologue-wrap"><div class="msg-prologue"><div class="msg-prologue-text">${safeEsc(text)}</div></div></div>`;
+    const html = `<div class="msg-prologue-wrap"><div class="msg-prologue"><div class="msg-prologue-text">${formattedText}</div></div></div>`;
     pushUser(html);
+    
+    // 🌟 核心救命修复：通知聊天屏幕立刻重绘刷新！
+    renderChat();
     
     // 平滑回到聊天界面并滚到底部
     show('chatRoom');
