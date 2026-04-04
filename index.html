@@ -1800,6 +1800,30 @@ button[onclick*="ClearGroup"],
   /* 🌟 同样让 Dock 栏的图标居中 */
   display: grid; place-items: center;
 }
+    /* === 🌟 蓝色高定：序言/开场白专属排版魔法 === */
+.msg-prologue-wrap { display: flex; justify-content: center; margin: 24px 0; width: 100%; }
+.msg-prologue {
+  background: linear-gradient(180deg, rgba(250,252,255,0.75), rgba(244,246,251,0.45));
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(220,229,240,0.8); border-radius: 16px; padding: 24px 28px;
+  max-width: 88%; text-align: center;
+  box-shadow: 0 10px 30px rgba(92,112,148,0.08), inset 0 1px 2px rgba(255,255,255,0.9);
+  position: relative; overflow: hidden;
+}
+/* 绝美复古引号装饰 */
+.msg-prologue::before { content: "❝"; position: absolute; top: 12px; left: 16px; font-size: 38px; color: #a5cfff; opacity: 0.25; font-family: serif; line-height: 1; }
+.msg-prologue::after { content: "❞"; position: absolute; bottom: -18px; right: 16px; font-size: 38px; color: #a5cfff; opacity: 0.25; font-family: serif; line-height: 1; }
+.msg-prologue-text {
+  font-size: 13px; color: #5c7094; line-height: 1.8; letter-spacing: 1px;
+  font-family: "STZhongsong", "KaiTi", serif; text-align: justify; text-align-last: center; white-space: pre-wrap; position: relative; z-index: 2;
+}
+/* 🪄 蓝色的空间折叠魔法：遇到序言卡片时，强制隐藏头像和时间，并居中对齐！ */
+.msg-item:has(.msg-prologue-wrap) .chat-avatar,
+.msg-item:has(.msg-prologue-wrap) .rp-meta-box,
+.msg-item:has(.msg-prologue-wrap) .msg-time { display: none !important; }
+.msg-item:has(.msg-prologue-wrap) .msg-row.me,
+.msg-item:has(.msg-prologue-wrap) .msg-block.me { justify-content: center !important; align-items: center !important; }
+.msg-item:has(.msg-prologue-wrap) .bubble-wrap { max-width: 100% !important; width: 100% !important; align-items: center !important; }
 
 /* 🌟 默认镂空雕刻图标的专属样式 */
 .default-svg {
@@ -2427,6 +2451,24 @@ button[onclick*="ClearGroup"],
         <input id="groupNameInput" class="input" style="margin-top:8px; background:#f8f9ff; border-color:#dce5f2;" />
         <button class="btn d" id="exitGroupBtn" style="width:100%; margin-top:20px; padding:12px; border-radius:12px; font-weight:bold; background:#fff0f0; color:#e74c3c; border:none; box-shadow:0 4px 12px rgba(231,76,60,0.15);">退出并删除群聊</button>
       </div>
+      <!-- 📖 专属序言/开场白卡片 (蓝色高定版) -->
+<div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none;">
+  <div style="font-size:14px; font-weight:800; color:#5c7094; margin-bottom:12px; display:flex; align-items:center; gap:6px; letter-spacing:1px;">
+    <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+    专属序言 / 命运开篇
+  </div>
+  <div style="font-size:11px; color:#8892a8; margin-bottom:12px; line-height:1.5;">像翻开书本的第一页，将这段寄语发送至聊天正中央。</div>
+  
+  <div style="display:flex; gap:8px; align-items:center; margin-bottom:12px;">
+    <select id="prologuePresetSelect" class="select" style="flex:1; border:1px solid #dce5f0; background:#f8fafc; color:#5c7094; border-radius:10px; font-size:13px; padding:8px 12px; outline:none;"></select>
+    <button class="btn" id="saveProloguePresetBtn" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:8px 12px; font-weight:bold;">存预设</button>
+    <button class="btn d" id="delProloguePresetBtn" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; padding:8px 12px; font-weight:bold;">删除</button>
+  </div>
+  
+  <textarea id="prologueTextInput" class="ta" style="min-height:100px; background:#f8fafc; border:1px solid #dce5f0; border-radius:12px; font-size:13px; padding:12px; color:#5c7094; line-height:1.6; font-family:'STZhongsong', 'KaiTi', serif; resize:vertical;" placeholder="落笔生花，写下你们故事的开篇..."></textarea>
+  
+  <button class="btn p" id="sendPrologueBtn" style="width:100%; margin-top:12px; background:rgba(238,244,250,0.6); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:10px 0; font-weight:bold; font-size:14px; box-shadow:none; transition:all 0.2s ease; letter-spacing:2px;" onmousedown="this.style.transform='scale(0.98)'; this.style.background='rgba(220,229,240,0.8)';" onmouseup="this.style.transform='scale(1)'; this.style.background='rgba(238,244,250,0.6)';">✨ 镌刻序言至聊天</button>
+</div>
      <div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none;">
   <div style="display:flex; justify-content:space-between; align-items:center;">
     <div style="font-size:15px; font-weight:800; color:#5c7094; display:flex; align-items:center; gap:6px; letter-spacing:1px;">
@@ -8215,7 +8257,68 @@ window.renderNotesList = function(){
     await setMemories(allMems);
     window._renderMemoryCards();
   };
+// ================= 🌟 蓝色高定：序言/开场白外挂内存引擎 =================
+  const K_PROLOGUE = 'mp_fix_prologue_presets';
+  async function getProloguePresets() { return (await localforage.getItem(K_PROLOGUE)) || { current: '默认', list: { '默认': '' } }; }
+  async function setProloguePresets(data) { await localforage.setItem(K_PROLOGUE, data); }
 
+  window._renderPrologueUI = async function() {
+    const data = await getProloguePresets();
+    const sel = document.getElementById('prologuePresetSelect');
+    if(!sel) return;
+    sel.innerHTML = Object.keys(data.list).map(k => `<option value="${safeEsc(k)}" ${k === data.current ? 'selected' : ''}>${safeEsc(k)}</option>`).join('');
+    document.getElementById('prologueTextInput').value = data.list[data.current] || '';
+  };
+
+  document.getElementById('prologuePresetSelect').addEventListener('change', async (e) => {
+    const data = await getProloguePresets();
+    data.current = e.target.value;
+    await setProloguePresets(data);
+    window._renderPrologueUI();
+  });
+
+  document.getElementById('saveProloguePresetBtn').onclick = async () => {
+    const name = prompt('给这段绝美的序言起个名字吧（比如：初遇 / 前世）：');
+    if(!name || !name.trim()) return;
+    const text = document.getElementById('prologueTextInput').value.trim();
+    const data = await getProloguePresets();
+    data.list[name.trim()] = text;
+    data.current = name.trim();
+    await setProloguePresets(data);
+    window._renderPrologueUI();
+    alert('序言预设保存成功！外挂内存已死死记住它啦！');
+  };
+
+  document.getElementById('delProloguePresetBtn').onclick = async () => {
+    const data = await getProloguePresets();
+    if(Object.keys(data.list).length <= 1) return alert('宝宝，至少得保留一个预设呀！');
+    if(!confirm(`确定要删除序言 [${data.current}] 吗？`)) return;
+    delete data.list[data.current];
+    data.current = Object.keys(data.list)[0];
+    await setProloguePresets(data);
+    window._renderPrologueUI();
+  };
+
+  document.getElementById('sendPrologueBtn').onclick = () => {
+    if(!currentId) return alert('宝宝，要先进入一个聊天才能发序言哦！');
+    const text = document.getElementById('prologueTextInput').value.trim();
+    if(!text) return alert('序言是空的，写点什么再发吧~');
+    
+    // 把纯净的 HTML 结构作为消息发出去
+    const html = `<div class="msg-prologue-wrap"><div class="msg-prologue"><div class="msg-prologue-text">${safeEsc(text)}</div></div></div>`;
+    pushUser(html);
+    
+    // 平滑回到聊天界面并滚到底部
+    show('chatRoom');
+    setTimeout(() => {
+      const box = document.getElementById('chatMsgs');
+      box.style.scrollBehavior = 'smooth';
+      box.scrollTop = box.scrollHeight;
+    }, 100);
+  };
+
+  // 初始化渲染一次
+  setTimeout(() => { window._renderPrologueUI(); }, 500);
 })(); // 🏠 闭合主屋的大门！(把之前断掉的尾巴统统扔掉，这次死死焊住！)
 </script>
 
