@@ -2106,7 +2106,7 @@ button[onclick*="ClearGroup"],
      <!-- 🌟 蓝色高定：第二页的平行宇宙入口 -->
       <div class="home-page">
         <div class="ios-grid" style="margin-top: 20px;">
-          <div class="ios-icon" onclick="show('realmIf'); if(window._renderRealmIf) window._renderRealmIf();">
+          <div class="ios-icon" onclick="show('realmIf'); if(window._renderIfLineup) window._renderIfLineup();">
             <div class="ibg" style="background:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
               <!-- 极简时空交织 SVG 图标 -->
               <svg class="default-svg" viewBox="0 0 24 24" style="width:26px; height:26px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;">
@@ -9086,10 +9086,53 @@ document.addEventListener('DOMContentLoaded', async () => {
     window._renderIfCardList();
   };
 
-  // 选择卡牌装入槽位（UI占位，后续完善）
+// 🌟 蓝色高定：群像出战引擎
+  window._currentIfLineup = []; // 存放当前准备出战的角色卡 ID
+
+  // 选中卡牌，加入阵列
   window._selectIfCard = function(id) {
-    alert(`宝宝，你选中了卡牌 ${id}！即将装入 ${window._currentIfSlot} 槽位！(后续完善渲染)`);
+    if(window._currentIfLineup.includes(id)) {
+      return alert('宝宝，这个灵魂已经在剧本里就位啦！');
+    }
+    window._currentIfLineup.push(id);
     document.getElementById('ifCardModal').classList.remove('active');
+    window._renderIfLineup(); 
+  };
+
+  // 将角色踢出剧本
+  window._removeIfLineup = function(id) {
+    window._currentIfLineup = window._currentIfLineup.filter(x => x !== id);
+    window._renderIfLineup();
+  };
+
+  // 渲染极简高定的出战方块
+  window._renderIfLineup = async function() {
+    const cards = await getIfCards();
+    const box = document.getElementById('ifSelectedCardsBox');
+    if(!box) return;
+
+    let html = '';
+    window._currentIfLineup.forEach(id => {
+      const c = cards.find(x => x.id === id);
+      if(c) {
+        html += `
+          <div style="position:relative; width:64px; height:64px; border-radius:16px; background:#eef4fa; border:1px solid #dce5f0; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(92,112,148,0.06); transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+            <div onclick="window._removeIfLineup('${c.id}')" style="position:absolute; top:-6px; right:-6px; width:20px; height:20px; background:#fcf2f2; border:1px solid #f2dcdc; color:#b57b7b; border-radius:50%; font-size:14px; line-height:1; display:grid; place-items:center; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.05); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'">×</div>
+            <span style="font-size:14px; font-weight:800; color:#3d4a6a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:54px;">${safeEsc(c.name.slice(0,4))}</span>
+            <span style="font-size:10px; color:#7a86a8; margin-top:2px;">已就位</span>
+          </div>
+        `;
+      }
+    });
+
+    // 永远保留一个通透的“邀场”按钮
+    html += `
+      <div onclick="window._openIfCardModal()" style="width:64px; height:64px; border-radius:16px; border:1.5px dashed #a5cfff; background:rgba(250,252,255,0.6); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='rgba(238,244,250,0.9)'" onmouseout="this.style.background='rgba(250,252,255,0.6)'">
+        <span style="font-size:22px; color:#a5cfff; font-weight:300; line-height:1;">+</span>
+        <span style="font-size:10px; color:#7a86a8; font-weight:bold; margin-top:2px;">邀场</span>
+      </div>
+    `;
+    box.innerHTML = html;
   };
   </script>
   <!-- 🌟 蓝色高定：悬浮心声面板 -->
@@ -9129,22 +9172,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         灵魂载入槽
       </div>
       
-      <div style="display:flex; gap:12px; margin-bottom:24px;">
-        <!-- 主角 A 槽位 -->
-<div style="flex:1; height:150px; background:rgba(255,255,255,0.6); border-radius:16px; display:flex; align-items:center; justify-content:center;">
-  <div style="width:44px; height:44px; border-radius:50%; border:1px solid #dc5f0; display:flex; align-items:center; justify-content:center;"
-       onclick="window._openIfCardModal('A')">
-    <span style="font-size:11px; color:#7a86a8; font-weight:800;">A</span>
-  </div>
-</div>
-
-<!-- 主角 B 槽位 -->
-<div style="flex:1; height:150px; background:rgba(255,255,255,0.6); border-radius:16px; display:flex; align-items:center; justify-content:center;">
-  <div style="width:44px; height:44px; border-radius:50%; border:1px solid #dc5f0; display:flex; align-items:center; justify-content:center;"
-       onclick="window._openIfCardModal('B')">
-    <span style="font-size:11px; color:#7a86a8; font-weight:800;">B</span>
-  </div>
-</div>
+      <!-- 🌟 蓝色高定：无限流灵魂阵列 (群像出战区) -->
+      <div id="ifSelectedCardsBox" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:24px;">
+        <!-- 初始的邀场按钮将由 JS 自动渲染 -->
+      </div>
       <!-- 剧本库列表容器 -->
       <div id="ifStoryList" style="display:flex; flex-direction:column; gap:12px;">
          <div style="text-align:center; padding:50px 0; color:#a0aaba; font-size:13px; letter-spacing:1px; line-height:1.6;">
