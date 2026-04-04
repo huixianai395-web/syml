@@ -3902,7 +3902,7 @@ if(!isMe && isHtmlDoc(t)){
   function splitLongBubbles(parts,maxLen=30){
   const out=[];
   for(const p of parts){
-    if(p.length<=maxLen || isHtmlDoc(p) || isHtmlFrag(p) || /^\[voice:/.test(p) || /^\[stk:/.test(p) || /^\[call:/.test(p)){out.push(p);continue;}
+    if(p.length<=maxLen || isHtmlDoc(p) || isHtmlFrag(p) || /\[voice:/i.test(p) || /\[stk:/i.test(p) || /\[call:/i.test(p) || /\[quote\]/i.test(p) || /<div class="card-/i.test(p)){out.push(p);continue;}
     const segs=p.split(/(?<=[。！？!?…\n])/g).filter(Boolean);
     let buf='';
     for(const s of segs){
@@ -3967,16 +3967,12 @@ if(!isMe && isHtmlDoc(t)){
   for(let i=0;i<parts.length;i++){
     let cur=String(parts[i]||'').trim();
     if(!cur) continue;
-    const isCard=isHtmlDoc(cur)||isHtmlFrag(cur)
-      ||/^\[(stk|voice|call):/i.test(cur)
-      ||/^<div class="card-/.test(cur);
+    const isCard=isHtmlDoc(cur)||isHtmlFrag(cur)||/\[(stk|voice|call|quote)/i.test(cur)||/<div class="card-/.test(cur);
     if(isCard){out.push(cur);continue;}
     const halfEnd=/[，、；：,]$/;
     if(halfEnd.test(cur)&&i<parts.length-1){
       let next=String(parts[i+1]||'').trim();
-      const nextIsCard=isHtmlDoc(next)||isHtmlFrag(next)
-        ||/^\[(stk|voice|call):/i.test(next)
-        ||/^<div class="card-/.test(next);
+      const nextIsCard=isHtmlDoc(next)||isHtmlFrag(next)||/\[(stk|voice|call|quote)/i.test(next)||/<div class="card-/.test(next);
       if(!nextIsCard){
         cur=cur.replace(halfEnd,'');
         out.push(cur+next);
