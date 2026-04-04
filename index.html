@@ -1832,18 +1832,25 @@ button[onclick*="ClearGroup"],
 /* 桌面上的独立 App 图标 */
 .pc-mini-icon { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: transform 0.2s; }
 .pc-mini-icon:active { transform: scale(0.9); }
+/* 桌面上的独立 App 图标：苹果级马卡龙冰透质感 */
+.pc-mini-icon { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: transform 0.2s; }
+.pc-mini-icon:active { transform: scale(0.9); }
 .pc-m-ibg {
-  width: 58px !important; height: 58px !important; border-radius: 16px !important;
-  display: grid !important; place-items: center !important; font-size: 30px !important;
-  /* 🔪 核心魔法：用 !important 强行覆盖掉JS里写死的大红大绿内联颜色！ */
-  background: rgba(255, 255, 255, 0.45) !important;
-  backdrop-filter: blur(20px) saturate(120%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(120%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  width: 56px !important; height: 56px !important; 
+  border-radius: 16px !important; /* 苹果经典圆角 */
+  display: grid !important; place-items: center !important; font-size: 28px !important;
+  /* 🔪 拔掉纯白死底，回归原本的色彩，但加上高级的高光阴影 */
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
   box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.9), 0 6px 16px rgba(92, 112, 148, 0.08) !important;
-  /* 给里面土味的 Emoji 加一层高级的低饱和滤镜，去除塑料感 */
-  filter: grayscale(0.15) drop-shadow(0 2px 6px rgba(0,0,0,0.06)) !important;
+  position: relative; overflow: hidden;
 }
+/* 🌟 核心魔法：盖上一层25%的冰透白纱，瞬间变成高级低饱和马卡龙色！ */
+.pc-m-ibg::after {
+  content: ''; position: absolute; inset: 0;
+  background: rgba(255, 255, 255, 0.25); 
+  pointer-events: none;
+}
+.pc-mini-icon span { font-size: 11px; color: #3d4a6a; font-weight: 800; letter-spacing: 0.5px; }
 .pc-mini-icon span { font-size: 11px; color: #3d4a6a; font-weight: 800; letter-spacing: 0.5px; text-shadow: 0 1px 2px rgba(255,255,255,0.8); }
 
 /* 📱 点开 App 后的全屏沉浸视图 */
@@ -4992,6 +4999,19 @@ document.addEventListener('click',e=>{
       const c = getContactById(id);
       $('pcTitle').textContent = c?.name || 'TA';
       $('pcRefreshBtn').style.display = '';
+      
+      // 🌟 动态注入深挖按钮，不破坏原有 HTML 结构
+      if(!document.getElementById('pcAppendBtn')) {
+          const btn = document.createElement('button');
+          btn.id = 'pcAppendBtn';
+          btn.className = 'btn p';
+          btn.style.cssText = 'display:none; margin-left:8px; background:linear-gradient(135deg, #2f66d8, #5ba9ff); color:#fff; border:none; font-weight:bold; border-radius:10px; padding:6px 12px; box-shadow:0 4px 12px rgba(47,102,216,0.2); transition:transform 0.1s;';
+          btn.innerHTML = '✨ 深挖';
+          btn.onclick = () => pcDoQuery(true);
+          $('pcRefreshBtn').parentNode.appendChild(btn);
+      }
+      document.getElementById('pcAppendBtn').style.display = '';
+
       if (pcCache[id]) { pcRenderApps(pcCache[id], c); return; }
       $('pcSelectPage').classList.add('hidden');
       $('pcResultPage').classList.add('hidden');
@@ -5001,98 +5021,76 @@ document.addEventListener('click',e=>{
       $('pcReadyName').textContent = c?.name || 'TA';
     };
 
-    $('pcStartBtn').onclick = () => pcDoQuery();
-    $('pcRefreshBtn').onclick = () => pcDoQuery();async function pcDoQuery() {
+    $('pcStartBtn').onclick = () => pcDoQuery(false);
+    $('pcRefreshBtn').onclick = () => { if(confirm('刷新会清空当前这台手机的旧数据，确定要重新生成吗？')) pcDoQuery(false); };
+
+    // 🌟 核心升级：支持 isAppend 追加模式
+    async function pcDoQuery(isAppend = false) {
       if (!pcSelectedId) return;
       const c = getContactById(pcSelectedId);
       if (!c) return;
       const st = normSettings(c?.settings);
       const globalMe = getMe();
-      const me = {
-        name: st.meName || globalMe.name || '我',
-        persona: st.mePersona || globalMe.persona || '',
-        note: st.meNote || globalMe.note || ''
-      };
-      const hist = getChatArr(pcSelectedId)
-        .filter(x => x.text && !x.hiddenForAi)
-        .slice(-15)
-        .map(x => '[' + (x.role === 'user' ? me.name : c.name) + '] ' + (x.text || '').slice(0, 80))
-        .join('\n');
+      const me = { name: st.meName || globalMe.name || '我', persona: st.mePersona || globalMe.persona || '', note: st.meNote || globalMe.note || '' };
+      
+      const hist = getChatArr(pcSelectedId).filter(x => x.text && !x.hiddenForAi).slice(-20)
+        .map(x => '[' + (x.role === 'user' ? me.name : c.name) + '] ' + (x.text || '').slice(0, 80)).join('\n');
 
       $('pcSelectPage').classList.add('hidden');
       $('pcReadyPage').classList.add('hidden');
       $('pcResultPage').classList.add('hidden');
       $('pcLoading').classList.remove('hidden');
+      $('pcLoading').textContent = isAppend ? '正在深度挖掘TA的隐藏数据…' : '正在翻TA手机中…';
 
       const sysPrompt = [
-        '你正在扮演：' + c.name,
-        '你的人设：' + (c.persona || '自然'),
-        '对方名称：' + me.name,
-        '对方备注：' + (me.note || '无'),
-        '现在是' + getSysTimeStr(),
-        '',
-        '最近聊天记录摘要：',
-        hist || '（暂无）',
-        '',
-        '【任务】模拟' + c.name + '的手机被翻看。',
-        '',
-        '要求：',
-        '1. 所有内容严格贴合人设和当前剧情关系，有温度细节内心戏，每次不一样',
-        '2. 微信：必须包含' + me.name + '（备注名根据关系和人设自定义，绝对不能直接用原名，要用昵称/爱称/吐槽式/暗号式备注），还有3-6个其他联系人（家人/朋友/同事/群聊等根据人设编），每人消息条数2-8条随机不等。对话节奏要自然：同一个人可以连发好几条不等回复，有的人话痨有的人惜字如金，不要死板的一问一答',
-        '3. 日记：2-3篇。格式像真实手机日记：开头写日期天气心情，正文分段写，有碎碎念有内心独白有对' + me.name + '的想法，每篇4-8行，语气口语化私密感强',
-        '4. 备忘录：5-7条！大部分要是角色自己的私人内容（小心思/健身计划/游戏攻略/工作笔记/追剧清单/食谱/理财/自我反省等什么都行，越多越好根据人设来），只有3-4条和' + me.name + '相关就行，不要全围绕' + me.name,
-        '5. 搜索记录：6-10条，有趣暴露小心思。每条要有title、url（编合理假URL）、detail（点开看到的内容2-5行，要像真实网页摘要）',
-        '6. 草稿箱：2-3条没发出的消息，情感张力强',
-        '7. 时间线：6-10条带内心独白',
-        '8. 相册：6-9张照片描述和心情',
-        '9. 钱包：余额+6-8条收支',
-        '10. 小号：2-3条秘密内容',
-        '11. 音乐：3-5首带心情',
-        '12. 小红书：3-5条，每条有title、note、detail（点开的详细内容3-5行）',
-        '13. 抖音：3-5条，每条有title、note、detail（点开的评论或描述3-5行）',
-        '14. 通话记录4-6条、短信2-3条、日程3-5条、购物3-5条',
-        '15. 中文',
-        '',
-        '输出JSON：',
-        '{',
-        '  "wechat":{"user_nickname":"备注名","contacts":[{"name":"名","avatar":"emoji","last":"摘要","messages":[{"from":"谁","text":"内容"}]}]},',
-        '  "diary":[{"date":"日期","weather":"天气","mood":"心情关键词","content":"4-8行日记正文"}],',
-        '  "memo":[{"title":"标题","content":"丰富内容"}],',
-        '  "search":[{"title":"标题","url":"假URL","detail":"2-5行详情"}],',
-        '  "album":[{"desc":"照片描述","mood":"心情"}],',
-        '  "wallet":{"balance":"余额","records":[{"item":"项目","amount":"+或-金额","time":"时间"}]},',
-        '  "secret":[{"platform":"平台","content":"内容"}],',
-        '  "alipay":[{"item":"项目","amount":"金额","time":"时间"}],',
-        '  "shopping":[{"app":"平台","item":"商品","price":"价格","note":"备注"}],',
-        '  "schedule":[{"time":"时间","event":"事件"}],',
-        '  "calls":[{"name":"联系人","type":"呼出/呼入/未接","time":"时间"}],',
-        '  "sms":[{"from":"发件人","text":"内容"}],',
-        '  "drafts":[{"to":"收件人","text":"草稿"}],',
-        '  "xiaohongshu":[{"title":"标题","note":"简述","detail":"点开详情3-5行"}],',
-        '  "douyin":[{"title":"描述","note":"心理","detail":"点开详情3-5行"}],',
-        '  "music":[{"song":"歌名","artist":"歌手","note":"心情"}],',
-        '  "timeline":[{"time":"时间","activity":"做什么","thought":"内心"}]',
-        '}'
+        '你正在扮演：' + c.name, '你的人设：' + (c.persona || '自然'), '对方名称：' + me.name, '对方备注：' + (me.note || '无'), '现在是' + getSysTimeStr(),
+        '', '最近聊天摘要：', hist || '（暂无）', '', '【任务】模拟' + c.name + '的手机被翻看。',
+        isAppend ? '【注意】：这是一次深度挖掘！请生成和之前完全不同的、更私密、更新鲜的内容！不要重复！' : '',
+        '要求：', '1. 所有内容严格贴合人设和当前剧情关系，有温度细节内心戏',
+        '2. 微信：必须包含' + me.name + '（用爱称/吐槽备注），和3-6个其他联系人，每人2-8条消息。对话要自然，有连发有短句。',
+        '3. 日记：2-5篇。开头写日期天气心情，正文分段写，有碎碎念有内心独白，每篇4-8行。',
+        '4. 备忘录：5-8条！私人内容为主，只有3-4条和' + me.name + '相关。',
+        '5. 搜索记录：6-10条，包含title、url、detail（2-5行摘要）。',
+        '6. 草稿箱：2-5条没发出的消息。', '7. 时间线：6-10条带内心独白。', '8. 相册：6-9张照片描述和心情。',
+        '9. 钱包：余额+6-8条收支。', '10. 小号：2-5条秘密内容。', '11. 音乐：3-5首带心情。',
+        '12. 小红书：3-7条，含title、note、detail。', '13. 抖音：3-7条，含title、note、detail。',
+        '14. 通话记录4-6条、短信2-3条、日程3-8条、购物3-7条。', '15. 中文。',
+        '输出JSON格式（严格遵守）：',
+        '{ "wechat":{"user_nickname":"备注名","contacts":[{"name":"名","avatar":"emoji","last":"摘要","messages":[{"from":"谁","text":"内容"}]}]}, "diary":[{"date":"日期","weather":"天气","mood":"心情关键词","content":"正文"}], "memo":[{"title":"标题","content":"内容"}], "search":[{"title":"标题","url":"假URL","detail":"详情"}], "album":[{"desc":"描述","mood":"心情"}], "wallet":{"balance":"余额","records":[{"item":"项目","amount":"金额","time":"时间"}]}, "secret":[{"platform":"平台","content":"内容"}], "alipay":[{"item":"项目","amount":"金额","time":"时间"}], "shopping":[{"app":"平台","item":"商品","price":"价格","note":"备注"}], "schedule":[{"time":"时间","event":"事件"}], "calls":[{"name":"联系人","type":"呼出/呼入/未接","time":"时间"}], "sms":[{"from":"发件人","text":"内容"}], "drafts":[{"to":"收件人","text":"草稿"}], "xiaohongshu":[{"title":"标题","note":"简述","detail":"点开详情"}], "douyin":[{"title":"描述","note":"心理","detail":"点开详情"}], "music":[{"song":"歌名","artist":"歌手","note":"心情"}], "timeline":[{"time":"时间","activity":"做什么","thought":"内心"}] }'
       ].join('\n');
 
       try {
-        const out = await callApi([
-          { role: 'system', content: sysPrompt },
-          { role: 'user', content: '翻开手机，生成所有APP内容。只输出JSON。' }
-        ]);
+        const out = await callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: isAppend ? '继续深挖手机里更私密的数据！' : '翻开手机，生成所有APP内容。' }]);
         let data = null;
         try {
           const jsonStr = out.replace(/```json|```/g, '').trim();
-          const m2 = jsonStr.match(/\{[\s\S]*\}/);
-          data = JSON.parse(m2 ? m2[0] : jsonStr);
+          data = JSON.parse(jsonStr.match(/\{[\s\S]*\}/)[0]);
         } catch (e) { throw new Error('AI返回格式异常，请重试'); }
-        pcCache[pcSelectedId] = data;
-        pcRenderApps(data, c);
+        
+        // 🌟 数据累加合并逻辑
+        if (isAppend && pcCache[pcSelectedId]) {
+          const old = pcCache[pcSelectedId];
+          for(let k in data) {
+            if(Array.isArray(data[k])) {
+              old[k] = [...data[k], ...(old[k]||[])]; // 新数据在上面
+            } else if (k === 'wechat') {
+              old.wechat.contacts = [...(data.wechat.contacts||[]), ...(old.wechat.contacts||[])];
+            } else if (k === 'wallet') {
+              old.wallet.records = [...(data.wallet.records||[]), ...(old.wallet.records||[])];
+            }
+          }
+          pcCache[pcSelectedId] = old;
+        } else {
+          pcCache[pcSelectedId] = data;
+        }
+        
+        pcRenderApps(pcCache[pcSelectedId], c);
       } catch (e) {
         $('pcLoading').classList.add('hidden');
         $('pcSelectPage').classList.remove('hidden');
         alert('查询失败：' + (e.message || '未知错误'));
       }
+  }
     }function pcRenderApps(data, contact) {
       $('pcLoading').classList.add('hidden');
       $('pcSelectPage').classList.add('hidden');
@@ -5201,21 +5199,21 @@ document.addEventListener('click',e=>{
         apps.push({icon:'💌',bg:'#e91e63',name:'短信',desc:data.sms.length+'条',body:b});
       }
 
-      if (data.xiaohongshu && data.xiaohongshu.length) {
-        const b = data.xiaohongshu.map(x => '<div style="padding:10px 0;border-bottom:1px solid #f5f5f8;cursor:pointer;" onclick="this.querySelector(\'.pc-s-detail\').style.display=this.querySelector(\'.pc-s-detail\').style.display===\'none\'?\'block\':\'none\'">' +
-          '<div class="pc-social-title">📕 ' + esc(x.title) + '</div>' +
+     if (data.xiaohongshu && data.xiaohongshu.length) {
+        const b = data.xiaohongshu.map(x => '<div style="padding:12px 0;border-bottom:1px dashed #eef4fa;cursor:pointer;" onclick="this.querySelector(\'.pc-s-detail\').style.display=this.querySelector(\'.pc-s-detail\').style.display===\'none\'?\'block\':\'none\'">' +
+          '<div style="display:flex; justify-content:space-between; align-items:center;"><div class="pc-social-title">📕 ' + esc(x.title) + '</div><div style="color:#a0aaba; font-size:18px; font-weight:bold;">›</div></div>' +
           (x.note ? '<div class="pc-social-note">' + esc(x.note) + '</div>' : '') +
-          '<div class="pc-s-detail" style="display:none;margin-top:8px;padding:10px;background:#fff5f5;border-radius:8px;border:1px solid #ffe0e0;font-size:13px;color:#333;line-height:1.6;white-space:pre-wrap;">' + esc(x.detail||'暂无详情') + '</div></div>').join('');
+          '<div class="pc-s-detail" style="display:none;margin-top:10px;padding:12px;background:rgba(255,245,245,0.8);border-radius:10px;border:1px solid #ffe0e0;font-size:13px;color:#333;line-height:1.6;white-space:pre-wrap;">' + esc(x.detail||'暂无详情') + '</div></div>').join('');
         apps.push({icon:'📕',bg:'#fe2c55',name:'小红书',desc:'收藏/浏览',body:b});
       }
 
       if (data.douyin && data.douyin.length) {
-        const b = data.douyin.map(d => '<div style="padding:10px 0;border-bottom:1px solid #f5f5f8;cursor:pointer;" onclick="this.querySelector(\'.pc-s-detail\').style.display=this.querySelector(\'.pc-s-detail\').style.display===\'none\'?\'block\':\'none\'">' +
-          '<div class="pc-social-title">🎬 ' + esc(d.title) + '</div>' +
+        const b = data.douyin.map(d => '<div style="padding:12px 0;border-bottom:1px dashed #eef4fa;cursor:pointer;" onclick="this.querySelector(\'.pc-s-detail\').style.display=this.querySelector(\'.pc-s-detail\').style.display===\'none\'?\'block\':\'none\'">' +
+          '<div style="display:flex; justify-content:space-between; align-items:center;"><div class="pc-social-title">🎬 ' + esc(d.title) + '</div><div style="color:#a0aaba; font-size:18px; font-weight:bold;">›</div></div>' +
           (d.note ? '<div class="pc-social-note">💭 ' + esc(d.note) + '</div>' : '') +
-          '<div class="pc-s-detail" style="display:none;margin-top:8px;padding:10px;background:#f5f5f5;border-radius:8px;border:1px solid #e8e8e8;font-size:13px;color:#333;line-height:1.6;white-space:pre-wrap;">' + esc(d.detail||'暂无详情') + '</div></div>').join('');
+          '<div class="pc-s-detail" style="display:none;margin-top:10px;padding:12px;background:rgba(245,245,245,0.8);border-radius:10px;border:1px solid #e8e8e8;font-size:13px;color:#333;line-height:1.6;white-space:pre-wrap;">' + esc(d.detail||'暂无详情') + '</div></div>').join('');
         apps.push({icon:'🎬',bg:'#000',name:'抖音',desc:'最近看的',body:b});
-      }
+  } 
 
       // 🌟 蓝色高定：套娃小手机桌面引擎 (只替换原来 $('pcResultPage').innerHTML = apps.map... 那一段哦！)
       let homeHtml = '<div id="pcMiniHome" class="pc-mini-home">';
