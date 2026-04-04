@@ -603,37 +603,93 @@
 .func-icon .lab2{font-size:11px;color:#555;}
 .func-icon:active .ibox2{transform:scale(.88);}
 
-/* 💸 微信转账卡片 (极致拟真版) */
-.card-transfer {
-  background: linear-gradient(135deg, #f99f38, #f38325);
-  border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 14px 16px; width: 230px;
-  box-shadow: 0 6px 16px rgba(243, 131, 37, 0.25); color: #fff; position: relative; overflow: hidden;
-}
-.card-transfer .ct-header { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; opacity: 0.95; margin-bottom: 8px; }
-.card-transfer .ct-header span { background: rgba(255,255,255,0.2); width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; }
-.card-transfer .ct-amount { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.2; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-.card-transfer .ct-note { font-size: 12px; opacity: 0.85; margin-top: 4px; }
-.card-transfer .ct-divider { border: none; border-top: 1px dashed rgba(255,255,255,0.3); margin: 12px 0; }
-.card-transfer .ct-footer { display: flex; align-items: center; justify-content: space-between; }
-.card-transfer .ct-label { font-size: 11px; opacity: 0.8; }
-.card-transfer .ct-btn { background: rgba(255,255,255,0.95); color: #f38325; border: none; border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.1s; }
-.card-transfer .ct-btn:active { transform: scale(0.95); }
+/* === 🌟 蓝色高定：沉浸式真机级交互卡片 (极简无Emoji高级版) === */
 
-/* 🧧 微信红包卡片 (真金白银版) */
-.card-redpacket {
-  background: linear-gradient(135deg, #f05e4b, #e94f3b);
-  border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 14px 16px; width: 230px;
-  box-shadow: 0 6px 16px rgba(233, 79, 59, 0.25); color: #fde4b3; position: relative; overflow: hidden;
+/* 💸 微信转账卡片 (剥离土味，极简重塑) */
+.card-transfer {
+  background: #f3a93c; border-radius: 8px; width: 230px;
+  box-shadow: 0 2px 8px rgba(243, 169, 60, 0.1); color: #fff; 
+  display: flex; flex-direction: column; overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.05); position: relative;
 }
-.card-redpacket .rp-main { display: flex; gap: 14px; align-items: center; }
-.card-redpacket .rp-icon { font-size: 34px; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.15)); flex-shrink: 0; }
-.card-redpacket .rp-title { font-size: 15px; font-weight: 600; line-height: 1.3; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-.card-redpacket .rp-sub { font-size: 11px; opacity: 0.9; margin-top: 2px; color: #fde4b3; }
-.card-redpacket .rp-divider { border: none; border-top: 1px dashed rgba(255,255,255,0.25); margin: 12px 0; }
-.card-redpacket .rp-footer { display: flex; align-items: center; justify-content: space-between; }
-.card-redpacket .rp-label { font-size: 11px; opacity: 0.85; }
-.card-redpacket .rp-btn { background: linear-gradient(180deg, #ffe0a4, #f5c468); color: #d03e2c; border: none; border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: transform 0.1s; }
-.card-redpacket .rp-btn:active { transform: scale(0.95); }
+.card-transfer .ct-header { display: none !important; }
+.card-transfer .ct-amount { 
+  padding: 16px 16px 4px 16px; font-size: 24px; font-weight: 500; 
+  display: flex; align-items: center; gap: 10px; line-height: 1; 
+}
+/* 核心魔法：用高级纯白圆圈取代土味钞票Emoji */
+.card-transfer .ct-amount::before { 
+  content: '￥'; display: grid; place-items: center; 
+  width: 28px; height: 28px; background: #fff; color: #f3a93c; 
+  border-radius: 50%; font-size: 16px; font-weight: 800; 
+}
+.card-transfer .ct-note { padding: 0 16px 16px 54px; font-size: 13px; opacity: 0.9; }
+.card-transfer .ct-divider { display: none !important; }
+.card-transfer .ct-footer { background: #fff; color: #999; font-size: 11px; padding: 6px 14px; display: flex; align-items: center; justify-content: space-between; }
+.card-transfer .ct-label { font-size: 11px; color: #999; }
+.card-transfer .ct-btn { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; }
+.card-transfer .ct-received { font-size: 11px; color: #999; font-weight: bold; z-index: 11; position: relative; }
+
+/* 🧧 微信红包卡片 (剥离土味，极简重塑) */
+.card-redpacket {
+  background: #f25542; border-radius: 8px; width: 230px;
+  box-shadow: 0 2px 8px rgba(242, 85, 66, 0.1); color: #fff; 
+  display: flex; flex-direction: column; overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.05); position: relative;
+}
+.card-redpacket .rp-main { padding: 16px 14px 18px; display: flex; gap: 12px; align-items: center; }
+/* 核心魔法：隐去自带的丑Emoji，换上高级极简的红包Icon */
+.card-redpacket .rp-icon { 
+  font-size: 0 !important; color: transparent !important; width: 32px; height: 38px; 
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 30"><rect width="24" height="30" rx="3" fill="%23fbd26e"/><path d="M0 10l12 7 12-7" stroke="%23df4331" stroke-width="2" fill="none"/><circle cx="12" cy="17" r="3.5" fill="%23df4331"/></svg>') center/contain no-repeat;
+}
+.card-redpacket .rp-title { font-size: 16px; font-weight: 500; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-redpacket .rp-sub { font-size: 12px; opacity: 0.85; margin-top: 4px; }
+.card-redpacket .rp-divider { display: none !important; }
+.card-redpacket .rp-footer { background: #fff; color: #999; font-size: 11px; padding: 6px 14px; display: flex; align-items: center; justify-content: space-between; }
+.card-redpacket .rp-label { font-size: 11px; color: #999; }
+.card-redpacket .rp-btn { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; }
+.card-redpacket .rp-opened { font-size: 11px; color: #999; font-weight: bold; z-index: 11; position: relative; }
+
+/* 👻 魔法：已被领取的原始卡片变灰变淡 */
+.card-transfer.received:has(.ct-footer), .card-transfer.rejected:has(.ct-footer),
+.card-redpacket.received:has(.rp-footer), .card-redpacket.rejected:has(.rp-footer) {
+  opacity: 0.65; filter: grayscale(0.2); pointer-events: none;
+}
+
+/* 💬 终极魔法：回执气泡极致净化！ */
+.card-transfer.received:not(:has(.ct-footer)), .card-transfer.rejected:not(:has(.ct-footer)),
+.card-redpacket.received:not(:has(.rp-footer)), .card-redpacket.rejected:not(:has(.rp-footer)) {
+  background: #fff !important; color: #f3a93c !important;
+  width: fit-content !important; padding: 8px 16px !important;
+  display: inline-flex !important; align-items: center !important; gap: 8px !important;
+  border-radius: 8px !important; border: 1px solid #e8e8e8 !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.02) !important; opacity: 1 !important; filter: none !important;
+}
+.card-redpacket.received:not(:has(.rp-footer)), .card-redpacket.rejected:not(:has(.rp-footer)) {
+  color: #f25542 !important;
+}
+
+/* 隐藏回执气泡里不需要的杂质 */
+.card-transfer.received:not(:has(.ct-footer)) .ct-header, .card-transfer.received:not(:has(.ct-footer)) .ct-note,
+.card-transfer.rejected:not(:has(.ct-footer)) .ct-header, .card-transfer.rejected:not(:has(.ct-footer)) .ct-note,
+.card-redpacket.received:not(:has(.rp-footer)) .rp-main > div:not(:last-child), .card-redpacket.received:not(:has(.rp-footer)) .rp-sub,
+.card-redpacket.rejected:not(:has(.rp-footer)) .rp-main > div:not(:last-child), .card-redpacket.rejected:not(:has(.rp-footer)) .rp-sub {
+  display: none !important;
+}
+.card-transfer.received:not(:has(.ct-footer)) .ct-amount, .card-transfer.rejected:not(:has(.ct-footer)) .ct-amount,
+.card-redpacket.received:not(:has(.rp-footer)) .rp-title, .card-redpacket.rejected:not(:has(.rp-footer)) .rp-title {
+  font-size: 14px !important; font-weight: bold !important; padding: 0 !important;
+}
+/* 给回执补上高级的对勾 SVG */
+.card-transfer.received:not(:has(.ct-footer)) .ct-amount::before, .card-transfer.rejected:not(:has(.ct-footer)) .ct-amount::before,
+.card-redpacket.received:not(:has(.rp-footer)) .rp-title::before, .card-redpacket.rejected:not(:has(.rp-footer)) .rp-title::before {
+  content: ''; display: block; width: 16px; height: 16px;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23f3a93c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>') center/contain no-repeat;
+}
+.card-redpacket.received:not(:has(.rp-footer)) .rp-title::before, .card-redpacket.rejected:not(:has(.rp-footer)) .rp-title::before {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23f25542" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>');
+}
 
 /* 📍 定位卡片 (苹果地图毛玻璃版) */
 .card-location {
