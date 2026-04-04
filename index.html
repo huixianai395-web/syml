@@ -1800,29 +1800,41 @@ button[onclick*="ClearGroup"],
   /* 🌟 同样让 Dock 栏的图标居中 */
   display: grid; place-items: center;
 }
-   /* === 🌟 蓝色高定：序言/开场白专属排版魔法 (极致立体版) === */
-.msg-prologue-wrap { display: flex; justify-content: center; margin: 32px 0; width: 100%; }
+  /* === 🌟 蓝色高定：序言/开场白专属排版 (绝美古风信笺版) === */
+.msg-prologue-wrap { display: flex; justify-content: center; margin: 36px 0; width: 100%; }
 .msg-prologue {
-  background: linear-gradient(145deg, rgba(255,255,255,0.92), rgba(244,246,251,0.55));
-  backdrop-filter: blur(24px) saturate(120%); -webkit-backdrop-filter: blur(24px) saturate(120%);
-  border: 1px solid rgba(255,255,255,0.8); border-radius: 20px; padding: 32px 24px;
-  width: 92%; max-width: 400px; text-align: center;
-  /* 🌟 核心立体魔法：多层柔和阴影 + 内部边缘高光（模拟玻璃厚度） */
+  background: linear-gradient(145deg, #fefaf4, #f5ebd5); /* 泛黄的宣纸/羊皮纸底色 */
+  border: 1px solid rgba(180, 140, 100, 0.3); /* 淡淡的茶色边框 */
+  border-radius: 6px; /* 纸张微卷的自然弧度，拒绝现代大圆角 */
+  padding: 40px 32px;
+  width: 90%; max-width: 420px; text-align: center;
+  /* 柔和的暖色投影，仿佛纸张微微浮在桌面上 */
   box-shadow: 
-    0 20px 40px rgba(92,112,148,0.08), 
-    0 1px 3px rgba(92,112,148,0.03),
-    inset 0 2px 0 rgba(255,255,255,1),
-    inset 2px 0 0 rgba(255,255,255,0.6);
+    0 12px 30px rgba(90, 60, 30, 0.06), 
+    inset 0 0 20px rgba(255, 255, 255, 0.6);
   position: relative; overflow: hidden;
 }
-/* 绝美复古引号装饰 - 颜色调柔和，彻底融入背景 */
-.msg-prologue::before { content: "❝"; position: absolute; top: 16px; left: 16px; font-size: 42px; color: #b8c6e8; opacity: 0.35; font-family: "Times New Roman", serif; line-height: 1; pointer-events: none; }
-.msg-prologue::after { content: "❞"; position: absolute; bottom: -20px; right: 16px; font-size: 42px; color: #b8c6e8; opacity: 0.35; font-family: "Times New Roman", serif; line-height: 1; pointer-events: none; }
-.msg-prologue-text {
-  font-size: 14px; color: #4a5c82; line-height: 1.85; letter-spacing: 1px;
-  font-family: "STZhongsong", "KaiTi", serif; text-align: justify; text-align-last: center; white-space: pre-wrap; position: relative; z-index: 2;
+/* 📜 左侧的复古装订线/折痕 */
+.msg-prologue::before { 
+  content: ""; position: absolute; left: 16px; top: 10%; bottom: 10%; width: 2px; 
+  background: linear-gradient(to bottom, transparent, rgba(180, 140, 100, 0.25), transparent); 
 }
-/* 🪄 蓝色的空间折叠魔法：遇到序言卡片时，强制隐藏头像和时间，并居中对齐！ */
+/* 🪶 右下角的隐形古风印章水印 */
+.msg-prologue::after { 
+  content: "印"; position: absolute; bottom: 12px; right: 16px; 
+  font-size: 46px; color: #b48c64; opacity: 0.08; 
+  font-family: "STKaiti", "KaiTi", serif; 
+  border: 2px solid rgba(180, 140, 100, 0.15); border-radius: 8px; padding: 4px; 
+  pointer-events: none; transform: rotate(-12deg); 
+}
+/* 🖋️ 墨色正文，极致的留白与呼吸感 */
+.msg-prologue-text {
+  font-size: 15px; color: #4a3d30; line-height: 2.2; letter-spacing: 2px;
+  font-family: "STZhongsong", "STKaiti", "KaiTi", serif; 
+  text-align: justify; text-align-last: center; white-space: pre-wrap; 
+  position: relative; z-index: 2; text-shadow: 0 1px 1px rgba(255,255,255,0.5);
+}
+/* 🪄 空间折叠魔法：遇到序言卡片时，强制隐藏头像和时间，并居中对齐！ */
 .msg-item:has(.msg-prologue-wrap) .chat-avatar,
 .msg-item:has(.msg-prologue-wrap) .rp-meta-box,
 .msg-item:has(.msg-prologue-wrap) .msg-time { display: none !important; }
