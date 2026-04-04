@@ -9072,36 +9072,129 @@ window._currentIfLineup = []; // 存放当前准备出战的卡牌ID数组
     `).join('');
   };
 
-  // 生成新书的占位逻辑（下一步接入真正的 AI）
+ // ================= 🌟 蓝色高定：真实造梦与世界书引擎 =================
+  window._ifSelectedWbIds = new Set();
+
+  // 打开世界书挑选台
+  window._openIfWbModal = async function() {
+    const books = await getWbBooks(); // 调用总库的世界书
+    const box = document.getElementById('ifWbList');
+    if(!box) return;
+    if(!books || books.length === 0) {
+      box.innerHTML = `<div style="text-align:center; padding:30px 0; color:#a0aaba; font-size:12px;">总库空空如也，请先去世界书 App 建立设定哦~</div>`;
+    } else {
+      let html = '';
+      books.forEach(b => {
+        if(!b.entries || b.entries.length === 0) return;
+        html += `<div style="font-size:13px; font-weight:800; color:#3d4a6a; margin:8px 0 4px;">📖 ${safeEscIf(b.bookName)}</div>`;
+        html += b.entries.map(e => {
+          const isChecked = window._ifSelectedWbIds.has(e.id);
+          return `
+            <label style="display:flex; align-items:flex-start; gap:8px; padding:10px; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; border-radius:10px; cursor:pointer;">
+              <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="window._toggleIfWb('${e.id}', this.checked)" style="accent-color:#5c7094; margin-top:2px;">
+              <div style="flex:1; font-size:12px; color:#5c7094;"><b>${safeEscIf(e.keys)}</b><br><span style="color:#7a86a8; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${safeEscIf(e.content)}</span></div>
+            </label>
+          `;
+        }).join('');
+      });
+      box.innerHTML = html;
+    }
+    document.getElementById('ifWbModal').classList.add('active');
+  };
+
+  window._toggleIfWb = function(id, isChecked) {
+    if(isChecked) window._ifSelectedWbIds.add(id); else window._ifSelectedWbIds.delete(id);
+    document.getElementById('ifWbCountDisplay').textContent = `已选 ${window._ifSelectedWbIds.size} 项`;
+  };
+
+  // 真正的大模型造梦引擎！
   window._startIfForge = async function() {
     const category = document.getElementById('ifForgeCategory').value.trim() || '盲盒时空';
     const outline = document.getElementById('ifForgeOutline').value.trim();
-    
-    // 假装我们在调用 AI 生成...
+    // 判断当前拨片在左边还是右边
+    const btnFirst = document.getElementById('modeBtnFirst');
+    const mode = btnFirst.style.background === 'rgb(92, 112, 148)' || btnFirst.style.background.includes('#5c7094') ? 'first' : 'god';
+
     const btn = document.querySelector('#ifForgeModal .btn.p');
     const oldText = btn.innerHTML;
-    btn.innerHTML = '星轨转动中...';
+    btn.innerHTML = '✨ 宇宙大爆炸中... (需等待十秒左右)';
     btn.style.pointerEvents = 'none';
+    btn.style.opacity = '0.8';
 
-    setTimeout(async () => {
+    try {
+      // 1. 提取出战角色的灵魂数据
+      const allCards = await getIfCards();
+      const activeChars = window._currentIfLineup.map(id => allCards.find(c => c.id === id)).filter(Boolean);
+      const charDesc = activeChars.map(c => `【${c.name}】：${c.persona}`).join('\\n');
+
+      // 2. 提取世界书设定
+      let wbText = '';
+      if(window._ifSelectedWbIds.size > 0) {
+         const wbBooks = await getWbBooks();
+         wbBooks.forEach(b => {
+           (b.entries || []).forEach(e => {
+              if(window._ifSelectedWbIds.has(e.id)) wbText += `[${e.keys}] ${e.content}\\n`;
+           });
+         });
+      }
+
+      // 3. 构建神级 Prompt
+      const sysPrompt = `你是一个顶级互动小说家。
+当前时空背景/分类：${category}
+出场角色设定：
+${charDesc}
+${wbText ? '\\n世界观法则(必须严格遵循)：\\n' + wbText : ''}
+${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发挥，创造一个极具张力、火花四溅的开局第一章！'}
+
+【写作模式】：${mode === 'first' ? '第一人称沉浸模式（"我"是主角，请以第一人称代入描写）' : '上帝视角/导演模式（以第三人称描写角色们的修罗场互动）'}
+
+【输出格式铁律】：
+必须严格输出JSON，包含小说正文(content)以及3个供玩家选择的命运分支(options)。
+{
+  "content": "第一章的正文内容。必须分段，要有极具画面感的环境描写、动作和对话。字数800-1000字。",
+  "options": ["选项A：...", "选项B：...", "选项C：..."]
+}`;
+
+      // 4. 呼叫底层 API！
+      const out = await callApi([
+        { role: 'system', content: sysPrompt },
+        { role: 'user', content: '请拨动星轨，立刻生成第一章内容！' }
+      ]);
+
+      const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
+      const match = cleaned.match(/\\{[\\s\\S]*\\}/);
+      if(!match) throw new Error("AI 时空乱流，未能返回正确格式！");
+      const data = JSON.parse(match[0]);
+
+      // 5. 将小说死死封印进外挂硬盘
       const books = await getIfBooks();
       books.unshift({
         id: 'ifb_' + Date.now(),
         title: category + ' 的故事',
         category: category,
         outline: outline,
-        wbEnabled: document.getElementById('ifForgeWbSwitch').checked,
-        lineup: [...window._currentIfLineup], // 锁死当时出战的阵容！
-        chapters: [{ title: '第一章：命运的齿轮', content: '（AI 正在疯狂码字中，敬请期待...）' }]
+        mode: mode,
+        lineup: [...window._currentIfLineup],
+        chapters: [{
+          title: '第一章：命运的齿轮',
+          content: data.content,
+          options: data.options || []
+        }],
+        comments: [] // 预留给虚拟读者的弹幕区
       });
       await setIfBooks(books);
-      
+
       document.getElementById('ifForgeModal').classList.remove('active');
-      window._renderIfStoryList(); // 瞬间刷出绝美书本卡片！
-      
+      window._renderIfStoryList();
+      alert('✨ 盲盒开启成功！快去书架上看看这本新诞生的小说吧！');
+
+    } catch(e) {
+      alert('造梦失败了宝宝：' + e.message);
+    } finally {
       btn.innerHTML = oldText;
       btn.style.pointerEvents = 'auto';
-    }, 800);
+      btn.style.opacity = '1';
+    }
   };
 
   // 页面加载时顺便渲染一下书架
@@ -9317,17 +9410,32 @@ window._currentIfLineup = []; // 存放当前准备出战的卡牌ID数组
           <textarea id="ifForgeOutline" class="ta" placeholder="可以写一句开头，比如：'我'是一个没有感情的仿生人... (留空则由 AI 盲盒随机生成神仙开局)" style="background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:10px; font-size:13px; padding:10px 12px; width:100%; min-height:80px; color:#5c7094; resize:vertical; box-sizing:border-box;"></textarea>
         </div>
 
-        <!-- 关联世界书开关 -->
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:rgba(255,255,255,0.5); border:1px solid #dce5f0; border-radius:12px;">
+        <!-- 🌟 蓝色高定：关联世界书高级入口 -->
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:rgba(255,255,255,0.5); border:1px solid #dce5f0; border-radius:12px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='rgba(238,244,250,0.5)'" onmouseout="this.style.background='rgba(255,255,255,0.5)'" onclick="window._openIfWbModal()">
           <div style="font-size:13px; color:#5c7094; font-weight:bold; display:flex; align-items:center; gap:6px;">
             <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-            注入世界书设定
+            挑选世界书设定
           </div>
-          <input id="ifForgeWbSwitch" type="checkbox" checked style="transform:scale(1.1); accent-color:#5c7094;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span id="ifWbCountDisplay" style="font-size:12px; color:#a5cfff; font-weight:bold;">已选 0 项</span>
+            <span style="color:#a5cfff; font-size:18px; line-height:1;">›</span>
+          </div>
         </div>
 
         <button class="btn p" onclick="window._startIfForge()" style="width:100%; margin-top:4px; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:12px; padding:12px 0; font-size:14px; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.1); transition:all 0.2s ease; letter-spacing:1px;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">✨ 拨动星轨 (生成新书)</button>
 
+      </div>
+    </div>
+  </div>
+  <!-- ================= 🌟 蓝色高定：境·IF 专属世界书挑选台 ================= -->
+  <div id="ifWbModal" class="modal" style="z-index: 10000;">
+    <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; display:flex; flex-direction:column; max-height:70dvh; padding:0; overflow:hidden;">
+      <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
+        <b style="color:#5c7094; font-size:15px;">挑选时空法则</b>
+        <button class="btn p" onclick="document.getElementById('ifWbModal').classList.remove('active')" style="padding:4px 12px; font-size:12px;">确认</button>
+      </div>
+      <div id="ifWbList" style="flex:1; overflow-y:auto; padding:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; flex-direction:column; gap:12px;">
+        <!-- 世界书条目将由 JS 渲染 -->
       </div>
     </div>
   </div>
