@@ -1984,6 +1984,36 @@ button[onclick*="ClearGroup"],
 .pc-wx-item, .pc-diary-item, .pc-search-item, .pc-pay-item, .pc-music-item, .pc-call-item, .pc-sms-item, .pc-tl-item, .pc-social-item, .pc-schedule-item {
   border-bottom: 1px solid #eef4fa !important; /* 强制把 dashed 改成干净的 solid 实线！ */
 }
+    /* === 💭 实时心声栏 === */
+.inner-voice-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px; margin: 6px 12px;
+  background: rgba(245, 247, 250, 0.65);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(220, 229, 240, 0.6);
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(92, 112, 148, 0.04);
+  transition: all 0.3s ease;
+}
+.inner-voice-bar .iv-icon { font-size: 14px; opacity: 0.8; }
+.inner-voice-bar .iv-text {
+  flex: 1; font-size: 12px; color: #7a86a8;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-style: italic; letter-spacing: 0.5px; transition: filter 0.3s ease;
+}
+.iv-switch-wrap { position: relative; width: 32px; height: 18px; display: inline-block; flex-shrink: 0; }
+.iv-switch-wrap input { opacity: 0; width: 0; height: 0; }
+.iv-slider {
+  position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(220, 229, 240, 0.6); border-radius: 18px; transition: .4s;
+}
+.iv-slider:before {
+  position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px;
+  background-color: white; border-radius: 50%; transition: .4s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.iv-switch-wrap input:checked + .iv-slider { background-color: #a5cfff; }
+.iv-switch-wrap input:checked + .iv-slider:before { transform: translateX(14px); }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
@@ -2389,6 +2419,14 @@ button[onclick*="ClearGroup"],
       <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#5c7094;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
     </button>
   </div>
+    </div>
+    <div id="innerVoiceBar" class="inner-voice-bar">
+      <div class="iv-icon">💭</div>
+      <div class="iv-text" id="innerVoiceText">等待连接对方心跳频率...</div>
+      <label class="iv-switch-wrap">
+        <input type="checkbox" id="ivToggle" checked onchange="document.getElementById('innerVoiceText').style.filter = this.checked ? 'none' : 'blur(6px)';">
+        <span class="iv-slider"></span>
+      </label>
     </div>
     <div id="chatMsgs"></div><div id="offlinePalettePanel" class="off-palette-panel global">
   <div class="off-palette-row"><span>状态栏</span><input type="color" data-key="state"></div>
@@ -3518,7 +3556,15 @@ function refreshFontSizeUI(){
     let p='', t='';
     if(arr.length){ 
       const last=arr[arr.length-1]; 
-      p=last.text||'[图片/特殊消息]'; 
+      let rawText = last.text || '';
+      p = rawText
+        .replace(/<[^>]+>/g, '')
+        .replace(/\[voice:\d*:?(.*?)\]/g, '[语音] $1')
+        .replace(/\[stk:.*?\]/g, '[表情包]')
+        .replace(/\[call:.*?\]/g, '[通话记录]')
+        .replace(/\[quote\]/g, '')
+        .trim();
+      if(!p) p = '[特殊消息]';
       // 🛠️ 修复1：给机器时间套上人类翻译器 fmtTs，变成 12:00 这种格式！
       t=fmtTs(last.time)||''; 
     }
