@@ -2406,29 +2406,17 @@ button[onclick*="ClearGroup"],
     <div class="header" style="background:rgba(255,255,255,0.85); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid #dce5f0; position:relative; z-index:50;">
   <button class="btn" data-nav="wechat" style="background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; font-weight:600; border-radius:10px; padding:6px 12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 返回</button>
   
-  <!-- 居中区域：包含名字、正在输入提示、以及全新的状态标签 -->
-  <div class="chat-head-center">
-    <div class="chat-head-title" id="chatTitle" style="color:#1a1d26; font-size:16px; font-weight:bold;">聊天</div>
-    <div class="chat-head-sub" id="chatSub" style="color:#8892a8; font-size:11px;"></div>
-    
-    <!-- 🌟 蓝色高定：初雪海盐蓝状态小胶囊 -->
-    <div id="chatStatusBadge" class="chat-status-badge hidden" onclick="document.getElementById('chatIvDropdown').classList.toggle('hidden')">
-      <div class="status-dot"></div>
-      <span id="chatStatusText" class="chat-status-text">状态</span>
-      <svg viewBox="0 0 24 24" style="width:10px; height:10px; stroke:#5c7094; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; margin-left:2px;"><polyline points="6 9 12 15 18 9"></polyline></svg>
-    </div>
+  <!-- 🌟 蓝色魔法：居中区域变成了一个整体的按钮！ -->
+  <div class="chat-head-center" style="cursor:pointer; transition:opacity 0.2s;" onmousedown="this.style.opacity='0.6'" onmouseup="this.style.opacity='1'" onclick="window._showInnerVoiceModal()">
+    <div class="chat-head-title" id="chatTitle" style="color:#1a1d26; font-size:16px; font-weight:bold; line-height:1.2;">聊天</div>
+    <!-- 这里就是状态和正在输入的复用区域 -->
+    <div class="chat-head-sub" id="chatSub" style="color:#7a86a8; font-size:11px; display:flex; align-items:center; justify-content:center; gap:4px; height:16px; margin-top:2px;"></div>
   </div>
   
-  <!-- 右侧设置按钮 -->
   <div class="head-right">
     <button class="icon-btn" id="chatSettingBtn" aria-label="设置" style="background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; width:32px; height:32px; display:grid; place-items:center; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
       <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#5c7094;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
     </button>
-  </div>
-
-  <!-- 🌟 蓝色高定：藏在 header 里的下拉心声暗门 -->
-  <div id="chatIvDropdown" class="chat-iv-dropdown hidden">
-    <div class="iv-content">💭 <span id="ivText"></span></div>
   </div>
     </div>
     <div id="chatMsgs"></div><div id="offlinePalettePanel" class="off-palette-panel global">
@@ -3725,7 +3713,36 @@ function compressImage(file, isWallpaper = false) {
   };
 
   function setTyping(chatId,on){typingForId=on?chatId:(typingForId===chatId?null:typingForId);updateChatSub();}
-  function updateChatSub(){$('chatSub').textContent=(currentId&&typingForId===currentId)?'对方正在输入中…':'';}
+  function updateChatSub(){
+    const sub = document.getElementById('chatSub');
+    if(!sub) return;
+    
+    if(currentId && typingForId === currentId) {
+      // 如果正在打字，就显示动态的正在输入
+      sub.innerHTML = '<span style="color:#a5cfff; animation: blueBlink 1.5s infinite; font-weight:600;">正在输入中...</span>';
+    } else {
+      // 打完字了，读取外挂内存里的状态！
+      const c = getContactById(currentId);
+      const st = normSettings(c?.settings);
+      if(st.innerVoice && !c?.isGroup && st.lastStatus) {
+        sub.innerHTML = `<span style="color:#5c7094; font-weight:600;">${safeEsc(st.lastStatus)}</span> <span style="color:#a0aaba; font-size:14px; line-height:1;">›</span>`;
+      } else {
+        sub.innerHTML = '';
+      }
+    }
+  }
+
+  // 🌟 蓝色魔法：唤醒面板的函数（直接加在 updateChatSub 下面就行）
+  window._showInnerVoiceModal = function() {
+    if(!currentId) return;
+    const c = getContactById(currentId);
+    const st = normSettings(c?.settings);
+    if(st.innerVoice && !c?.isGroup && st.lastStatus && st.lastVoice) {
+      document.getElementById('ivModalStatus').textContent = st.lastStatus;
+      document.getElementById('ivModalVoice').textContent = st.lastVoice;
+      document.getElementById('innerVoiceModal').classList.add('active');
+    }
+  };
   function applyModeUI(){const c=getContactById(currentId),st=normSettings(c?.settings);$('chatRoom').classList.toggle('offline',st.mode==='offline');updateChatSub();}
 
   window.openChat=function(id){
@@ -3842,17 +3859,7 @@ if(!isMe && isHtmlDoc(t)){
 
   function renderChat(){
     const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),pref=getPref();
-    // 🌟 蓝色魔法：读取外挂内存，恢复之前的状态和心声
-      const badge = document.getElementById('chatStatusBadge');
-      const dropdown = document.getElementById('chatIvDropdown');
-      if(st.innerVoice && !c?.isGroup && st.lastStatus) {
-        document.getElementById('chatStatusText').textContent = st.lastStatus;
-        if(badge) badge.classList.remove('hidden');
-        document.getElementById('ivText').textContent = st.lastVoice || '';
-      } else {
-        if(badge) badge.classList.add('hidden');
-        if(dropdown) dropdown.classList.add('hidden');
-      }
+   
     const me = { name: st.meName||globalMe.name||'我', avatar: st.meAvatar||globalMe.avatar||'', persona: st.mePersona||globalMe.persona||'', note: st.meNote||globalMe.note||'' };
     const roleAvatar=c?.avatar||'https://via.placeholder.com/64x64?text=TA',meAvatar=me.avatar||'https://via.placeholder.com/64x64?text=我';
     const arr=getChatArr(currentId);
@@ -9029,5 +9036,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   })();
   </script>
+  <!-- 🌟 蓝色高定：悬浮心声面板 -->
+<div id="innerVoiceModal" class="modal" style="z-index: 9999;" onclick="this.classList.remove('active')">
+  <div class="modal-card" style="width:280px; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; box-shadow:0 12px 40px rgba(92,112,148,0.12); border-radius:24px; padding:24px; text-align:center;" onclick="event.stopPropagation()">
+    <!-- 顶部极简装饰条 -->
+    <div style="width:32px; height:4px; background:#dce5f0; border-radius:2px; margin:0 auto 16px;"></div>
+    
+    <div style="font-size:10px; color:#a5cfff; font-weight:800; letter-spacing:2px; margin-bottom:6px; font-family:ui-monospace, monospace;">STATUS</div>
+    <div id="ivModalStatus" style="font-size:18px; color:#3d4a6a; font-weight:bold; margin-bottom:20px; letter-spacing:1px;">无</div>
+    
+    <div style="background:rgba(238,244,250,0.6); border:1px dashed #dce5f0; border-radius:16px; padding:20px 16px 16px; position:relative;">
+      <div style="position:absolute; top:-10px; left:16px; background:#eef4fa; padding:0 8px; font-size:11px; color:#7a86a8; font-weight:bold; border:1px solid #dce5f0; border-radius:6px;">💭 TA的内心 OS</div>
+      <div id="ivModalVoice" style="font-size:13px; color:#5c7094; line-height:1.6; text-align:justify; font-style:italic;">暂无心声</div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
