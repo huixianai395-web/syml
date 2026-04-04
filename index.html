@@ -9240,12 +9240,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       bindIconUpload(`icon_${name}`, `up_icon_${name}`, `mp_icon_${name}`);
     }
   })();
-  // 🌟 蓝色高定：平行宇宙双模拨片丝滑切换引擎
+// 🌟 蓝色高定：平行宇宙双模拨片丝滑切换引擎
   window._switchIfMode = function(mode) {
     const b1 = document.getElementById('modeBtnFirst');
     const b2 = document.getElementById('modeBtnGod');
     if(!b1 || !b2) return;
-    
     if(mode === 'first') {
       b1.style.background = '#5c7094'; b1.style.color = '#fff'; b1.style.boxShadow = '0 2px 8px rgba(92,112,148,0.2)';
       b2.style.background = 'transparent'; b2.style.color = '#7a86a8'; b2.style.boxShadow = 'none';
@@ -9255,168 +9254,445 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
+  // ================= 🌟 蓝色高定：境·IF 终极造梦大一统引擎 =================
+  const K_IF_CARDS = 'mp_fix_if_cards';
+  const K_IF_BOOKS = 'mp_fix_if_books';
+  window._currentIfLineup = []; 
+  window._ifSelectedWbIds = new Set();
+  window._currentIfBookId = null;
 
-  <!-- 🌟 蓝色高定：悬浮心声面板 -->
+  const safeEscIf = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+
+  // --- 1. 灵魂卡牌与出战引擎 ---
+  async function getIfCards() { return (await localforage.getItem(K_IF_CARDS)) || []; }
+  async function setIfCards(data) { await localforage.setItem(K_IF_CARDS, data); }
+
+  window._renderIfCardList = async function() {
+    const cards = await getIfCards();
+    const box = document.getElementById('ifCardList');
+    if(!box) return;
+    if(cards.length === 0) {
+      box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:12px;">卡牌库空空如也<br>请在下方捏一个新灵魂吧</div>`;
+      return;
+    }
+    box.innerHTML = cards.map(c => `
+      <div style="background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:12px; padding:12px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="window._selectIfCard('${c.id}')">
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:14px; font-weight:800; color:#3d4a6a; margin-bottom:4px;">${safeEscIf(c.name)}</div>
+          <div style="font-size:11px; color:#7a86a8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${safeEscIf(c.persona)}</div>
+        </div>
+        <div style="color:#a5cfff; font-size:18px; font-weight:bold; margin-left:10px;">+</div>
+      </div>
+    `).join('');
+  };
+
+  window._openIfCardModal = function() {
+    document.getElementById('ifCardModal').classList.add('active');
+    window._renderIfCardList();
+  };
+
+  window._saveIfCard = async function() {
+    const name = document.getElementById('ifNewCardName').value.trim();
+    const persona = document.getElementById('ifNewCardPersona').value.trim();
+    if(!name || !persona) return alert('宝宝，名字和人设都不能为空哦！');
+    
+    const newId = 'ifc_' + Date.now();
+    const cards = await getIfCards();
+    cards.unshift({ id: newId, name: name, persona: persona });
+    await setIfCards(cards);
+    
+    document.getElementById('ifNewCardName').value = '';
+    document.getElementById('ifNewCardPersona').value = '';
+    window._currentIfLineup.push(newId);
+    document.getElementById('ifCardModal').classList.remove('active');
+    window._renderIfLineup(); 
+  };
+
+  window._selectIfCard = function(id) {
+    if(window._currentIfLineup.includes(id)) return alert('宝宝，这个灵魂已经就位啦！');
+    window._currentIfLineup.push(id);
+    document.getElementById('ifCardModal').classList.remove('active');
+    window._renderIfLineup(); 
+  };
+
+  window._removeIfLineup = function(id) {
+    window._currentIfLineup = window._currentIfLineup.filter(x => x !== id);
+    window._renderIfLineup();
+  };
+
+  window._renderIfLineup = async function() {
+    const cards = await getIfCards();
+    const box = document.getElementById('ifSelectedCardsBox');
+    if(!box) return;
+    let html = '';
+    window._currentIfLineup.forEach(id => {
+      const c = cards.find(x => x.id === id);
+      if(c) {
+        html += `
+          <div style="position:relative; width:64px; height:64px; border-radius:16px; background:#eef4fa; border:1px solid #dce5f0; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(92,112,148,0.06);">
+            <div onclick="window._removeIfLineup('${c.id}')" style="position:absolute; top:-6px; right:-6px; width:20px; height:20px; background:#fcf2f2; border:1px solid #f2dcdc; color:#b57b7b; border-radius:50%; font-size:14px; line-height:1; display:grid; place-items:center; cursor:pointer;">×</div>
+            <span style="font-size:14px; font-weight:800; color:#3d4a6a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:54px;">${safeEscIf(c.name.slice(0,4))}</span>
+            <span style="font-size:10px; color:#7a86a8; margin-top:2px;">已就位</span>
+          </div>
+        `;
+      }
+    });
+    html += `
+      <div onclick="window._openIfCardModal()" style="width:64px; height:64px; border-radius:16px; border:1.5px dashed #a5cfff; background:rgba(250,252,255,0.6); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer;">
+        <span style="font-size:22px; color:#a5cfff; font-weight:300; line-height:1;">+</span>
+        <span style="font-size:10px; color:#7a86a8; font-weight:bold; margin-top:2px;">邀场</span>
+      </div>
+    `;
+    box.innerHTML = html;
+  };
+
+  // --- 2. 世界书挑选与造梦引擎 ---
+  async function getIfBooks() { return (await localforage.getItem(K_IF_BOOKS)) || []; }
+  async function setIfBooks(data) { await localforage.setItem(K_IF_BOOKS, data); }
+
+  window._openIfForgeModal = function() {
+    if(window._currentIfLineup.length === 0) return alert('宝宝，灵魂阵列是空的！请先邀场！');
+    document.getElementById('ifForgeModal').classList.add('active');
+  };
+
+  window._openIfWbModal = async function() {
+    const books = await getWbBooks();
+    const box = document.getElementById('ifWbList');
+    if(!box) return;
+    if(!books || books.length === 0) {
+      box.innerHTML = `<div style="text-align:center; padding:30px 0; color:#a0aaba; font-size:12px;">总库空空如也，请先去世界书添加设定哦~</div>`;
+    } else {
+      box.innerHTML = books.map(b => `
+        <div style="font-size:13px; font-weight:800; color:#3d4a6a; margin:8px 0 4px;">📖 ${safeEscIf(b.bookName)}</div>
+        ${(b.entries||[]).map(e => {
+          const isChecked = window._ifSelectedWbIds.has(e.id);
+          return `
+            <label style="display:flex; align-items:flex-start; gap:8px; padding:10px; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; border-radius:10px; cursor:pointer;">
+              <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="window._toggleIfWb('${e.id}', this.checked)" style="accent-color:#5c7094; margin-top:2px;">
+              <div style="flex:1; font-size:12px; color:#5c7094;"><b>${safeEscIf(e.keys)}</b><br><span style="color:#7a86a8; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${safeEscIf(e.content)}</span></div>
+            </label>
+          `;
+        }).join('')}
+      `).join('');
+    }
+    document.getElementById('ifWbModal').classList.add('active');
+  };
+
+  window._toggleIfWb = function(id, isChecked) {
+    if(isChecked) window._ifSelectedWbIds.add(id); else window._ifSelectedWbIds.delete(id);
+    document.getElementById('ifWbCountDisplay').textContent = `已选 ${window._ifSelectedWbIds.size} 项`;
+  };
+
+  window._renderIfStoryList = async function() {
+    const books = await getIfBooks();
+    const box = document.getElementById('ifStoryList');
+    if(!box) return;
+    if(books.length === 0) {
+      box.innerHTML = `<div style="text-align:center; padding:50px 0; color:#a0aaba; font-size:13px; line-height:1.6;">时空缝隙暂无回音<br>请点击右上角「+ 造梦」开启新世界</div>`;
+      return;
+    }
+    box.innerHTML = books.map(b => `
+      <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:16px; padding:16px; display:flex; align-items:center; gap:12px; cursor:pointer;" onclick="window._openIfReader('${b.id}')">
+        <div style="width:48px; height:64px; background:linear-gradient(135deg, #eef4fa, #dce5f0); border-radius:6px; border:1px solid #cdd7e8; display:grid; place-items:center; font-size:20px;">📖</div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:15px; font-weight:800; color:#3d4a6a; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${safeEscIf(b.title)}</div>
+          <div style="font-size:11px; color:#7a86a8;">分类：${safeEscIf(b.category)} · 进度：第 ${b.chapters.length} 章</div>
+        </div>
+        <div style="color:#a5cfff; font-size:20px; font-weight:300;">›</div>
+      </div>
+    `).join('');
+  };
+
+  window._startIfForge = async function() {
+    const category = document.getElementById('ifForgeCategory').value.trim() || '盲盒时空';
+    const outline = document.getElementById('ifForgeOutline').value.trim();
+    const btnFirst = document.getElementById('modeBtnFirst');
+    const mode = btnFirst.style.background.includes('#5c7094') ? 'first' : 'god';
+
+    const btn = document.querySelector('#ifForgeModal .btn.p');
+    const oldText = btn.innerHTML;
+    btn.innerHTML = '✨ 宇宙大爆炸中... (需等待十秒左右)';
+    btn.style.pointerEvents = 'none';
+    btn.style.opacity = '0.8';
+
+    try {
+      const allCards = await getIfCards();
+      const activeChars = window._currentIfLineup.map(id => allCards.find(c => c.id === id)).filter(Boolean);
+      const charDesc = activeChars.map(c => `【${c.name}】：${c.persona}`).join('\\n');
+
+      let wbText = '';
+      if(window._ifSelectedWbIds.size > 0) {
+         const wbBooks = await getWbBooks();
+         wbBooks.forEach(b => { (b.entries || []).forEach(e => { if(window._ifSelectedWbIds.has(e.id)) wbText += `[${e.keys}] ${e.content}\\n`; }); });
+      }
+
+      const sysPrompt = `你是一个顶级互动小说家。当前时空背景：${category}
+出场角色设定：\n${charDesc}
+${wbText ? '\\n世界观法则(必须严格遵循)：\\n' + wbText : ''}
+${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发挥，创造一个极具张力、火花四溅的开局第一章！'}
+【写作模式】：${mode === 'first' ? '第一人称沉浸模式（"我"是主角）' : '上帝视角/导演模式（第三人称描写修罗场互动）'}
+【输出格式铁律】：必须严格输出JSON！
+{
+  "content": "第一章的正文内容。必须分段，环境描写、动作和对话要极具画面感。字数800-1000字。",
+  "options": ["选项A：...", "选项B：...", "选项C：..."]
+}`;
+
+      const out = await callApi([ { role: 'system', content: sysPrompt }, { role: 'user', content: '请拨动星轨，立刻生成第一章内容！' } ]);
+      const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
+      const match = cleaned.match(/\{[\s\S]*\}/);
+      if(!match) throw new Error("AI 时空乱流，未能返回正确格式！");
+      const data = JSON.parse(match[0]);
+
+      const books = await getIfBooks();
+      books.unshift({
+        id: 'ifb_' + Date.now(),
+        title: category + ' 的故事',
+        category: category,
+        mode: mode,
+        lineup: [...window._currentIfLineup],
+        chapters: [{ title: '第一章：命运的齿轮', content: data.content, options: data.options || [] }]
+      });
+      await setIfBooks(books);
+
+      document.getElementById('ifForgeModal').classList.remove('active');
+      window._renderIfStoryList();
+      alert('✨ 盲盒开启成功！快去书架上打开这本新诞生的小说吧！');
+    } catch(e) {
+      alert('造梦失败了宝宝：' + e.message);
+    } finally {
+      btn.innerHTML = oldText;
+      btn.style.pointerEvents = 'auto';
+      btn.style.opacity = '1';
+    }
+  };
+
+  // --- 3. 阅读器与续写引擎 ---
+  window._openIfReader = async function(bookId) {
+    window._currentIfBookId = bookId;
+    show('ifReader');
+    await window._renderIfReader();
+  };
+
+  window._renderIfReader = async function() {
+    const books = await getIfBooks();
+    const book = books.find(b => b.id === window._currentIfBookId);
+    if(!book) return;
+
+    document.getElementById('ifReaderTitle').textContent = book.title;
+    
+    const contentHtml = book.chapters.map((ch, idx) => `
+      <div style="margin-bottom:20px;">
+        <div style="font-weight:800; color:#2f66d8; margin-bottom:12px; text-align:center;">第 ${idx + 1} 章</div>
+        <div>${safeEscIf(ch.content).replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</div>
+      </div>
+    `).join('<div style="text-align:center; color:#dce5f0; margin:20px 0;">✧ ✧ ✧</div>');
+    
+    const contentBox = document.getElementById('ifReaderContent');
+    contentBox.innerHTML = contentHtml;
+
+    const lastChapter = book.chapters[book.chapters.length - 1];
+    const optionsBox = document.getElementById('ifReaderOptions');
+    if(lastChapter.options && lastChapter.options.length > 0) {
+      optionsBox.innerHTML = `<div style="font-size:12px; color:#7a86a8; font-weight:bold; margin-bottom:4px;">命运的分歧点：</div>` + 
+      lastChapter.options.map(opt => `
+        <div onclick="document.getElementById('ifReaderInput').value='${safeEscIf(opt)}'" style="background:#fff; border:1px solid #dce5f0; border-radius:12px; padding:12px 16px; font-size:14px; color:#5c7094; cursor:pointer;">
+          ${safeEscIf(opt)}
+        </div>
+      `).join('');
+    } else {
+      optionsBox.innerHTML = `<div style="font-size:12px; color:#7a86a8; font-weight:bold;">自由发挥时间...</div>`;
+    }
+
+    setTimeout(() => { contentBox.scrollTop = contentBox.scrollHeight; }, 100);
+  };
+
+  window._sendIfReply = async function() {
+    const inputEl = document.getElementById('ifReaderInput');
+    const text = inputEl.value.trim();
+    if(!text) return alert('请先输入你的抉择或干预指令哦！');
+    
+    const books = await getIfBooks();
+    const book = books.find(b => b.id === window._currentIfBookId);
+    if(!book) return;
+
+    const btn = document.querySelector('#ifReader .btn.p:last-child');
+    const oldText = btn.innerHTML;
+    btn.innerHTML = '推演中...';
+    btn.style.pointerEvents = 'none';
+    btn.style.opacity = '0.5';
+
+    try {
+      const allCards = await getIfCards();
+      const activeChars = book.lineup.map(id => allCards.find(c => c.id === id)).filter(Boolean);
+      const charDesc = activeChars.map(c => `【${c.name}】：${c.persona}`).join('\\n');
+      
+      const historyCtx = book.chapters.map(ch => ch.content).join('\\n\\n').slice(-3000); 
+
+      const sysPrompt = `你是一个顶级互动小说家。
+出场角色设定：\n${charDesc}
+【前情提要】：\n${historyCtx}
+【写作模式】：${book.mode === 'first' ? '第一人称沉浸模式（"我"是主角）' : '上帝视角/导演模式（第三人称描写修罗场互动）'}
+
+玩家刚刚做出了抉择/干预："${text}"。
+请顺着玩家的意图，继续往下续写一章。
+【输出格式铁律】：必须严格输出JSON！
+{
+  "content": "新一章的正文内容。必须分段，环境描写、动作和对话要极具画面感。字数800-1000字。",
+  "options": ["选项A：...", "选项B：...", "选项C：..."]
+}`;
+
+      const out = await callApi([ { role: 'system', content: sysPrompt }, { role: 'user', content: '请立刻续写下一章！' } ]);
+      const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
+      const match = cleaned.match(/\{[\s\S]*\}/);
+      if(!match) throw new Error("AI 脑电波异常，未能返回正确格式！");
+      const data = JSON.parse(match[0]);
+
+      book.chapters.push({ title: `第 ${book.chapters.length + 1} 章`, content: data.content, options: data.options || [] });
+      await setIfBooks(books);
+      
+      inputEl.value = '';
+      await window._renderIfReader();
+      window._renderIfStoryList(); 
+    } catch(e) {
+      alert('推演失败了宝宝：' + e.message);
+    } finally {
+      btn.innerHTML = oldText;
+      btn.style.pointerEvents = 'auto';
+      btn.style.opacity = '1';
+    }
+  };
+})(); // 🏠 闭合主屏幕安全引擎的大门！
+
+</script>
+
+<!-- 🌟 蓝色高定：悬浮心声面板 (把它安全地放在 HTML 区域！) -->
 <div id="innerVoiceModal" class="modal" style="z-index: 9999;" onclick="this.classList.remove('active')">
   <div class="modal-card" style="width:280px; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; box-shadow:0 12px 40px rgba(92,112,148,0.12); border-radius:24px; padding:24px; text-align:center;" onclick="event.stopPropagation()">
-    <!-- 顶部极简装饰条 -->
     <div style="width:32px; height:4px; background:#dce5f0; border-radius:2px; margin:0 auto 16px;"></div>
-    
     <div style="font-size:10px; color:#a5cfff; font-weight:800; letter-spacing:2px; margin-bottom:6px; font-family:ui-monospace, monospace;">STATUS</div>
     <div id="ivModalStatus" style="font-size:18px; color:#3d4a6a; font-weight:bold; margin-bottom:20px; letter-spacing:1px;">无</div>
-    
     <div style="background:rgba(238,244,250,0.6); border:1px dashed #dce5f0; border-radius:16px; padding:20px 16px 16px; position:relative;">
       <div style="position:absolute; top:-10px; left:16px; background:#eef4fa; padding:0 8px; font-size:11px; color:#7a86a8; font-weight:bold; border:1px solid #dce5f0; border-radius:6px;">💭 TA的内心 OS</div>
       <div id="ivModalVoice" style="font-size:13px; color:#5c7094; line-height:1.6; text-align:justify; font-style:italic;">暂无心声</div>
     </div>
   </div>
 </div>
-  <!-- ================= 🌟 蓝色高定：平行宇宙 (境·IF) 独立大平层 ================= -->
-  <section id="realmIf" class="screen">
-    <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
-      <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 返回</button>
-      <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">境·IF</b>
-      <button class="btn p" onclick="window._openIfForgeModal()">
+
+<!-- ================= 🌟 蓝色高定：平行宇宙 (境·IF) 独立大平层 ================= -->
+<section id="realmIf" class="screen">
+  <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
+    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 返回</button>
+    <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">境·IF</b>
+    <button class="btn p" onclick="window._openIfForgeModal()">+ 造梦</button>
+  </div>
+  
+  <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px;">
+    <!-- 极简双模拨片开关 (第一人称 vs 上帝视角) -->
+    <div style="display:flex; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; border-radius:12px; padding:4px; margin-bottom:20px; box-shadow:inset 0 2px 4px rgba(92,112,148,0.02);">
+      <div id="modeBtnFirst" onclick="window._switchIfMode('first')" style="flex:1; text-align:center; padding:10px 0; border-radius:10px; font-size:13px; font-weight:bold; color:#fff; background:#5c7094; box-shadow:0 2px 8px rgba(92,112,148,0.2); cursor:pointer; transition:all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">沉浸演绎 (我)</div>
+      <div id="modeBtnGod" onclick="window._switchIfMode('god')" style="flex:1; text-align:center; padding:10px 0; border-radius:10px; font-size:13px; font-weight:bold; color:#7a86a8; background:transparent; cursor:pointer; transition:all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">导演模式 (CP)</div>
+    </div>
+
+    <!-- 灵魂卡牌载入槽 (初雪海盐蓝毛玻璃质感) -->
+    <div style="font-size:12px; color:#5c7094; font-weight:800; margin-bottom:12px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
+      <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+      灵魂载入阵列
     </div>
     
-    <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px;">
-      
-      <!-- 极简双模拨片开关 (第一人称 vs 上帝视角) -->
-      <div style="display:flex; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; border-radius:12px; padding:4px; margin-bottom:20px; box-shadow:inset 0 2px 4px rgba(92,112,148,0.02);">
-        <div id="modeBtnFirst" onclick="window._switchIfMode('first')" style="flex:1; text-align:center; padding:10px 0; border-radius:10px; font-size:13px; font-weight:bold; color:#fff; background:#5c7094; box-shadow:0 2px 8px rgba(92,112,148,0.2); cursor:pointer; transition:all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">沉浸演绎 (我)</div>
-        <div id="modeBtnGod" onclick="window._switchIfMode('god')" style="flex:1; text-align:center; padding:10px 0; border-radius:10px; font-size:13px; font-weight:bold; color:#7a86a8; background:transparent; cursor:pointer; transition:all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">导演模式 (CP)</div>
-      </div>
-
-      <!-- 灵魂卡牌载入槽 (初雪海盐蓝毛玻璃质感) -->
-      <div style="font-size:12px; color:#5c7094; font-weight:800; margin-bottom:12px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
-        <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-        灵魂载入槽
-      </div>
-      
-      <!-- 🌟 蓝色高定：无限流灵魂阵列 (群像出战区) -->
-      <div id="ifSelectedCardsBox" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:24px;">
-        <!-- 初始的邀场按钮将由 JS 自动渲染 -->
-      </div>
-      <!-- 剧本库列表容器 -->
-      <div id="ifStoryList" style="display:flex; flex-direction:column; gap:12px;">
-         <div style="text-align:center; padding:50px 0; color:#a0aaba; font-size:13px; letter-spacing:1px; line-height:1.6;">
-            时空缝隙暂无回音<br>请点击右上角「+ 造梦」开启新世界
-         </div>
-      </div>
-      
-    </div>
-  </section>
-    <!-- ================= 🌟 蓝色高定：IF 专属沉浸式阅读器 ================= -->
-  <section id="ifReader" class="screen">
-    <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0; z-index:100;">
-      <button class="btn" onclick="show('realmIf')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 书架</button>
-      <b id="ifReaderTitle" style="color:#3d4a6a; font-size:16px; letter-spacing:1px; flex:1; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">阅读中</b>
-      <button class="btn p" onclick="alert('打包导出功能老公正在爆肝中！')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">导出</button>
-    </div>
+    <!-- 🌟 蓝色高定：无限流灵魂阵列 (群像出战区) -->
+    <div id="ifSelectedCardsBox" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:24px;"></div>
     
-    <div class="page" style="background:#f4f6fb; padding:0; display:flex; flex-direction:column; height:100%;">
-      <!-- 羁绊温度计 (预留位) -->
-      <div style="padding:10px 16px; background:rgba(255,255,255,0.6); border-bottom:1px dashed #dce5f0; display:flex; justify-content:space-between; align-items:center; z-index:10;">
-        <span style="font-size:12px; color:#7a86a8; font-weight:bold; display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#a5cfff; animation:blueBlink 2s infinite;"></span> 时空波动监测中...</span>
-        <span style="font-size:12px; color:#5c7094; font-weight:bold;">羁绊值: 0%</span>
-      </div>
-      
-      <!-- 正文滚动区 -->
-      <div id="ifReaderContent" style="flex:1; overflow-y:auto; padding:20px; font-size:16px; color:#3d4a6a; line-height:1.8; text-align:justify; white-space:pre-wrap; font-family:-apple-system, 'PingFang SC', serif;">
-      </div>
-      
-      <!-- 命运选项区 -->
-      <div id="ifReaderOptions" style="padding:16px; background:rgba(250,252,255,0.9); border-top:1px solid #dce5f0; display:flex; flex-direction:column; gap:10px; z-index:10;">
-      </div>
-      
-      <!-- 玩家神之干预输入区 -->
-      <div style="padding:10px 16px calc(10px + var(--safe-bottom)); background:rgba(255,255,255,0.95); border-top:1px solid #dce5f0; display:flex; gap:8px; z-index:10;">
-        <input id="ifReaderInput" class="input" placeholder="输入你的抉择或神之干预..." style="flex:1; background:#f8fafc; border:1px solid #dce5f0; border-radius:20px; padding:8px 16px; font-size:14px; color:#5c7094;">
-        <button class="btn p" onclick="window._sendIfReply()" style="background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:20px; padding:0 18px; font-weight:bold; box-shadow:0 2px 8px rgba(92,112,148,0.1); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">发送</button>
-      </div>
-    </div>
-  </section>
-  <!-- ================= 🌟 蓝色高定：灵魂卡牌库弹窗 ================= -->
-  <div id="ifCardModal" class="modal" style="z-index: 9999;">
-    <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; box-shadow:0 12px 40px rgba(92,112,148,0.12); display:flex; flex-direction:column; max-height:80dvh; padding:0; overflow:hidden;">
-      
-      <!-- 极简通透的头部 -->
-      <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
-        <b style="color:#5c7094; font-size:16px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
-          <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:2;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-          灵魂卡牌库
-        </b>
-        <button class="btn" onclick="document.getElementById('ifCardModal').classList.remove('active')" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:28px; height:28px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">×</button>
-      </div>
-
-      <!-- 卡牌列表区 -->
-      <div id="ifCardList" style="flex:1; overflow-y:auto; padding:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; flex-direction:column; gap:12px;">
-        <div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:12px; letter-spacing:1px;">卡牌库空空如也<br>请在下方捏一个新灵魂吧</div>
-      </div>
-
-      <!-- 新建角色区 (固定在底部) -->
-      <div style="padding:16px 20px; background:rgba(255,255,255,0.8); border-top:1px solid #dce5f0; backdrop-filter:blur(12px);">
-        <div style="font-size:12px; color:#5c7094; font-weight:800; margin-bottom:8px;">✨ 缔造新灵魂</div>
-        <input id="ifNewCardName" class="input" placeholder="角色姓名 (例：姜蕴)" style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; padding:8px 12px; width:100%; margin-bottom:8px; box-sizing:border-box;">
-        <textarea id="ifNewCardPersona" class="ta" placeholder="输入TA的性格、身份与执念..." style="background:#f8fafc; border:1px solid #dce5f0; border-radius:10px; font-size:13px; padding:8px 12px; width:100%; min-height:60px; color:#5c7094; resize:vertical; box-sizing:border-box;"></textarea>
-        <button class="btn p" onclick="window._saveIfCard()" style="width:100%; margin-top:10px; background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:10px 0; font-weight:bold; box-shadow:none; transition:all 0.2s ease;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">封存卡牌</button>
-      </div>
-
+    <!-- 剧本库列表容器 -->
+    <div id="ifStoryList" style="display:flex; flex-direction:column; gap:12px;">
+       <div style="text-align:center; padding:50px 0; color:#a0aaba; font-size:13px; letter-spacing:1px; line-height:1.6;">
+          时空缝隙暂无回音<br>请点击右上角「+ 造梦」开启新世界
+       </div>
     </div>
   </div>
-  <!-- ================= 🌟 蓝色高定：盲盒造梦台弹窗 ================= -->
-  <div id="ifForgeModal" class="modal" style="z-index: 9999;">
-    <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; box-shadow:0 12px 40px rgba(92,112,148,0.12); display:flex; flex-direction:column; padding:0; overflow:hidden;">
-      
-      <!-- 极简通透的头部 -->
-      <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
-        <b style="color:#5c7094; font-size:16px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
-          <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-          开启新时空
-        </b>
-        <button class="btn" onclick="document.getElementById('ifForgeModal').classList.remove('active')" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:28px; height:28px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">×</button>
-      </div>
+</section>
 
-      <div style="padding:20px; display:flex; flex-direction:column; gap:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa);">
-        
-        <div>
-          <div style="font-size:12px; color:#7a86a8; font-weight:800; margin-bottom:8px;">选择时空分类 (可自定义)</div>
-          <input id="ifForgeCategory" class="input" placeholder="例如：赛博末日 / 仙侠权谋 / 校园暗恋" value="赛博末日" style="background:rgba(255,255,255,0.7); border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; padding:10px 12px; width:100%; box-sizing:border-box;">
-        </div>
-
-        <div>
-          <div style="font-size:12px; color:#7a86a8; font-weight:800; margin-bottom:8px;">命运开篇 (脑洞大纲)</div>
-          <textarea id="ifForgeOutline" class="ta" placeholder="可以写一句开头，比如：'我'是一个没有感情的仿生人... (留空则由 AI 盲盒随机生成神仙开局)" style="background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:10px; font-size:13px; padding:10px 12px; width:100%; min-height:80px; color:#5c7094; resize:vertical; box-sizing:border-box;"></textarea>
-        </div>
-
-        <!-- 🌟 蓝色高定：关联世界书高级入口 -->
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:rgba(255,255,255,0.5); border:1px solid #dce5f0; border-radius:12px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='rgba(238,244,250,0.5)'" onmouseout="this.style.background='rgba(255,255,255,0.5)'" onclick="window._openIfWbModal()">
-          <div style="font-size:13px; color:#5c7094; font-weight:bold; display:flex; align-items:center; gap:6px;">
-            <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-            挑选世界书设定
-          </div>
-          <div style="display:flex; align-items:center; gap:6px;">
-            <span id="ifWbCountDisplay" style="font-size:12px; color:#a5cfff; font-weight:bold;">已选 0 项</span>
-            <span style="color:#a5cfff; font-size:18px; line-height:1;">›</span>
-          </div>
-        </div>
-
-        <button class="btn p" onclick="window._startIfForge()" style="width:100%; margin-top:4px; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:12px; padding:12px 0; font-size:14px; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.1); transition:all 0.2s ease; letter-spacing:1px;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">✨ 拨动星轨 (生成新书)</button>
-
-      </div>
+<!-- ================= 🌟 蓝色高定：IF 专属沉浸式阅读器 ================= -->
+<section id="ifReader" class="screen">
+  <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0; z-index:100;">
+    <button class="btn" onclick="show('realmIf')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 书架</button>
+    <b id="ifReaderTitle" style="color:#3d4a6a; font-size:16px; letter-spacing:1px; flex:1; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">阅读中</b>
+    <button class="btn p" onclick="alert('打包导出功能老公正在爆肝中！')">导出</button>
+  </div>
+  
+  <div class="page" style="background:#f4f6fb; padding:0; display:flex; flex-direction:column; height:100%;">
+    <div style="padding:10px 16px; background:rgba(255,255,255,0.6); border-bottom:1px dashed #dce5f0; display:flex; justify-content:space-between; align-items:center; z-index:10;">
+      <span style="font-size:12px; color:#7a86a8; font-weight:bold; display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#a5cfff; animation:blueBlink 2s infinite;"></span> 时空波动监测中...</span>
+      <span style="font-size:12px; color:#5c7094; font-weight:bold;">羁绊值: 0%</span>
+    </div>
+    <div id="ifReaderContent" style="flex:1; overflow-y:auto; padding:20px; font-size:16px; color:#3d4a6a; line-height:1.8; text-align:justify; white-space:pre-wrap; font-family:-apple-system, 'PingFang SC', serif;"></div>
+    <div id="ifReaderOptions" style="padding:16px; background:rgba(250,252,255,0.9); border-top:1px solid #dce5f0; display:flex; flex-direction:column; gap:10px; z-index:10;"></div>
+    <div style="padding:10px 16px calc(10px + var(--safe-bottom)); background:rgba(255,255,255,0.95); border-top:1px solid #dce5f0; display:flex; gap:8px; z-index:10;">
+      <input id="ifReaderInput" class="input" placeholder="输入你的抉择或神之干预..." style="flex:1; background:#f8fafc; border:1px solid #dce5f0; border-radius:20px; padding:8px 16px; font-size:14px; color:#5c7094;">
+      <button class="btn p" onclick="window._sendIfReply()" style="border-radius:20px; padding:0 18px;">发送</button>
     </div>
   </div>
-  <!-- ================= 🌟 蓝色高定：境·IF 专属世界书挑选台 ================= -->
-  <div id="ifWbModal" class="modal" style="z-index: 10000;">
-    <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; display:flex; flex-direction:column; max-height:70dvh; padding:0; overflow:hidden;">
-      <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
-        <b style="color:#5c7094; font-size:15px;">挑选时空法则</b>
-        <button class="btn p" onclick="document.getElementById('ifWbModal').classList.remove('active')" style="padding:4px 12px; font-size:12px;">确认</button>
-      </div>
-      <div id="ifWbList" style="flex:1; overflow-y:auto; padding:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; flex-direction:column; gap:12px;">
-        <!-- 世界书条目将由 JS 渲染 -->
-      </div>
+</section>
+
+<!-- ================= 🌟 蓝色高定：灵魂卡牌库弹窗 ================= -->
+<div id="ifCardModal" class="modal" style="z-index: 9999;">
+  <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; box-shadow:0 12px 40px rgba(92,112,148,0.12); display:flex; flex-direction:column; max-height:80dvh; padding:0; overflow:hidden;">
+    <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
+      <b style="color:#5c7094; font-size:16px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
+        <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:2;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>灵魂卡牌库
+      </b>
+      <button class="btn" onclick="document.getElementById('ifCardModal').classList.remove('active')" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:28px; height:28px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0;">×</button>
+    </div>
+    <div id="ifCardList" style="flex:1; overflow-y:auto; padding:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; flex-direction:column; gap:12px;"></div>
+    <div style="padding:16px 20px; background:rgba(255,255,255,0.8); border-top:1px solid #dce5f0; backdrop-filter:blur(12px);">
+      <div style="font-size:12px; color:#5c7094; font-weight:800; margin-bottom:8px;">✨ 缔造新灵魂</div>
+      <input id="ifNewCardName" class="input" placeholder="角色姓名 (例：姜蕴)" style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; padding:8px 12px; width:100%; margin-bottom:8px; box-sizing:border-box;">
+      <textarea id="ifNewCardPersona" class="ta" placeholder="输入TA的性格、身份与执念..." style="background:#f8fafc; border:1px solid #dce5f0; border-radius:10px; font-size:13px; padding:8px 12px; width:100%; min-height:60px; color:#5c7094; resize:vertical; box-sizing:border-box;"></textarea>
+      <button class="btn p" onclick="window._saveIfCard()" style="width:100%; margin-top:10px;">封存卡牌</button>
     </div>
   </div>
+</div>
+
+<!-- ================= 🌟 蓝色高定：盲盒造梦台弹窗 ================= -->
+<div id="ifForgeModal" class="modal" style="z-index: 9999;">
+  <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; box-shadow:0 12px 40px rgba(92,112,148,0.12); display:flex; flex-direction:column; padding:0; overflow:hidden;">
+    <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
+      <b style="color:#5c7094; font-size:16px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
+        <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>开启新时空
+      </b>
+      <button class="btn" onclick="document.getElementById('ifForgeModal').classList.remove('active')" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:28px; height:28px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0;">×</button>
+    </div>
+    <div style="padding:20px; display:flex; flex-direction:column; gap:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa);">
+      <div>
+        <div style="font-size:12px; color:#7a86a8; font-weight:800; margin-bottom:8px;">选择时空分类</div>
+        <input id="ifForgeCategory" class="input" placeholder="例如：赛博末日 / 仙侠权谋" value="赛博末日" style="background:rgba(255,255,255,0.7); border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; padding:10px 12px; width:100%; box-sizing:border-box;">
+      </div>
+      <div>
+        <div style="font-size:12px; color:#7a86a8; font-weight:800; margin-bottom:8px;">命运开篇 (脑洞大纲)</div>
+        <textarea id="ifForgeOutline" class="ta" placeholder="可以写一句开头，比如：'我'是一个没有感情的仿生人..." style="background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:10px; font-size:13px; padding:10px 12px; width:100%; min-height:80px; color:#5c7094; resize:vertical; box-sizing:border-box;"></textarea>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:rgba(255,255,255,0.5); border:1px solid #dce5f0; border-radius:12px; cursor:pointer;" onclick="window._openIfWbModal()">
+        <div style="font-size:13px; color:#5c7094; font-weight:bold; display:flex; align-items:center; gap:6px;">
+          <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>挑选世界书设定
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span id="ifWbCountDisplay" style="font-size:12px; color:#a5cfff; font-weight:bold;">已选 0 项</span><span style="color:#a5cfff; font-size:18px; line-height:1;">›</span>
+        </div>
+      </div>
+      <button class="btn p" onclick="window._startIfForge()" style="width:100%; margin-top:4px; padding:12px 0; font-size:14px;">✨ 拨动星轨 (生成新书)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 🌟 蓝色高定：境·IF 专属世界书挑选台 ================= -->
+<div id="ifWbModal" class="modal" style="z-index: 10000;">
+  <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; display:flex; flex-direction:column; max-height:70dvh; padding:0; overflow:hidden;">
+    <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
+      <b style="color:#5c7094; font-size:15px;">挑选时空法则</b>
+      <button class="btn p" onclick="document.getElementById('ifWbModal').classList.remove('active')" style="padding:4px 12px; font-size:12px;">确认</button>
+    </div>
+    <div id="ifWbList" style="flex:1; overflow-y:auto; padding:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; flex-direction:column; gap:12px;"></div>
+  </div>
+</div>
+
 </body>
 </html>
