@@ -9085,7 +9085,62 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('ifNewCardPersona').value = '';
     window._renderIfCardList();
   };
+// ================= 🌟 蓝色高定：灵魂卡牌外挂内存引擎 =================
+  const K_IF_CARDS = 'mp_fix_if_cards';
 
+  // 1. 从外挂硬盘读取/写入卡牌
+  async function getIfCards() { return (await localforage.getItem(K_IF_CARDS)) || []; }
+  async function setIfCards(data) { await localforage.setItem(K_IF_CARDS, data); }
+
+  // 2. 渲染卡牌列表 (带绝美交互)
+  window._renderIfCardList = async function() {
+    const cards = await getIfCards();
+    const box = document.getElementById('ifCardList');
+    if(!box) return;
+    
+    if(cards.length === 0) {
+      box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:12px; letter-spacing:1px;">卡牌库空空如也<br>请在下方捏一个新灵魂吧</div>`;
+      return;
+    }
+
+    box.innerHTML = cards.map(c => `
+      <div style="background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:12px; padding:12px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 8px rgba(92,112,148,0.03); cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" onclick="window._selectIfCard('${c.id}')">
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:14px; font-weight:800; color:#3d4a6a; margin-bottom:4px;">${safeEsc(c.name)}</div>
+          <div style="font-size:11px; color:#7a86a8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${safeEsc(c.persona)}</div>
+        </div>
+        <!-- 邀请加入阵列的加号 -->
+        <div style="color:#a5cfff; font-size:18px; font-weight:bold; margin-left:10px;">+</div>
+      </div>
+    `).join('');
+  };
+
+  // 3. 打开弹窗时，顺便刷新一下列表
+  window._openIfCardModal = function() {
+    document.getElementById('ifCardModal').classList.add('active');
+    window._renderIfCardList();
+  };
+
+  // 4. 保存新卡牌到外挂内存
+  window._saveIfCard = async function() {
+    const name = document.getElementById('ifNewCardName').value.trim();
+    const persona = document.getElementById('ifNewCardPersona').value.trim();
+    if(!name || !persona) return alert('宝宝，名字和人设都不能为空哦！');
+    
+    const cards = await getIfCards();
+    cards.unshift({
+      id: 'ifc_' + Date.now(),
+      name: name,
+      persona: persona
+    });
+    
+    await setIfCards(cards);
+    
+    // 清空输入框，并立刻刷新上面的列表！
+    document.getElementById('ifNewCardName').value = '';
+    document.getElementById('ifNewCardPersona').value = '';
+    window._renderIfCardList();
+  };
 // 🌟 蓝色高定：群像出战引擎
   window._currentIfLineup = []; // 存放当前准备出战的角色卡 ID
 
