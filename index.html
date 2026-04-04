@@ -623,7 +623,7 @@
 /* 2. 红包内部排版 (基准) */
 .card-redpacket .rp-main { display: flex !important; gap: 10px !important; align-items: center !important; }
 .card-redpacket .rp-icon { font-size: 26px !important; flex-shrink: 0 !important; }
-.card-redpacket .rp-title { font-size: 13px !important; font-weight: 600 !important; color: #6a3020 !important; line-height: 1.3 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+.card-redpacket .rp-title { font-size: 13px !important; font-weight: 600 !important; color: #6a3020 !important; line-height: 1.4 !important; white-space: normal !important; word-break: break-all !important; display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; }
 .card-redpacket .rp-sub { font-size: 10px !important; color: #b08878 !important; margin-top: 2px !important; }
 .card-redpacket .rp-divider { border: none !important; border-top: 1px solid rgba(180, 110, 90, 0.12) !important; margin: 8px 0 7px !important; }
 .card-redpacket .rp-footer { display: flex !important; align-items: center !important; justify-content: space-between !important; }
@@ -653,11 +653,8 @@
   line-height: 1 !important;
 }
 .card-transfer .ct-note {
-  grid-area: note !important;
-  font-size: 13px !important; font-weight: 600 !important; color: #6a3020 !important; 
-  line-height: 1.3 !important; margin: 0 !important; padding: 0 !important;
-  white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;
-  align-self: end !important;
+  grid-area: note !important; font-size: 13px !important; font-weight: 600 !important; color: #6a3020 !important; line-height: 1.4 !important; margin: 0 !important; padding: 0 !important;
+  white-space: normal !important; word-break: break-all !important; display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; align-self: end !important;
 }
 .card-transfer .ct-amount {
   grid-area: amount !important;
@@ -7048,8 +7045,8 @@ $('chatMsgs').addEventListener('click',e=>{
         arr[idx].text=arr[idx].text.replace(/class="card-redpacket"/,'class="card-redpacket rejected"').replace(/<button[^>]*class="rp-btn"[^>]*>[\s\S]*?<\/button>/,'<div class="rp-opened">已退回</div>');
       }
       const receiptHtml=isReceive
-        ?`<div class="card-redpacket received"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">已领取</div><div class="rp-sub">微信红包</div></div></div></div>`
-        :`<div class="card-redpacket rejected"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">已退回</div><div class="rp-sub">微信红包</div></div></div></div>`;
+      ?`<div class="card-redpacket received"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">已领取</div><div class="rp-sub">微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><div class="rp-opened">已领取</div></div></div>`
+      :`<div class="card-redpacket rejected"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">已退回</div><div class="rp-sub">微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><div class="rp-opened">已退回</div></div></div>`;
       arr.push(toMsg({role:'user',text:receiptHtml,time:Date.now()}));
       setChatArr(currentId,arr);renderChat();
     }
@@ -7079,10 +7076,10 @@ $('chatMsgs').addEventListener('click',e=>{
       if(idx<0) return;
       if(isReceive){
         arr[idx].text=arr[idx].text.replace(/class="card-transfer"/,'class="card-transfer received"').replace(/<button[^>]*class="ct-btn"[^>]*>[\s\S]*?<\/button>/,'<div class="ct-received">✓ 已收款</div>');
-        arr.push(toMsg({role:'user',text:`<div class="card-transfer received"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">✓ 已收款</div><div class="ct-note">微信安全转账</div></div>`,time:Date.now()}));
+        arr.push(toMsg({role:'user',text:`<div class="card-transfer received"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">已收款</div><div class="ct-note">微信转账</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><div class="ct-received">✓ 已收款</div></div></div>`,time:Date.now()}));
       }else{
         arr[idx].text=arr[idx].text.replace(/class="card-transfer"/,'class="card-transfer rejected"').replace(/<button[^>]*class="ct-btn"[^>]*>[\s\S]*?<\/button>/,'<div class="ct-received">已拒收</div>');
-        arr.push(toMsg({role:'user',text:`<div class="card-transfer rejected"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">已拒收</div><div class="ct-note">微信安全转账</div></div>`,time:Date.now()}));
+        arr.push(toMsg({role:'user',text:`<div class="card-transfer rejected"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">已退回</div><div class="ct-note">微信转账</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><div class="ct-received">已退回</div></div></div>`,time:Date.now()}));
       }
       setChatArr(currentId,arr);renderChat();
     }
