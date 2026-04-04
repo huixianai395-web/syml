@@ -605,33 +605,61 @@
 .func-icon .lab2{font-size:11px;color:#555;}
 .func-icon:active .ibox2{transform:scale(.88);}
 
-/* === 🌟 蓝色高定：维持底层逻辑的清透微调版 === */
-
-/* 💸 转账卡片 (重塑为红包大小，冰透青色质感) */
+/* === 💸 转账卡片 (海盐薄荷青，绝美低饱和马卡龙配色) === */
 .card-transfer {
-  background: linear-gradient(145deg, #e6f2f0, #d8e8e3);
-  border: 1px solid rgba(120, 170, 150, 0.16);
+  background: linear-gradient(145deg, #e2f0ee, #d0e6e2); /* 滴入一点蓝色的薄荷青 */
+  border: 1px solid rgba(110, 160, 150, 0.15);
   border-radius: 14px; padding: 11px 13px; width: 176px;
-  box-shadow: 0 2px 8px rgba(90, 140, 120, 0.06);
-  color: #3a5c4d; position: relative;
+  box-shadow: 0 2px 8px rgba(80, 130, 120, 0.05); /* 极弱的清新阴影 */
+  color: #35574c; position: relative;
 }
-/* 隐藏原来巨大的头部 */
 .card-transfer .ct-header { display: none; }
-/* 强行把转账金额和备注拼成类似红包的上下结构 */
 .card-transfer .ct-amount { 
-  font-size: 13px; font-weight: 600; color: #2e4d3e; 
+  font-size: 13px; font-weight: 600; color: #284a3f; /* 加深一点文字，保证阅读清晰 */
   letter-spacing: 0; line-height: 1.3; margin-top: 0;
   display: flex; align-items: center; gap: 10px;
 }
-/* 补充类似红包的左侧图标 */
 .card-transfer .ct-amount::before { content: '💸'; font-size: 26px; flex-shrink: 0; }
-.card-transfer .ct-note { font-size: 10px; color: #6a8c7d; margin-top: 2px; margin-left: 36px; }
+.card-transfer .ct-note { font-size: 10px; color: #5d8272; margin-top: 2px; margin-left: 36px; }
 
-.card-transfer .ct-divider { border: none; border-top: 1px solid rgba(120, 170, 150, 0.15); margin: 8px 0 7px; }
+.card-transfer .ct-divider { border: none; border-top: 1px solid rgba(110, 160, 150, 0.15); margin: 8px 0 7px; }
 .card-transfer .ct-footer { display: flex; align-items: center; justify-content: space-between; }
-.card-transfer .ct-label { font-size: 10px; color: #7a9c8d; }
-.card-transfer .ct-btn { background: rgba(120, 170, 150, 0.12); border: 1px solid rgba(120, 170, 150, 0.22); color: #4a6c5d; border-radius: 12px; padding: 4px 12px; font-size: 11px; cursor: pointer; }
-.card-transfer .ct-received { font-size: 11px; color: #6a8c7d; margin-top: 4px; }
+.card-transfer .ct-label { font-size: 10px; color: #6d9282; }
+.card-transfer .ct-btn { background: rgba(110, 160, 150, 0.12); border: 1px solid rgba(110, 160, 150, 0.2); color: #3a5c4d; border-radius: 12px; padding: 4px 12px; font-size: 11px; cursor: pointer; }
+.card-transfer .ct-received { font-size: 11px; color: #5d8272; margin-top: 4px; }
+
+/* 🌟 核心：彻底砸碎变灰滤镜！ */
+.card-transfer.received, .card-transfer.rejected {
+  filter: none !important; 
+  pointer-events: none;
+}
+
+/* 🌟 只有 AI 发来的回执（左边气泡）稍微变透一点点 */
+.bubble.ai .card-transfer.received, .bubble.ai .card-transfer.rejected {
+  opacity: 0.85; 
+}
+
+/* 🌟 转账回执重塑为小巧精致的红包回执版式 */
+.card-transfer.received:not(:has(.ct-footer)), 
+.card-transfer.rejected:not(:has(.ct-footer)) {
+  display: flex; flex-direction: row; align-items: center; gap: 10px;
+}
+.card-transfer.received:not(:has(.ct-footer)) .ct-amount,
+.card-transfer.rejected:not(:has(.ct-footer)) .ct-amount {
+  display: block; font-size: 13px; margin: 0; padding: 0;
+}
+.card-transfer.received:not(:has(.ct-footer)) .ct-amount::before,
+.card-transfer.rejected:not(:has(.ct-footer)) .ct-amount::before {
+  display: none; 
+}
+.card-transfer.received:not(:has(.ct-footer))::before,
+.card-transfer.rejected:not(:has(.ct-footer))::before {
+  content: '💸'; font-size: 26px; flex-shrink: 0; display: block;
+}
+.card-transfer.received:not(:has(.ct-footer)) .ct-note,
+.card-transfer.rejected:not(:has(.ct-footer)) .ct-note {
+  margin: 0; margin-top: 2px;
+}
 
 /* 🧧 红包卡片 (保持你最爱的原版燕麦粉质感) */
 .card-redpacket {
