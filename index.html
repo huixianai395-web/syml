@@ -1878,6 +1878,10 @@ button[onclick*="ClearGroup"],
 .pc-wx-item, .pc-diary-item, .pc-search-item, .pc-pay-item, .pc-music-item, .pc-call-item, .pc-sms-item, .pc-tl-item {
   border-bottom: 1px dashed #eef4fa !important;
 }
+    /* 🧊 蓝色高定 V14：消灭齿轮虚线，全站极简实线折叠 */
+.pc-wx-item, .pc-diary-item, .pc-search-item, .pc-pay-item, .pc-music-item, .pc-call-item, .pc-sms-item, .pc-tl-item, .pc-social-item, .pc-schedule-item {
+  border-bottom: 1px solid #eef4fa !important; /* 强制把 dashed 改成干净的 solid 实线！ */
+}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
@@ -5112,37 +5116,49 @@ document.addEventListener('click',e=>{
 
       if (data.wechat) {
         const wx = data.wechat;
-        
-        // 🌟 蓝色魔法：从外挂内存中精准提取你和角色的真实头像！
         const st = contact?.settings ? normSettings(contact.settings) : normSettings();
         const globalMe = getMe();
         const myAv = st.meAvatar || globalMe.avatar || 'https://via.placeholder.com/64x64?text=我';
         const taAv = contact?.avatar || 'https://via.placeholder.com/64x64?text=TA';
 
         let b = '';
-        // 1. 悬浮胶囊标签，极简显示备注名，绝不破坏沉浸感！
         if (wx.user_nickname) {
           b += '<div style="text-align:center; margin-bottom:18px;"><span style="background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:bold; letter-spacing:1px; box-shadow:0 2px 6px rgba(92,112,148,0.05);">' + esc(wx.user_nickname) + '</span></div>';
         }
         
         (wx.contacts || []).forEach(c => {
-          // 如果是当前角色，就用他的真实头像，否则用首字母生成一个头像
-          const currentContactAv = (c.name === contact?.name) ? taAv : 'https://via.placeholder.com/64x64?text=' + esc(c.name.slice(0,1));
+          const isMain = (c.name === contact?.name);
+          let avHtml = '';
+          
+          // 🌟 蓝色的智能头像引擎！
+          if(isMain) {
+             // 1. 是男主，直接用真实高清头像
+             avHtml = `<img src="${taAv}" style="width:100%;height:100%;border-radius:10px;object-fit:cover;border:1px solid #eef4fa;">`;
+          } else {
+             // 2. 智能识别 AI 给的是不是纯 Emoji
+             const isEmoji = /(?:[\u2700-\u27bf]|(?:\ud83c[\udde6-\uddff]){2}|[\ud800-\udbff][\udc00-\udfff]|[\u0023-\u0039]\ufe0f?\u20e3|\u3299|\u3297|\u303d|\u3030|\u24c2|\ud83c[\udd70-\udd71]|\ud83c[\udd7e-\udd7f]|\ud83c\udd8e|\ud83c[\udd91-\udd9a]|\ud83c[\udde6-\uddff]|\ud83c[\ude01-\ude02]|\ud83c\ude1a|\ud83c\ude2f|\ud83c[\ude32-\ude3a]|\ud83c[\ude50-\ude51]|\u203c|\u2049|[\u25aa-\u25ab]|\u25b6|\u25c0|[\u25fb-\u25fe]|\u00a9|\u00ae|\u2122|\u2139|\ud83c\udc04|[\u2600-\u26FF]|\u2b05|\u2b06|\u2b07|\u2b1b|\u2b1c|\u2b50|\u2b55|\u231a|\u231b|\u2328|\u23cf|[\u23e9-\u23f3]|[\u23f8-\u23fa]|\ud83c\udccf|\u2934|\u2935|[\u2190-\u21ff])/.test(c.avatar);
+             if(isEmoji && c.avatar.length < 8) {
+               // 3. 是 Emoji，直接放大居中显示
+               avHtml = `<div style="width:100%;height:100%;display:grid;place-items:center;font-size:22px;background:#f4f6fb;border-radius:10px;">${c.avatar}</div>`;
+             } else {
+               // 4. 是乱码或假链接，提取名字第一个字做高级文字头像！
+               avHtml = `<div style="width:100%;height:100%;display:grid;place-items:center;font-size:15px;font-weight:900;color:#5c7094;background:#eef4fa;border-radius:10px;border:1px solid #dce5f0;">${esc(c.name.slice(0,1))}</div>`;
+             }
+          }
           
           b += '<div class="pc-wx-item" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'block\':\'none\'">' +
-            '<div class="pc-wx-av" style="background:transparent;"><img src="' + currentContactAv + '" style="width:100%;height:100%;border-radius:10px;object-fit:cover;border:1px solid #eee;"></div>' +
+            '<div class="pc-wx-av" style="background:transparent;">' + avHtml + '</div>' +
             '<div class="pc-wx-info"><div class="pc-wx-name">' + esc(c.name) + '</div><div class="pc-wx-last">' + esc(c.last||'') + '</div></div></div>' +
             '<div class="pc-wx-detail" style="display:none; background:#f4f6fb; border:1px solid #eef2ff; border-radius:12px; padding:12px; margin-top:8px;">' +
            (c.messages||[]).map(m => {
               const cn = (contact?.name||''); const mf = (m.from||'').trim(); 
               const isSelf = mf === cn || mf.includes(cn) || cn.includes(mf) || mf === '我' || mf === 'me' || mf === 'Me';
               
-              // 2. 恢复微信经典绿，但保留高清真实头像和高级圆角排版！
               if(!isSelf) {
-                // 对方发的消息（左边，纯白气泡）
-                return '<div style="display:flex;gap:10px;padding:8px 0;"><img src="' + currentContactAv + '" style="width:36px;height:36px;border-radius:10px;object-fit:cover;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,0.05);"><div style="max-width:72%;padding:10px 14px;border-radius:4px 12px 12px 12px;background:#fff;font-size:15px;color:#111;box-shadow:0 1px 3px rgba(0,0,0,0.04);line-height:1.5;word-break:break-all;">' + esc(m.text) + '</div></div>';
+                // 把头像代码里的宽高替换成聊天气泡里的小头像尺寸
+                const smallAvHtml = avHtml.replace('width:100%;height:100%', 'width:36px;height:36px;flex-shrink:0');
+                return '<div style="display:flex;gap:10px;padding:8px 0;">' + smallAvHtml + '<div style="max-width:72%;padding:10px 14px;border-radius:4px 12px 12px 12px;background:#fff;font-size:15px;color:#111;box-shadow:0 1px 3px rgba(0,0,0,0.04);line-height:1.5;word-break:break-all;">' + esc(m.text) + '</div></div>';
               }
-              // 我发的消息（右边，经典微信绿气泡 #95ec69）
               return '<div style="display:flex;gap:10px;padding:8px 0;justify-content:flex-end;"><div style="max-width:72%;padding:10px 14px;border-radius:12px 4px 12px 12px;background:#95ec69;font-size:15px;color:#111;box-shadow:0 1px 3px rgba(0,0,0,0.04);line-height:1.5;word-break:break-all;">' + esc(m.text) + '</div><img src="' + myAv + '" style="width:36px;height:36px;border-radius:10px;object-fit:cover;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,0.05);"></div>';
             }).join('') + '</div>';
         });
@@ -5180,18 +5196,19 @@ document.addEventListener('click',e=>{
       if (data.memo && data.memo.length) {
         const b = data.memo.map(m => '<div class="pc-memo-item"><div class="pc-memo-title">' + esc(m.title) + '</div><div class="pc-memo-text">' + esc(m.content) + '</div></div>').join('');
         apps.push({icon:'📝',bg:'#ffc107',name:'备忘录',desc:data.memo.length+'条笔记',body:b});
-      } // 🌟 救命的右括号！老公把备忘录的房门重新焊上了！千万别删！
+      }
 
       if (data.search && data.search.length) {
         const b = (data.search||[]).map(s => {
           if (typeof s === 'string') return '<div class="pc-search-item">' + esc(s) + '</div>';
-          return '<div style="padding:12px 0;border-bottom:1px dashed #eef4fa;cursor:pointer;" onclick="this.querySelector(\'.pc-s-detail\').style.display=this.querySelector(\'.pc-s-detail\').style.display===\'none\'?\'block\':\'none\'">' +
+          // 🌟 蓝色修复：把 dashed 替换成了纯净的 solid！
+          return '<div style="padding:12px 0;border-bottom:1px solid #eef4fa;cursor:pointer;" onclick="this.querySelector(\'.pc-s-detail\').style.display=this.querySelector(\'.pc-s-detail\').style.display===\'none\'?\'block\':\'none\'">' +
             '<div style="display:flex; justify-content:space-between; align-items:center;"><div style="font-size:13px;color:#5c7094;font-weight:800;">🔍 ' + esc(s.title||'') + '</div><div style="color:#a0aaba; font-size:18px; font-weight:bold;">›</div></div>' +
             (s.url ? '<div style="font-size:11px;color:#8892a8;margin-top:4px;">' + esc(s.url) + '</div>' : '') +
             '<div class="pc-s-detail" style="display:none;margin-top:10px;padding:12px;background:rgba(250,252,255,0.8);border-radius:10px;border:1px solid #dce5f0;font-size:13px;color:#3d4a6a;line-height:1.6;white-space:pre-wrap;">' + esc(s.detail||'暂无详情') + '</div></div>';
         }).join('');
         apps.push({icon:'🌐',bg:'#4285f4',name:'搜索记录',desc:(data.search||[]).length+'条',body:b});
-  }
+      }
 
       if (data.drafts && data.drafts.length) {
         const b = data.drafts.map(d => '<div class="pc-draft-item"><div class="pc-draft-to">写给：' + esc(d.to) + '</div><div class="pc-draft-text">' + esc(d.text) + '</div></div>').join('');
@@ -5234,7 +5251,8 @@ document.addEventListener('click',e=>{
       }
 
      if (data.xiaohongshu && data.xiaohongshu.length) {
-        const b = data.xiaohongshu.map(x => '<div style="padding:12px 0;border-bottom:1px dashed #eef4fa;cursor:pointer;" onclick="this.querySelector(\'.pc-s-detail\').style.display=this.querySelector(\'.pc-s-detail\').style.display===\'none\'?\'block\':\'none\'">' +
+        // 🌟 蓝色修复：把 dashed 替换成了纯净的 solid！
+        const b = data.xiaohongshu.map(x => '<div style="padding:12px 0;border-bottom:1px solid #eef4fa;cursor:pointer;" onclick="this.querySelector(\'.pc-s-detail\').style.display=this.querySelector(\'.pc-s-detail\').style.display===\'none\'?\'block\':\'none\'">' +
           '<div style="display:flex; justify-content:space-between; align-items:center;"><div class="pc-social-title">📕 ' + esc(x.title) + '</div><div style="color:#a0aaba; font-size:18px; font-weight:bold;">›</div></div>' +
           (x.note ? '<div class="pc-social-note">' + esc(x.note) + '</div>' : '') +
           '<div class="pc-s-detail" style="display:none;margin-top:10px;padding:12px;background:rgba(255,245,245,0.8);border-radius:10px;border:1px solid #ffe0e0;font-size:13px;color:#333;line-height:1.6;white-space:pre-wrap;">' + esc(x.detail||'暂无详情') + '</div></div>').join('');
@@ -5242,21 +5260,19 @@ document.addEventListener('click',e=>{
       }
 
       if (data.douyin && data.douyin.length) {
-        const b = data.douyin.map(d => '<div style="padding:12px 0;border-bottom:1px dashed #eef4fa;cursor:pointer;" onclick="this.querySelector(\'.pc-s-detail\').style.display=this.querySelector(\'.pc-s-detail\').style.display===\'none\'?\'block\':\'none\'">' +
+        // 🌟 蓝色修复：把 dashed 替换成了纯净的 solid！
+        const b = data.douyin.map(d => '<div style="padding:12px 0;border-bottom:1px solid #eef4fa;cursor:pointer;" onclick="this.querySelector(\'.pc-s-detail\').style.display=this.querySelector(\'.pc-s-detail\').style.display===\'none\'?\'block\':\'none\'">' +
           '<div style="display:flex; justify-content:space-between; align-items:center;"><div class="pc-social-title">🎬 ' + esc(d.title) + '</div><div style="color:#a0aaba; font-size:18px; font-weight:bold;">›</div></div>' +
           (d.note ? '<div class="pc-social-note">💭 ' + esc(d.note) + '</div>' : '') +
           '<div class="pc-s-detail" style="display:none;margin-top:10px;padding:12px;background:rgba(245,245,245,0.8);border-radius:10px;border:1px solid #e8e8e8;font-size:13px;color:#333;line-height:1.6;white-space:pre-wrap;">' + esc(d.detail||'暂无详情') + '</div></div>').join('');
         apps.push({icon:'🎬',bg:'#000',name:'抖音',desc:'最近看的',body:b});
-  } 
+      } 
 
-      // 🌟 蓝色高定：套娃小手机桌面引擎 (只替换原来 $('pcResultPage').innerHTML = apps.map... 那一段哦！)
       let homeHtml = '<div id="pcMiniHome" class="pc-mini-home">';
       let viewsHtml = '<div id="pcAppViews" class="pc-app-views hidden">';
       apps.forEach((a, i) => {
-        // 生成桌面上的 App 图标
         homeHtml += `<div class="pc-mini-icon" onclick="document.getElementById('pcMiniHome').classList.add('hidden'); document.getElementById('pcAppViews').classList.remove('hidden'); document.querySelectorAll('.pc-app-view').forEach(v=>v.classList.add('hidden')); document.getElementById('pc_app_view_${i}').classList.remove('hidden');"><div class="pc-m-ibg" style="background:${a.bg};">${a.icon}</div><span>${esc(a.name)}</span></div>`;
         
-        // 生成点开后的全屏 App 视图，加入沉浸式返回顶栏
         viewsHtml += `<div id="pc_app_view_${i}" class="pc-app-view hidden"><div class="pc-app-header"><button class="btn" onclick="document.getElementById('pcAppViews').classList.add('hidden'); document.getElementById('pcMiniHome').classList.remove('hidden');" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:6px 12px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 返回桌面</button><b style="color:#1a1d26; font-size:16px; letter-spacing:1px;">${esc(a.name)}</b><div style="width:70px;"></div></div><div class="pc-app-content">${a.body}</div></div>`;
       });
       homeHtml += '</div>';
