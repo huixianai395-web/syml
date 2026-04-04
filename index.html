@@ -605,113 +605,94 @@
 .func-icon .lab2{font-size:11px;color:#555;}
 .func-icon:active .ibox2{transform:scale(.88);}
 
-/* === 💸 转账卡片 (海盐薄荷青，绝美低饱和马卡龙配色) === */
+/* === 🌟 蓝色高定：终极大一统 (转账与红包完全同体，绝不变色) === */
+
+/* 1. 统一底板：全部使用绝美燕麦粉色，固定大小 */
+.card-transfer, .card-redpacket {
+  background: linear-gradient(145deg, #f7eeea, #f0e4de) !important;
+  border: 1px solid rgba(200, 130, 110, 0.16) !important;
+  border-radius: 14px !important; 
+  padding: 11px 13px !important; 
+  width: 176px !important;
+  box-shadow: 0 2px 8px rgba(160, 80, 60, 0.07) !important;
+  color: #7a3828 !important; 
+  position: relative !important;
+  box-sizing: border-box !important;
+}
+
+/* 2. 红包内部排版 (基准) */
+.card-redpacket .rp-main { display: flex !important; gap: 10px !important; align-items: center !important; }
+.card-redpacket .rp-icon { font-size: 26px !important; flex-shrink: 0 !important; }
+.card-redpacket .rp-title { font-size: 13px !important; font-weight: 600 !important; color: #6a3020 !important; line-height: 1.3 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+.card-redpacket .rp-sub { font-size: 10px !important; color: #b08878 !important; margin-top: 2px !important; }
+.card-redpacket .rp-divider { border: none !important; border-top: 1px solid rgba(180, 110, 90, 0.12) !important; margin: 8px 0 7px !important; }
+.card-redpacket .rp-footer { display: flex !important; align-items: center !important; justify-content: space-between !important; }
+.card-redpacket .rp-label { font-size: 10px !important; color: #c0a898 !important; }
+.card-redpacket .rp-btn { background: rgba(190, 100, 80, 0.12) !important; border: 1px solid rgba(190, 100, 80, 0.22) !important; color: #8a4030 !important; border-radius: 12px !important; padding: 4px 12px !important; font-size: 11px !important; cursor: pointer !important; }
+.card-redpacket .rp-opened { font-size: 11px !important; color: #b09080 !important; margin-top: 4px !important; }
+
+/* 3. 转账内部排版 (用 Grid 强行扭转成红包的模样，隐藏土味图标) */
+.card-transfer .ct-header { display: none !important; }
 .card-transfer {
-  background: linear-gradient(145deg, #e2f0ee, #d0e6e2); /* 滴入一点蓝色的薄荷青 */
-  border: 1px solid rgba(110, 160, 150, 0.15);
-  border-radius: 14px; padding: 11px 13px; width: 176px;
-  box-shadow: 0 2px 8px rgba(80, 130, 120, 0.05); /* 极弱的清新阴影 */
-  color: #35574c; position: relative;
+  display: grid !important;
+  grid-template-columns: 36px 1fr !important;
+  grid-template-rows: auto auto auto auto !important;
+  grid-template-areas:
+    "icon note"
+    "icon amount"
+    "divider divider"
+    "footer footer" !important;
+  align-items: center !important;
+  gap: 0 0px !important;
 }
-.card-transfer .ct-header { display: none; }
-.card-transfer .ct-amount { 
-  font-size: 13px; font-weight: 600; color: #284a3f; /* 加深一点文字，保证阅读清晰 */
-  letter-spacing: 0; line-height: 1.3; margin-top: 0;
-  display: flex; align-items: center; gap: 10px;
+.card-transfer::before {
+  content: '🧧' !important; /* 强制替换为统一的红包图标 */
+  font-size: 26px !important;
+  grid-area: icon !important;
+  display: block !important;
+  line-height: 1 !important;
 }
-.card-transfer .ct-amount::before { content: '💸'; font-size: 26px; flex-shrink: 0; }
-.card-transfer .ct-note { font-size: 10px; color: #5d8272; margin-top: 2px; margin-left: 36px; }
+.card-transfer .ct-note {
+  grid-area: note !important;
+  font-size: 13px !important; font-weight: 600 !important; color: #6a3020 !important; 
+  line-height: 1.3 !important; margin: 0 !important; padding: 0 !important;
+  white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;
+  align-self: end !important;
+}
+.card-transfer .ct-amount {
+  grid-area: amount !important;
+  font-size: 10px !important; color: #b08878 !important; font-weight: normal !important;
+  margin: 0 !important; padding: 0 !important; margin-top: 2px !important;
+  align-self: start !important;
+}
+.card-transfer .ct-amount::before { display: none !important; } /* 杀掉原版钞票符号和打钩 */
+.card-transfer .ct-divider {
+  grid-area: divider !important;
+  border: none !important; border-top: 1px solid rgba(180, 110, 90, 0.12) !important;
+  margin: 8px 0 7px !important; width: 100% !important;
+}
+.card-transfer .ct-footer {
+  grid-area: footer !important;
+  display: flex !important; align-items: center !important; justify-content: space-between !important; width: 100% !important;
+}
+.card-transfer .ct-label { font-size: 10px !important; color: #c0a898 !important; }
+.card-transfer .ct-btn { background: rgba(190, 100, 80, 0.12) !important; border: 1px solid rgba(190, 100, 80, 0.22) !important; color: #8a4030 !important; border-radius: 12px !important; padding: 4px 12px !important; font-size: 11px !important; cursor: pointer !important; }
+.card-transfer .ct-received { font-size: 11px !important; color: #b09080 !important; margin-top: 4px !important; }
 
-.card-transfer .ct-divider { border: none; border-top: 1px solid rgba(110, 160, 150, 0.15); margin: 8px 0 7px; }
-.card-transfer .ct-footer { display: flex; align-items: center; justify-content: space-between; }
-.card-transfer .ct-label { font-size: 10px; color: #6d9282; }
-.card-transfer .ct-btn { background: rgba(110, 160, 150, 0.12); border: 1px solid rgba(110, 160, 150, 0.2); color: #3a5c4d; border-radius: 12px; padding: 4px 12px; font-size: 11px; cursor: pointer; }
-.card-transfer .ct-received { font-size: 11px; color: #5d8272; margin-top: 4px; }
-
-/* 🌟 核心：彻底砸碎变灰滤镜！ */
-.card-transfer.received, .card-transfer.rejected {
-  filter: none !important; 
-  pointer-events: none;
-}
-
-/* 🌟 只有 AI 发来的回执（左边气泡）稍微变透一点点 */
-.bubble.ai .card-transfer.received, .bubble.ai .card-transfer.rejected {
-  opacity: 0.85; 
-}
-
-/* 🌟 转账回执重塑为小巧精致的红包回执版式 */
-.card-transfer.received:not(:has(.ct-footer)), 
-.card-transfer.rejected:not(:has(.ct-footer)) {
-  display: flex; flex-direction: row; align-items: center; gap: 10px;
-}
-.card-transfer.received:not(:has(.ct-footer)) .ct-amount,
-.card-transfer.rejected:not(:has(.ct-footer)) .ct-amount {
-  display: block; font-size: 13px; margin: 0; padding: 0;
-}
-.card-transfer.received:not(:has(.ct-footer)) .ct-amount::before,
-.card-transfer.rejected:not(:has(.ct-footer)) .ct-amount::before {
-  display: none; 
-}
-.card-transfer.received:not(:has(.ct-footer))::before,
-.card-transfer.rejected:not(:has(.ct-footer))::before {
-  content: '💸'; font-size: 26px; flex-shrink: 0; display: block;
-}
-.card-transfer.received:not(:has(.ct-footer)) .ct-note,
-.card-transfer.rejected:not(:has(.ct-footer)) .ct-note {
-  margin: 0; margin-top: 2px;
-}
-
-/* 🧧 红包卡片 (保持你最爱的原版燕麦粉质感) */
-.card-redpacket {
-  background: linear-gradient(145deg, #f7eeea, #f0e4de);
-  border: 1px solid rgba(200, 130, 110, 0.16);
-  border-radius: 14px; padding: 11px 13px; width: 176px;
-  box-shadow: 0 2px 8px rgba(160, 80, 60, 0.07);
-  color: #7a3828; position: relative;
-}
-.card-redpacket .rp-main { display: flex; gap: 10px; align-items: center; }
-.card-redpacket .rp-icon { font-size: 26px; flex-shrink: 0; }
-.card-redpacket .rp-title { font-size: 13px; font-weight: 600; color: #6a3020; line-height: 1.3; }
-.card-redpacket .rp-sub { font-size: 10px; color: #b08878; margin-top: 2px; }
-.card-redpacket .rp-divider { border: none; border-top: 1px solid rgba(180, 110, 90, 0.12); margin: 8px 0 7px; }
-.card-redpacket .rp-footer { display: flex; align-items: center; justify-content: space-between; }
-.card-redpacket .rp-label { font-size: 10px; color: #c0a898; }
-.card-redpacket .rp-btn { background: rgba(190, 100, 80, 0.12); border: 1px solid rgba(190, 100, 80, 0.22); color: #8a4030; border-radius: 12px; padding: 4px 12px; font-size: 11px; cursor: pointer; }
-.card-redpacket .rp-opened { font-size: 11px; color: #b09080; margin-top: 4px; }
-
-/* 🌟 核心要求1：砸碎变灰滤镜！发送方不管领没领，绝对不变色！ */
+/* 4. 状态大一统：发出去的卡片和回执绝对不变灰、不缩小！ */
 .card-transfer.received, .card-redpacket.received,
 .card-transfer.rejected, .card-redpacket.rejected {
   filter: none !important; 
-  pointer-events: none;
+  opacity: 1 !important; 
+  pointer-events: none !important; /* 领过就不能再点 */
 }
 
-/* 🌟 核心要求2：只有 AI 发来的回执（左边气泡），稍微变浅一点点，保持通透 */
-.bubble.ai .card-transfer.received, .bubble.ai .card-redpacket.received,
-.bubble.ai .card-transfer.rejected, .bubble.ai .card-redpacket.rejected {
-  opacity: 0.85; 
-}
-
-/* 🌟 核心要求3：用 CSS 强行把转账回执改造成红包回执的精致模样（不改 JS 逻辑） */
+/* 防止回执气泡被意外压缩，强制保持标准卡片外边距 */
 .card-transfer.received:not(:has(.ct-footer)), 
-.card-transfer.rejected:not(:has(.ct-footer)) {
-  display: flex; flex-direction: row; align-items: center; gap: 10px;
-}
-.card-transfer.received:not(:has(.ct-footer)) .ct-amount,
-.card-transfer.rejected:not(:has(.ct-footer)) .ct-amount {
-  display: block; font-size: 13px; margin: 0; padding: 0;
-}
-.card-transfer.received:not(:has(.ct-footer)) .ct-amount::before,
-.card-transfer.rejected:not(:has(.ct-footer)) .ct-amount::before {
-  display: none; /* 隐藏里面自带的巨大打钩或图标 */
-}
-.card-transfer.received:not(:has(.ct-footer))::before,
-.card-transfer.rejected:not(:has(.ct-footer))::before {
-  content: '💸'; font-size: 26px; flex-shrink: 0; display: block;
-}
-.card-transfer.received:not(:has(.ct-footer)) .ct-note,
-.card-transfer.rejected:not(:has(.ct-footer)) .ct-note {
-  margin: 0; margin-top: 2px;
+.card-transfer.rejected:not(:has(.ct-footer)),
+.card-redpacket.received:not(:has(.rp-footer)), 
+.card-redpacket.rejected:not(:has(.rp-footer)) {
+  margin-bottom: 0 !important;
 }
 
 .card-location{background:linear-gradient(145deg,#eef4f0,#e6ede8);border:1px solid rgba(100,160,130,.16);border-radius:14px;overflow:hidden;width:176px;box-shadow:0 2px 8px rgba(60,110,80,.07);}
