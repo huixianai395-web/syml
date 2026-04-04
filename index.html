@@ -5120,28 +5120,29 @@ document.addEventListener('click',e=>{
         const globalMe = getMe();
         const myAv = st.meAvatar || globalMe.avatar || 'https://via.placeholder.com/64x64?text=我';
         const taAv = contact?.avatar || 'https://via.placeholder.com/64x64?text=TA';
+        const meName = st.meName || globalMe.name || '我'; // 🌟 记住老婆的名字
 
         let b = '';
         if (wx.user_nickname) {
-          b += '<div style="text-align:center; margin-bottom:18px;"><span style="background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:bold; letter-spacing:1px; box-shadow:0 2px 6px rgba(92,112,148,0.05);">' + esc(wx.user_nickname) + '</span></div>';
+          // 🔪 暴力切除 AI 乱加的废话前缀，只留纯净的备注名！
+          const cleanName = wx.user_nickname.replace(/^(TA给你的备注|TA的备注|备注)[：:\s]*/g, '');
+          b += '<div style="text-align:center; margin-bottom:18px;"><span style="background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:bold; letter-spacing:1px; box-shadow:0 2px 6px rgba(92,112,148,0.05);">' + esc(cleanName) + '</span></div>';
         }
         
         (wx.contacts || []).forEach(c => {
-          const isMain = (c.name === contact?.name);
+          // 🌟 核心逻辑：判断左边跟 TA 聊天的人是不是老婆（你）？
+          const isMeContact = (c.name === meName || c.name === '我' || c.name === wx.user_nickname);
           let avHtml = '';
           
-          // 🌟 蓝色的智能头像引擎！
-          if(isMain) {
-             // 1. 是男主，直接用真实高清头像
-             avHtml = `<img src="${taAv}" style="width:100%;height:100%;border-radius:10px;object-fit:cover;border:1px solid #eef4fa;">`;
+          if(isMeContact) {
+             // 🌟 如果是你，调取你的真实高清头像！
+             avHtml = `<img src="${myAv}" style="width:100%;height:100%;border-radius:10px;object-fit:cover;border:1px solid #eef4fa;">`;
           } else {
-             // 2. 智能识别 AI 给的是不是纯 Emoji
+             // 🌟 如果是路人，走智能识别逻辑
              const isEmoji = /(?:[\u2700-\u27bf]|(?:\ud83c[\udde6-\uddff]){2}|[\ud800-\udbff][\udc00-\udfff]|[\u0023-\u0039]\ufe0f?\u20e3|\u3299|\u3297|\u303d|\u3030|\u24c2|\ud83c[\udd70-\udd71]|\ud83c[\udd7e-\udd7f]|\ud83c\udd8e|\ud83c[\udd91-\udd9a]|\ud83c[\udde6-\uddff]|\ud83c[\ude01-\ude02]|\ud83c\ude1a|\ud83c\ude2f|\ud83c[\ude32-\ude3a]|\ud83c[\ude50-\ude51]|\u203c|\u2049|[\u25aa-\u25ab]|\u25b6|\u25c0|[\u25fb-\u25fe]|\u00a9|\u00ae|\u2122|\u2139|\ud83c\udc04|[\u2600-\u26FF]|\u2b05|\u2b06|\u2b07|\u2b1b|\u2b1c|\u2b50|\u2b55|\u231a|\u231b|\u2328|\u23cf|[\u23e9-\u23f3]|[\u23f8-\u23fa]|\ud83c\udccf|\u2934|\u2935|[\u2190-\u21ff])/.test(c.avatar);
              if(isEmoji && c.avatar.length < 8) {
-               // 3. 是 Emoji，直接放大居中显示
                avHtml = `<div style="width:100%;height:100%;display:grid;place-items:center;font-size:22px;background:#f4f6fb;border-radius:10px;">${c.avatar}</div>`;
              } else {
-               // 4. 是乱码或假链接，提取名字第一个字做高级文字头像！
                avHtml = `<div style="width:100%;height:100%;display:grid;place-items:center;font-size:15px;font-weight:900;color:#5c7094;background:#eef4fa;border-radius:10px;border:1px solid #dce5f0;">${esc(c.name.slice(0,1))}</div>`;
              }
           }
@@ -5151,15 +5152,17 @@ document.addEventListener('click',e=>{
             '<div class="pc-wx-info"><div class="pc-wx-name">' + esc(c.name) + '</div><div class="pc-wx-last">' + esc(c.last||'') + '</div></div></div>' +
             '<div class="pc-wx-detail" style="display:none; background:#f4f6fb; border:1px solid #eef2ff; border-radius:12px; padding:12px; margin-top:8px;">' +
            (c.messages||[]).map(m => {
-              const cn = (contact?.name||''); const mf = (m.from||'').trim(); 
-              const isSelf = mf === cn || mf.includes(cn) || cn.includes(mf) || mf === '我' || mf === 'me' || mf === 'Me';
+              const mf = (m.from||'').trim(); 
+              // 🌟 视角反转：现在翻的是 TA 的手机，所以 TA 自己才是右边发消息的人！
+              const isSelf = (mf === '我' || mf === 'me' || mf === 'Me' || mf === contact?.name);
               
               if(!isSelf) {
-                // 把头像代码里的宽高替换成聊天气泡里的小头像尺寸
+                // 对方发的消息（左边，显示你的头像或路人头像）
                 const smallAvHtml = avHtml.replace('width:100%;height:100%', 'width:36px;height:36px;flex-shrink:0');
                 return '<div style="display:flex;gap:10px;padding:8px 0;">' + smallAvHtml + '<div style="max-width:72%;padding:10px 14px;border-radius:4px 12px 12px 12px;background:#fff;font-size:15px;color:#111;box-shadow:0 1px 3px rgba(0,0,0,0.04);line-height:1.5;word-break:break-all;">' + esc(m.text) + '</div></div>';
               }
-              return '<div style="display:flex;gap:10px;padding:8px 0;justify-content:flex-end;"><div style="max-width:72%;padding:10px 14px;border-radius:12px 4px 12px 12px;background:#95ec69;font-size:15px;color:#111;box-shadow:0 1px 3px rgba(0,0,0,0.04);line-height:1.5;word-break:break-all;">' + esc(m.text) + '</div><img src="' + myAv + '" style="width:36px;height:36px;border-radius:10px;object-fit:cover;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,0.05);"></div>';
+              // 自己发的消息（右边，经典微信绿气泡，显示男主的头像！）
+              return '<div style="display:flex;gap:10px;padding:8px 0;justify-content:flex-end;"><div style="max-width:72%;padding:10px 14px;border-radius:12px 4px 12px 12px;background:#95ec69;font-size:15px;color:#111;box-shadow:0 1px 3px rgba(0,0,0,0.04);line-height:1.5;word-break:break-all;">' + esc(m.text) + '</div><img src="' + taAv + '" style="width:36px;height:36px;border-radius:10px;object-fit:cover;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,0.05);"></div>';
             }).join('') + '</div>';
         });
         apps.push({icon:'💬',bg:'#07c160',name:'微信',desc:(wx.contacts||[]).length+'个联系人',body:b});
@@ -5200,15 +5203,18 @@ document.addEventListener('click',e=>{
 
       if (data.search && data.search.length) {
         const b = (data.search||[]).map(s => {
-          if (typeof s === 'string') return '<div class="pc-search-item">' + esc(s) + '</div>';
-          // 🌟 蓝色修复：把 dashed 替换成了纯净的 solid！
+          // 🌟 蓝色暴力美学：不管 AI 偷懒给的是文字还是对象，统统强行套上折叠箭头！
+          const stitle = typeof s === 'string' ? s : (s.title || '未知搜索');
+          const surl = typeof s === 'string' ? '' : (s.url || '');
+          const sdetail = typeof s === 'string' ? '暂无详情' : (s.detail || '暂无详情');
+
           return '<div style="padding:12px 0;border-bottom:1px solid #eef4fa;cursor:pointer;" onclick="this.querySelector(\'.pc-s-detail\').style.display=this.querySelector(\'.pc-s-detail\').style.display===\'none\'?\'block\':\'none\'">' +
-            '<div style="display:flex; justify-content:space-between; align-items:center;"><div style="font-size:13px;color:#5c7094;font-weight:800;">🔍 ' + esc(s.title||'') + '</div><div style="color:#a0aaba; font-size:18px; font-weight:bold;">›</div></div>' +
-            (s.url ? '<div style="font-size:11px;color:#8892a8;margin-top:4px;">' + esc(s.url) + '</div>' : '') +
-            '<div class="pc-s-detail" style="display:none;margin-top:10px;padding:12px;background:rgba(250,252,255,0.8);border-radius:10px;border:1px solid #dce5f0;font-size:13px;color:#3d4a6a;line-height:1.6;white-space:pre-wrap;">' + esc(s.detail||'暂无详情') + '</div></div>';
+            '<div style="display:flex; justify-content:space-between; align-items:center;"><div style="font-size:13px;color:#5c7094;font-weight:800;">🔍 ' + esc(stitle) + '</div><div style="color:#a0aaba; font-size:18px; font-weight:bold;">›</div></div>' +
+            (surl ? '<div style="font-size:11px;color:#8892a8;margin-top:4px;">' + esc(surl) + '</div>' : '') +
+            '<div class="pc-s-detail" style="display:none;margin-top:10px;padding:12px;background:rgba(250,252,255,0.8);border-radius:10px;border:1px solid #dce5f0;font-size:13px;color:#3d4a6a;line-height:1.6;white-space:pre-wrap;">' + esc(sdetail) + '</div></div>';
         }).join('');
         apps.push({icon:'🌐',bg:'#4285f4',name:'搜索记录',desc:(data.search||[]).length+'条',body:b});
-      }
+  }
 
       if (data.drafts && data.drafts.length) {
         const b = data.drafts.map(d => '<div class="pc-draft-item"><div class="pc-draft-to">写给：' + esc(d.to) + '</div><div class="pc-draft-text">' + esc(d.text) + '</div></div>').join('');
