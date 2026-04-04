@@ -9031,9 +9031,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
-  // ================= 🌟 蓝色高定：灵魂卡牌外挂内存与出战大一统引擎 =================
+ // ================= 🌟 蓝色高定：灵魂卡牌外挂内存与出战大一统引擎 =================
   const K_IF_CARDS = 'mp_fix_if_cards';
   window._currentIfLineup = []; // 存放当前准备出战的角色卡 ID
+
+  // 🌟 蓝色紧急空投：给院子里的新引擎发一把专属的防乱码剪刀！
+  const safeEscIf = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 
   // 1. 从外挂硬盘读取/写入卡牌
   async function getIfCards() { return (await localforage.getItem(K_IF_CARDS)) || []; }
@@ -9053,8 +9056,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     box.innerHTML = cards.map(c => `
       <div style="background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:12px; padding:12px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 8px rgba(92,112,148,0.03); cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" onclick="window._selectIfCard('${c.id}')">
         <div style="flex:1; min-width:0;">
-          <div style="font-size:14px; font-weight:800; color:#3d4a6a; margin-bottom:4px;">${safeEsc(c.name)}</div>
-          <div style="font-size:11px; color:#7a86a8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${safeEsc(c.persona)}</div>
+          <div style="font-size:14px; font-weight:800; color:#3d4a6a; margin-bottom:4px;">${safeEscIf(c.name)}</div>
+          <div style="font-size:11px; color:#7a86a8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${safeEscIf(c.persona)}</div>
         </div>
         <div style="color:#a5cfff; font-size:18px; font-weight:bold; margin-left:10px;">+</div>
       </div>
@@ -9067,24 +9070,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     window._renderIfCardList();
   };
 
-  // 4. 保存新卡牌到外挂内存
+  // 4. 保存新卡牌到外挂内存 (🌟 体验升级：存完自动出战！)
   window._saveIfCard = async function() {
     const name = document.getElementById('ifNewCardName').value.trim();
     const persona = document.getElementById('ifNewCardPersona').value.trim();
     if(!name || !persona) return alert('宝宝，名字和人设都不能为空哦！');
     
+    const newId = 'ifc_' + Date.now();
     const cards = await getIfCards();
     cards.unshift({
-      id: 'ifc_' + Date.now(),
+      id: newId,
       name: name,
       persona: persona
     });
     
     await setIfCards(cards);
     
+    // 清空输入框
     document.getElementById('ifNewCardName').value = '';
     document.getElementById('ifNewCardPersona').value = '';
-    window._renderIfCardList();
+    
+    // 🌟 蓝色高定体验优化：刚捏好的灵魂，直接自动请上阵列！
+    window._currentIfLineup.push(newId);
+    document.getElementById('ifCardModal').classList.remove('active');
+    window._renderIfLineup(); 
   };
 
   // 5. 选中卡牌，加入阵列
@@ -9116,7 +9125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         html += `
           <div style="position:relative; width:64px; height:64px; border-radius:16px; background:#eef4fa; border:1px solid #dce5f0; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(92,112,148,0.06); transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
             <div onclick="window._removeIfLineup('${c.id}')" style="position:absolute; top:-6px; right:-6px; width:20px; height:20px; background:#fcf2f2; border:1px solid #f2dcdc; color:#b57b7b; border-radius:50%; font-size:14px; line-height:1; display:grid; place-items:center; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.05); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'">×</div>
-            <span style="font-size:14px; font-weight:800; color:#3d4a6a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:54px;">${safeEsc(c.name.slice(0,4))}</span>
+            <span style="font-size:14px; font-weight:800; color:#3d4a6a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:54px;">${safeEscIf(c.name.slice(0,4))}</span>
             <span style="font-size:10px; color:#7a86a8; margin-top:2px;">已就位</span>
           </div>
         `;
