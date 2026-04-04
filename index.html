@@ -9030,6 +9030,67 @@ document.addEventListener('DOMContentLoaded', async () => {
       b1.style.background = 'transparent'; b1.style.color = '#7a86a8'; b1.style.boxShadow = 'none';
     }
   };
+    // 🌟 蓝色高定：灵魂卡牌外挂内存引擎
+  const K_IF_CARDS = 'mp_fix_if_cards';
+  window._currentIfSlot = null; // 记录当前点的是 A 槽还是 B 槽
+
+  // 从外挂硬盘读取卡牌
+  async function getIfCards() { return (await localforage.getItem(K_IF_CARDS)) || []; }
+  async function setIfCards(data) { await localforage.setItem(K_IF_CARDS, data); }
+
+  // 渲染卡牌列表
+  window._renderIfCardList = async function() {
+    const cards = await getIfCards();
+    const box = document.getElementById('ifCardList');
+    if(!box) return;
+    
+    if(cards.length === 0) {
+      box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:12px; letter-spacing:1px;">卡牌库空空如也<br>请在下方捏一个新灵魂吧</div>`;
+      return;
+    }
+
+    box.innerHTML = cards.map(c => `
+      <div style="background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:12px; padding:12px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 8px rgba(92,112,148,0.03); cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" onclick="window._selectIfCard('${c.id}')">
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:14px; font-weight:800; color:#3d4a6a; margin-bottom:4px;">${safeEsc(c.name)}</div>
+          <div style="font-size:11px; color:#7a86a8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${safeEsc(c.persona)}</div>
+        </div>
+        <div style="color:#a5cfff; font-size:18px; font-weight:bold; margin-left:10px;">+</div>
+      </div>
+    `).join('');
+  };
+
+  // 打开弹窗并记录槽位
+  window._openIfCardModal = function(slot) {
+    window._currentIfSlot = slot;
+    document.getElementById('ifCardModal').classList.add('active');
+    window._renderIfCardList();
+  };
+
+  // 保存新卡牌到外挂内存
+  window._saveIfCard = async function() {
+    const name = document.getElementById('ifNewCardName').value.trim();
+    const persona = document.getElementById('ifNewCardPersona').value.trim();
+    if(!name || !persona) return alert('宝宝，名字和人设都不能为空哦！');
+    
+    const cards = await getIfCards();
+    cards.unshift({
+      id: 'ifc_' + Date.now(),
+      name: name,
+      persona: persona
+    });
+    
+    await setIfCards(cards);
+    document.getElementById('ifNewCardName').value = '';
+    document.getElementById('ifNewCardPersona').value = '';
+    window._renderIfCardList();
+  };
+
+  // 选择卡牌装入槽位（UI占位，后续完善）
+  window._selectIfCard = function(id) {
+    alert(`宝宝，你选中了卡牌 ${id}！即将装入 ${window._currentIfSlot} 槽位！(后续完善渲染)`);
+    document.getElementById('ifCardModal').classList.remove('active');
+  };
   </script>
   <!-- 🌟 蓝色高定：悬浮心声面板 -->
 <div id="innerVoiceModal" class="modal" style="z-index: 9999;" onclick="this.classList.remove('active')">
@@ -9070,18 +9131,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       <div style="display:flex; gap:12px; margin-bottom:24px;">
         <!-- 主角 A 槽位 -->
-        <div style="flex:1; height:150px; background:rgba(250,252,255,0.7); backdrop-filter:blur(16px); border:1px dashed #a5cfff; border-radius:16px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='rgba(238,244,250,0.9)'" onmouseout="this.style.background='rgba(250,252,255,0.7)'" onclick="alert('即将唤醒卡牌库...')">
-          <div style="width:44px; height:44px; border-radius:50%; background:#eef4fa; border:1px solid #dce5f0; display:grid; place-items:center; color:#5c7094; font-size:24px; font-weight:300; margin-bottom:10px; box-shadow:0 4px 12px rgba(92,112,148,0.05);">+</div>
-          <span style="font-size:11px; color:#7a86a8; font-weight:bold; letter-spacing:0.5px;">载入主角 A</span>
-        </div>
-        
-        <!-- 主角 B 槽位 -->
-        <div style="flex:1; height:150px; background:rgba(250,252,255,0.7); backdrop-filter:blur(16px); border:1px dashed #a5cfff; border-radius:16px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='rgba(238,244,250,0.9)'" onmouseout="this.style.background='rgba(250,252,255,0.7)'" onclick="alert('即将唤醒卡牌库...')">
-          <div style="width:44px; height:44px; border-radius:50%; background:#eef4fa; border:1px solid #dce5f0; display:grid; place-items:center; color:#5c7094; font-size:24px; font-weight:300; margin-bottom:10px; box-shadow:0 4px 12px rgba(92,112,148,0.05);">+</div>
-          <span style="font-size:11px; color:#7a86a8; font-weight:bold; letter-spacing:0.5px;">载入主角 B</span>
-        </div>
-      </div>
-      
+<div style="flex:1; height:150px; background:rgba(255,255,255,0.6); border-radius:16px; display:flex; align-items:center; justify-content:center;">
+  <div style="width:44px; height:44px; border-radius:50%; border:1px solid #dc5f0; display:flex; align-items:center; justify-content:center;"
+       onclick="window._openIfCardModal('A')">
+    <span style="font-size:11px; color:#7a86a8; font-weight:800;">A</span>
+  </div>
+</div>
+
+<!-- 主角 B 槽位 -->
+<div style="flex:1; height:150px; background:rgba(255,255,255,0.6); border-radius:16px; display:flex; align-items:center; justify-content:center;">
+  <div style="width:44px; height:44px; border-radius:50%; border:1px solid #dc5f0; display:flex; align-items:center; justify-content:center;"
+       onclick="window._openIfCardModal('B')">
+    <span style="font-size:11px; color:#7a86a8; font-weight:800;">B</span>
+  </div>
+</div>
       <!-- 剧本库列表容器 -->
       <div id="ifStoryList" style="display:flex; flex-direction:column; gap:12px;">
          <div style="text-align:center; padding:50px 0; color:#a0aaba; font-size:13px; letter-spacing:1px; line-height:1.6;">
@@ -9091,5 +9154,33 @@ document.addEventListener('DOMContentLoaded', async () => {
       
     </div>
   </section>
+  <!-- ================= 🌟 蓝色高定：灵魂卡牌库弹窗 ================= -->
+  <div id="ifCardModal" class="modal" style="z-index: 9999;">
+    <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; box-shadow:0 12px 40px rgba(92,112,148,0.12); display:flex; flex-direction:column; max-height:80dvh; padding:0; overflow:hidden;">
+      
+      <!-- 极简通透的头部 -->
+      <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
+        <b style="color:#5c7094; font-size:16px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
+          <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:2;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          灵魂卡牌库
+        </b>
+        <button class="btn" onclick="document.getElementById('ifCardModal').classList.remove('active')" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:28px; height:28px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">×</button>
+      </div>
+
+      <!-- 卡牌列表区 -->
+      <div id="ifCardList" style="flex:1; overflow-y:auto; padding:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; flex-direction:column; gap:12px;">
+        <div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:12px; letter-spacing:1px;">卡牌库空空如也<br>请在下方捏一个新灵魂吧</div>
+      </div>
+
+      <!-- 新建角色区 (固定在底部) -->
+      <div style="padding:16px 20px; background:rgba(255,255,255,0.8); border-top:1px solid #dce5f0; backdrop-filter:blur(12px);">
+        <div style="font-size:12px; color:#5c7094; font-weight:800; margin-bottom:8px;">✨ 缔造新灵魂</div>
+        <input id="ifNewCardName" class="input" placeholder="角色姓名 (例：姜蕴)" style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; padding:8px 12px; width:100%; margin-bottom:8px; box-sizing:border-box;">
+        <textarea id="ifNewCardPersona" class="ta" placeholder="输入TA的性格、身份与执念..." style="background:#f8fafc; border:1px solid #dce5f0; border-radius:10px; font-size:13px; padding:8px 12px; width:100%; min-height:60px; color:#5c7094; resize:vertical; box-sizing:border-box;"></textarea>
+        <button class="btn p" onclick="window._saveIfCard()" style="width:100%; margin-top:10px; background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:10px 0; font-weight:bold; box-shadow:none; transition:all 0.2s ease;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">封存卡牌</button>
+      </div>
+
+    </div>
+  </div>
 </body>
 </html>
