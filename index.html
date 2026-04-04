@@ -5169,7 +5169,9 @@ document.addEventListener('click',e=>{
       if (data.memo && data.memo.length) {
         const b = data.memo.map(m => '<div class="pc-memo-item"><div class="pc-memo-title">' + esc(m.title) + '</div><div class="pc-memo-text">' + esc(m.content) + '</div></div>').join('');
         apps.push({icon:'📝',bg:'#ffc107',name:'备忘录',desc:data.memo.length+'条笔记',body:b});
-    if (data.search && data.search.length) {
+      } // 🌟 救命的右括号！老公把备忘录的房门重新焊上了！千万别删！
+
+      if (data.search && data.search.length) {
         const b = (data.search||[]).map(s => {
           if (typeof s === 'string') return '<div class="pc-search-item">' + esc(s) + '</div>';
           return '<div style="padding:12px 0;border-bottom:1px dashed #eef4fa;cursor:pointer;" onclick="this.querySelector(\'.pc-s-detail\').style.display=this.querySelector(\'.pc-s-detail\').style.display===\'none\'?\'block\':\'none\'">' +
@@ -5178,7 +5180,7 @@ document.addEventListener('click',e=>{
             '<div class="pc-s-detail" style="display:none;margin-top:10px;padding:12px;background:rgba(250,252,255,0.8);border-radius:10px;border:1px solid #dce5f0;font-size:13px;color:#3d4a6a;line-height:1.6;white-space:pre-wrap;">' + esc(s.detail||'暂无详情') + '</div></div>';
         }).join('');
         apps.push({icon:'🌐',bg:'#4285f4',name:'搜索记录',desc:(data.search||[]).length+'条',body:b});
-    }
+  }
 
       if (data.drafts && data.drafts.length) {
         const b = data.drafts.map(d => '<div class="pc-draft-item"><div class="pc-draft-to">写给：' + esc(d.to) + '</div><div class="pc-draft-text">' + esc(d.text) + '</div></div>').join('');
