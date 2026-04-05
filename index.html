@@ -10398,65 +10398,56 @@ window._sendToAI = async function(chatId, hiddenPrompt, isSilent) {
     console.log('后台主动发消息失败啦:', e);
   }
 };
-    // ================= 🌟 蓝色高定：全局随机错峰主动聊天引擎 =================
+   // ================= 🌟 蓝色高定：全局随机错峰主动聊天引擎 (终极防打架版) =================
 
 window._startGlobalAutoChatEngine = function() {
-  // 每隔 2 分钟在后台偷偷检查一次，绝对不影响前台性能
   setInterval(() => {
-    // 检查总开关是否在“我”的页面被打开
     const isGlobalAutoOn = localStorage.getItem('globalAutoChatOn') === 'true';
     if (!isGlobalAutoOn) return;
 
+    // 🌟 核心修复1：把单聊和群聊全部拉进来排队！
     const contacts = getContacts() || [];
+    const groups = window.getGroups ? window.getGroups() : [];
+    const allChats = [...contacts, ...groups];
+    
     const now = Date.now();
-    let triggeredAnyone = false; // 每次心跳最多只允许一个人触发，强制错峰！
+    let triggeredAnyone = false; 
 
-    contacts.forEach(c => {
-      if (triggeredAnyone) return; // 如果这轮已经有人发了，其他人憋到下一轮！
+    allChats.forEach(c => {
+      if (triggeredAnyone) return; 
 
-      // 从外挂内存读取他下次该发消息的时间
       let nextTime = localStorage.getItem('nextAutoChatTime_' + c.id);
       
-      // 如果还没给他分配时间，或者时间已经过期太久被重置了
       if (!nextTime) {
-        // 随机生成××分钟后的一个时间点
         let userMin = parseInt(localStorage.getItem('autoChatMin')) || 30;
-let userMax = parseInt(localStorage.getItem('autoChatMax')) || 120;
-// 防止填错数字（比如最小比最大还大），做个极客小保护
-if(userMin > userMax) { let temp = userMin; userMin = userMax; userMax = temp; }
-const randomMins = Math.floor(Math.random() * (userMax - userMin + 1)) + userMin;
+        let userMax = parseInt(localStorage.getItem('autoChatMax')) || 120;
+        if(userMin > userMax) { let temp = userMin; userMin = userMax; userMax = temp; }
+        const randomMins = Math.floor(Math.random() * (userMax - userMin + 1)) + userMin;
         nextTime = now + randomMins * 60000;
         
-        // 错峰检测：去外挂内存里看看有没有别人的时间跟他撞车（前后 10 分钟内）
-        let isConflict = contacts.some(other => {
+        let isConflict = allChats.some(other => {
           if (other.id === c.id) return false;
           let otherTime = localStorage.getItem('nextAutoChatTime_' + other.id);
           return otherTime && Math.abs(otherTime - nextTime) < 10 * 60000;
         });
 
-        // 如果撞车了，强行让他再晚 15 分钟！
         if (isConflict) nextTime += 15 * 60000;
         
         localStorage.setItem('nextAutoChatTime_' + c.id, nextTime);
         return;
       }
 
-      // 如果时间到了！
       if (now >= parseInt(nextTime)) {
-        triggeredAnyone = true; // 锁定这轮的心跳
-        
-        // 重新给他分配下一次的随机时间，防止他一直发
+        triggeredAnyone = true; 
         localStorage.removeItem('nextAutoChatTime_' + c.id);
 
-        const hiddenPrompt = `【系统强制指令】：当前真实系统时间是 ${getSysTimeStr()}。你已经有一段时间没有和玩家聊天了。请根据你的核心人设（${c.persona}）和当前的时间点，极其自然地主动发一条微信消息找她。可以是分享当下的事情、突然的想念、或者符合你性格的开场白。绝对不要提“很久没理我”这种机器人的话，要像活人一样自然！只输出你要发送的一句话。`;
+        // 🌟 核心修复2：取消“只输出一句话”的指令，强行要求遵守 JSON 铁律！
+        const hiddenPrompt = `【系统强制指令】：当前真实系统时间是 ${getSysTimeStr()}。你已经有一段时间没有和玩家聊天了。请根据你的核心人设和当前的时间点，极其自然地主动发一条微信消息找她。可以是分享当下的事情、突然的想念、或者符合你性格的开场白。\n⚠️ 绝对禁止提“很久没理我”这种机器人的话！\n⚠️ 必须严格遵守上方的输出格式铁律（线上模式必须输出包含 messages 数组的 JSON，线下模式必须包含状态栏和正文）！`;
         
-        // 静默调用 API 发送消息
         if(window._sendToAI) window._sendToAI(c.id, hiddenPrompt, true);
-        
-        // 如果当前不在和他的聊天界面，还可以触发一个红点提示（如果老婆以后想加的话）
       }
     });
-  }, 30000); // 30000 毫秒 = 2分钟查一次
+  }, 30000); // 30秒心跳雷达
 };
 
 // 启动引擎！
