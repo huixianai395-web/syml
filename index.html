@@ -9135,15 +9135,15 @@ window.openChat = function(id){
   applyModeUI(); renderChat(); show('chatRoom');
 };
 
-// 4. 后台静默发声引擎 (偷偷累加红点)
+// 4. 后台静默发声引擎 (心跳级逐条发送与逐个跳动红点)
 window._sendToAI = async function(chatId, hiddenPrompt, isSilent) {
   const c = getContactById(chatId);
   if(!c) return;
   const st = normSettings(c.settings);
   const globalMe = getMe();
   const me = { name: st.meName||globalMe.name||'我', persona: st.mePersona||globalMe.persona||'', note: st.meNote||globalMe.note||'' };
-  const arr = getChatArr(chatId);
   
+  const arr = getChatArr(chatId);
   const hist = arr.filter(x => x.text && !x.hiddenForAi).slice(-(st.contextLen||30));
 
   let system = '';
@@ -9176,37 +9176,51 @@ window._sendToAI = async function(chatId, hiddenPrompt, isSilent) {
       }
     }
 
-    parts.forEach(txt => {
-      if(!txt) return;
-      arr.push({ 
+    // 🌟 核心魔法：摒弃一次性塞入，改用 for 循环逐条发送，模拟真人打字！
+    for (let i = 0; i < parts.length; i++) {
+      const txt = parts[i];
+      if(!txt) continue;
+
+      // 获取最新账本并塞入单条消息
+      const currentArr = getChatArr(chatId);
+      currentArr.push({ 
         id: 'm_' + Date.now() + Math.floor(Math.random()*1000), 
         role: 'assistant', 
         text: txt, 
         time: Date.now(), 
         stored: true 
       });
-    });
-    
-    setChatArr(chatId, arr);
+      setChatArr(chatId, currentArr);
 
-    // 🌟 核心魔法：如果你不在当前聊天，就给 TA 加上未读小红点！
-    if (window.currentId !== chatId) {
-      const currentC = getContactById(chatId);
-      if (currentC) {
-        const newUnread = (currentC.unread || 0) + parts.length;
-        if (currentC.isGroup) {
-          const groups = window.getGroups();
-          const idx = groups.findIndex(g => g.id === chatId);
-          if (idx > -1) { groups[idx].unread = newUnread; window.setGroups(groups); }
-        } else {
-          updateContact(chatId, { unread: newUnread });
+      // 🌟 红点逐个跳动逻辑！
+      if (window.currentId !== chatId) {
+        const currentC = getContactById(chatId);
+        if (currentC) {
+          const newUnread = (currentC.unread || 0) + 1; // 每次只加 1
+          if (currentC.isGroup) {
+            const groups = window.getGroups();
+            const idx = groups.findIndex(g => g.id === chatId);
+            if (idx > -1) { groups[idx].unread = newUnread; window.setGroups(groups); }
+          } else {
+            if(window.updateContact) window.updateContact(chatId, { unread: newUnread });
+          }
         }
+        // 瞬间触发微信列表重绘，红点数字实时变化！
+        if(typeof renderContacts === 'function') renderContacts(document.getElementById('searchInput')?.value || '');
+      } else {
+        // 如果刚好切进去了，就直接渲染聊天界面
+        if(typeof renderChat === 'function') renderChat();
+      }
+
+      updateContactPreview(chatId);
+
+      // 🌟 停顿魔法：如果还有下一条消息，就根据字数等几秒钟再发！
+      if (i < parts.length - 1) {
+        const len = txt.length || 10;
+        const delay = 1500 + Math.random() * 1000 + Math.min(1000, len * 15);
+        await new Promise(r => setTimeout(r, delay));
       }
     }
-
-    updateContactPreview(chatId);
-    
-    if(window.currentId === chatId && typeof renderChat === 'function') renderChat();
     
   } catch(e) {
     console.log('后台主动发消息失败啦:', e);
