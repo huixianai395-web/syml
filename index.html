@@ -7468,7 +7468,7 @@ window._publishMyMoment = function() {
 【根据人设和玩家互动的男主列表】：
 ${viewersInfo}
 【核心任务（必须严格执行，字数要足！）】：
-1. 必须虚构 1～4个玩家的【普通微信好友】（如：女闺蜜、朋友等）和男主们穿插排队评论回复，点赞速度前后位置看男主人设决定，回复也一定要极度贴合人设。
+1. 必须虚构 3～5个玩家的【普通微信好友】（如：女闺蜜、朋友等）和男主们穿插排队评论回复，点赞速度前后位置看男主人设决定，回复也一定要极度贴合人设。
 
 2. 男主们也可以看人设偶尔【亲自回复】那些玩家的虚构配角，必须贴合根据人设来，活人感强一点）！
 3. 男主们也要看自己的人设给玩家留言或者点赞，一定要一切符合人设。
@@ -7481,9 +7481,9 @@ ${viewersInfo}
         sysPrompt = `男主"${npc.name}"（人设：${npc.persona}）发了一条微信朋友圈："${target.text||'[分享了图片]'}"。
 请模拟他这条朋友圈的评论区互动，展现他真实的私人社交圈。
 【核心任务（必须执行）】：
-1. 必须虚构 3~5个符合他身份的【专属微信好友】（如：大学室友、死党、同事、损友等）来排队吐槽或调侃他。
+1. 必须虚构 5~7个符合他身份的【专属微信好友】（如：大学室友、死党、同事、损友等）来排队吐槽或调侃他。
 2. 男主"${npc.name}"看到后，看人设可以【亲自回复】路人好友，具体回复谁回复什么贴合人设，不用全都回，一切以人设为主。语气是熟人间的互怼、高冷或玩笑。
-3. 整个评论区总数必须在 5 到 10条之间。
+3. 整个评论区总数必须在 7到 10条之间。
 4. 【绝对禁止】提其他男主！这是他的私人圈子！`;
       }
 
@@ -7563,9 +7563,9 @@ ${postersInfo}
 【核心指令（极其重要，必须严格遵守）】：
 1. 他们是活生生的人，有自己的工作、朋友、爱好、情绪、小心思！人有七情六欲喜怒哀乐，什么都可以发！
 2. 发朋友圈的内容必须以【角色人设和真实日常生活】为主，绝大多数内容跟玩家无关：
-   - 工作状态（加班崩溃、开会烦躁、摸鱼快乐、项目搞定）
-   - 吃喝玩乐（外卖踩雷、奶茶推荐、打游戏连跪、馆子排队）
-   - 情绪发泄（堵车、天气烦、失眠、莫名其妙的emo）
+   - 工作状态（加班崩溃、开会烦躁、摸鱼快乐、项目搞定…等等）
+   - 吃喝玩乐（外卖踩雷、奶茶推荐、打游戏连跪、馆子排队…等等）
+   - 情绪发泄（堵车、天气烦、失眠、莫名其妙的emo…等等）
    - 无厘头废话（没意义但真人就是会发的那种）
 3. 如果有近期聊天摘要，可以偶尔（30%概率）顺着聊天话题暗戳戳发一条。
 4. 每个角色发的内容必须和上次截然不同，不能重复同类主题！
@@ -8541,7 +8541,153 @@ window.renderNotesList = function(){
   setTimeout(() => { window._renderPrologueUI(); }, 500);
   window.callApi = callApi;
   window.getWbBooks = getWbBooks;
+// ================= 🌟 蓝色极速爆肝：IF 导入导出与字数节流阀 =================
+  
+  // 1. 自动改造阅读器顶部导航栏，加入【字数】和【导出】按钮
+  setTimeout(() => {
+    const readerHeader = document.querySelector('#ifReader .header');
+    if(readerHeader) {
+      readerHeader.innerHTML = `
+        <button class="btn" onclick="show('realmIf')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 书架</button>
+        <b id="ifReaderTitle" style="color:#3d4a6a; font-size:16px; letter-spacing:1px; flex:1; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">阅读中</b>
+        <div style="display:flex; gap:6px;">
+          <button class="btn" onclick="window._openIfSettings()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px;">字数</button>
+          <button class="btn p" onclick="window._exportIfData()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px; box-shadow:none;">导出</button>
+          <button class="btn" onclick="document.getElementById('ifImportFile').click()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px;">导入</button>
+        </div>
+      `;
+    }
 
+    // 2. 自动在页面底部注入【字数设置弹窗】和【隐藏的导入Input】
+    if (!document.getElementById('ifSettingsModal')) {
+      const modalHtml = `
+      <div id="ifSettingsModal" class="modal" style="z-index: 10000;">
+        <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; display:flex; flex-direction:column; overflow:hidden; padding:0;">
+          <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
+            <b style="color:#5c7094; font-size:15px;">时空推演字数设定</b>
+            <button class="btn" onclick="document.getElementById('ifSettingsModal').classList.remove('active')" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:28px; height:28px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0;">×</button>
+          </div>
+          <div style="padding:20px; background:linear-gradient(180deg, #f4f6fb, #eef4fa);">
+            <div style="font-size:12px; color:#7a86a8; font-weight:800; margin-bottom:8px;">自定义每章字数区间 (例：500-800)</div>
+            <input id="ifWordCountInput" class="input" placeholder="默认：800-1000" style="background:rgba(255,255,255,0.7); border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; padding:10px 12px; width:100%; box-sizing:border-box;">
+            <button class="btn p" onclick="window._saveIfSettings()" style="width:100%; margin-top:16px; padding:10px 0; font-size:14px; background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; box-shadow:none;">锁定字数</button>
+          </div>
+        </div>
+      </div>
+      <input type="file" id="ifImportFile" accept=".json" class="hidden" onchange="window._importIfData(event)">
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+  }, 500);
+
+  // 3. 核心逻辑：读取与保存字数设定
+  window._openIfSettings = async function() {
+    const wc = await localforage.getItem('mp_fix_if_wordcount') || '800-1000';
+    document.getElementById('ifWordCountInput').value = wc;
+    document.getElementById('ifSettingsModal').classList.add('active');
+  };
+
+  window._saveIfSettings = async function() {
+    const val = document.getElementById('ifWordCountInput').value.trim() || '800-1000';
+    await localforage.setItem('mp_fix_if_wordcount', val);
+    document.getElementById('ifSettingsModal').classList.remove('active');
+    alert('✨ 推演字数已锁定为：' + val + ' 字！外挂内存已记录！');
+  };
+
+  // 4. 核心逻辑：时空胶囊导出与导入
+  window._exportIfData = async function() {
+    const cards = await getIfCards();
+    const books = await getIfBooks();
+    const data = { ifCards: cards, ifBooks: books };
+    const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'IF_Universe_Backup_' + Date.now() + '.json';
+    a.click();
+  };
+
+  window._importIfData = async function(e) {
+    const f = e.target.files?.[0];
+    if(!f) return;
+    try {
+      const text = await f.text();
+      const j = JSON.parse(text);
+      if(j.ifCards) await setIfCards(j.ifCards);
+      if(j.ifBooks) await setIfBooks(j.ifBooks);
+      alert('✨ 平行宇宙数据导入成功！');
+      if(window._renderIfStoryList) window._renderIfStoryList();
+      if(window._renderIfCardList) window._renderIfCardList();
+      show('realmIf');
+    } catch(err) {
+      alert('导入失败啦宝宝：' + err.message);
+    } finally {
+      e.target.value = '';
+    }
+  };
+
+  // 5. 覆盖推演引擎，强行注入字数节流阀！
+  window._sendIfReply = async function() {
+    const inputEl = document.getElementById('ifReaderInput');
+    const text = inputEl.value.trim();
+    if(!text) return alert('请先输入你的抉择或干预指令哦！');
+    
+    const books = await getIfBooks();
+    const book = books.find(b => b.id === window._currentIfBookId);
+    if(!book) return;
+
+    const readerPage = document.querySelector('#ifReader .page');
+    const overlay = document.createElement('div');
+    overlay.id = 'ifLoadingOverlay';
+    overlay.style.cssText = 'position:absolute; inset:0; background:rgba(250,252,255,0.75); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); z-index:999; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#5c7094; font-weight:bold; font-size:14px; letter-spacing:2px;';
+    overlay.innerHTML = '<div style="width:48px; height:48px; border-radius:50%; border:3px solid #dce5f0; border-top-color:#a5cfff; animation:pcSpin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; margin-bottom:20px;"></div><div>星轨拨动中 · 正在推演下一幕</div>';
+    readerPage.appendChild(overlay);
+
+    try {
+      const allCards = await getIfCards();
+      const activeChars = book.lineup.map(id => allCards.find(c => c.id === id)).filter(Boolean);
+      const charDesc = activeChars.map(c => '【' + c.name + '】：' + c.persona).join('\\n');
+      const historyCtx = book.chapters.map(ch => ch.content).join('\\n\\n').slice(-3000); 
+
+      // 🌟 读取字数节流阀！
+      const customWc = await localforage.getItem('mp_fix_if_wordcount') || '800-1000';
+      let myName = '我';
+      try { const meData = JSON.parse(localStorage.getItem('mp_fix_me')); if (meData && meData.name) myName = meData.name; } catch(e) {}
+
+      let perspectivePrompt = '';
+      const p = window._currentIfPerspective;
+      if (p === 'me') {
+        perspectivePrompt = '【当前镜头铁律】：死死锁定在玩家（' + myName + '）的第一人称视角！极度沉浸！绝对禁止描写“我”视线外的事物！';
+      } else if (p && p.startsWith('npc_')) {
+        const npcName = p.replace('npc_', '');
+        perspectivePrompt = '【当前镜头铁律】：已窃取NPC（' + npcName + '）的潜意识！完全代入【' + npcName + '】的第一人称视角！深度结合TA的人设展现极具张力的内心戏！';
+      } else {
+        perspectivePrompt = book.mode === 'first' 
+          ? '【当前镜头铁律】：默认第一人称（玩家' + myName + '）。极度沉浸，禁止描写视线外事物。' 
+          : '【当前镜头铁律】：上帝视角/电影长镜头。使用第三人称客观叙述，精准调度多线场景与人物互动，禁止使用“我”自称。';
+      }
+
+      const sysPrompt = '你是一个顶级互动小说家。\\n出场角色设定：\\n' + charDesc + '\\n【前情提要】：\\n' + historyCtx + '\\n\\n' + perspectivePrompt + '\\n\\n玩家抉择："' + text + '"。\\n请顺着玩家的意图继续往下续写。\\n【输出格式铁律】：必须严格输出JSON！\\n{\\n  "content": "新一章正文。必须分段，环境与动作极具画面感。字数大约 ' + customWc + ' 字左右。",\\n  "innerVoice": "抓取当前场景中情绪波动最大的一位角色（除了玩家）的内心OS。格式必须严格为：【角色名】内心OS内容。限30字，无则留空",\\n  "options": ["选项A：...", "选项B：...", "选项C：..."]\\n}';
+
+      const out = await callApi([ { role: 'system', content: sysPrompt }, { role: 'user', content: '请立刻推演下一幕！' } ]);
+      const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
+      const match = cleaned.match(/\{[\s\S]*\}/);
+      if(!match) throw new Error("AI 脑电波异常，未能返回正确格式！");
+      const data = JSON.parse(match[0]);
+
+      const newChapTitle = '第 ' + (book.chapters.length + 1) + ' 章';
+      book.chapters.push({ title: newChapTitle, content: data.content, innerVoice: data.innerVoice || '', options: data.options || [] });
+      await setIfBooks(books);
+      
+      inputEl.value = '';
+      await window._renderIfReader();
+      window._renderIfStoryList(); 
+    } catch(e) {
+      alert('推演失败了宝宝：' + e.message);
+    } finally {
+      const loader = document.getElementById('ifLoadingOverlay');
+      if(loader) loader.remove();
+    }
+  };
 })(); // 🏠 闭合主屋的大门！(把之前断掉的尾巴统统扔掉，这次死死焊住！)
 </script>
 
