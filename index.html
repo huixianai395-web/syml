@@ -1,5 +1,3 @@
-
-
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -3738,24 +3736,17 @@ function refreshFontSizeUI(){
   function renderContacts(k=''){
     k=(k||'').trim();
     const contacts = getContacts();
-    const groups = window.getGroups ? window.getGroups() : [];
+    const groups = window.getGroups();
     let all = [...contacts, ...groups];
     
     const arr = all.filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
     
-    $('contactList').innerHTML=arr.map(c=> {
-      // 🌟 核心：原生红点注入！只要有 unread，立刻画出绝美红点！
-      const unreadHtml = c.unread ? `<div style="position:absolute; top:-4px; right:-6px; background:#f25c5c; color:#fff; font-size:10px; font-weight:800; height:18px; min-width:18px; border-radius:9px; padding:0 5px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 8px rgba(242,92,92,0.25); border:2px solid #fff; z-index:10; font-family:ui-monospace, Arial, sans-serif; pointer-events:none;">${c.unread > 99 ? '99+' : c.unread}</div>` : '';
-      
-      return `
-      <div class="item" style="-webkit-touch-callout:none; user-select:none; position:relative;"
+    $('contactList').innerHTML=arr.map(c=>`
+      <div class="item" style="-webkit-touch-callout:none; user-select:none;"
            oncontextmenu="return deleteContactFromList('${c.id}', event)"
            ontouchstart="this._t = setTimeout(()=>deleteContactFromList('${c.id}'), 600)"
            ontouchend="clearTimeout(this._t)" ontouchmove="clearTimeout(this._t)">
-        <div style="position:relative; width:44px; height:44px; flex-shrink:0;">
-          <img class="avatar" src="${c.avatar||'https://via.placeholder.com/88x88?text=头像'}" style="width:100%; height:100%; object-fit:cover; border-radius:12px;"/>
-          ${unreadHtml}
-        </div>
+        <img class="avatar" src="${c.avatar||'https://via.placeholder.com/88x88?text=头像'}"/>
         <div class="main" onclick="if(window._isDeleting)return; openChat('${c.id}')">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div class="name" style="display:flex; align-items:center; gap:6px;">
@@ -3767,7 +3758,7 @@ function refreshFontSizeUI(){
           <div class="preview">${esc(c.preview||'')}</div>
         </div>
       </div>
-    `}).join('') || '<div class="card small">暂无联系人或群聊，点右上角创建吧</div>';
+    `).join('') || '<div class="card small">暂无联系人或群聊，点右上角创建吧</div>';
   }
 
   function openCreateModal(){ $('contactModal').classList.add('active'); }
@@ -9142,100 +9133,83 @@ window.openChat = function(id){
   applyModeUI(); renderChat(); show('chatRoom');
 };
 
-// 🌟 第二段：替换大门里面的静默发声引擎！(心跳逐条发送版)
-  window._sendToAI = async function(chatId, hiddenPrompt, isSilent) {
-    const c = getContactById(chatId);
-    if(!c) return;
-    const st = normSettings(c.settings);
-    const globalMe = getMe();
-    const me = { name: st.meName||globalMe.name||'我', persona: st.mePersona||globalMe.persona||'', note: st.meNote||globalMe.note||'' };
-    const arr = getChatArr(chatId);
-    
-    const hist = arr.filter(x => x.text && !x.hiddenForAi).slice(-(st.contextLen||30));
+// 4. 后台静默发声引擎 (偷偷累加红点)
+window._sendToAI = async function(chatId, hiddenPrompt, isSilent) {
+  const c = getContactById(chatId);
+  if(!c) return;
+  const st = normSettings(c.settings);
+  const globalMe = getMe();
+  const me = { name: st.meName||globalMe.name||'我', persona: st.mePersona||globalMe.persona||'', note: st.meNote||globalMe.note||'' };
+  const arr = getChatArr(chatId);
+  
+  const hist = arr.filter(x => x.text && !x.hiddenForAi).slice(-(st.contextLen||30));
 
-    let system = '';
-    if (c.isGroup) {
-      system = buildGroupSystem(c, me, st);
+  let system = '';
+  if (c.isGroup) {
+    system = buildGroupSystem(c, me, st);
+  } else {
+    system = st.mode === 'offline' ? buildOfflineSystem(c, me, st) : buildOnlineSystem(c, me, st);
+  }
+  
+  system += `\n\n${hiddenPrompt}`;
+
+  const apiMsgs = [
+    { role: 'system', content: system },
+    ...hist.map(x => ({ role: x.role==='user'?'user':'assistant', content: x.text }))
+  ];
+
+  try {
+    const out = await callApi(apiMsgs);
+    let parts = [];
+    if (st.mode === 'offline') {
+      parts = [out.trim()]; 
     } else {
-      system = st.mode === 'offline' ? buildOfflineSystem(c, me, st) : buildOnlineSystem(c, me, st);
-    }
-    
-    system += `\n\n${hiddenPrompt}`;
-
-    const apiMsgs = [
-      { role: 'system', content: system },
-      ...hist.map(x => ({ role: x.role==='user'?'user':'assistant', content: x.text }))
-    ];
-
-    try {
-      const out = await callApi(apiMsgs);
-      let parts = [];
-      if (st.mode === 'offline') {
-        parts = [out.trim()]; 
+      const cleaned = out.replace(/```json|```/g, '').trim();
+      const m2 = cleaned.match(/\{[\s\S]*\}/);
+      if (m2) {
+        const data = JSON.parse(m2[0]);
+        parts = data.messages || [cleaned];
       } else {
-        const cleaned = out.replace(/```json|```/g, '').trim();
-        const m2 = cleaned.match(/\{[\s\S]*\}/);
-        if (m2) {
-          const data = JSON.parse(m2[0]);
-          parts = data.messages || [cleaned];
-        } else {
-          parts = [cleaned];
-        }
+        parts = [cleaned];
       }
-
-      // 🌟 核心：逐条发送与红点逐个跳动！
-      for (let i = 0; i < parts.length; i++) {
-        const txt = parts[i];
-        if(!txt) continue;
-
-        // 1. 存入账本
-        const currentArr = getChatArr(chatId);
-        currentArr.push({ 
-          id: 'm_' + Date.now() + Math.floor(Math.random()*1000), 
-          role: 'assistant', 
-          text: txt, 
-          time: Date.now(), 
-          stored: true 
-        });
-        setChatArr(chatId, currentArr);
-
-        // 2. 累加红点 (仅当不在当前聊天室时)
-        if (window.currentId !== chatId) {
-          const currentC = getContactById(chatId);
-          if (currentC) {
-            const newUnread = (currentC.unread || 0) + 1; // 每次精准+1
-            if (currentC.isGroup) {
-              const groups = window.getGroups();
-              const idx = groups.findIndex(g => g.id === chatId);
-              if (idx > -1) { groups[idx].unread = newUnread; window.setGroups(groups); }
-            } else {
-              updateContact(chatId, { unread: newUnread });
-            }
-          }
-        }
-
-        // 3. 更新摘要并触发列表重绘
-        updateContactPreview(chatId);
-        
-        // 🌟 只要你在外面看列表，红点数字就会当着你的面实时跳动！
-        if (window.currentId !== chatId) {
-          renderContacts(document.getElementById('searchInput')?.value || '');
-        } else {
-          if(typeof renderChat === 'function') renderChat();
-        }
-
-        // 4. 模拟真人打字停顿，实现“呼吸感”
-        if (i < parts.length - 1) {
-          const len = txt.length || 10;
-          const delay = 1500 + Math.random() * 1000 + Math.min(1000, len * 15);
-          await new Promise(r => setTimeout(r, delay));
-        }
-      }
-      
-    } catch(e) {
-      console.log('后台主动发消息失败啦:', e);
     }
-  };
+
+    parts.forEach(txt => {
+      if(!txt) return;
+      arr.push({ 
+        id: 'm_' + Date.now() + Math.floor(Math.random()*1000), 
+        role: 'assistant', 
+        text: txt, 
+        time: Date.now(), 
+        stored: true 
+      });
+    });
+    
+    setChatArr(chatId, arr);
+
+    // 🌟 核心魔法：如果你不在当前聊天，就给 TA 加上未读小红点！
+    if (window.currentId !== chatId) {
+      const currentC = getContactById(chatId);
+      if (currentC) {
+        const newUnread = (currentC.unread || 0) + parts.length;
+        if (currentC.isGroup) {
+          const groups = window.getGroups();
+          const idx = groups.findIndex(g => g.id === chatId);
+          if (idx > -1) { groups[idx].unread = newUnread; window.setGroups(groups); }
+        } else {
+          updateContact(chatId, { unread: newUnread });
+        }
+      }
+    }
+
+    updateContactPreview(chatId);
+    
+    if(window.currentId === chatId && typeof renderChat === 'function') renderChat();
+    
+  } catch(e) {
+    console.log('后台主动发消息失败啦:', e);
+  }
+};
 
 // 5. 全局随机错峰主动聊天引擎 (时间感知与防发疯电击版)
 window._startGlobalAutoChatEngine = function() {
@@ -9317,6 +9291,7 @@ ${timeContextPrompt}
 };
 // 启动引擎！
 window._startGlobalAutoChatEngine();
+
 // ================= 大一统引擎结束 =================
 })(); // 🏠 闭合主屋的大门！(把之前断掉的尾巴统统扔掉，这次死死焊住！)
 </script>
