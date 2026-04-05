@@ -2306,28 +2306,56 @@ body {
   <button class="btn" id="mePageDelBtn" style="flex:1; background:rgba(252,242,242,0.6); color:#b57b7b; border:1px solid #f2dcdc; border-radius:12px; padding:10px 0; font-weight:600; letter-spacing:1px; box-shadow:none; transition:all 0.2s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">删除当前</button>
             </div>
           </div>
-<!-- 🌟 蓝色高定：放在“我”页面的全局主动聊天开关 -->
-<div class="setting-item" style="display:flex; justify-content:space-between; align-items:center; padding:16px; background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border-radius:16px; margin:12px; border:1px solid #dce5f0;">
-  <span style="font-size:15px; color:#5c7094; font-weight:bold;">角色自由意志引擎 (随机掉落消息)</span>
-  <input type="checkbox" id="globalAutoChatToggle" style="width:40px; height:22px; appearance:none; background:#dce5f0; border-radius:11px; position:relative; outline:none; cursor:pointer; transition:0.3s;" 
-  onclick="
-    const isOn = this.checked;
-    this.style.background = isOn ? '#eef4fa' : '#dce5f0';
-    localStorage.setItem('globalAutoChatOn', isOn);
-    if(isOn) alert('✨ 自由意志已开启！男主们将在 30~120 分钟内随机找你聊天啦。');
-  ">
-  <style>
-    #globalAutoChatToggle::after { content:''; position:absolute; top:2px; left:2px; width:18px; height:18px; background:#a0aaba; border-radius:50%; transition:0.3s; }
-    #globalAutoChatToggle:checked::after { left:20px; background:#5c7094; }
-  </style>
+<!-- 🌟 蓝色高定：放在“我”页面的全局主动聊天开关与动态区间控制台 -->
+<div class="setting-item" style="padding:16px; background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border-radius:16px; margin:12px; border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.03);">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <span style="font-size:15px; color:#5c7094; font-weight:bold;">角色自由意志引擎 (随机掉落)</span>
+    <!-- 绝美像素级开关 -->
+    <label style="position:relative; display:inline-block; width:44px; height:24px; margin:0;">
+      <input type="checkbox" id="globalAutoChatToggle" style="opacity:0; width:0; height:0;" onchange="window._toggleGlobalAutoChat(this.checked)">
+      <span class="blue-slider" style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#dce5f0; transition:.3s; border-radius:24px;"></span>
+    </label>
+  </div>
+  
+  <!-- 展开的时间区间设置区 -->
+  <div id="autoChatTimeSettings" style="display:none; margin-top:14px; padding-top:14px; border-top:1px dashed #dce5f0; align-items:center; gap:8px; font-size:13px; color:#7a86a8;">
+    <span>随机掉落区间：</span>
+    <input type="number" id="autoChatMin" value="30" oninput="localStorage.setItem('autoChatMin', this.value)" style="width:45px; background:#eef4fa; border:1px solid #dce5f0; border-radius:8px; padding:4px; color:#5c7094; outline:none; text-align:center; font-weight:bold;">
+    <span>至</span>
+    <input type="number" id="autoChatMax" value="120" oninput="localStorage.setItem('autoChatMax', this.value)" style="width:45px; background:#eef4fa; border:1px solid #dce5f0; border-radius:8px; padding:4px; color:#5c7094; outline:none; text-align:center; font-weight:bold;">
+    <span>分钟</span>
+  </div>
 </div>
 
-<!-- 别忘了在页面加载时读取一下外挂内存里的状态，保持开关显示正确 -->
-<script>
-  if(localStorage.getItem('globalAutoChatOn') === 'true') {
-    const t = document.getElementById('globalAutoChatToggle');
-    if(t) { t.checked = true; t.style.background = '#eef4fa'; }
+<style>
+  /* 修复丑丑的圆点，绝对完美居中与丝滑动画 */
+  .blue-slider::before {
+    position: absolute; content: ""; height: 18px; width: 18px; left: 3px; top: 3px;
+    background-color: #ffffff; transition: .3s cubic-bezier(0.4, 0.0, 0.2, 1); border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(92,112,148,0.15);
   }
+  input:checked + .blue-slider { background-color: #eef4fa; border: 1px solid #dce5f0; }
+  input:checked + .blue-slider::before { transform: translateX(20px); background-color: #5c7094; box-shadow:none; }
+</style>
+
+<script>
+  // 初始化外挂内存中的数据，保持 UI 状态同步
+  window._toggleGlobalAutoChat = function(isOn) {
+    localStorage.setItem('globalAutoChatOn', isOn);
+    const settings = document.getElementById('autoChatTimeSettings');
+    if(settings) settings.style.display = isOn ? 'flex' : 'none';
+  };
+  
+  setTimeout(() => {
+    if(localStorage.getItem('globalAutoChatOn') === 'true') {
+      const t = document.getElementById('globalAutoChatToggle');
+      if(t) { t.checked = true; window._toggleGlobalAutoChat(true); }
+    }
+    const savedMin = localStorage.getItem('autoChatMin');
+    const savedMax = localStorage.getItem('autoChatMax');
+    if(savedMin) document.getElementById('autoChatMin').value = savedMin;
+    if(savedMax) document.getElementById('autoChatMax').value = savedMax;
+  }, 100);
 </script>
         <div style="background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(47, 102, 216, 0.04); margin-top: 16px;">
   <div style="font-size: 15px; font-weight: 800; color: #5c7094; margin-bottom: 16px; display: flex; align-items: center; gap: 6px; letter-spacing: 1px;">
@@ -10318,8 +10346,12 @@ window._startGlobalAutoChatEngine = function() {
       
       // 如果还没给他分配时间，或者时间已经过期太久被重置了
       if (!nextTime) {
-        // 随机生成 30 到 120 分钟后的一个时间点
-        const randomMins = Math.floor(Math.random() * (120 - 30 + 1)) + 30;
+        // 随机生成××分钟后的一个时间点
+        let userMin = parseInt(localStorage.getItem('autoChatMin')) || 30;
+let userMax = parseInt(localStorage.getItem('autoChatMax')) || 120;
+// 防止填错数字（比如最小比最大还大），做个极客小保护
+if(userMin > userMax) { let temp = userMin; userMin = userMax; userMax = temp; }
+const randomMins = Math.floor(Math.random() * (userMax - userMin + 1)) + userMin;
         nextTime = now + randomMins * 60000;
         
         // 错峰检测：去外挂内存里看看有没有别人的时间跟他撞车（前后 10 分钟内）
