@@ -8688,6 +8688,89 @@ window.renderNotesList = function(){
       if(loader) loader.remove();
     }
   };
+  // ================= 🌟 蓝色高定：灵魂卡牌编辑与重塑引擎 =================
+  
+  window._editingIfCardId = null;
+
+  // 1. 升级卡牌列表，加入海盐蓝【编辑】按钮
+  window._renderIfCardList = async function() {
+    const cards = await getIfCards();
+    const box = document.getElementById('ifCardList');
+    if(!box) return;
+    if(cards.length === 0) {
+      box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:12px;">卡牌库空空如也<br>请在下方捏一个新灵魂吧</div>`;
+      return;
+    }
+    box.innerHTML = cards.map(c => `
+      <div style="background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:12px; padding:12px; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; transition:transform 0.2s;">
+        <div style="flex:1; min-width:0; cursor:pointer;" onclick="window._selectIfCard('${c.id}')">
+          <div style="font-size:14px; font-weight:800; color:#3d4a6a; margin-bottom:4px;">${safeEscIf(c.name)}</div>
+          <div style="font-size:11px; color:#7a86a8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${safeEscIf(c.persona)}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="btn" onclick="window._editIfCard('${c.id}')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:4px 10px; font-size:11px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">编辑</button>
+          <button class="btn d" onclick="window._deleteIfCard('${c.id}')" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:8px; padding:4px 10px; font-size:11px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">删除</button>
+          <div onclick="window._selectIfCard('${c.id}')" style="color:#a5cfff; font-size:18px; font-weight:bold; cursor:pointer; padding:0 4px;">+</div>
+        </div>
+      </div>
+    `).join('');
+  };
+
+  // 2. 唤醒编辑模式，将数据倒灌回输入框
+  window._editIfCard = async function(id) {
+    const cards = await getIfCards();
+    const c = cards.find(x => x.id === id);
+    if(!c) return;
+    
+    document.getElementById('ifNewCardName').value = c.name;
+    document.getElementById('ifNewCardPersona').value = c.persona;
+    window._editingIfCardId = id;
+    
+    const saveBtn = document.querySelector('#ifCardModal .btn.p');
+    if(saveBtn) {
+      saveBtn.textContent = '更新卡牌';
+      saveBtn.style.background = 'linear-gradient(135deg, #eef4fa, #dce5f0)';
+      saveBtn.style.color = '#5c7094';
+    }
+  };
+
+  // 3. 升级保存引擎，智能区分【新建】与【更新】
+  window._saveIfCard = async function() {
+    const name = document.getElementById('ifNewCardName').value.trim();
+    const persona = document.getElementById('ifNewCardPersona').value.trim();
+    if(!name || !persona) return alert('宝宝，名字和人设都不能为空哦！');
+    
+    const cards = await getIfCards();
+    
+    if(window._editingIfCardId) {
+      // 更新现有灵魂
+      const idx = cards.findIndex(c => c.id === window._editingIfCardId);
+      if(idx > -1) {
+        cards[idx].name = name;
+        cards[idx].persona = persona;
+      }
+      window._editingIfCardId = null;
+      
+      const saveBtn = document.querySelector('#ifCardModal .btn.p');
+      if(saveBtn) {
+        saveBtn.textContent = '封存卡牌';
+        saveBtn.style.background = ''; // 恢复默认样式
+        saveBtn.style.color = '';
+      }
+      alert('✨ 灵魂印记已成功更新！');
+    } else {
+      // 缔造新灵魂
+      const newId = 'ifc_' + Date.now();
+      cards.unshift({ id: newId, name: name, persona: persona });
+      window._currentIfLineup.push(newId);
+    }
+    
+    await setIfCards(cards);
+    document.getElementById('ifNewCardName').value = '';
+    document.getElementById('ifNewCardPersona').value = '';
+    window._renderIfCardList();
+    window._renderIfLineup(); 
+  };
 })(); // 🏠 闭合主屋的大门！(把之前断掉的尾巴统统扔掉，这次死死焊住！)
 </script>
 
