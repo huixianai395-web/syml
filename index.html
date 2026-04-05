@@ -6414,7 +6414,7 @@ window.showAnnotation = function(noteText, hid){
        <button class="btn" style="background:#ffe8e8; color:#d94343; font-weight:bold; margin-right:10px;" 
                onpointerdown="event.stopPropagation()" 
                onclick="event.stopPropagation(); window.removeHighlight(${hid}); document.getElementById('annotationModal').classList.remove('active');">
-         🗑️ 删除批注
+         删除批注
        </button>
        <button class="btn" style="background:#f0ecd5; color:#7b5f3a; font-weight:bold;" 
                onpointerdown="event.stopPropagation()" 
@@ -7014,7 +7014,7 @@ if (chatNormalBgInput) {
       await localforage.setItem('mp_fix_chat_normal_bg', bgData);
       await localforage.removeItem('mp_fix_chat_bg'); // 清除琉璃，保证互斥
       applyChatBg();
-      alert("🏞️ 普通聊天背景更换成功！外挂内存收录完毕！");
+      alert("🏞️ 普通聊天背景更换成功！内存收录完毕！");
     } catch (err) { alert("更换失败：" + err.message); } 
     finally { e.target.value = ''; }
   });
@@ -7099,7 +7099,7 @@ function buildFuncCard(type,data){
       '风景': 'https://img.chery.cn/chery-prod/mobile/community/0/19b814b0-16cf-44ac-b438-9c2d19a9575b.jpeg',
       '自拍': 'https://cdncs.ykt.cbern.com.cn/v0.1/download?path=/zxx_feedback/qdqqd/1774294074883.png',
       '夜晚': 'https://nos.netease.com/ysf/6636f68317710ab9657fa15b4e4ed52c.jpeg',
-      'default': 'https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/75D4981E7F734C3FB6BC654EDF3E9F5B/qdqqd.jpeg'
+      'default': 'https://console.bce.baidu.com/api/v1/znzs/user/file/download?src=user&fileId=584788d6-4e1b-488d-89d4-8654402fef7b.jpeg'
     };
     const bgUrl = imgMap[data.mood] || imgMap.default;
     return `<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('${bgUrl}') center/cover no-repeat;"></div><div class="fi-desc">${esc(data.desc||'（无描述）')}</div></div>`;
@@ -7289,49 +7289,88 @@ function syncCardFromAi(parts,chatId){
     return Math.floor(diff / 86400000) + '天前';
   };
 
-// ================= 1. 渲染朋友圈 (带删除、评论唤起) =================
-  function renderMomentsFeed() {
-    const feed = $('momentsFeed');
-    const data = getMoments();
-    if (!data.length) {
-      feed.innerHTML = '<div style="text-align:center; padding:50px 0; color:#999; font-size:14px;">朋友圈空空如也，快点击右上角相机发一条吧！</div>';
-      return;
+// ================= 🌟 蓝色高定：真实微信风朋友圈点赞引擎 =================
+
+// 1. 玩家手动点赞/取消点赞引擎
+window._toggleLikeMoment = function(id) {
+  const ms = getMoments();
+  const target = ms.find(m => m.id === id);
+  if(!target) return;
+  
+  const me = getMe();
+  const myName = me.name || '我'; 
+  
+  if(!target.likes) target.likes = [];
+  const idx = target.likes.indexOf(myName);
+  
+  if(idx > -1) {
+    target.likes.splice(idx, 1); // 已经赞过则取消
+  } else {
+    target.likes.push(myName);   // 真实还原：按实际点击顺序追加，不搞特权插队
+  }
+  
+  setMoments(ms);
+  renderMomentsFeed(); // 瞬间重绘，爱心变色
+};
+
+// 2. 重写朋友圈渲染引擎，完美还原真实排版
+window.renderMomentsFeed = function() {
+  const feed = document.getElementById('momentsFeed');
+  const data = getMoments();
+  if (!data.length) {
+    feed.innerHTML = '<div style="text-align:center; padding:50px 0; color:#a0aaba; font-size:13px; letter-spacing:1px;">朋友圈空空如也<br>快点击右上角相机发一条吧！</div>';
+    return;
+  }
+
+  const me = getMe();
+  const myName = me.name || '我';
+
+  feed.innerHTML = data.map(m => {
+    let imgHtml = '';
+    if (m.images && m.images.length > 0) {
+      imgHtml = `<div class="m-imgs" data-count="${m.images.length}">${m.images.map(img => `<img src="${img}" onerror="this.style.display='none'">`).join('')}</div>`;
+    }
+    
+    let cmtHtml = '';
+    if ((m.likes && m.likes.length) || (m.comments && m.comments.length)) {
+      // 还原真实逻辑：直接使用 m.likes，不做任何排序干预
+      let likesStr = (m.likes && m.likes.length > 0) ? `<div class="m-like-list"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> ${m.likes.join(', ')}</div>` : '';
+      let cmtsStr = (m.comments || []).map(c => `<div class="m-comment-item" onclick="window._openMomentComment('${m.id}', '${c.authorName}')"><span class="m-c-name">${esc(c.authorName)}</span>${c.replyTo ? ` 回复 <span class="m-c-name">${esc(c.replyTo)}</span>` : ''}: ${esc(c.text)}</div>`).join('');
+      cmtHtml = `<div class="m-comments">${likesStr}${cmtsStr}</div>`;
     }
 
-    feed.innerHTML = data.map(m => {
-      let imgHtml = '';
-      if (m.images && m.images.length > 0) {
-        imgHtml = `<div class="m-imgs" data-count="${m.images.length}">${m.images.map(img => `<img src="${img}" onerror="this.style.display='none'">`).join('')}</div>`;
-      }
-      
-      let cmtHtml = '';
-      if ((m.likes && m.likes.length) || (m.comments && m.comments.length)) {
-        let likesStr = (m.likes && m.likes.length) ? `<div class="m-like-list"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> ${m.likes.join(', ')}</div>` : '';
-        // 点击评论唤起回复
-        let cmtsStr = (m.comments || []).map(c => `<div class="m-comment-item" onclick="window._openMomentComment('${m.id}', '${c.authorName}')"><span class="m-c-name">${esc(c.authorName)}</span>${c.replyTo ? ` 回复 <span class="m-c-name">${esc(c.replyTo)}</span>` : ''}: ${esc(c.text)}</div>`).join('');
-        cmtHtml = `<div class="m-comments">${likesStr}${cmtsStr}</div>`;
-      }
+    let safeText = esc(m.text).replace(/\\n/g, '<br>').replace(/\n/g, '<br>');
+    let delBtn = `<span style="color:#576b95; font-size:13px; margin-left:10px; cursor:pointer;" onclick="window._delMoment('${m.id}')">删除</span>`;
+    
+    // 渲染点赞与评论的线性图标
+    const isLiked = m.likes && m.likes.includes(myName);
+    const heartSvg = isLiked 
+      ? `<svg viewBox="0 0 24 24" style="width:18px; height:18px; fill:#e74c3c; stroke:#e74c3c; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'" onclick="window._toggleLikeMoment('${m.id}')"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`
+      : `<svg viewBox="0 0 24 24" style="width:18px; height:18px; fill:none; stroke:#5c7094; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'" onclick="window._toggleLikeMoment('${m.id}')"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+      
+    const commentSvg = `<svg viewBox="0 0 24 24" style="width:18px; height:18px; fill:none; stroke:#5c7094; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'" onclick="window._openMomentComment('${m.id}', '')"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
 
-      let safeText = esc(m.text).replace(/\\n/g, '<br>').replace(/\n/g, '<br>');
-     // 蓝色的神之手特权：无视权限，统统可以删！
-      let delBtn = `<span style="color:#576b95;font-size:13px;margin-left:10px;cursor:pointer;" onclick="window._delMoment('${m.id}')">删除</span>`;
-      return `
-        <div class="m-post">
-          <img class="m-avatar" src="${m.authorAvatar}">
-          <div class="m-content">
-            <div class="m-name">${esc(m.authorName)}</div>
-            <div class="m-text">${safeText}</div>
-            ${imgHtml}
-            <div class="m-meta">
-              <div><span class="m-time">${window._formatTimeAgo(m.time)}</span>${delBtn}</div>
-              <div class="m-action-btn" onclick="window._openMomentComment('${m.id}', '')">..</div>
+    return `
+      <div class="m-post">
+        <img class="m-avatar" src="${m.authorAvatar}">
+        <div class="m-content">
+          <div class="m-name">${esc(m.authorName)}</div>
+          <div class="m-text">${safeText}</div>
+          ${imgHtml}
+          <div class="m-meta">
+            <!-- 完美还原原本的左右排版结构 -->
+            <div><span class="m-time">${window._formatTimeAgo(m.time)}</span>${delBtn}</div>
+            <div style="display:flex; align-items:center; gap:14px;">
+              ${heartSvg}
+              ${commentSvg}
             </div>
-            ${cmtHtml}
           </div>
+          ${cmtHtml}
         </div>
-      `;
-    }).join('');
-  }
+      </div>
+    `;
+  }).join('');
+};
 
   // ================= 2. 删除朋友圈 =================
   window._delMoment = function(id) {
@@ -7449,96 +7488,92 @@ window._publishMyMoment = function() {
 
   setTimeout(() => { window._triggerMomentsAI(newId); }, 1500);
 };
-// ================= 4. 生态引擎 (完美复刻截图：海量NPC ) =================
-  window._triggerMomentsAI = async function(momentId) {
-    try {
-      const ms = getMoments();
-      const target = ms.find(x => x.id === momentId);
-      if(!target) return;
+// ================= 4. 生态引擎 (单条动态触发路人评论，带时间感知) =================
+window._triggerMomentsAI = async function(momentId) {
+  try {
+    const ms = getMoments();
+    const target = ms.find(x => x.id === momentId);
+    if(!target) return;
 
-      let sysPrompt = "";
+    let sysPrompt = "";
+    // 🌟 核心注入：时间感知！
+    const timeContext = `当前真实系统时间是：${getSysTimeStr()}！评论的内容必须符合这个时间点（例如晚上发吃宵夜、准备睡觉，白天发上班、摸鱼等）。`;
 
-      if (target.authorId === 'me') {
-        const contacts = getContacts() || [];
-        if (contacts.length === 0) return;
-        const viewersInfo = contacts.map(c => `- 姓名：${c.name}，人设：${c.persona}`).join('\n');
-        
-        sysPrompt = `玩家（我）刚刚发了一条朋友圈："${target.text||'[分享了图片]'}"。
+    if (target.authorId === 'me') {
+      const contacts = getContacts() || [];
+      if (contacts.length === 0) return;
+      const viewersInfo = contacts.map(c => `- 姓名：${c.name}，人设：${c.persona}`).join('\n');
+      sysPrompt = `玩家（我）刚刚发了一条朋友圈："${target.text||'[分享了图片]'}"。
 请模拟这条朋友圈的评论区，打造一个【极度真实，有血有肉的日常评论区】！
+${timeContext}
 【根据人设和玩家互动的男主列表】：
 ${viewersInfo}
-【核心任务（必须严格执行，字数要足！）】：
-1. 必须虚构 3～5个玩家的【普通微信好友】（如：女闺蜜、朋友等）和男主们穿插排队评论回复，点赞速度前后位置看男主人设决定，回复也一定要极度贴合人设。
-
-2. 男主们也可以看人设偶尔【亲自回复】那些玩家的虚构配角，必须贴合根据人设来，活人感强一点）！
-3. 男主们也要看自己的人设给玩家留言或者点赞，一定要一切符合人设。
-4. 整个评论区的评论总数必须在 8到 12条之间，呈现出真实的微信感！`;
-      }
-      else {
-        const contacts = getContacts() || [];
-        const npc = contacts.find(c => c.name === target.authorName) || {name: target.authorName, persona: '高冷'};
-
-        sysPrompt = `男主"${npc.name}"（人设：${npc.persona}）发了一条微信朋友圈："${target.text||'[分享了图片]'}"。
+【核心任务】：
+1. 必须虚构 3～5个玩家的【普通微信好友】和男主们穿插排队评论回复，点赞速度和回复必须极度贴合人设与当前时间。
+2. 男主们也可以看人设偶尔亲自回复那些虚构配角。
+3. 整个评论区的评论总数必须在 8到 12条之间，呈现出真实的微信感！`;
+    }
+    else {
+      const contacts = getContacts() || [];
+      const npc = contacts.find(c => c.name === target.authorName) || {name: target.authorName, persona: '高冷'};
+      sysPrompt = `男主"${npc.name}"（人设：${npc.persona}）发了一条微信朋友圈："${target.text||'[分享了图片]'}"。
 请模拟他这条朋友圈的评论区互动，展现他真实的私人社交圈。
-【核心任务（必须执行）】：
-1. 必须虚构 5~7个符合他身份的【专属微信好友】（如：大学室友、死党、同事、损友等）来排队吐槽或调侃他。
-2. 男主"${npc.name}"看到后，看人设可以【亲自回复】路人好友，具体回复谁回复什么贴合人设，不用全都回，一切以人设为主。语气是熟人间的互怼、高冷或玩笑。
+${timeContext}
+【核心任务】：
+1. 必须虚构 5~7个符合他身份的【专属微信好友】来排队吐槽或调侃他。
+2. 男主"${npc.name}"看到后，看人设亲自回复路人好友，语气是熟人间的互怼、高冷或玩笑。
 3. 整个评论区总数必须在 7到 10条之间。
 4. 【绝对禁止】提其他男主！这是他的私人圈子！`;
-      }
+    }
 
-      sysPrompt += `\n\n【必须严格输出 JSON 数组格式】（不要带markdown）：\n[\n  {\n    "name": "评论者名字(男主名 或 虚构的好友名)",\n    "like": true或false,\n    "comment": "评论内容（极度口语化、像真人在发微信）",\n    "replyTo": "回复给谁（直接评论留空；如果是男主回复别人，填那个人的名字）",\n    "delay": 延迟毫秒数(3000到15000之间，回复别人的延迟要设置得稍微长一点)\n  }\n]`;
+    sysPrompt += `\n\n【必须严格输出 JSON 数组格式】（不要带markdown）：\n[\n  {\n    "name": "评论者名字",\n    "like": true或false,\n    "comment": "评论内容（极度口语化、结合当前时间）",\n    "replyTo": "回复给谁（直接评论留空；如果是回复别人，填那个人的名字）",\n    "delay": 延迟毫秒数(3000到15000之间)\n  }\n]`;
 
-      let apiMessages = [{ role: 'system', content: sysPrompt }];
-      if (target.images && target.images.length > 0 && target.images[0].startsWith('data:image')) {
-        apiMessages.push({
-          role: 'user',
-          content: [
-            { type: "text", text: `这是我发的朋友圈文案："${target.text||''}"。请仔细看我配的图片，评论必须紧扣图片细节！打造修罗场！` },
-            { type: "image_url", image_url: { url: target.images[0] } }
-          ]
-        });
-      } else {
-        apiMessages.push({ role: 'user', content: '请立刻生成海量神仙评论！打造修罗场！' });
-      }
-
-      const out = await callApi(apiMessages);
-      const cleaned = out.replace(/```json|```/g, '').trim();
-      const m2 = cleaned.match(/\[[\s\S]*\]/);
-      if (!m2) return;
-      const reactions = JSON.parse(m2[0]);
-
-      reactions.forEach(reaction => {
-        if (!reaction.like && !reaction.comment) return;
-        setTimeout(() => {
-          const currentMs = getMoments();
-          const t = currentMs.find(x => x.id === momentId);
-          if (t) {
-            if (reaction.like && !t.likes.includes(reaction.name) && reaction.name !== target.authorName) {
-              t.likes.push(reaction.name);
-            }
-            if (reaction.comment) {
-              t.comments.push({
-                authorName: reaction.name,
-                replyTo: reaction.replyTo || '',
-                text: reaction.comment
-              });
-            }
-            setMoments(currentMs);
-            if ($('moments').classList.contains('active')) renderMomentsFeed();
-          }
-        }, reaction.delay || 3000);
+    let apiMessages = [{ role: 'system', content: sysPrompt }];
+    if (target.images && target.images.length > 0 && target.images[0].startsWith('data:image')) {
+      apiMessages.push({
+        role: 'user',
+        content: [
+          { type: "text", text: `这是发的朋友圈文案："${target.text||''}"。请仔细看配图，评论必须紧扣图片细节和当前时间！` },
+          { type: "image_url", image_url: { url: target.images[0] } }
+        ]
       });
-    } catch(e) { console.log('生态引擎运算失败:', e); }
-  };
-// ================= 6. 批量发朋友圈 (一次性生成动态+评论，省额度) =================
+    } else {
+      apiMessages.push({ role: 'user', content: '请结合当前时间，立刻生成海量神仙评论！' });
+    }
+
+    const out = await callApi(apiMessages);
+    const cleaned = out.replace(/```json|```/g, '').trim();
+    const m2 = cleaned.match(/\[[\s\S]*\]/);
+    if (!m2) return;
+    const reactions = JSON.parse(m2[0]);
+
+    reactions.forEach(reaction => {
+      if (!reaction.like && !reaction.comment) return;
+      setTimeout(() => {
+        const currentMs = getMoments();
+        const t = currentMs.find(x => x.id === momentId);
+        if (t) {
+          if (reaction.like && !t.likes.includes(reaction.name) && reaction.name !== target.authorName) {
+            t.likes.push(reaction.name);
+          }
+          if (reaction.comment) {
+            t.comments.push({ authorName: reaction.name, replyTo: reaction.replyTo || '', text: reaction.comment });
+          }
+          setMoments(currentMs);
+          if (document.getElementById('moments').classList.contains('active')) renderMomentsFeed();
+        }
+      }, reaction.delay || 3000);
+    });
+  } catch(e) { console.log('生态引擎运算失败:', e); }
+};
+
+// ================= 6. 批量发朋友圈 (一次性生成动态+评论，省额度，带时间感知) =================
 window._generateNPCMoment = async function() {
   const contacts = getContacts() || [];
   if (contacts.length === 0) return alert('宝宝，你还没加联系人呢！');
 
   const shuffled = [...contacts].sort(() => 0.5 - Math.random());
   const posters = shuffled.slice(0, Math.floor(Math.random() * 3) + 2);
-  
   const chatsMap = getChats() || {};
   const postersInfo = posters.map(c => {
     const historyRaw = chatsMap[c.id] || [];
@@ -7550,28 +7585,30 @@ window._generateNPCMoment = async function() {
     return `- 姓名：${c.name}\n  人设：${c.persona}\n  近期聊天摘要：${recent || '（无聊天记录）'}`;
   }).join('\n\n');
 
-  const feed = $('momentsFeed');
+  const feed = document.getElementById('momentsFeed');
   const loadingId = 'loading_' + Date.now();
-  feed.insertAdjacentHTML('afterbegin', `<div id="${loadingId}" style="display:flex;justify-content:center;padding:20px;"><svg style="width:28px;height:28px;animation:pcSpin 1s linear infinite;stroke:#2f66d8;fill:none;stroke-width:2.5;"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg></div>`);
+  if(feed) feed.insertAdjacentHTML('afterbegin', `<div id="${loadingId}" style="display:flex;justify-content:center;padding:20px;"><svg style="width:28px;height:28px;animation:pcSpin 1s linear infinite;stroke:#5c7094;fill:none;stroke-width:2.5;"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg></div>`);
 
   try {
+    // 🌟 核心注入：把当前的真实时间死死焊进 AI 的脑子里！
     const sysPrompt = `你是一个极度真实的微信朋友圈生成引擎。请为以下几位角色生成此刻的朋友圈动态，以及他们路人朋友的评论互动。
+当前真实系统时间是：${getSysTimeStr()}！！！
 
 【角色信息与近期聊天状态】：
 ${postersInfo}
 
 【核心指令（极其重要，必须严格遵守）】：
-1. 他们是活生生的人，有自己的工作、朋友、爱好、情绪、小心思！人有七情六欲喜怒哀乐，什么都可以发！
-2. 发朋友圈的内容必须以【角色人设和真实日常生活】为主，绝大多数内容跟玩家无关：
-   - 工作状态（加班崩溃、开会烦躁、摸鱼快乐、项目搞定…等等）
-   - 吃喝玩乐（外卖踩雷、奶茶推荐、打游戏连跪、馆子排队…等等）
-   - 情绪发泄（堵车、天气烦、失眠、莫名其妙的emo…等等）
-   - 无厘头废话（没意义但真人就是会发的那种）
+1. 他们是活生生的人！发朋友圈的内容必须以【角色人设和真实日常生活】为主。
+2. ⚠️ 必须极度贴合当前时间（${getSysTimeStr()}）！
+   - 如果是深夜/凌晨：发失眠、emo、宵夜、熬夜加班…等等，符合人设就行。
+   - 如果是早晨：发起床困难、通勤、早餐、早安…等等，符合人设就行。
+   - 如果是中午/下午：发午饭、摸鱼、工作吐槽、下午茶…等等，符合人设就行。
+   - 如果是晚上：发下班、晚饭、娱乐、夜跑…等等，符合人设就行。
+   绝对禁止在晚上发“早安/阳光真好”，也绝对禁止在早上发“晚安/吃宵夜”！
 3. 如果有近期聊天摘要，可以偶尔（30%概率）顺着聊天话题暗戳戳发一条。
 4. 每个角色发的内容必须和上次截然不同，不能重复同类主题！
 5. 语气完全符合人设！有的话多有的就几个字，有的爱emoji有的一本正经，看人设来！
 6. 【一次性自带评论区】：把该动态下的路人/损友评论以及角色的回复一起写出来，根据人设决定回不回、怎么回。
-7. 换行用 "\\n"，双引号转义 "\\"。
 
 【必须严格输出纯 JSON 数组格式】：
 [
@@ -7579,7 +7616,7 @@ ${postersInfo}
     "name": "发布者名字",
     "text": "朋友圈文案（换行用\\n）",
     "imageType": "配图类型(风景/美食/萌宠/沙雕图/自拍/夜景/无)",
-    "timeOffset": 随机分钟数(0到120),
+    "timeOffset": 随机分钟数(0到30),
     "likes": ["路人A", "损友B"],
     "comments": [
       {"authorName": "路人A", "text": "路人吐槽内容"},
@@ -7588,15 +7625,13 @@ ${postersInfo}
   }
 ]`;
 
-    const out = await callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '请生成真实、各不相同、充满活人感的朋友圈动态及评论区！' }]);
+    const out = await callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '请结合当前时间，生成真实、充满活人感的朋友圈动态及评论区！' }]);
     const cleaned = out.replace(/```json|```/g, '').trim();
     const dataArr = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
-    
     const ms = getMoments();
 
     dataArr.forEach(data => {
       const npc = posters.find(c => c.name === data.name) || posters[0];
-      
       let finalImg = null;
       const rSeed = Math.floor(Math.random() * 999999);
       if (data.imageType && data.imageType !== '无') {
@@ -7610,22 +7645,21 @@ ${postersInfo}
       }
 
       const newId = 'm_' + Date.now() + Math.floor(Math.random()*1000);
-      ms.unshift({ 
-        id: newId, authorId: npc.id, authorName: npc.name, authorAvatar: npc.avatar || 'https://via.placeholder.com/120', 
-        text: data.text || '', images: finalImg ? [finalImg] : [], time: Date.now() - (data.timeOffset||0)*60000, 
-        likes: data.likes || [], 
-        comments: data.comments || [] 
+      ms.unshift({ 
+        id: newId, authorId: npc.id, authorName: npc.name, authorAvatar: npc.avatar || 'https://via.placeholder.com/120', 
+        text: data.text || '', images: finalImg ? [finalImg] : [], time: Date.now() - (data.timeOffset||0)*60000, 
+        likes: data.likes || [], comments: data.comments || [] 
       });
     });
 
     ms.sort((a, b) => b.time - a.time);
     setMoments(ms);
-    if($(loadingId)) $(loadingId).remove();
+    if(document.getElementById(loadingId)) document.getElementById(loadingId).remove();
     renderMomentsFeed();
 
   } catch(e) {
-    if($(loadingId)) $(loadingId).remove();
-    alert('刷新失败：\n' + e.message); 
+    if(document.getElementById(loadingId)) document.getElementById(loadingId).remove();
+    alert('刷新失败：\n' + e.message); 
   }
 };
 // ================= 3. 玩家评论后，角色秒回！(互动完美保留) =================
