@@ -9376,7 +9376,93 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     }
   };
 
-  // 🌟 纯净替换的续写引擎，全息灵魂窃取指令已就绪！（附带闭包穿墙雷达！）
+  // 🌟 终极视角切换与续写引擎：四大金刚完整合体版！
+  window._currentIfPerspective = 'default';
+
+  // 1. 呼出镜头切换菜单
+  window._toggleIfPerspectiveMenu = async function() {
+    let menu = document.getElementById('ifPerspectiveMenu');
+    if (!menu) {
+      menu = document.createElement('div');
+      menu.id = 'ifPerspectiveMenu';
+      menu.style.cssText = 'position:absolute; bottom:60px; left:16px; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:16px; padding:8px; box-shadow:0 8px 24px rgba(92,112,148,0.12); z-index:100; display:flex; flex-direction:column; gap:4px; min-width:140px;';
+      document.getElementById('ifReader').appendChild(menu);
+    }
+    
+    if (menu.style.display === 'flex') { menu.style.display = 'none'; return; }
+
+    const books = await getIfBooks();
+    const book = books.find(b => b.id === window._currentIfBookId);
+    const allCards = await getIfCards();
+    const activeChars = book.lineup.map(id => allCards.find(c => c.id === id)).filter(Boolean);
+    
+    let html = '<div style="font-size:10px; color:#a5cfff; font-weight:800; padding:4px 8px; letter-spacing:1px;">切换监视器镜头</div>';
+    html += '<div onclick="window._selectIfPerspective(\'default\', \'默认视角\')" style="padding:8px; font-size:13px; color:#5c7094; font-weight:bold; cursor:pointer; border-radius:8px; transition:background 0.2s;" onmouseover="this.style.background=\'#eef4fa\'" onmouseout="this.style.background=\'transparent\'">🎬 默认视角</div>';
+    html += '<div onclick="window._selectIfPerspective(\'me\', \'玩家(我)\')" style="padding:8px; font-size:13px; color:#5c7094; font-weight:bold; cursor:pointer; border-radius:8px; transition:background 0.2s;" onmouseover="this.style.background=\'#eef4fa\'" onmouseout="this.style.background=\'transparent\'">👁️ 玩家(我)</div>';
+    
+    activeChars.forEach(c => {
+      html += '<div onclick="window._selectIfPerspective(\'npc_' + c.name + '\', \'' + c.name + '\')" style="padding:8px; font-size:13px; color:#5c7094; font-weight:bold; cursor:pointer; border-radius:8px; transition:background 0.2s;" onmouseover="this.style.background=\'#eef4fa\'" onmouseout="this.style.background=\'transparent\'">窥探：' + safeEscIf(c.name) + '</div>';
+    });
+    
+    menu.innerHTML = html;
+    menu.style.display = 'flex';
+  };
+
+  // 2. 锁定镜头
+  window._selectIfPerspective = function(val, label) {
+    window._currentIfPerspective = val;
+    const menu = document.getElementById('ifPerspectiveMenu');
+    if (menu) menu.style.display = 'none';
+    
+    const btn = document.getElementById('ifPerspectiveBtn');
+    if (btn) {
+      btn.innerHTML = '<div style="font-size:10px; font-weight:900; color:#5c7094;">' + label.substring(0,2) + '</div>';
+      btn.style.background = '#eef4fa';
+      btn.style.borderColor = '#dce5f0';
+    }
+  };
+
+  // 🌟 3. 重生归来的排版大厨！负责把小说印在屏幕上，并嵌入海盐蓝相机！
+  window._renderIfReader = async function() {
+    const books = await getIfBooks();
+    const book = books.find(b => b.id === window._currentIfBookId);
+    if(!book) return;
+
+    document.getElementById('ifReaderTitle').textContent = book.title;
+    
+    const contentHtml = book.chapters.map((ch, idx) => `
+      <div style="margin-bottom:20px;">
+        <div style="font-weight:800; color:#2f66d8; margin-bottom:12px; text-align:center;">第 ${idx + 1} 章</div>
+        <div>${safeEscIf(ch.content).replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</div>
+      </div>
+    `).join('<div style="text-align:center; color:#dce5f0; margin:20px 0;">✧ ✧ ✧</div>');
+    
+    const contentBox = document.getElementById('ifReaderContent');
+    contentBox.innerHTML = contentHtml;
+
+    const lastChapter = book.chapters[book.chapters.length - 1];
+    const optionsBox = document.getElementById('ifReaderOptions');
+    if(lastChapter.options && lastChapter.options.length > 0) {
+      optionsBox.innerHTML = '<div style="font-size:12px; color:#7a86a8; font-weight:bold; margin-bottom:4px;">命运的分歧点：</div>' + 
+      lastChapter.options.map(opt => `
+        <div onclick="document.getElementById('ifReaderInput').value='${safeEscIf(opt)}'" style="background:#fff; border:1px solid #dce5f0; border-radius:12px; padding:12px 16px; font-size:14px; color:#5c7094; cursor:pointer;">
+          ${safeEscIf(opt)}
+        </div>
+      `).join('');
+    } else {
+      optionsBox.innerHTML = '<div style="font-size:12px; color:#7a86a8; font-weight:bold;">自由发挥时间...</div>';
+    }
+
+    setTimeout(() => { contentBox.scrollTop = contentBox.scrollHeight; }, 100);
+
+    const bottomBar = document.querySelector('#ifReader > .page > div:last-child');
+    if (bottomBar && !document.getElementById('ifPerspectiveBtn')) {
+      const btnHtml = '<div id="ifPerspectiveBtn" onclick="window._toggleIfPerspectiveMenu()" style="width:38px; height:38px; border-radius:50%; background:rgba(250,252,255,0.8); border:1px solid #dce5f0; display:grid; place-items:center; cursor:pointer; flex-shrink:0; box-shadow:0 2px 6px rgba(92,112,148,0.05);"><svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></div>';
+      bottomBar.insertAdjacentHTML('afterbegin', btnHtml);
+    }
+  };
+
+  // 🌟 4. 推演引擎：带穿墙雷达的灵魂窃取器！
   window._sendIfReply = async function() {
     const inputEl = document.getElementById('ifReaderInput');
     const text = inputEl.value.trim();
@@ -9399,7 +9485,6 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
       
       const historyCtx = book.chapters.map(ch => ch.content).join('\\n\\n').slice(-3000); 
 
-      // 🌟 核心修复：穿墙雷达！直接去底层硬盘读取老婆的名字，无视闭包结界！
       let myName = '我';
       try {
         const meData = JSON.parse(localStorage.getItem('mp_fix_me'));
