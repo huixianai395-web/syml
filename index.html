@@ -9099,7 +9099,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window._renderIfLineup();
   };
 
-  // 🌟 修复 1：灵魂阵列渲染（顺手把外挂硬盘里的书拿出来摆好，告别刷新消失！）
+// 🌟 修复 1：灵魂阵列渲染（顺手把外挂硬盘里的书拿出来摆好，告别刷新消失！）
   window._renderIfLineup = async function() {
     const cards = await getIfCards();
     const box = document.getElementById('ifSelectedCardsBox');
@@ -9138,7 +9138,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('ifForgeModal').classList.add('active');
   };
 
-window._openIfWbModal = async function() {
+// 🌟 修复 2：砸碎苹果滚动限制的世界书挑选面板（绝对、绝对没有反斜杠版！）
+  window._openIfWbModal = async function() {
     const books = await getWbBooks();
     const box = document.getElementById('ifWbList');
     if(!box) return;
@@ -9154,12 +9155,12 @@ window._openIfWbModal = async function() {
           <div style="display:none; max-height:260px; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:10px; background:#f8fafc; border-top:1px dashed #dce5f0;">
             ${(b.entries||[]).map(e => {
               const isChecked = window._ifSelectedWbIds.has(e.id);
-              return \`
+              return `
                 <label style="display:flex; align-items:flex-start; gap:8px; padding:8px; border-bottom:1px solid #eef4fa; cursor:pointer;">
-                  <input type="checkbox" \${isChecked ? 'checked' : ''} onchange="window._toggleIfWb('\${e.id}', this.checked)" style="accent-color:#5c7094; margin-top:2px; flex-shrink:0;">
-                  <div style="flex:1; font-size:12px; color:#5c7094;"><b>\${safeEscIf(e.keys)}</b><br><span style="color:#7a86a8; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-top:4px;">\${safeEscIf(e.content)}</span></div>
+                  <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="window._toggleIfWb('${e.id}', this.checked)" style="accent-color:#5c7094; margin-top:2px; flex-shrink:0;">
+                  <div style="flex:1; font-size:12px; color:#5c7094;"><b>${safeEscIf(e.keys)}</b><br><span style="color:#7a86a8; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-top:4px;">${safeEscIf(e.content)}</span></div>
                 </label>
-              \`;
+              `;
             }).join('')}
           </div>
         </div>
@@ -9245,7 +9246,8 @@ window._openIfWbModal = async function() {
     window._renderIfStoryList();
   };
 
- window._startIfForge = async function() {
+ // 🌟 修复 3：更新造梦引擎，加入老婆钦定的“自适应高质感去油腻”视角铁律！
+  window._startIfForge = async function() {
     const title = document.getElementById('ifForgeTitle').value.trim();
     const category = document.getElementById('ifForgeCategory').value.trim() || '盲盒时空';
     const finalTitle = title || (category + ' 的故事'); 
