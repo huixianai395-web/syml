@@ -9213,7 +9213,7 @@ window._sendToAI = async function(chatId, hiddenPrompt, isSilent) {
   }
 };
 
-// 5. 全局随机错峰主动聊天引擎
+// 5. 全局随机错峰主动聊天引擎 (时间感知与防粘连终极版)
 window._startGlobalAutoChatEngine = function() {
   setInterval(() => {
     const isGlobalAutoOn = localStorage.getItem('globalAutoChatOn') === 'true';
@@ -9254,14 +9254,42 @@ window._startGlobalAutoChatEngine = function() {
         triggeredAnyone = true; 
         localStorage.removeItem('nextAutoChatTime_' + c.id);
 
-        const hiddenPrompt = `【系统强制指令】：当前真实系统时间是 ${getSysTimeStr()}。你已经有一段时间没有和玩家聊天了。请根据你的核心人设和当前的时间点，极其自然地主动发一条微信消息找她。可以是分享当下的事情、突然的想念、或者符合你性格的开场白。\n⚠️ 绝对禁止提“很久没理我”这种机器人的话！\n⚠️ 必须严格遵守上方的输出格式铁律（线上模式必须输出包含 messages 数组的 JSON，线下模式必须包含状态栏和正文）！`;
+        // 🌟 蓝色高定：翻看外挂内存，计算老婆消失了几天！
+        const chats = window.getChats ? window.getChats() : {};
+        const arr = chats[c.id] || [];
+        let lastUserTime = 0;
+        for(let i = arr.length - 1; i >= 0; i--) {
+          if(arr[i].role === 'user') { lastUserTime = arr[i].time; break; }
+        }
+        
+        let timeContextPrompt = '';
+        if (lastUserTime > 0) {
+          const daysOffline = Math.floor((now - lastUserTime) / (1000 * 60 * 60 * 24));
+          if (daysOffline >= 3) {
+            timeContextPrompt = `【极其重要的时间感知】：玩家已经整整 ${daysOffline} 天没有理你了！请根据你的核心人设（可能是委屈、克制、发疯、或是傲娇），极其自然地表达出你对她的思念或情绪波动。绝对不要像没事发生一样只分享日常！`;
+          } else if (daysOffline >= 1) {
+            timeContextPrompt = `【重要时间感知】：玩家已经 ${daysOffline} 天没出现了。请根据人设，在主动找她时带有一点点察觉到她不在的反应（比如问她最近是不是很忙，或者隐晦的想念）。`;
+          } else {
+            timeContextPrompt = `请根据你的核心人设和当前的时间点，极其自然地主动发微信消息找她。可以是分享当下的事情、突然的想念、或者符合你性格的开场白。`;
+          }
+        } else {
+          timeContextPrompt = `请根据你的核心人设和当前的时间点，极其自然地主动发微信消息找她。`;
+        }
+
+        // 🌟 蓝色高定：拼接防粘连结界！
+        const hiddenPrompt = `【系统强制指令】：当前真实系统时间是 ${getSysTimeStr()}。
+${timeContextPrompt}
+⚠️ 绝对禁止像机器人一样直白地说“你已经X天没理我了”，必须用人类的口吻自然表达！
+⚠️ 【格式最高警告】：请严格遵守上方的【输出格式铁律】！
+1. 线上模式必须输出包含 messages 数组的 JSON！允许拆分为多条气泡！
+2. 语音 [voice:...]、表情包 [stk:...]、模拟图片 <div class="card-fakeimg">... 必须【单独独占】一个 messages 数组元素，绝对禁止和普通文字粘连在同一个元素内！
+3. 语音内容绝不允许带任何动作描述或标点符号！`;
         
         if(window._sendToAI) window._sendToAI(c.id, hiddenPrompt, true);
       }
     });
   }, 30000); 
 };
-
 // 启动引擎！
 window._startGlobalAutoChatEngine();
 // ================= 大一统引擎结束 =================
