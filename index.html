@@ -9134,7 +9134,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('ifForgeModal').classList.add('active');
   };
 
-// 🌟 替换 2：修复折叠面板无法滑动的 Bug（加上了 max-height 和丝滑滚动）
+// 🌟 终极修复：砸碎“夹缝生存”的折叠面板，恢复瀑布般舒展的全局滑动
   window._openIfWbModal = async function() {
     const books = await getWbBooks();
     const box = document.getElementById('ifWbList');
@@ -9148,15 +9148,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div style="font-size:13px; font-weight:800; color:#3d4a6a;">📖 ${safeEscIf(b.bookName)}</div>
             <div style="color:#5c7094; font-size:16px; font-weight:bold;">▾</div>
           </div>
-          <div style="display:none; max-height:220px; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:10px; background:#f8fafc; border-top:1px dashed #dce5f0;">
+          <div style="display:none; padding:10px; background:#f8fafc; border-top:1px dashed #dce5f0;">
             ${(b.entries||[]).map(e => {
               const isChecked = window._ifSelectedWbIds.has(e.id);
-              return `
+              return \`
                 <label style="display:flex; align-items:flex-start; gap:8px; padding:8px; border-bottom:1px solid #eef4fa; cursor:pointer;">
-                  <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="window._toggleIfWb('${e.id}', this.checked)" style="accent-color:#5c7094; margin-top:2px; flex-shrink:0;">
-                  <div style="flex:1; font-size:12px; color:#5c7094;"><b>${safeEscIf(e.keys)}</b><br><span style="color:#7a86a8; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-top:4px;">${safeEscIf(e.content)}</span></div>
+                  <input type="checkbox" \${isChecked ? 'checked' : ''} onchange="window._toggleIfWb('\${e.id}', this.checked)" style="accent-color:#5c7094; margin-top:2px; flex-shrink:0;">
+                  <div style="flex:1; font-size:12px; color:#5c7094;"><b>\${safeEscIf(e.keys)}</b><br><span style="color:#7a86a8; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-top:4px;">\${safeEscIf(e.content)}</span></div>
                 </label>
-              `;
+              \`;
             }).join('')}
           </div>
         </div>
@@ -9204,7 +9204,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     `}).join('');
   };
 
-  // 🌟 新增 5：封面更换外挂引擎（复用书房的高清压缩逻辑，绝不占内存！）
+ 
+// 🌟 终极修复：独立且绝对安全的封面上传引擎（无视结界，绝不报错）
   window._changeIfCover = function(bookId) {
     const input = document.createElement('input');
     input.type = 'file';
@@ -9213,22 +9214,25 @@ document.addEventListener('DOMContentLoaded', async () => {
       const f = e.target.files?.[0];
       if(!f) return;
       try {
-        const imgData = await compressImage(f, true); // 调用全局的高清压缩函数
-        const books = await getIfBooks();
-        const book = books.find(x => x.id === bookId);
-        if(book) {
-          book.cover = imgData;
-          await setIfBooks(books); // 死死钉进外挂硬盘
-          window._renderIfStoryList(); // 瞬间重绘书架
-          alert('绝美高清封面更换成功！');
-        }
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          const imgData = ev.target.result;
+          const books = await getIfBooks();
+          const book = books.find(x => x.id === bookId);
+          if(book) {
+            book.cover = imgData;
+            await setIfBooks(books);
+            window._renderIfStoryList();
+            alert('✨ 绝美高清封面更换成功！');
+          }
+        };
+        reader.readAsDataURL(f);
       } catch(err) {
         alert('封面更换失败啦宝宝：' + err.message);
       }
     };
     input.click();
   };
-
   // 🌟 新增：彻底抹除平行宇宙的魔法（放在 _renderIfStoryList 下面即可）
   window._delIfBook = async function(id) {
     if(!confirm('宝宝，确定要彻底抹除这个平行宇宙吗？删了就找不回来了哦！')) return;
