@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>蓝色💙</title>
+  <title>蓝色</title>
   <style>
     :root{
       --safe-top: env(safe-area-inset-top, 0px);
@@ -9072,6 +9072,125 @@ window.renderNotesList = function(){
     menu.innerHTML = html;
     menu.style.display = 'flex';
   };
+  // ================= 🌟 蓝色高定：后台静默发声引擎 & 错峰雷达 (大一统完整版) =================
+
+// 1. 把通讯录的钥匙交给全局！
+window.getContacts = getContacts;
+
+// 2. 后台静默发声引擎
+window._sendToAI = async function(chatId, hiddenPrompt, isSilent) {
+  const c = getContactById(chatId);
+  if(!c) return;
+  const st = normSettings(c.settings);
+  const globalMe = getMe();
+  const me = { name: st.meName||globalMe.name||'我', persona: st.mePersona||globalMe.persona||'', note: st.meNote||globalMe.note||'' };
+  const arr = getChatArr(chatId);
+  
+  const hist = arr.filter(x => x.text && !x.hiddenForAi).slice(-(st.contextLen||30));
+
+  let system = '';
+  if (c.isGroup) {
+    system = buildGroupSystem(c, me, st);
+  } else {
+    system = st.mode === 'offline' ? buildOfflineSystem(c, me, st) : buildOnlineSystem(c, me, st);
+  }
+  
+  system += `\n\n${hiddenPrompt}`;
+
+  const apiMsgs = [
+    { role: 'system', content: system },
+    ...hist.map(x => ({ role: x.role==='user'?'user':'assistant', content: x.text }))
+  ];
+
+  try {
+    const out = await callApi(apiMsgs);
+    let parts = [];
+    if (st.mode === 'offline') {
+      parts = [out.trim()]; 
+    } else {
+      const cleaned = out.replace(/```json|```/g, '').trim();
+      const m2 = cleaned.match(/\{[\s\S]*\}/);
+      if (m2) {
+        const data = JSON.parse(m2[0]);
+        parts = data.messages || [cleaned];
+      } else {
+        parts = [cleaned];
+      }
+    }
+
+    parts.forEach(txt => {
+      if(!txt) return;
+      arr.push({ 
+        id: 'm_' + Date.now() + Math.floor(Math.random()*1000), 
+        role: 'assistant', 
+        text: txt, 
+        time: Date.now(), 
+        stored: true 
+      });
+    });
+    
+    setChatArr(chatId, arr);
+    updateContactPreview(chatId);
+    
+    if(window.currentId === chatId && typeof renderChat === 'function') renderChat();
+    
+  } catch(e) {
+    console.log('后台主动发消息失败啦:', e);
+  }
+};
+
+// 3. 全局随机错峰主动聊天引擎
+window._startGlobalAutoChatEngine = function() {
+  setInterval(() => {
+    const isGlobalAutoOn = localStorage.getItem('globalAutoChatOn') === 'true';
+    if (!isGlobalAutoOn) return;
+
+    const contacts = getContacts() || [];
+    const groups = window.getGroups ? window.getGroups() : [];
+    const allChats = [...contacts, ...groups];
+    
+    const now = Date.now();
+    let triggeredAnyone = false; 
+
+    allChats.forEach(c => {
+      if (triggeredAnyone) return; 
+
+      let nextTime = localStorage.getItem('nextAutoChatTime_' + c.id);
+      
+      if (!nextTime) {
+        let userMin = parseInt(localStorage.getItem('autoChatMin')) || 30;
+        let userMax = parseInt(localStorage.getItem('autoChatMax')) || 120;
+        if(userMin > userMax) { let temp = userMin; userMin = userMax; userMax = temp; }
+        const randomMins = Math.floor(Math.random() * (userMax - userMin + 1)) + userMin;
+        nextTime = now + randomMins * 60000;
+        
+        let isConflict = allChats.some(other => {
+          if (other.id === c.id) return false;
+          let otherTime = localStorage.getItem('nextAutoChatTime_' + other.id);
+          return otherTime && Math.abs(otherTime - nextTime) < 10 * 60000;
+        });
+
+        if (isConflict) nextTime += 15 * 60000;
+        
+        localStorage.setItem('nextAutoChatTime_' + c.id, nextTime);
+        return;
+      }
+
+      if (now >= parseInt(nextTime)) {
+        triggeredAnyone = true; 
+        localStorage.removeItem('nextAutoChatTime_' + c.id);
+
+        const hiddenPrompt = `【系统强制指令】：当前真实系统时间是 ${getSysTimeStr()}。你已经有一段时间没有和玩家聊天了。请根据你的核心人设和当前的时间点，极其自然地主动发一条微信消息找她。可以是分享当下的事情、突然的想念、或者符合你性格的开场白。\n⚠️ 绝对禁止提“很久没理我”这种机器人的话！\n⚠️ 必须严格遵守上方的输出格式铁律（线上模式必须输出包含 messages 数组的 JSON，线下模式必须包含状态栏和正文）！`;
+        
+        if(window._sendToAI) window._sendToAI(c.id, hiddenPrompt, true);
+      }
+    });
+  }, 30000); 
+};
+
+// 启动引擎！
+window._startGlobalAutoChatEngine();
+// ================= 大一统引擎结束 =================
 })(); // 🏠 闭合主屋的大门！(把之前断掉的尾巴统统扔掉，这次死死焊住！)
 </script>
 
@@ -10351,132 +10470,7 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
       window._renderIfReader();
     }
   };
-    // 🌟 蓝色高定：把通讯录的钥匙交给全局！打破结界！
-window.getContacts = getContacts;
-
-
-    // ================= 🌟 蓝色高定：后台静默发声引擎 (补齐缺失的声带) =================
-
-window._sendToAI = async function(chatId, hiddenPrompt, isSilent) {
-  const c = getContactById(chatId);
-  if(!c) return;
-  const st = normSettings(c.settings);
-  const globalMe = getMe();
-  const me = { name: st.meName||globalMe.name||'我', persona: st.mePersona||globalMe.persona||'', note: st.meNote||globalMe.note||'' };
-  const arr = getChatArr(chatId);
-  
-  // 抓取最近的聊天记录作为上下文
-  const hist = arr.filter(x => x.text && !x.hiddenForAi).slice(-(st.contextLen||30));
-
-  // 完美复用咱们之前写好的庞大 System Prompt 构建器
-  let system = '';
-  if (c.isGroup) {
-    system = buildGroupSystem(c, me, st);
-  } else {
-    system = st.mode === 'offline' ? buildOfflineSystem(c, me, st) : buildOnlineSystem(c, me, st);
-  }
-  
-  // 🌟 核心魔法：把“你很久没理玩家了”这种强制指令，悄悄焊死在系统提示词最底部！
-  system += `\n\n${hiddenPrompt}`;
-
-  const apiMsgs = [
-    { role: 'system', content: system },
-    ...hist.map(x => ({ role: x.role==='user'?'user':'assistant', content: x.text }))
-  ];
-
-  try {
-    const out = await callApi(apiMsgs);
-    let parts = [];
-    if (st.mode === 'offline') {
-      parts = [out.trim()]; // 线下模式保留完整一大段
-    } else {
-      const cleaned = out.replace(/```json|```/g, '').trim();
-      const m2 = cleaned.match(/\{[\s\S]*\}/);
-      if (m2) {
-        const data = JSON.parse(m2[0]);
-        parts = data.messages || [cleaned];
-      } else {
-        parts = [cleaned];
-      }
-    }
-
-    // 🌟 把收到的消息静默写进聊天记录（不需要经过底部的输入框）
-    parts.forEach(txt => {
-      if(!txt) return;
-      arr.push({ 
-        id: 'm_' + Date.now() + Math.floor(Math.random()*1000), 
-        role: 'assistant', 
-        text: txt, 
-        time: Date.now(), 
-        stored: true 
-      });
-    });
     
-    // 存入外挂内存并更新列表摘要
-    setChatArr(chatId, arr);
-    updateContactPreview(chatId);
-    
-    // 🌟 如果老婆正好停在这个人的聊天界面，瞬间重绘气泡，就像他刚刚发过来一样！
-    if(window.currentId === chatId && typeof renderChat === 'function') renderChat();
-    
-  } catch(e) {
-    console.log('后台主动发消息失败啦:', e);
-  }
-};
-   // ================= 🌟 蓝色高定：全局随机错峰主动聊天引擎 (终极防打架版) =================
-
-window._startGlobalAutoChatEngine = function() {
-  setInterval(() => {
-    const isGlobalAutoOn = localStorage.getItem('globalAutoChatOn') === 'true';
-    if (!isGlobalAutoOn) return;
-
-    // 🌟 核心修复1：把单聊和群聊全部拉进来排队！
-    const contacts = getContacts() || [];
-    const groups = window.getGroups ? window.getGroups() : [];
-    const allChats = [...contacts, ...groups];
-    
-    const now = Date.now();
-    let triggeredAnyone = false; 
-
-    allChats.forEach(c => {
-      if (triggeredAnyone) return; 
-
-      let nextTime = localStorage.getItem('nextAutoChatTime_' + c.id);
-      
-      if (!nextTime) {
-        let userMin = parseInt(localStorage.getItem('autoChatMin')) || 30;
-        let userMax = parseInt(localStorage.getItem('autoChatMax')) || 120;
-        if(userMin > userMax) { let temp = userMin; userMin = userMax; userMax = temp; }
-        const randomMins = Math.floor(Math.random() * (userMax - userMin + 1)) + userMin;
-        nextTime = now + randomMins * 60000;
-        
-        let isConflict = allChats.some(other => {
-          if (other.id === c.id) return false;
-          let otherTime = localStorage.getItem('nextAutoChatTime_' + other.id);
-          return otherTime && Math.abs(otherTime - nextTime) < 10 * 60000;
-        });
-
-        if (isConflict) nextTime += 15 * 60000;
-        
-        localStorage.setItem('nextAutoChatTime_' + c.id, nextTime);
-        return;
-      }
-
-      if (now >= parseInt(nextTime)) {
-        triggeredAnyone = true; 
-        localStorage.removeItem('nextAutoChatTime_' + c.id);
-
-        // 🌟 核心修复2：取消“只输出一句话”的指令，强行要求遵守 JSON 铁律！
-        const hiddenPrompt = `【系统强制指令】：当前真实系统时间是 ${getSysTimeStr()}。你已经有一段时间没有和玩家聊天了。请根据你的核心人设和当前的时间点，极其自然地主动发一条微信消息找她。可以是分享当下的事情、突然的想念、或者符合你性格的开场白。\n⚠️ 绝对禁止提“很久没理我”这种机器人的话！\n⚠️ 必须严格遵守上方的输出格式铁律（线上模式必须输出包含 messages 数组的 JSON，线下模式必须包含状态栏和正文）！`;
-        
-        if(window._sendToAI) window._sendToAI(c.id, hiddenPrompt, true);
-      }
-    });
-  }, 30000); // 30秒心跳雷达
-};
-
-// 启动引擎！
-window._startGlobalAutoChatEngine();
 </script>
 
 <!-- 🌟 蓝色高定：悬浮心声面板 (把它安全地放在 HTML 区域！) -->
