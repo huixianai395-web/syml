@@ -3735,39 +3735,33 @@ function refreshFontSizeUI(){
     return false;
   };
 
-  window.renderContacts = function(k=''){
-  k=(k||'').trim();
-  const contacts = getContacts();
-  const groups = window.getGroups ? window.getGroups() : [];
-  let all = [...contacts, ...groups];
-  
-  const arr = all.filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
-  
-  document.getElementById('contactList').innerHTML = arr.map(c=> {
-    const unreadHtml = c.unread ? `<div style="position:absolute; top:-4px; right:-4px; background:#f25c5c; color:#fff; font-size:10px; font-weight:bold; height:18px; min-width:18px; border-radius:9px; padding:0 5px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(242,92,92,0.3); border:2px solid #fff; z-index:10; font-family:ui-monospace, Arial, sans-serif;">${c.unread > 99 ? '99+' : c.unread}</div>` : '';
-
-    return `
-    <div class="item" style="-webkit-touch-callout:none; user-select:none; position:relative;"
-         oncontextmenu="return deleteContactFromList('${c.id}', event)"
-         ontouchstart="this._t = setTimeout(()=>deleteContactFromList('${c.id}'), 600)"
-         ontouchend="clearTimeout(this._t)" ontouchmove="clearTimeout(this._t)">
-      <div style="position:relative; width:44px; height:44px; flex-shrink:0;">
-        <img class="avatar" src="${c.avatar||'https://via.placeholder.com/88x88?text=头像'}" style="width:100%; height:100%; object-fit:cover; border-radius:12px;" />
-        ${unreadHtml}
-      </div>
-      <div class="main" onclick="if(window._isDeleting)return; openChat('${c.id}')">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <div class="name" style="display:flex; align-items:center; gap:6px;">
-            ${c.isGroup ? '<span style="font-size:10px; background:#eef3ff; color:#2f66d8; padding:2px 6px; border-radius:4px; font-weight:bold;">群聊</span>' : ''}
-            ${esc(c.name)}
+  function renderContacts(k=''){
+    k=(k||'').trim();
+    const contacts = getContacts();
+    const groups = window.getGroups();
+    let all = [...contacts, ...groups];
+    
+    const arr = all.filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
+    
+    $('contactList').innerHTML=arr.map(c=>`
+      <div class="item" style="-webkit-touch-callout:none; user-select:none;"
+           oncontextmenu="return deleteContactFromList('${c.id}', event)"
+           ontouchstart="this._t = setTimeout(()=>deleteContactFromList('${c.id}'), 600)"
+           ontouchend="clearTimeout(this._t)" ontouchmove="clearTimeout(this._t)">
+        <img class="avatar" src="${c.avatar||'https://via.placeholder.com/88x88?text=头像'}"/>
+        <div class="main" onclick="if(window._isDeleting)return; openChat('${c.id}')">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="name" style="display:flex; align-items:center; gap:6px;">
+              ${c.isGroup ? '<span style="font-size:10px; background:#eef3ff; color:#2f66d8; padding:2px 6px; border-radius:4px; font-weight:bold;">群聊</span>' : ''}
+              ${esc(c.name)}
+            </div>
+            <div class="t">${esc(c.time||'')}</div>
           </div>
-          <div class="t">${esc(c.time||'')}</div>
+          <div class="preview">${esc(c.preview||'')}</div>
         </div>
-        <div class="preview">${esc(c.preview||'')}</div>
       </div>
-    </div>
-  `}).join('') || '<div class="card small">暂无联系人或群聊，点右上角创建吧</div>';
-};
+    `).join('') || '<div class="card small">暂无联系人或群聊，点右上角创建吧</div>';
+  }
 
   function openCreateModal(){ $('contactModal').classList.add('active'); }
   function closeCreateModal(){
@@ -3881,24 +3875,10 @@ function compressImage(file, isWallpaper = false) {
   };
   function applyModeUI(){const c=getContactById(currentId),st=normSettings(c?.settings);$('chatRoom').classList.toggle('offline',st.mode==='offline');updateChatSub();}
 
-  window.openChat = function(id){
-  window.currentId = id; selectMode = false; selectedIds.clear(); closeFloatMenu(); composeQuote = null; updateQuoteBar();
-  
-  const c = getContactById(id);
-  if (c && c.unread) {
-    if (c.isGroup) {
-      const groups = window.getGroups();
-      const idx = groups.findIndex(g => g.id === id);
-      if (idx > -1) { groups[idx].unread = 0; window.setGroups(groups); }
-    } else {
-      updateContact(id, { unread: 0 });
-    }
-    if(typeof renderContacts === 'function') renderContacts(document.getElementById('searchInput')?.value || '');
-  }
-
-  document.getElementById('chatTitle').textContent = c ? c.name : '聊天';
-  applyModeUI(); renderChat(); show('chatRoom');
-};
+  window.openChat=function(id){
+    currentId=id;selectMode=false;selectedIds.clear();closeFloatMenu();composeQuote=null;updateQuoteBar();
+    const c=getContactById(id);$('chatTitle').textContent=c?c.name:'聊天';applyModeUI();renderChat();show('chatRoom');
+  };
 
   function renderQuote(q){ if(!q||!q.text) return ''; return `<div class="msg-quote"><div class="q-content">${esc(q.text)}</div></div>`; }
   function formatOfflineText(text){
@@ -9152,21 +9132,6 @@ window._sendToAI = async function(chatId, hiddenPrompt, isSilent) {
     });
     
     setChatArr(chatId, arr);
-    
-    if (window.currentId !== chatId) {
-      const currentC = getContactById(chatId);
-      if (currentC) {
-        const newUnread = (currentC.unread || 0) + parts.length;
-        if (currentC.isGroup) {
-          const groups = window.getGroups();
-          const idx = groups.findIndex(g => g.id === chatId);
-          if (idx > -1) { groups[idx].unread = newUnread; window.setGroups(groups); }
-        } else {
-          updateContact(chatId, { unread: newUnread });
-        }
-      }
-    }
-
     updateContactPreview(chatId);
     
     if(window.currentId === chatId && typeof renderChat === 'function') renderChat();
@@ -10647,69 +10612,90 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     <div id="ifWbList" style="flex:1; overflow-y:auto; padding:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; flex-direction:column; gap:12px;"></div>
   </div>
 </div>
-<!-- ================= 🌟 蓝色高定：视神经抢救与悬浮角标大一统 ================= -->
+<!-- ================= 🌟 蓝色高定：非侵入式纳米红点机器人 ================= -->
 <script>
 (function(){
-  // 1. 抢救聊天列表渲染：注入绝美悬浮角标 (绝对不挡头像版)
-  window.renderContacts = function(k=''){
-    k=(k||'').trim();
-    const contacts = window.getContacts ? window.getContacts() : [];
-    const groups = window.getGroups ? window.getGroups() : [];
-    let all = [...contacts, ...groups];
-    
-    const arr = all.filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
-    
-    document.getElementById('contactList').innerHTML = arr.map(c=> {
-      // 🌟 核心审美魔法：向外围推移，加上纯白描边，营造高级悬浮感！
-      const unreadHtml = c.unread ? `<div style="position:absolute; top:-6px; right:-8px; background:#f25c5c; color:#fff; font-size:10px; font-weight:800; height:18px; min-width:18px; border-radius:9px; padding:0 5px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 8px rgba(242,92,92,0.25); border:2px solid #fff; z-index:10; font-family:ui-monospace, Arial, sans-serif; transform:scale(0.9); transform-origin:top right;">${c.unread > 99 ? '99+' : c.unread}</div>` : '';
-
-      return `
-      <div class="item" style="-webkit-touch-callout:none; user-select:none; position:relative;"
-           oncontextmenu="return deleteContactFromList('${c.id}', event)"
-           ontouchstart="this._t = setTimeout(()=>deleteContactFromList('${c.id}'), 600)"
-           ontouchend="clearTimeout(this._t)" ontouchmove="clearTimeout(this._t)">
-        <div style="position:relative; width:44px; height:44px; flex-shrink:0;">
-          <img class="avatar" src="${c.avatar||'https://via.placeholder.com/88x88?text=头像'}" style="width:100%; height:100%; object-fit:cover; border-radius:12px;" />
-          ${unreadHtml}
-        </div>
-        <div class="main" onclick="if(window._isDeleting)return; window._safeOpenChat('${c.id}')">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div class="name" style="display:flex; align-items:center; gap:6px;">
-              ${c.isGroup ? '<span style="font-size:10px; background:#eef3ff; color:#2f66d8; padding:2px 6px; border-radius:4px; font-weight:bold;">群聊</span>' : ''}
-              ${c.name}
-            </div>
-            <div class="t">${c.time||''}</div>
-          </div>
-          <div class="preview">${c.preview||''}</div>
-        </div>
-      </div>
-    `}).join('') || '<div class="card small">暂无联系人或群聊，点右上角创建吧</div>';
-  };
-
-  // 2. 抢救聊天进入逻辑：清空红点并恢复底层渲染
-  window._safeOpenChat = function(id) {
-    if(typeof window.openChat === 'function') {
-      window.openChat(id); // 唤醒底层的进入逻辑，把聊天记录吐出来！
-    }
-    
-    // 偷偷清空小红点
-    const c = window.getContactById ? window.getContactById(id) : null;
-    if (c && c.unread) {
-      if (c.isGroup) {
-        const groups = window.getGroups();
-        const idx = groups.findIndex(g => g.id === id);
-        if (idx > -1) { groups[idx].unread = 0; window.setGroups(groups); }
-      } else {
-        if(window.updateContact) window.updateContact(id, { unread: 0 });
+  // 1. 拦截收消息：偷偷在外挂内存里记账
+  const oriSend = window._sendToAI;
+  if(oriSend && !window._nanoSendInjected) {
+    window._sendToAI = async function(chatId, prompt, isSilent) {
+      const beforeCount = (window.getChats ? window.getChats()[chatId] : [])?.length || 0;
+      await oriSend.apply(this, arguments);
+      const afterCount = (window.getChats ? window.getChats()[chatId] : [])?.length || 0;
+      
+      if (window.currentId !== chatId && afterCount > beforeCount) {
+        const c = window.getContactById ? window.getContactById(chatId) : null;
+        if (c) {
+          const added = afterCount - beforeCount;
+          if (c.isGroup) {
+            const groups = window.getGroups();
+            const idx = groups.findIndex(g => g.id === chatId);
+            if (idx > -1) { groups[idx].unread = (groups[idx].unread || 0) + added; window.setGroups(groups); }
+          } else {
+            if(window.updateContact) window.updateContact(chatId, { unread: (c.unread || 0) + added });
+          }
+        }
       }
-      if(typeof window.renderContacts === 'function') window.renderContacts(document.getElementById('searchInput')?.value || '');
-    }
-  };
+    };
+    window._nanoSendInjected = true;
+  }
 
-  // 强行覆盖原生渲染器，夺舍控制权！
-  if(typeof renderContacts !== 'undefined') renderContacts = window.renderContacts;
+  // 2. 拦截进聊天：点进去瞬间撕毁账本
+  const oriOpen = window.openChat;
+  if(oriOpen && !window._nanoOpenInjected) {
+    window.openChat = function(id) {
+      const c = window.getContactById ? window.getContactById(id) : null;
+      if (c && c.unread) {
+        if (c.isGroup) {
+          const groups = window.getGroups();
+          const idx = groups.findIndex(g => g.id === id);
+          if (idx > -1) { groups[idx].unread = 0; window.setGroups(groups); }
+        } else {
+          if(window.updateContact) window.updateContact(id, { unread: 0 });
+        }
+        const listNode = document.getElementById('contactList');
+        if(listNode) {
+          const avatarWrap = listNode.querySelector(`[onclick*="'${id}'"]`)?.previousElementSibling;
+          if(avatarWrap) {
+            const badge = avatarWrap.querySelector('.nano-badge');
+            if(badge) badge.remove();
+          }
+        }
+      }
+      oriOpen.apply(this, arguments);
+    };
+    window._nanoOpenInjected = true;
+  }
+
+  // 3. 幽灵画师：发现列表刷新，就偷偷贴上绝美高定悬浮红点！
+  const observer = new MutationObserver(() => {
+    const items = document.querySelectorAll('#contactList .item');
+    items.forEach(item => {
+      const mainDiv = item.querySelector('.main');
+      if(!mainDiv) return;
+      const match = mainDiv.getAttribute('onclick')?.match(/'([^']+)'/);
+      if(!match) return;
+      const id = match[1];
+      const c = window.getContactById ? window.getContactById(id) : null;
+      
+      const avatarWrap = item.querySelector('div[style*="44px"]');
+      if(avatarWrap && c && c.unread) {
+        let badge = avatarWrap.querySelector('.nano-badge');
+        if(!badge) {
+          badge = document.createElement('div');
+          badge.className = 'nano-badge';
+          badge.style.cssText = 'position:absolute; top:-6px; right:-8px; background:#f25c5c; color:#fff; font-size:10px; font-weight:800; height:18px; min-width:18px; border-radius:9px; padding:0 5px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 8px rgba(242,92,92,0.25); border:2px solid #fff; z-index:10; font-family:ui-monospace, Arial, sans-serif; transform:scale(0.9); transform-origin:top right; pointer-events:none;';
+          avatarWrap.appendChild(badge);
+        }
+        badge.textContent = c.unread > 99 ? '99+' : c.unread;
+      }
+    });
+  });
+  
+  const listNode = document.getElementById('contactList');
+  if(listNode) observer.observe(listNode, { childList: true, subtree: true });
+
 })();
 </script>
-<!-- 补丁结束 -->
 </body>
 </html>
