@@ -2306,29 +2306,26 @@ body {
   <button class="btn" id="mePageDelBtn" style="flex:1; background:rgba(252,242,242,0.6); color:#b57b7b; border:1px solid #f2dcdc; border-radius:12px; padding:10px 0; font-weight:600; letter-spacing:1px; box-shadow:none; transition:all 0.2s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">删除当前</button>
             </div>
           </div>
-<!-- 🌟 蓝色高定：放在“我”页面的全局主动聊天开关与动态区间控制台 -->
+<!-- 🌟 蓝色高定：全局主动聊天开关与动态区间控制台 (带终极撕票引擎) -->
 <div class="setting-item" style="padding:16px; background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border-radius:16px; margin:12px; border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.03);">
   <div style="display:flex; justify-content:space-between; align-items:center;">
     <span style="font-size:15px; color:#5c7094; font-weight:bold;">角色自由意志引擎 (随机掉落)</span>
-    <!-- 绝美像素级开关 -->
     <label style="position:relative; display:inline-block; width:44px; height:24px; margin:0;">
       <input type="checkbox" id="globalAutoChatToggle" style="opacity:0; width:0; height:0;" onchange="window._toggleGlobalAutoChat(this.checked)">
       <span class="blue-slider" style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#dce5f0; transition:.3s; border-radius:24px;"></span>
     </label>
   </div>
   
-  <!-- 展开的时间区间设置区 -->
   <div id="autoChatTimeSettings" style="display:none; margin-top:14px; padding-top:14px; border-top:1px dashed #dce5f0; align-items:center; gap:8px; font-size:13px; color:#7a86a8;">
     <span>随机掉落区间：</span>
-    <input type="number" id="autoChatMin" value="30" oninput="localStorage.setItem('autoChatMin', this.value)" style="width:45px; background:#eef4fa; border:1px solid #dce5f0; border-radius:8px; padding:4px; color:#5c7094; outline:none; text-align:center; font-weight:bold;">
+    <input type="number" id="autoChatMin" value="30" oninput="localStorage.setItem('autoChatMin', this.value); window._resetAllAutoChatTimers();" style="width:45px; background:#eef4fa; border:1px solid #dce5f0; border-radius:8px; padding:4px; color:#5c7094; outline:none; text-align:center; font-weight:bold;">
     <span>至</span>
-    <input type="number" id="autoChatMax" value="120" oninput="localStorage.setItem('autoChatMax', this.value)" style="width:45px; background:#eef4fa; border:1px solid #dce5f0; border-radius:8px; padding:4px; color:#5c7094; outline:none; text-align:center; font-weight:bold;">
+    <input type="number" id="autoChatMax" value="120" oninput="localStorage.setItem('autoChatMax', this.value); window._resetAllAutoChatTimers();" style="width:45px; background:#eef4fa; border:1px solid #dce5f0; border-radius:8px; padding:4px; color:#5c7094; outline:none; text-align:center; font-weight:bold;">
     <span>分钟</span>
   </div>
 </div>
 
 <style>
-  /* 修复丑丑的圆点，绝对完美居中与丝滑动画 */
   .blue-slider::before {
     position: absolute; content: ""; height: 18px; width: 18px; left: 3px; top: 3px;
     background-color: #ffffff; transition: .3s cubic-bezier(0.4, 0.0, 0.2, 1); border-radius: 50%;
@@ -2339,11 +2336,19 @@ body {
 </style>
 
 <script>
-  // 初始化外挂内存中的数据，保持 UI 状态同步
+  // 🌟 蓝色核心：撕毁所有男主手里的旧号码牌！
+  window._resetAllAutoChatTimers = function() {
+    const contacts = getContacts() || [];
+    contacts.forEach(c => localStorage.removeItem('nextAutoChatTime_' + c.id));
+    console.log('✨ 蓝色提示：旧号码牌已全部撕毁，男主们已按新规则重新排队！');
+  };
+
   window._toggleGlobalAutoChat = function(isOn) {
     localStorage.setItem('globalAutoChatOn', isOn);
     const settings = document.getElementById('autoChatTimeSettings');
     if(settings) settings.style.display = isOn ? 'flex' : 'none';
+    // ⚠️ 核心修复：开关拨动时，也立刻撕毁旧号码牌！
+    window._resetAllAutoChatTimers();
   };
   
   setTimeout(() => {
