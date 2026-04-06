@@ -10933,61 +10933,41 @@ window._openMusicSearch = function() {
   document.getElementById('bsmKeyword').focus();
 };
 
-// 🌟 蓝色高定：终极稳定排队拉取引擎（绝对防封版）
-window._bsmSearchResults = []; // 暂存搜索结果
+// 🌟 蓝色高定：终极防CORS拦截·全网聚合搜索穿透引擎
+window._bsmSearchResults = []; 
 
 window._doMusicSearch = async function() {
   const keyword = document.getElementById('bsmKeyword').value.trim();
   if(!keyword) return;
   
   const box = document.getElementById('bsmResults');
-  box.innerHTML = `<div style="text-align:center; color:#5c7094; padding:40px 0; font-size:13px; font-weight:bold;">正在建立安全私密通道...<br><span style="font-size:11px; opacity:0.6; font-weight:normal;">（为防拦截，正在温柔地提取高品质音源）</span></div>`;
-  
-  let validSongs = [];
+  box.innerHTML = `<div style="text-align:center; color:#5c7094; padding:40px 0; font-size:13px; font-weight:bold;">正在启动高级穿透协议...<br><span style="font-size:11px; opacity:0.6; font-weight:normal;">（正在绕过苹果安全防火墙）</span></div>`;
   
   try {
-    // 🌟 终极防封魔法：不并发了！排队去请求，只拿前 3 个最清晰的版本！
-    for(let i = 1; i <= 3; i++) {
-      try {
-        const res = await fetch(`https://api.lolimi.cn/API/wangyi/api.php?msg=${encodeURIComponent(keyword)}&n=${i}`);
-        const data = await res.json();
-        // 只要能拿到直链，就塞进列表
-        if (data && data.code === 200 && data.data && data.data.url) {
-          if(!validSongs.some(s => s.url === data.data.url)) {
-            validSongs.push({
-              name: data.data.song || keyword,
-              singer: data.data.singer || '未知歌手',
-              url: data.data.url
-            });
-          }
-        }
-      } catch(e) { console.log('节点' + i + '波动'); }
-      
-      // 🌟 核心：停顿 300 毫秒，伪装成人类，绝对不触发接口的防御机制！
-      await new Promise(resolve => setTimeout(resolve, 300));
-    }
+    // 🌟 核心破壁魔法：使用顶级开源 Meting API，完美绕过苹果 CORS 拦截！
+    const res = await fetch(`https://api.injahow.cn/meting/?server=netease&type=search&s=${encodeURIComponent(keyword)}&limit=15`);
+    const data = await res.json();
     
-    // 如果拿到了数据，渲染绝美复选框列表
-    if(validSongs.length > 0) {
-      window._bsmSearchResults = validSongs;
-      box.innerHTML = validSongs.map((song, idx) => `
+    if (data && data.length > 0) {
+      window._bsmSearchResults = data;
+      box.innerHTML = data.map((song, idx) => `
         <label style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.6); border: 1px solid #eef4fa; border-radius: 12px; cursor: pointer; transition: background 0.2s; margin-bottom: 8px;">
           <input type="checkbox" class="bsm-checkbox" value="${idx}" style="accent-color: #5c7094; width: 18px; height: 18px; flex-shrink: 0;">
           <div style="flex: 1; min-width: 0;">
             <div style="font-size: 14px; font-weight: bold; color: #3d4a6a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${esc(song.name)}</div>
             <div style="font-size: 11px; color: #7a86a8; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
-              ${esc(song.singer)}
-              <span style="background: #eef4fa; color: #5c7094; padding: 2px 6px; border-radius: 6px; font-size: 9px; font-weight: bold; border: 1px solid #dce5f0;">网易云高品质</span>
+              ${esc(song.author)}
+              <span style="background: #eef4fa; color: #5c7094; padding: 2px 6px; border-radius: 6px; font-size: 9px; font-weight: bold; border: 1px solid #dce5f0;">网易云直连</span>
             </div>
           </div>
         </label>
       `).join('');
       document.getElementById('bsmSelectAll').checked = false;
     } else {
-      throw new Error('音源被加密锁定');
+      throw new Error('未找到歌曲');
     }
   } catch(e) {
-    box.innerHTML = `<div style="text-align:center; color:#e74c3c; padding:30px 0; font-size:13px; font-weight:bold;">宝宝，这首歌被苹果拦截了，换首别的词搜搜看~</div>`;
+    box.innerHTML = `<div style="text-align:center; color:#e74c3c; padding:30px 0; font-size:13px; font-weight:bold;">宝宝，网络波动了一下，再点一次搜索就好啦~</div>`;
   }
 };
 
@@ -11006,7 +10986,9 @@ window._addSelectedMusic = function() {
     const idx = parseInt(cb.value);
     const song = window._bsmSearchResults[idx];
     if (song) {
-      window._playlist.push({ title: song.name, artist: song.singer, url: song.url });
+      // 兼容不同 API 返回的歌手字段名
+      const artistName = song.author || song.singer || '未知歌手';
+      window._playlist.push({ title: song.name, artist: artistName, url: song.url });
       addedNames.push(`《${song.name}》`);
     }
   });
