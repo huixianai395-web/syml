@@ -10933,90 +10933,97 @@ window._openMusicSearch = function() {
   document.getElementById('bsmKeyword').focus();
 };
 
-// 执行全网聚合搜索（🌟 蓝色高定：多重影分身并发搜索引擎 V4.0）
+// 🌟 蓝色高定：三层兜底聚合搜索与批量添加引擎
+window._bsmSearchResults = []; // 暂存搜索结果
+
 window._doMusicSearch = async function() {
   const keyword = document.getElementById('bsmKeyword').value.trim();
   if(!keyword) return;
   
   const box = document.getElementById('bsmResults');
-  box.innerHTML = `<div style="text-align:center; color:#5c7094; padding:20px 0; font-size:13px;">正在破解多重音频节点...<br><span style="font-size:11px; opacity:0.7;">（正在并发抓取不同版本）</span></div>`;
+  box.innerHTML = `<div style="text-align:center; color:#5c7094; padding:40px 0; font-size:13px; font-weight:bold;">正在全网极速检索...<br><span style="font-size:11px; opacity:0.6; font-weight:normal;">（正在穿透多重加密节点）</span></div>`;
   
-  try {
-    // 🌟 核心破壁魔法：同时发射 5 个请求，抓取前 5 个不同的版本！
-    const tasks = [1, 2, 3, 4, 5].map(n => 
-      fetch(`https://api.lolimi.cn/API/wangyi/api.php?msg=${encodeURIComponent(keyword)}&n=${n}`)
-        .then(r => r.json())
-        .catch(() => null)
-    );
-    
-    // 等待所有影分身带着数据回来
-    const results = await Promise.all(tasks);
-    const validSongs = [];
-    
-    results.forEach(data => {
-      if (data && data.code === 200 && data.data && data.data.url) {
-        // 智能去重逻辑：防止返回一模一样的音源
-        if(!validSongs.some(s => s.url === data.data.url)) {
-          validSongs.push({
-            name: data.data.song || keyword,
-            singer: data.data.singer || '未知歌手',
-            url: data.data.url
-          });
-        }
-      }
-    });
-    
-    // 如果抓到了数据，就渲染绝美列表！
-    if(validSongs.length > 0) {
-      box.innerHTML = validSongs.map(song => `
-        <div class="bsm-item" onclick="window._addAndPlaySong('${esc(song.name)}', '${esc(song.singer)}', '${song.url}')">
-          <div style="flex:1; min-width:0;">
-            <div style="font-size:14px; font-weight:bold; color:#3d4a6a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(song.name)}</div>
-            <div style="font-size:11px; color:#7a86a8; margin-top:4px;">${esc(song.singer)}</div>
-          </div>
-          <div style="color:#a5cfff; font-size:20px; font-weight:bold;">+</div>
-        </div>
-      `).join('');
-    } else {
-      throw new Error('主节点全部失效');
-    }
-  } catch(e) { 
-    // 🌟 终极兜底：如果上面的并发全挂了，用另一个备用 API 强行抓一首歌回来！
-    try {
-      const fbRes = await fetch(`https://api.vvhan.com/api/wyMusic?name=${encodeURIComponent(keyword)}&type=json`);
-      const fbData = await fbRes.json();
-      if(fbData && fbData.success && fbData.info && fbData.info.url) {
-        box.innerHTML = `
-          <div class="bsm-item" onclick="window._addAndPlaySong('${esc(fbData.info.name)}', '${esc(fbData.info.auther)}', '${fbData.info.url}')">
-            <div style="flex:1; min-width:0;">
-              <div style="font-size:14px; font-weight:bold; color:#3d4a6a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(fbData.info.name)}</div>
-              <div style="font-size:11px; color:#7a86a8; margin-top:4px;">${esc(fbData.info.auther)}</div>
-            </div>
-            <div style="color:#a5cfff; font-size:20px; font-weight:bold;">+</div>
-          </div>
-        `;
-        return;
-      }
-    } catch(err) {}
+  // 🌟 核心破壁魔法：三层 API 轮询，挂了一个立刻换下一个，绝不报错！
+  const apis = [
+    `https://api.vvhan.com/api/music?keyword=${encodeURIComponent(keyword)}&type=search`,
+    `https://api.lolimi.cn/API/yinyk/api.php?msg=${encodeURIComponent(keyword)}`
+  ];
 
-    box.innerHTML = `<div style="text-align:center; color:#e74c3c; padding:20px 0; font-size:13px;">免费音源接口被挤爆啦，晚点再试吧宝宝~</div>`;
+  let list = [];
+  for (let api of apis) {
+    try {
+      const res = await fetch(api);
+      const data = await res.json();
+      
+      // 解析 vvhan 格式
+      if (data.success && data.data && data.data.length > 0) {
+        list = data.data.map(item => ({ name: item.name, singer: item.singer, url: item.url }));
+        break;
+      }
+      // 解析 lolimi 列表格式
+      if (data.code === 200 && data.data && Array.isArray(data.data)) {
+        list = data.data.map(item => ({ name: item.song, singer: item.singer, url: item.url }));
+        break;
+      }
+    } catch (e) { continue; }
   }
+
+  if (list.length === 0) {
+    box.innerHTML = `<div style="text-align:center; color:#e74c3c; padding:30px 0; font-size:13px;">接口都在维护中，晚点再来吧宝宝~</div>`;
+    return;
+  }
+
+  window._bsmSearchResults = list;
+  
+  // 渲染带复选框的列表
+  box.innerHTML = list.map((song, idx) => `
+    <label style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.6); border: 1px solid #eef4fa; border-radius: 12px; cursor: pointer; transition: background 0.2s; margin-bottom: 8px;">
+      <input type="checkbox" class="bsm-checkbox" value="${idx}" style="accent-color: #5c7094; width: 18px; height: 18px; flex-shrink: 0;">
+      <div style="flex: 1; min-width: 0;">
+        <div style="font-size: 14px; font-weight: bold; color: #3d4a6a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${esc(song.name)}</div>
+        <div style="font-size: 11px; color: #7a86a8; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
+          ${esc(song.singer)}
+          <span style="background: #eef4fa; color: #5c7094; padding: 2px 6px; border-radius: 6px; font-size: 9px; font-weight: bold; border: 1px solid #dce5f0;">网易云</span>
+        </div>
+      </div>
+    </label>
+  `).join('');
+  document.getElementById('bsmSelectAll').checked = false;
 };
 
-// 选中歌曲并播放
-window._addAndPlaySong = function(title, artist, url) {
+// 全选/取消全选逻辑
+window._bsmToggleAll = function(checked) {
+  document.querySelectorAll('.bsm-checkbox').forEach(cb => cb.checked = checked);
+};
+
+// 批量添加并死死钉进外挂内存
+window._addSelectedMusic = function() {
+  const checkedBoxes = document.querySelectorAll('.bsm-checkbox:checked');
+  if (checkedBoxes.length === 0) return alert('宝宝，你还没打勾选歌呢！');
+  
+  let addedNames = [];
+  checkedBoxes.forEach(cb => {
+    const idx = parseInt(cb.value);
+    const song = window._bsmSearchResults[idx];
+    if (song) {
+      window._playlist.push({ title: song.name, artist: song.singer, url: song.url });
+      addedNames.push(`《${song.name}》`);
+    }
+  });
+  
+  // 死死钉进外挂内存，刷新绝对不丢！
+  localforage.setItem('mp_fix_playlist', window._playlist);
+  
   document.getElementById('blueSearchModal').style.display = 'none';
   document.getElementById('blueMusicPlayer').style.display = 'flex';
   
-  const newSong = { title, artist, url };
-  window._playlist.push(newSong);
-  localforage.setItem('mp_fix_playlist', window._playlist); // 存入外挂内存
-  
-  // 触发聊天互动
-  document.getElementById('chatInput').value = `[music:${title} - ${artist}]`;
+  // 触发聊天互动，告诉贺星辞你加了什么歌
+  document.getElementById('chatInput').value = `[music:我往歌单里添加了 ${addedNames.join('、')}]`;
   sendMsg();
   
-  window._bmpPlay(window._playlist.length - 1);
+  // 自动播放刚添加的第一首歌
+  const firstAddedIdx = window._playlist.length - checkedBoxes.length;
+  window._bmpPlay(firstAddedIdx);
 };
 
 // 播放器底层逻辑
@@ -11241,15 +11248,31 @@ if (typeof _oldRenderBubble === 'undefined') {
   <audio id="bmpAudio" style="display:none;"></audio>
 </div>
 
-<!-- 搜索弹窗 -->
+<!-- 蓝色高定：带批量选择的终极搜索弹窗 -->
 <div id="blueSearchModal" onclick="if(event.target===this) this.style.display='none'">
-  <div class="bsm-card">
+  <div class="bsm-card" style="height: 70dvh; display: flex; flex-direction: column;">
     <div class="bsm-header">
       <input id="bsmKeyword" class="bsm-input" placeholder="输入歌名或歌手...">
       <button class="btn p" onclick="window._doMusicSearch()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:8px 16px; font-weight:bold; box-shadow:none;">搜索</button>
     </div>
-    <div id="bsmResults" class="bsm-list">
+    
+    <!-- 全选操作栏 -->
+    <div style="padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eef4fa; background: rgba(238,244,250,0.3);">
+      <span style="font-size: 13px; font-weight: bold; color: #3d4a6a;">搜索结果</span>
+      <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; color: #5c7094; font-weight: bold;">
+        <input type="checkbox" id="bsmSelectAll" onchange="window._bsmToggleAll(this.checked)" style="accent-color: #5c7094; width: 14px; height: 14px;"> 全选
+      </label>
+    </div>
+    
+    <!-- 列表区 -->
+    <div id="bsmResults" class="bsm-list" style="flex: 1; overflow-y: auto; padding: 10px;">
       <div style="text-align:center; color:#a0aaba; font-size:12px; padding:20px 0;">请输入关键词搜索你想听的歌~</div>
+    </div>
+    
+    <!-- 底部添加栏 -->
+    <div style="padding: 12px 16px; border-top: 1px solid #eef4fa; display: flex; gap: 10px; background: rgba(250,252,255,0.95);">
+      <button class="btn" onclick="document.getElementById('blueSearchModal').style.display='none'" style="flex: 1; background: #f8fafc; color: #7a86a8; border: 1px solid #dce5f0; border-radius: 10px; font-weight: bold; padding: 10px 0;">取消</button>
+      <button class="btn p" onclick="window._addSelectedMusic()" style="flex: 1; background: linear-gradient(135deg, #eef4fa, #dce5f0); color: #5c7094; border: 1px solid #cdd7e8; border-radius: 10px; font-weight: bold; padding: 10px 0; box-shadow: 0 4px 12px rgba(92,112,148,0.1);">添加选中</button>
     </div>
   </div>
 </div>
