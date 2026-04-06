@@ -2052,6 +2052,31 @@ body {
   border-top: 1px solid rgba(220, 229, 240, 0.8) !important;
   box-shadow: 0 -10px 40px rgba(92, 112, 148, 0.05) !important;
 }
+    /* 🎵 蓝色高定：初雪海盐蓝·一起听黑胶卡片 */
+.bubble-music {
+  display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(135deg, #eef4fa, #dce5f0);
+  border-radius: 16px; padding: 12px 16px;
+  border: 1px solid #cdd7e8;
+  box-shadow: 0 4px 16px rgba(92,112,148,0.06);
+  width: 240px; cursor: pointer; transition: transform 0.2s;
+}
+.bubble-music:active { transform: scale(0.96); }
+.bm-disc {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: conic-gradient(#5c7094, #3d4a6a, #5c7094);
+  display: grid; place-items: center; flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(92,112,148,0.3);
+  animation: pcSpin 4s linear infinite; /* 沿用查手机的旋转动画 */
+}
+.bm-disc-inner {
+  width: 12px; height: 12px; background: #eef4fa;
+  border-radius: 50%; border: 1px solid #cdd7e8;
+}
+.bm-info { flex: 1; min-width: 0; }
+.bm-name { font-size: 14px; font-weight: 800; color: #3d4a6a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bm-sub { font-size: 11px; color: #7a86a8; margin-top: 2px; }
+.bm-play { color: #5c7094; font-size: 20px; font-weight: bold; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
@@ -4138,6 +4163,21 @@ if(voiceMatch){
   const waves='<div class="voice-wave"></div>'.repeat(6);
   return `${quote}<div class="bubble ${cls} ${hidden}" style="width:${w}px;cursor:pointer;" onclick="var el=document.getElementById('${vid}');if(el)el.classList.toggle('hidden');this.classList.toggle('voice-playing')"><div class="bubble-voice"><div class="voice-waves">${waves}</div><div class="voice-dur">${dur}″</div></div></div><div id="${vid}" class="voice-reveal hidden">${esc(vtext)}</div>${ts}`;
 }
+    // 🌟 蓝色魔法：一起听音乐拦截器
+    const musicMatch = t.match(/^\[music:(.+?)\]$/);
+    if(musicMatch) {
+      const songInfo = musicMatch[1];
+      const musicCard = `
+        <div class="bubble-music">
+          <div class="bm-disc"><div class="bm-disc-inner"></div></div>
+          <div class="bm-info">
+            <div class="bm-name">${esc(songInfo)}</div>
+            <div class="bm-sub">正在和 TA 一起听...</div>
+          </div>
+          <div class="bm-play">ılıılı</div>
+        </div>`;
+      return `${quote}<div class="bubble ${cls} ${hidden} bubble-card">${musicCard}</div>${ts}`;
+    }
     const quoteMatch = t.match(/^\[quote\]([\s\S]*?)\[\/quote\]([\s\S]*)$/);
     if(quoteMatch){
       const qText=quoteMatch[1].trim();
@@ -4614,6 +4654,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 `9. 具备真实的时间观念：根据"上一次消息时间与当前系统时间"的间隔，自然体现时间流逝。`, 
 `10. 每条消息必须带正常中文标点，禁止无标点长句。`,
 `11. 【引用回复铁律】：如需引用对方的消息，必须且只能在【同一条消息内】完成！格式严格为：[quote]被引用的原话[/quote]紧接着你的回复正文。⚠️绝对禁止把引用的原话单独拆成一条独立的消息！更绝对禁止像复读机一样直接单发对方的原话！引用和回复必须死死焊在同一个气泡（同一个JSON数组元素）里！例如：[quote]你吃饭没[/quote]刚吃完。`,
+`12. 【点歌互动铁律】：如果玩家要求听歌、切歌，或者你想主动分享一首歌给玩家，请让某一条消息严格等于：[music:歌曲名 - 歌手名]。例如：[music:晴天 - 周杰伦]。此指令必须单独占据一个气泡（JSON数组中的独立一条），绝对禁止前后添加任何标点或文字！`,
       `[FORMAT_LOCK]`,
 `mode=CHAT_JSON | reject=OFFLINE_RP,ACTION_DESC,NARRATION`,
 `valid: {"messages":["...","..."]}`,
@@ -4671,6 +4712,7 @@ fatal_pattern: {"messages":...}→BLOCK`;
 11. 【引用回复铁律】：如需引用对方某条消息，必须且只能在【同一条消息内】完成！格式严格为：[名字]：[quote]被引用的原话[/quote]紧接着写你的回复正文。⚠️绝对禁止把引用的原话单独拆成一条独立的消息发出来！
 12. 【严禁事项】：正文任何地方绝对禁止出现时间戳前缀！
 13.群内的回复顺序必须按照人设和当时的语境来决定，禁止刻板印象。必须极度符合人设。必须活人感真实感强。
+14. 【点歌互动铁律】：如果玩家要求听歌、切歌，或者你想主动分享一首歌给玩家，请让某一条消息严格等于：[music:歌曲名 - 歌手名]。例如：[music:晴天 - 周杰伦]。此指令必须单独占据一个气泡（JSON数组中的独立一条），绝对禁止前后添加任何标点或文字！
 [FORMAT_LOCK]
 mode=CHAT_JSON | reject=OFFLINE_RP,ACTION_DESC,NARRATION
 valid: {"messages":["[名字]：...","[名字]：..."]}
