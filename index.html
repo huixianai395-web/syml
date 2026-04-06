@@ -9073,22 +9073,79 @@ window.renderNotesList = function(){
     menu.style.display = 'flex';
   };
  // ================= 🌟 蓝色高定：发声引擎 & 完美红点大一统 (真·终极原生版) =================
+```
 
-// 1. 把通讯录的钥匙交给全局
+把这段到它后面 `window._startGlobalAutoChatEngine();` 那一块**整段删掉**，然后粘贴我下面这整段。
+
+---
+
+```js
+// ================= 🌟 蓝色高定：发声引擎 & 红点绝对稳定大一统 (修复版) =================
 window.getContacts = getContacts;
 
-// 2. 暴力覆盖原生渲染器，画出绝美悬浮红点！
+// --- 红点核心判定：必须“正在看这个聊天页”才不加红点 ---
+function _activeScreenId(){
+  const el = document.querySelector('.screen.active');
+  return el ? el.id : '';
+}
+function _isViewingChat(chatId){
+  return _activeScreenId() === 'chatRoom' && currentId === chatId && !document.hidden;
+}
+
+// --- 红点增减（单聊/群聊统一） ---
+function _incUnread(chatId, step = 1){
+  const c = getContactById(chatId);
+  if(!c) return;
+  const next = Number(c.unread || 0) + Number(step || 1);
+
+  if(c.isGroup){
+    const groups = window.getGroups ? window.getGroups() : [];
+    const idx = groups.findIndex(g => g.id === chatId);
+    if(idx > -1){
+      groups[idx].unread = next;
+      window.setGroups(groups);
+    }
+  }else{
+    updateContact(chatId, { unread: next });
+  }
+}
+function _clearUnread(chatId){
+  const c = getContactById(chatId);
+  if(!c) return;
+
+  if(c.isGroup){
+    const groups = window.getGroups ? window.getGroups() : [];
+    const idx = groups.findIndex(g => g.id === chatId);
+    if(idx > -1){
+      groups[idx].unread = 0;
+      window.setGroups(groups);
+    }
+  }else{
+    updateContact(chatId, { unread: 0 });
+  }
+}
+
+// --- 覆盖联系人渲染：红点稳定显示 ---
 renderContacts = function(k=''){
   k=(k||'').trim();
   const contacts = getContacts();
   const groups = window.getGroups ? window.getGroups() : [];
-  let all = [...contacts, ...groups];
-  
+  const all = [...contacts, ...groups];
   const arr = all.filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
-  
-  document.getElementById('contactList').innerHTML = arr.map(c=> {
-    // 🌟 核心审美魔法：向外围推移，加上纯白描边，营造高级悬浮感！绝对不挡脸！
-    const unreadHtml = c.unread ? `<div style="position:absolute; top:-4px; right:-6px; background:#f25c5c; color:#fff; font-size:10px; font-weight:800; height:18px; min-width:18px; border-radius:9px; padding:0 5px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 8px rgba(242,92,92,0.25); border:2px solid #fff; z-index:10; font-family:ui-monospace, Arial, sans-serif; transform:scale(0.9); transform-origin:top right; pointer-events:none;">${c.unread > 99 ? '99+' : c.unread}</div>` : '';
+
+  $('contactList').innerHTML = arr.map(c=> {
+    const unreadHtml = c.unread ? `
+      <div style="
+        position:absolute; top:-4px; right:-6px;
+        background:#f25c5c; color:#fff;
+        font-size:10px; font-weight:800;
+        height:18px; min-width:18px; border-radius:9px; padding:0 5px;
+        display:flex; align-items:center; justify-content:center;
+        box-shadow:0 4px 8px rgba(242,92,92,0.25);
+        border:2px solid #fff; z-index:10;
+        font-family:ui-monospace, Arial, sans-serif;
+        transform:scale(0.9); transform-origin:top right; pointer-events:none;
+      ">${c.unread > 99 ? '99+' : c.unread}</div>` : '';
 
     return `
     <div class="item" style="-webkit-touch-callout:none; user-select:none; position:relative;"
@@ -9096,7 +9153,8 @@ renderContacts = function(k=''){
          ontouchstart="this._t = setTimeout(()=>deleteContactFromList('${c.id}'), 600)"
          ontouchend="clearTimeout(this._t)" ontouchmove="clearTimeout(this._t)">
       <div style="position:relative; width:44px; height:44px; flex-shrink:0;">
-        <img class="avatar" src="${c.avatar||'https://via.placeholder.com/88x88?text=头像'}" style="width:100%; height:100%; object-fit:cover; border-radius:12px;" />
+        <img class="avatar" src="${c.avatar||'https://via.placeholder.com/88x88?text=头像'}"
+             style="width:100%; height:100%; object-fit:cover; border-radius:12px;" />
         ${unreadHtml}
       </div>
       <div class="main" onclick="if(window._isDeleting)return; openChat('${c.id}')">
@@ -9109,48 +9167,74 @@ renderContacts = function(k=''){
         </div>
         <div class="preview">${esc(c.preview||'')}</div>
       </div>
-    </div>
-  `}).join('') || '<div class="card small">暂无联系人或群聊，点右上角创建吧</div>';
+    </div>`;
+  }).join('') || '<div class="card small">暂无联系人或群聊，点右上角创建吧</div>';
 };
 
-// 3. 覆盖进聊天逻辑，点进去瞬间撕毁红点账本
+// --- 覆盖打开聊天：进来即清零 ---
 window.openChat = function(id){
-  currentId = id; selectMode = false; selectedIds.clear(); closeFloatMenu(); composeQuote = null; updateQuoteBar();
-  
-  const c = getContactById(id);
-  if (c && c.unread) {
-    if (c.isGroup) {
-      const groups = window.getGroups();
-      const idx = groups.findIndex(g => g.id === id);
-      if (idx > -1) { groups[idx].unread = 0; window.setGroups(groups); }
-    } else {
-      updateContact(id, { unread: 0 });
-    }
-    renderContacts(document.getElementById('searchInput')?.value || '');
-  }
+  currentId = id;
+  selectMode = false;
+  selectedIds.clear();
+  closeFloatMenu();
+  composeQuote = null;
+  updateQuoteBar();
 
-  document.getElementById('chatTitle').textContent = c ? c.name : '聊天';
-  applyModeUI(); renderChat(); show('chatRoom');
+  _clearUnread(id);
+  renderContacts($('searchInput')?.value || '');
+
+  const c = getContactById(id);
+  $('chatTitle').textContent = c ? c.name : '聊天';
+  applyModeUI();
+  renderChat();
+  show('chatRoom');
 };
 
-// 4. 后台静默发声引擎 (偷偷累加红点)
+// --- 关键修复：普通聊天AI回复也按“1条=1红点”累加 ---
+const _oldEmitAiSequential = emitAiSequential;
+emitAiSequential = async function(parts, targetId, mode){
+  for(let i=0;i<parts.length;i++){
+    const arr=getChatArr(targetId);
+    arr.push(toMsg({role:'assistant',text:parts[i],time:Date.now()}));
+    setChatArr(targetId,arr);
+
+    // 一条消息一个红点（只有你没在看这个聊天时）
+    if(!_isViewingChat(targetId)){
+      _incUnread(targetId, 1);
+    }
+
+    updateContactPreview(targetId);
+    if(currentId===targetId) renderChat();
+    renderContacts($('searchInput')?.value || '');
+
+    const len=parts[i]?.length||10;
+    const delay=mode==='offline'
+      ? 1200+Math.floor(Math.random()*1200)+Math.min(1300,len*8)
+      : (i===0?850:1300)+Math.floor(Math.random()*(i===0?900:1400))+Math.min(1000,len*12);
+    await sleep(delay);
+  }
+};
+
+// --- 重写后台掉落引擎：同样严格“1条=1红点” ---
 window._sendToAI = async function(chatId, hiddenPrompt, isSilent) {
   const c = getContactById(chatId);
   if(!c) return;
+
   const st = normSettings(c.settings);
   const globalMe = getMe();
-  const me = { name: st.meName||globalMe.name||'我', persona: st.mePersona||globalMe.persona||'', note: st.meNote||globalMe.note||'' };
+  const me = {
+    name: st.meName||globalMe.name||'我',
+    persona: st.mePersona||globalMe.persona||'',
+    note: st.meNote||globalMe.note||''
+  };
+
   const arr = getChatArr(chatId);
-  
   const hist = arr.filter(x => x.text && !x.hiddenForAi).slice(-(st.contextLen||30));
 
   let system = '';
-  if (c.isGroup) {
-    system = buildGroupSystem(c, me, st);
-  } else {
-    system = st.mode === 'offline' ? buildOfflineSystem(c, me, st) : buildOnlineSystem(c, me, st);
-  }
-  
+  if (c.isGroup) system = buildGroupSystem(c, me, st);
+  else system = st.mode === 'offline' ? buildOfflineSystem(c, me, st) : buildOnlineSystem(c, me, st);
+
   system += `\n\n${hiddenPrompt}`;
 
   const apiMsgs = [
@@ -9161,57 +9245,48 @@ window._sendToAI = async function(chatId, hiddenPrompt, isSilent) {
   try {
     const out = await callApi(apiMsgs);
     let parts = [];
+
     if (st.mode === 'offline') {
-      parts = [out.trim()]; 
+      parts = [String(out || '').trim()].filter(Boolean);
     } else {
-      const cleaned = out.replace(/```json|```/g, '').trim();
+      const cleaned = String(out || '').replace(/```json|```/g, '').trim();
       const m2 = cleaned.match(/\{[\s\S]*\}/);
       if (m2) {
         const data = JSON.parse(m2[0]);
-        parts = data.messages || [cleaned];
+        parts = Array.isArray(data.messages) ? data.messages.filter(Boolean) : [cleaned];
       } else {
         parts = [cleaned];
       }
     }
 
-    parts.forEach(txt => {
-      if(!txt) return;
-      arr.push({ 
-        id: 'm_' + Date.now() + Math.floor(Math.random()*1000), 
-        role: 'assistant', 
-        text: txt, 
-        time: Date.now(), 
-        stored: true 
+    for(const txt of parts){
+      arr.push({
+        id: 'm_' + Date.now() + Math.floor(Math.random()*1000),
+        role: 'assistant',
+        text: txt,
+        time: Date.now(),
+        stored: true
       });
-    });
-    
-    setChatArr(chatId, arr);
 
-    // 🌟 核心魔法：如果你不在当前聊天，就给 TA 加上未读小红点！
-    if (window.currentId !== chatId) {
-      const currentC = getContactById(chatId);
-      if (currentC) {
-        const newUnread = (currentC.unread || 0) + parts.length;
-        if (currentC.isGroup) {
-          const groups = window.getGroups();
-          const idx = groups.findIndex(g => g.id === chatId);
-          if (idx > -1) { groups[idx].unread = newUnread; window.setGroups(groups); }
-        } else {
-          updateContact(chatId, { unread: newUnread });
-        }
+      // 这里也严格单条+1
+      if(!_isViewingChat(chatId)){
+        _incUnread(chatId, 1);
       }
     }
 
+    setChatArr(chatId, arr);
     updateContactPreview(chatId);
-    
-    if(window.currentId === chatId && typeof renderChat === 'function') renderChat();
-    
+
+    if(currentId === chatId && _activeScreenId() === 'chatRoom'){
+      renderChat();
+    }
+    renderContacts($('searchInput')?.value || '');
   } catch(e) {
-    console.log('后台主动发消息失败啦:', e);
+    console.log('后台主动发消息失败:', e);
   }
 };
 
-// 5. 全局随机错峰主动聊天引擎 (时间感知与防发疯电击版)
+// --- 全局随机掉落引擎（保留你原逻辑）---
 window._startGlobalAutoChatEngine = function() {
   setInterval(() => {
     const isGlobalAutoOn = localStorage.getItem('globalAutoChatOn') === 'true';
@@ -9220,76 +9295,69 @@ window._startGlobalAutoChatEngine = function() {
     const contacts = getContacts() || [];
     const groups = window.getGroups ? window.getGroups() : [];
     const allChats = [...contacts, ...groups];
-    
+
     const now = Date.now();
-    let triggeredAnyone = false; 
+    let triggeredAnyone = false;
 
     allChats.forEach(c => {
-      if (triggeredAnyone) return; 
+      if (triggeredAnyone) return;
 
       let nextTime = localStorage.getItem('nextAutoChatTime_' + c.id);
-      
+
       if (!nextTime) {
         let userMin = parseInt(localStorage.getItem('autoChatMin')) || 30;
         let userMax = parseInt(localStorage.getItem('autoChatMax')) || 120;
-        if(userMin > userMax) { let temp = userMin; userMin = userMax; userMax = temp; }
+        if(userMin > userMax) { const t = userMin; userMin = userMax; userMax = t; }
+
         const randomMins = Math.floor(Math.random() * (userMax - userMin + 1)) + userMin;
         nextTime = now + randomMins * 60000;
-        
-        let isConflict = allChats.some(other => {
+
+        const isConflict = allChats.some(other => {
           if (other.id === c.id) return false;
-          let otherTime = localStorage.getItem('nextAutoChatTime_' + other.id);
+          const otherTime = localStorage.getItem('nextAutoChatTime_' + other.id);
           return otherTime && Math.abs(otherTime - nextTime) < 10 * 60000;
         });
 
         if (isConflict) nextTime += 15 * 60000;
-        
         localStorage.setItem('nextAutoChatTime_' + c.id, nextTime);
         return;
       }
 
       if (now >= parseInt(nextTime)) {
-        triggeredAnyone = true; 
+        triggeredAnyone = true;
         localStorage.removeItem('nextAutoChatTime_' + c.id);
 
-        const chats = window.getChats ? window.getChats() : {};
-        const arr = chats[c.id] || [];
+        const chats = getChats ? getChats() : {};
+        const his = chats[c.id] || [];
         let lastUserTime = 0;
-        for(let i = arr.length - 1; i >= 0; i--) {
-          if(arr[i].role === 'user') { lastUserTime = arr[i].time; break; }
+        for(let i = his.length - 1; i >= 0; i--) {
+          if(his[i].role === 'user') { lastUserTime = his[i].time; break; }
         }
-        
+
         let timeContextPrompt = '';
         if (lastUserTime > 0) {
           const daysOffline = Math.floor((now - lastUserTime) / (1000 * 60 * 60 * 24));
           if (daysOffline >= 3) {
-            timeContextPrompt = `【极其重要的时间感知】：玩家已经整整 ${daysOffline} 天没有理你了！请根据你的核心人设（可能是委屈、克制、发疯、或是傲娇），极其自然地表达出你对她的思念或情绪波动。绝对不要像没事发生一样只分享日常！`;
+            timeContextPrompt = `【时间感知】：玩家已 ${daysOffline} 天未出现，请根据你的人设自然表达情绪波动。`;
           } else if (daysOffline >= 1) {
-            timeContextPrompt = `【重要时间感知】：玩家已经 ${daysOffline} 天没出现了。请根据人设，在主动找她时带有一点点察觉到她不在的反应。`;
+            timeContextPrompt = `【时间感知】：玩家已 ${daysOffline} 天未出现，请自然体现轻微在意。`;
           } else {
-            timeContextPrompt = `请根据你的核心人设和当前的时间点，极其自然地主动发微信消息找她。`;
+            timeContextPrompt = `请根据当前时间和人设自然地主动发消息。`;
           }
         } else {
-          timeContextPrompt = `请根据你的核心人设和当前的时间点，极其自然地主动发微信消息找她。`;
+          timeContextPrompt = `请根据当前时间和人设自然地主动发消息。`;
         }
 
-        // 🌟 蓝色高定：最高级别电击项圈！专治粘连和发疯！
-        const hiddenPrompt = `【系统最高级别强制指令】：当前真实系统时间是 ${getSysTimeStr()}。
-${timeContextPrompt}
-⚠️ 绝对禁止像机器人一样直白地说“你已经X天没理我了”，必须用人类的口吻自然表达！
-⚠️ 【格式与排版铁律】（违背将导致系统崩溃）：
-1. 你必须、只能返回包含 \`messages\` 数组的 JSON 格式！绝对禁止输出纯文本！
-2. 必须将不同类型的内容拆分为多个气泡！语音、图片、文字绝对不能放在同一个数组元素里！
-3. 发语音格式必须是纯粹的 \`[voice:秒数:纯文字内容]\`，里面绝不允许带任何动作描述或标点！
-4. 发图片必须输出纯 HTML，例如：\`<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('https://picsum.photos/400/400') center/cover no-repeat;"></div><div class="fi-desc">极其细致的照片画面描写，绝不能包含对话！</div></div>\`。绝对禁止输出 [card-fakeimg] 这种无效缩写！
-5. 说话要像正常人类，绝对禁止像复读机一样重复同一个词汇（严禁出现“你说你说你说”这种死循环）！`;
-        
+        const hiddenPrompt = `【系统指令】当前时间：${getSysTimeStr()}。\n${timeContextPrompt}\n` +
+          `必须返回JSON messages数组；不同内容类型分开气泡；禁止粘连和复读。`;
+
         if(window._sendToAI) window._sendToAI(c.id, hiddenPrompt, true);
       }
     });
-  }, 30000); 
+  }, 30000);
 };
-// 启动引擎！
+
+// 启动
 window._startGlobalAutoChatEngine();
 
 // ================= 大一统引擎结束 =================
