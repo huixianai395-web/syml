@@ -9303,8 +9303,24 @@ function _clearUnread(chatId){
     updateContact(chatId, { unread: 0 });
   }
 }
+async function _emitSilentAiSequential(chatId, parts){
+    for(let i=0;i<parts.length;i++){
+      const txt = String(parts[i] || '').trim();
+      if(!txt) continue;
+      const arr = getChatArr(chatId);
+      arr.push({ id: 'm_' + Date.now() + Math.floor(Math.random()*1000), role: 'assistant', text: txt, time: Date.now(), stored: true });
+      setChatArr(chatId, arr);
+      if(!_isViewingChat(chatId)){ _incUnread(chatId, 1); }
+      updateContactPreview(chatId);
+      if(_isViewingChat(chatId)) renderChat();
+      renderContacts(document.getElementById('searchInput')?.value || '');
+      const delay = 650 + Math.floor(Math.random() * 900);
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
 
-// --- 覆盖联系人渲染：红点稳定显示 ---
+  // --- 覆盖联系人渲染：红点稳定显示 ---
+
 renderContacts = function(k=''){
   k=(k||'').trim();
   const contacts = getContacts();
@@ -9450,28 +9466,7 @@ if (!String(out || '').trim()) {
       }
     }
 
-    for(const txt of parts){
-      arr.push({
-        id: 'm_' + Date.now() + Math.floor(Math.random()*1000),
-        role: 'assistant',
-        text: txt,
-        time: Date.now(),
-        stored: true
-      });
-
-      // 这里也严格单条+1
-      if(!_isViewingChat(chatId)){
-        _incUnread(chatId, 1);
-      }
-    }
-
-    setChatArr(chatId, arr);
-    updateContactPreview(chatId);
-
-    if(currentId === chatId && _activeScreenId() === 'chatRoom'){
-      renderChat();
-    }
-    renderContacts($('searchInput')?.value || '');
+    await _emitSilentAiSequential(chatId, parts);
  } catch(e) {
   console.log('后台主动发消息失败:', e);
   throw e; // 🌟关键：抛出错误，给“立即召唤”按钮接住
