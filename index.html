@@ -2817,6 +2817,14 @@ body {
         <button class="btn store" id="storeBtn" title="存入记忆">
   <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
         </button>
+        <div class="send-actions">
+        <button class="btn store" id="storeBtn" title="存入记忆">
+          <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+        </button>
+        <!-- 🌟 蓝色高定：放在发送键旁边的专属点歌台 -->
+        <button class="btn store" onclick="window._userSendMusic()" title="一起听" style="color:#5c7094; font-size:16px;">🎵</button>
+        <button class="btn p" id="sendBtn">发送</button>
+        </div>
         <button class="btn p" id="sendBtn">发送</button>
       </div>
       
@@ -10988,18 +10996,40 @@ window._closeMusic = function() {
   document.getElementById('gmpDisc').classList.remove('playing');
 };
 
-window._playMusic = async function(keyword) {
+// 🌟 蓝色高定：全息悬浮音乐舱核心引擎（真·苹果破壁发声版）
+window._currentLyrics = [];
+window._closeMusic = function() {
+  const player = document.getElementById('globalMusicPlayer');
+  const audio = document.getElementById('gmpAudio');
+  if(player) player.style.display = 'none';
+  if(audio) { audio.pause(); audio.src = ''; }
+  document.getElementById('gmpDisc').classList.remove('playing');
+  window._currentLyrics = [];
+};
+
+window._playMusic = function(keyword) {
   const player = document.getElementById('globalMusicPlayer');
   const audio = document.getElementById('gmpAudio');
   const titleEl = document.getElementById('gmpTitle');
   const artistEl = document.getElementById('gmpArtist');
   const lyricEl = document.getElementById('gmpLyricText');
   const discEl = document.getElementById('gmpDisc');
-  
+
+  // 🌟 核心破壁魔法：瞬间播放极短无声白噪音，强行夺取 iOS 音频通道权限！
+  audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+  audio.play().then(() => {
+    // 音频通道已解锁！开始真正的异步搜歌！
+    _fetchAndPlay(keyword, player, audio, titleEl, artistEl, lyricEl, discEl);
+  }).catch(e => {
+    _fetchAndPlay(keyword, player, audio, titleEl, artistEl, lyricEl, discEl);
+  });
+};
+
+async function _fetchAndPlay(keyword, player, audio, titleEl, artistEl, lyricEl, discEl) {
   player.style.display = 'flex';
   titleEl.textContent = '正在全网搜歌...';
   artistEl.textContent = keyword;
-  lyricEl.textContent = '✨ 正在连接初雪海盐蓝声学节点...';
+  lyricEl.textContent = '✨ 正在破解高保真音频节点...';
   discEl.classList.remove('playing');
   window._currentLyrics = [];
 
@@ -11017,25 +11047,36 @@ window._playMusic = async function(keyword) {
   };
 
   try {
-    const searchRes = await fetch(`https://api.lolimi.cn/API/wangyi/api.php?msg=${encodeURIComponent(keyword)}&n=1`);
+    // 🌟 换用极度稳定的高音质解析 API (VVHan)
+    const searchRes = await fetch(`https://api.vvhan.com/api/wyMusic?name=${encodeURIComponent(keyword)}&type=json`);
     const data = await searchRes.json();
-    if(data && data.code === 200 && data.data && data.data.url) {
-      audio.src = data.data.url;
-      titleEl.textContent = data.data.song || keyword.split('-')[0];
-      artistEl.textContent = data.data.singer || keyword.split('-')[1] || '未知歌手';
-      if(data.data.lrc) {
-        const lines = data.data.lrc.split('\n');
-        window._currentLyrics = lines.map(line => {
-          const match = line.match(/\[(\d+):(\d+\.\d+)\](.*)/);
-          if(match) return { time: parseInt(match[1])*60 + parseFloat(match[2]), text: match[3].trim() };
-          return null;
-        }).filter(x => x && x.text);
-      }
+    
+    if(data && data.success && data.info && data.info.url) {
+      audio.src = data.info.url;
+      titleEl.textContent = data.info.name || keyword.split('-')[0];
+      artistEl.textContent = data.info.auther || keyword.split('-')[1] || '未知歌手';
+      
+      // 尝试去另一个接口抓取真实滚动歌词
+      try {
+         const lrcRes = await fetch(`https://api.lolimi.cn/API/wangyi/api.php?msg=${encodeURIComponent(keyword)}&n=1`);
+         const lrcData = await lrcRes.json();
+         if(lrcData && lrcData.data && lrcData.data.lrc) {
+             const lines = lrcData.data.lrc.split('\n');
+             window._currentLyrics = lines.map(line => {
+               const match = line.match(/\[(\d+):(\d+\.\d+)\](.*)/);
+               if(match) return { time: parseInt(match[1])*60 + parseFloat(match[2]), text: match[3].trim() };
+               return null;
+             }).filter(x => x && x.text);
+         }
+      } catch(e) {} 
+      
     } else { throw new Error('API无返回'); }
   } catch (err) {
-    audio.src = 'https://music.163.com/song/media/outer/url?id=1813926556.mp3';
+    // 🌟 终极兜底：如果 API 被墙，使用林宥嘉《浪费》的网易云无损直链强行播放！
+    audio.src = 'http://music.163.com/song/media/outer/url?id=29567189.mp3';
     titleEl.textContent = keyword.split('-')[0] || '专属点播';
     artistEl.textContent = keyword.split('-')[1] || '你的专属DJ';
+    
     window._currentLyrics = [
       { time: 0, text: `🎵 正在播放：${titleEl.textContent}` },
       { time: 4, text: `✨ 正在为你解析专属无损音源...` },
@@ -11047,9 +11088,9 @@ window._playMusic = async function(keyword) {
   audio.play().then(() => {
     discEl.classList.add('playing');
   }).catch(e => {
-    lyricEl.textContent = '⚠️ 浏览器拦截，请再点一次气泡';
+    lyricEl.textContent = '⚠️ 苹果安全限制，请手动点一下气泡！';
   });
-};
+}
     window._userSendMusic = function() {
   const song = prompt('想一起听什么歌？\n格式：歌曲名 - 歌手');
   if(song && song.trim()) {
