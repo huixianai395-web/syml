@@ -2333,6 +2333,9 @@ body {
   .blue-slider::before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; top: 3px; background-color: #ffffff; transition: .3s cubic-bezier(0.4, 0.0, 0.2, 1); border-radius: 50%; box-shadow: 0 2px 4px rgba(92,112,148,0.15); }
   input:checked + .blue-slider { background-color: #eef4fa; border: 1px solid #dce5f0; }
   input:checked + .blue-slider::before { transform: translateX(20px); background-color: #5c7094; box-shadow:none; }
+  @keyframes momentsSpin { to { transform: rotate(360deg); } }
+#momentsRefreshBtn.is-loading { pointer-events:none; opacity:.75; }
+#momentsRefreshBtn.is-loading svg { animation: momentsSpin .9s linear infinite; transform-origin:center; }
 </style>
 
 <script>
@@ -2644,7 +2647,7 @@ body {
         <!-- 右侧：按钮组 -->
         <div style="display: flex; align-items: center; height: 100%; gap: 10px;">
           <!-- 魔法刷新按钮 -->
-          <div onclick="window._generateNPCMoment()" style="width: 32px; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="让NPC发条朋友圈">
+          <div id="momentsRefreshBtn" onclick="window._generateNPCMoment()" style="width: 32px; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="让NPC发条朋友圈">
             <svg viewBox="0 0 24 24" fill="none" style="width: 22px; height: 22px; stroke: #fff; stroke-width: 2.5; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); pointer-events: none;"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 1 0 2.13-5.83L2 12"></path></svg>
           </div>
           <!-- 相机按钮 -->
@@ -7911,7 +7914,6 @@ ${timeContext}
   } catch(e) { console.log('生态引擎运算失败:', e); }
 };
 
-// ================= 6. 批量发朋友圈 (一次性生成动态+评论，省额度，带时间感知) =================
 window._generateNPCMoment = async function() {
   await initMomentsStore();
 
@@ -7920,6 +7922,9 @@ window._generateNPCMoment = async function() {
 
   const me = getMe();
   const meName = me.name || '我';
+
+  const refreshBtn = document.getElementById('momentsRefreshBtn');
+  refreshBtn?.classList.add('is-loading');
 
   const shuffled = [...contacts].sort(() => 0.5 - Math.random());
   const posters = shuffled.slice(0, Math.floor(Math.random() * 3) + 2);
@@ -7933,10 +7938,6 @@ window._generateNPCMoment = async function() {
     return `- 名字：${c.name}\n- 人设：${c.persona || '自然'}\n- 近期互动：${recent || '（暂无）'}`;
   }).join('\n\n');
 
-  const feed = document.getElementById('momentsFeed');
-  const loadingId = 'loading_' + Date.now();
-  if(feed) feed.insertAdjacentHTML('afterbegin', `<div id="${loadingId}" style="display:flex;justify-content:center;padding:20px;color:#7a86a8;">生成中...</div>`);
-
   try {
     const sysPrompt = `你是“微信朋友圈真人生成器”。
 当前时间：${getSysTimeStr()}。
@@ -7948,16 +7949,15 @@ ${postersInfo}
 【核心铁律】
 1. 文案必须贴合发布时间和人设，拒绝模板句、鸡汤机、口号机。
 2. 每位发布者生成1条朋友圈，内容生活化，有微情绪波动和真实语气。
-3. 评论区只允许：发布者本人、玩家(${meName})、路人好友。
-4. 严禁“角色A和角色B互相评论/互相回复”。其他角色不能出现在该条评论区。
-5. 严禁出现“user/User/用户”作为名字，统一使用真实名字。
-6. 口语化，别写AI腔。活人感强，必须是真实人设的日常生活。贴合人设的情况下什么都可以发朋友圈，当成活生生拥有血有肉，七情六欲，喜怒哀乐的完整人格来对待，必须极度贴合人设，不许浮于表面。
-7.如果有近期聊天摘要，可以偶尔（30%概率）顺着聊天话题暗戳戳发一条。
-8.每个角色发的内容必须和上次截然不同，不能重复同类主题！
-9.语气完全符合人设！有的话多有的就几个字，有的爱emoji有的一本正经，看人设来！
-10.【一次性自带评论区】：把该动态下的路人/损友评论以及角色的回复一起写出来，根据人设决定回不回评论、怎么回看人设，不限制。
-
-7. 输出严格JSON数组，不要markdown。
+3. 评论区与点赞必须全部使用“具名好友”（中文姓名/备注风格），严禁“路人好友/路人甲/网友A/同事A/朋友C/群友D”等代称。
+4. 严禁把玩家(${meName})加入自动点赞或自动评论（玩家只由真实点击产生互动）。
+5. 严禁出现“user/User/用户”作为名字。
+6. 口语化，活人感强，贴合人设。
+7. 一次输出完整结果：每条动态建议点赞6~18个、评论8~16条。
+8.如果有近期聊天摘要，可以偶尔（30%概率）顺着聊天话题暗戳戳发一条。
+9.每个角色发的内容必须和上次截然不同，不能重复同类主题！
+10.语气完全符合人设！有的话多有的就几个字，有的爱emoji有的一本正经，看人设来！
+11. 输出严格JSON数组，不要markdown。
 
 输出格式：
 [
@@ -7969,7 +7969,7 @@ ${postersInfo}
     "likes":["..."],
     "comments":[
       {"authorName":"...","text":"..."},
-      {"authorName":"发布者名字","replyTo":"${meName}","text":"..."}
+      {"authorName":"发布者名字","replyTo":"某个具名好友","text":"..."}
     ]
   }
 ]`;
@@ -7983,14 +7983,20 @@ ${postersInfo}
     const dataArr = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
 
     const isRoleName = (n) => contacts.some(c => c.name === n);
+    const isBadAlias = (n) => /路人|网友|群友|同事[A-Z]|朋友[A-Z]|甲|乙|丙|丁|某某|用户|user/i.test(String(n||''));
     const normName = (n) => {
       const s = String(n || '').trim();
       if(!s) return '';
-      if(/^user$/i.test(s) || s === '玩家' || s === '用户') return meName;
+      if(/^user$/i.test(s) || s === '玩家' || s === '用户' || s === meName) return '';
       return s;
     };
 
-    const passers = ['阿宁','小周','同事A','同学B','路人甲','朋友C','群友D'];
+    const namedPool = ['林知夏','周予安','沈言','许嘉言','陆明川','江晚','程叙','顾临','温言','苏清禾','唐序','贺南'];
+    const pickNamed = (usedSet) => {
+      const cand = namedPool.find(x => !usedSet.has(x) && x !== meName);
+      if(cand) return cand;
+      return '陈' + Math.floor(Math.random()*90+10);
+    };
 
     const ms = getMoments();
 
@@ -7998,7 +8004,6 @@ ${postersInfo}
       const npc = posters.find(c => c.name === data.name) || posters[0];
       const roleName = npc.name;
 
-      // 图片
       let finalImg = null;
       const rSeed = Math.floor(Math.random() * 999999);
       const t = String(data.imageType || '');
@@ -8010,12 +8015,17 @@ ${postersInfo}
         else if(t.includes('萌宠')) finalImg = `https://source.unsplash.com/random/400x400/?cat,dog&sig=${rSeed}`;
       }
 
-      // 清洗点赞：只允许 me 或路人（不允许其他角色）
       let likes = (data.likes || []).map(normName).filter(Boolean);
-      likes = likes.filter(x => x !== roleName && (!isRoleName(x) || x === meName));
-      likes = [...new Set(likes)].slice(0,8);
+      likes = likes.filter(x => x !== roleName && !isRoleName(x) && !isBadAlias(x));
+      likes = [...new Set(likes)];
+      const likeUsed = new Set(likes);
+      while(likes.length < 8){
+        const n = pickNamed(likeUsed);
+        likeUsed.add(n);
+        likes.push(n);
+      }
+      likes = likes.slice(0,20);
 
-      // 清洗评论：只允许 发布者本人 / me / 路人
       let comments = (data.comments || []).map(c => ({
         authorName: normName(c.authorName),
         replyTo: normName(c.replyTo || ''),
@@ -8023,26 +8033,30 @@ ${postersInfo}
       })).filter(c => c.authorName && c.text);
 
       comments = comments.filter(c => {
+        if(isBadAlias(c.authorName)) return false;
         if(c.authorName === roleName) return true;
-        if(c.authorName === meName) return true;
-        if(isRoleName(c.authorName)) return false; // 其他角色禁入
-        return true; // 路人可
+        if(c.authorName === meName) return false;
+        if(isRoleName(c.authorName)) return false;
+        return true;
       });
 
       comments = comments.map(c => {
-        // 非发布者的 replyTo 统一清空，禁止串线；发布者只能回 me 或路人
         if(c.authorName !== roleName){
           return { authorName:c.authorName, replyTo:'', text:c.text };
         }
-        const rt = c.replyTo;
-        if(rt && isRoleName(rt) && rt !== meName) return { authorName:c.authorName, replyTo:'', text:c.text };
+        if(c.replyTo && isBadAlias(c.replyTo)) return { authorName:c.authorName, replyTo:'', text:c.text };
+        if(c.replyTo && isRoleName(c.replyTo)) return { authorName:c.authorName, replyTo:'', text:c.text };
         return c;
-      }).slice(0,10);
+      });
 
-      // 路人保底
-      if(comments.length < 2){
-        comments.push({authorName: passers[Math.floor(Math.random()*passers.length)], replyTo:'', text:'这条有点意思。'});
+      const cUsed = new Set(comments.map(x=>x.authorName));
+      const fallbackText = ['今天这条状态很有你味道。','这张图拍得真有氛围。','你最近状态不错诶。','这个点发这个，懂了。','有被你的文案戳到。'];
+      while(comments.length < 8){
+        const n = pickNamed(cUsed);
+        cUsed.add(n);
+        comments.push({ authorName:n, replyTo:'', text:fallbackText[Math.floor(Math.random()*fallbackText.length)] });
       }
+      comments = comments.slice(0,18);
 
       ms.unshift({
         id: 'm_' + Date.now() + Math.floor(Math.random()*1000),
@@ -8059,12 +8073,11 @@ ${postersInfo}
 
     ms.sort((a,b)=>b.time-a.time);
     setMoments(ms);
-
-    document.getElementById(loadingId)?.remove();
     renderMomentsFeed();
   } catch(e) {
-    document.getElementById(loadingId)?.remove();
     alert('刷新失败：' + (e?.message || e));
+  } finally {
+    refreshBtn?.classList.remove('is-loading');
   }
 };
 // ================= 3. 玩家评论后，角色秒回！(互动完美保留) =================
