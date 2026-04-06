@@ -2336,50 +2336,236 @@ body {
 </style>
 
 <script>
-  // 🌟 核心修复1：同步读取外挂内存，绝对不让它刷新后变回 30-120！
+  // ================= 自动掉落配置中心（支持全部/勾选） =================
+  const K_AUTO_ON = 'globalAutoChatOn';
+  const K_AUTO_MIN = 'autoChatMin';
+  const K_AUTO_MAX = 'autoChatMax';
+  const K_AUTO_MODE = 'autoChatTargetMode'; // all | selected
+  const K_AUTO_IDS = 'autoChatTargetIds';   // JSON string array
+
+  function _getAllAutoCandidates(){
+    const arr = (window.getContacts ? window.getContacts() : []);
+    return arr.filter(c => !c.isGroup);
+  }
+
+  function _getTargetMode(){
+    return localStorage.getItem(K_AUTO_MODE) || 'all';
+  }
+  function _setTargetMode(v){
+    localStorage.setItem(K_AUTO_MODE, v === 'selected' ? 'selected' : 'all');
+  }
+  function _getTargetIds(){
+    try { return JSON.parse(localStorage.getItem(K_AUTO_IDS) || '[]'); } catch { return []; }
+  }
+  function _setTargetIds(ids){
+    localStorage.setItem(K_AUTO_IDS, JSON.stringify(Array.isArray(ids) ? ids : []));
+  }
+
+  window._getAutoTargetContacts = function(){
+    const all = _getAllAutoCandidates();
+    if(_getTargetMode() === 'all') return all;
+    const set = new Set(_getTargetIds());
+    return all.filter(c => set.has(c.id));
+  };
+
+  function _ensureTargetUI(){
+    const host = document.getElementById('autoChatTimeSettings');
+    if(!host) return;
+
+    if(!document.getElementById('autoTargetWrap')){
+      const wrap = document.createElement('div');
+      wrap.id = 'autoTargetWrap';
+      wrap.style.cssText = 'width:100%; margin-top:10px; padding-top:10px; border-top:1px dashed #dce5f0;';
+      wrap.innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:10px; font-size:12px; color:#7a86a8;">
+            <label style="display:flex; align-items:center; gap:4px; cursor:pointer;">
+              <input type="radio" name="autoTargetMode" value="all">
+              <span>全部角色</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:4px; cursor:pointer;">
+              <input type="radio" name="autoTargetMode" value="selected">
+              <span>仅勾选角色</span>
+            </label>
+          </div>
+          <button class="btn" id="autoPickBtn"
+            style="background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:6px 10px; font-size:12px; font-weight:600;">
+            选择角色
+          </button>
+        </div>
+        <div id="autoTargetHint" style="margin-top:8px; font-size:11px; color:#8892a8;">当前：全部角色</div>
+      `;
+      host.appendChild(wrap);
+
+      wrap.querySelectorAll('input[name="autoTargetMode"]').forEach(r=>{
+        r.addEventListener('change', ()=>{
+          _setTargetMode(r.value);
+          _renderTargetHint();
+          window._resetAllAutoChatTimers();
+        });
+      });
+
+      document.getElementById('autoPickBtn').onclick = _openTargetPickerModal;
+    }
+
+    _syncTargetModeUI();
+    _renderTargetHint();
+  }
+
+  function _syncTargetModeUI(){
+    const mode = _getTargetMode();
+    document.querySelectorAll('input[name="autoTargetMode"]').forEach(r=>{
+      r.checked = (r.value === mode);
+    });
+  }
+
+  function _renderTargetHint(){
+    const hint = document.getElementById('autoTargetHint');
+    if(!hint) return;
+    const mode = _getTargetMode();
+    if(mode === 'all'){
+      hint.textContent = '当前：全部角色';
+    }else{
+      const all = _getAllAutoCandidates();
+      const set = new Set(_getTargetIds());
+      const picked = all.filter(c=>set.has(c.id));
+      hint.textContent = `当前：仅勾选角色（${picked.length}人）`;
+    }
+  }
+
+  function _openTargetPickerModal(){
+    const old = document.getElementById('autoTargetModal');
+    if(old) old.remove();
+
+    const all = _getAllAutoCandidates();
+    const set = new Set(_getTargetIds());
+
+    const modal = document.createElement('div');
+    modal.id = 'autoTargetModal';
+    modal.style.cssText = 'position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,.28); display:grid; place-items:center; padding:14px;';
+    modal.innerHTML = `
+      <div style="width:100%; max-width:360px; max-height:82dvh; overflow:hidden; background:rgba(250,252,255,.96); border:1px solid #dce5f0; border-radius:16px; box-shadow:0 12px 40px rgba(92,112,148,.18); display:flex; flex-direction:column;">
+        <div style="padding:12px 14px; border-bottom:1px solid #e6edf8; display:flex; justify-content:space-between; align-items:center;">
+          <b style="color:#3d4a6a; font-size:14px;">勾选自动掉落对象</b>
+          <button id="atmClose" style="border:none; background:transparent; color:#7a86a8; font-size:18px; cursor:pointer;">×</button>
+        </div>
+        <div style="padding:10px 14px; border-bottom:1px dashed #e6edf8; display:flex; gap:8px;">
+          <button id="atmAll" class="btn" style="font-size:12px; padding:6px 10px;">全选</button>
+          <button id="atmNone" class="btn" style="font-size:12px; padding:6px 10px;">清空</button>
+        </div>
+        <div id="atmList" style="padding:10px 14px; overflow:auto; flex:1;"></div>
+        <div style="padding:12px 14px; border-top:1px solid #e6edf8; display:flex; justify-content:flex-end; gap:8px;">
+          <button id="atmCancel" class="btn">取消</button>
+          <button id="atmSave" class="btn p">保存</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    const list = modal.querySelector('#atmList');
+    list.innerHTML = all.length ? all.map(c=>`
+      <label style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #f0f4fb;">
+        <input type="checkbox" value="${c.id}" ${set.has(c.id)?'checked':''}>
+        <img src="${c.avatar || 'https://via.placeholder.com/40'}" style="width:28px;height:28px;border-radius:8px;object-fit:cover;">
+        <span style="font-size:13px; color:#3d4a6a;">${c.name}</span>
+      </label>
+    `).join('') : '<div style="text-align:center; color:#a0aaba; padding:18px 0;">暂无角色</div>';
+
+    modal.querySelector('#atmAll').onclick = ()=> list.querySelectorAll('input[type="checkbox"]').forEach(x=>x.checked=true);
+    modal.querySelector('#atmNone').onclick = ()=> list.querySelectorAll('input[type="checkbox"]').forEach(x=>x.checked=false);
+
+    const close = ()=> modal.remove();
+    modal.querySelector('#atmClose').onclick = close;
+    modal.querySelector('#atmCancel').onclick = close;
+    modal.addEventListener('click', e=>{ if(e.target === modal) close(); });
+
+    modal.querySelector('#atmSave').onclick = ()=>{
+      const ids = [...list.querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value);
+      _setTargetIds(ids);
+      _renderTargetHint();
+      window._resetAllAutoChatTimers();
+      close();
+    };
+  }
+
+  // ================= 你原有逻辑（升级后） =================
   (function(){
-    const savedMin = localStorage.getItem('autoChatMin') || '30';
-    const savedMax = localStorage.getItem('autoChatMax') || '120';
+    const savedMin = localStorage.getItem(K_AUTO_MIN) || '30';
+    const savedMax = localStorage.getItem(K_AUTO_MAX) || '120';
     document.getElementById('autoChatMin').value = savedMin;
     document.getElementById('autoChatMax').value = savedMax;
-    
-    if(localStorage.getItem('globalAutoChatOn') === 'true') {
+
+    if(localStorage.getItem(K_AUTO_ON) === 'true') {
       const t = document.getElementById('globalAutoChatToggle');
       if(t) t.checked = true;
       const s = document.getElementById('autoChatTimeSettings');
       if(s) s.style.display = 'flex';
     }
+
+    // 默认模式
+    if(!localStorage.getItem(K_AUTO_MODE)) _setTargetMode('all');
+
+    _ensureTargetUI();
   })();
 
   window._resetAllAutoChatTimers = function() {
-    const contacts = window.getContacts ? window.getContacts() : [];
+    const contacts = _getAllAutoCandidates();
     contacts.forEach(c => localStorage.removeItem('nextAutoChatTime_' + c.id));
-    const groups = window.getGroups ? window.getGroups() : [];
-    groups.forEach(g => localStorage.removeItem('nextAutoChatTime_' + g.id));
   };
 
   window._toggleGlobalAutoChat = function(isOn) {
-    localStorage.setItem('globalAutoChatOn', isOn);
+    localStorage.setItem(K_AUTO_ON, isOn ? 'true' : 'false');
     const settings = document.getElementById('autoChatTimeSettings');
     if(settings) settings.style.display = isOn ? 'flex' : 'none';
+    _ensureTargetUI();
     window._resetAllAutoChatTimers();
   };
 
-  // 🌟 核心修复2：一键暴力测试！无视任何倒计时，强行让 AI 发一条消息！
-  window._forceTriggerAutoChat = async function() {
-    const contacts = window.getContacts ? window.getContacts() : [];
-    if(contacts.length === 0) return alert('通讯录是空的哦宝宝！');
-    
-    // 随便挑个幸运儿
-    const luckyDog = contacts[Math.floor(Math.random() * contacts.length)];
-    alert('✨ 已强行召唤【' + luckyDog.name + '】！请切回聊天列表等待几秒钟，TA马上发消息过来！');
-    
-    const hiddenPrompt = '【系统强制指令】：这是一次突击查岗测试！请立刻用你的人设，发一句极其简短的微信消息找玩家（比如问她在干嘛，或者发个表情）。绝对不要提测试的事情！必须严格遵守格式输出！';
-    
-    if(window._sendToAI) {
-      window._sendToAI(luckyDog.id, hiddenPrompt, true);
-    } else {
-      alert('发声引擎好像还没装好哦！');
+  // 立即召唤：可指定某个角色；不传则从目标池随机
+  window._forceTriggerAutoChat = async function(forceId) {
+    const pool = window._getAutoTargetContacts ? window._getAutoTargetContacts() : _getAllAutoCandidates();
+    if(pool.length === 0) return alert('当前没有可召唤目标（请检查勾选列表）');
+
+    const lucky = forceId
+      ? (pool.find(x=>x.id===forceId) || _getAllAutoCandidates().find(x=>x.id===forceId))
+      : pool[Math.floor(Math.random() * pool.length)];
+
+    if(!lucky) return alert('指定角色不存在或未加载');
+
+    const hiddenPrompt = [
+      '【系统强制指令】：请你像“正常聊天”一样主动来找我说话。',
+      '严格根据你的人设、最近上下文和当前时间自然开场，不要模板化。',
+      '不要提“测试/召唤/系统/指令”这些词。',
+      '回复风格与平时一致：可长可短，但必须是微信分气泡表达，禁止一大段独白糊成一坨。',
+      '可连续发多条消息，语气自然、有停顿感。',
+      '输出格式保持：{"messages":["...","..."]}'
+    ].join('\n');
+
+    const btn = document.querySelector('button[onclick*="_forceTriggerAutoChat"]');
+    const old = btn ? btn.textContent : '';
+
+    try{
+      if(btn){ btn.textContent='召唤中...'; btn.style.pointerEvents='none'; btn.style.opacity='.7'; }
+      if(window._sendToAI){
+        await window._sendToAI(lucky.id, hiddenPrompt, true);
+        alert(`✨ 已召唤【${lucky.name}】成功！去微信列表看红点～`);
+      }else{
+        alert('发声引擎未挂载（_sendToAI 不存在）');
+      }
+    }catch(err){
+      alert('召唤失败：' + (err?.message || err));
+    }finally{
+      if(btn){ btn.textContent=old || '✨ 立刻测试掉落 (无视倒计时)'; btn.style.pointerEvents='auto'; btn.style.opacity='1'; }
+    }
+  };
+
+  // 召唤勾选全部目标（可选用）
+  window._forceTriggerAutoChatSelectedAll = async function() {
+    const pool = window._getAutoTargetContacts ? window._getAutoTargetContacts() : _getAllAutoCandidates();
+    if(pool.length === 0) return alert('当前没有可召唤目标（请检查勾选列表）');
+    for(const c of pool){
+      await window._forceTriggerAutoChat(c.id);
+      await new Promise(r=>setTimeout(r, 350));
     }
   };
 </script>
@@ -9274,8 +9460,9 @@ window._sendToAI = async function(chatId, hiddenPrompt, isSilent) {
       renderChat();
     }
     renderContacts($('searchInput')?.value || '');
-  } catch(e) {
-    console.log('后台主动发消息失败:', e);
+ } catch(e) {
+  console.log('后台主动发消息失败:', e);
+  throw e; // 🌟关键：抛出错误，给“立即召唤”按钮接住
   }
 };
 
@@ -9285,9 +9472,7 @@ window._startGlobalAutoChatEngine = function() {
     const isGlobalAutoOn = localStorage.getItem('globalAutoChatOn') === 'true';
     if (!isGlobalAutoOn) return;
 
-    const contacts = getContacts() || [];
-    const groups = window.getGroups ? window.getGroups() : [];
-    const allChats = [...contacts, ...groups];
+    const allChats = (window._getAutoTargetContacts ? window._getAutoTargetContacts() : (getContacts() || []).filter(c=>!c.isGroup));
 
     const now = Date.now();
     let triggeredAnyone = false;
