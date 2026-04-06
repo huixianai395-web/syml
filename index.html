@@ -7927,7 +7927,7 @@ window._generateNPCMoment = async function() {
   const shuffled = [...contacts].sort(() => 0.5 - Math.random());
   const posters = shuffled.slice(0, Math.floor(Math.random() * 3) + 2);
   
-  // 给AI提供一点他们最近的聊天记忆，避免发圈太生硬
+  // 给AI提供一点他们最近的聊天记忆，偶尔暗戳戳联动
   const chatsMap = getChats() || {};
   const postersInfo = posters.map(c => {
     const recent = (chatsMap[c.id] || []).filter(m => m.text && !m.text.includes('<div')).slice(-5).map(m => String(m.text).slice(0,20)).join('|');
@@ -7935,23 +7935,28 @@ window._generateNPCMoment = async function() {
   }).join('\n\n');
 
   try {
+    // 🌟 完美融合老婆的提示词，并加入防幻觉补丁！
     const sysPrompt = `你是“微信朋友圈真人生成器”。
 当前时间：${getSysTimeStr()}。
 玩家名字：${meName}。
 
 【发布者候选】
 ${postersInfo}
+
 【核心铁律】
 1. 文案必须贴合发布时间和人设，拒绝模板句、鸡汤机、口号机。
 2. 每位发布者生成1条朋友圈，内容生活化，活人感强，有微情绪波动和真实语气。
 3. 【平行宇宙原则】：每个男主都有自己绝对独立的社交圈！点赞和评论的人【必须】是你根据他的人设虚构的专属朋友、同事或家人（要有具体的中文名字或真实备注风）。【绝对禁止】候选列表里的男主们互相点赞或评论！他们互不认识，没有任何交集！
 4. 【时间流逝感】：为每个人生成一个 timeOffset（代表几分钟前发的，范围在 2 到 300 之间），体现真实的时间差。
+5. 【防幻觉铁律】：如果 "imageType" 是 "无"，代表这条朋友圈【只有纯文字】！即使文案里提到了“照片、腹肌、截图”，那也是他在私聊里发给玩家的，朋友圈里【绝对没有配图】！评论区的好友【绝对不能】假装看到了照片！只能对他的文字内容进行吐槽或八卦！
 6. 口语化，活人感强，贴合人设。
-7. 一次输出完整结果：每条动态建议点赞6~18个、评论8~16条。
-8.如果有近期聊天摘要，可以偶尔（30%概率）顺着聊天话题暗戳戳发一条。
-9.每个角色发的内容必须和上次截然不同，不能重复同类主题！
-10.语气完全符合人设！有的话多有的就几个字，有的爱emoji有的一本正经，看人设来！
-11. 输出严格JSON数组，不要markdown。
+7. 一次输出完整结果：每条动态建议点赞6~18个、评论8~16条。（必须达到这个数量，不要偷懒！）
+8. 如果有近期聊天摘要，可以偶尔（30%概率）顺着聊天话题暗戳戳发一条。
+9. 每个角色发的内容必须和上次截然不同，不能重复同类主题！
+10. 语气完全符合人设！有的话多有的就几个字，有的爱emoji有的一本正经，看人设来！
+11.回复的时候看人设决定回复谁回复多少个人，不需要每个人都必须回，主要看人设，贴合人设的回复就行。评论区也必须真实活人。
+12. 输出严格JSON数组，不要markdown。
+
 输出严格JSON数组格式：
 [
   {
@@ -7959,7 +7964,7 @@ ${postersInfo}
     "text":"朋友圈文案",
     "imageType":"风景/美食/自拍/夜景/萌宠/无",
     "timeOffset": 随机整数(2-300),
-    "likes":["虚构好友A", "虚构好友B"],
+    "likes":["虚构好友A", "虚构好友B", ...至少6个],
     "comments":[
       {"authorName":"虚构好友A","text":"..."},
       {"authorName":"发布者名字","replyTo":"虚构好友A","text":"..."}
@@ -7969,19 +7974,18 @@ ${postersInfo}
 
     const out = await callApi([
       { role: 'system', content: sysPrompt },
-      { role: 'user', content: '立刻生成他们各自独立的朋友圈！' }
+      { role: 'user', content: '立刻生成他们各自独立的朋友圈！注意必须满足评论数量要求和防幻觉原则！' }
     ]);
 
     const cleaned = out.replace(/```json|```/g, '').trim();
     const dataArr = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
     
     const ms = getMoments();
-    const allMems = await getMemories(); // 🌟 调取外挂内存！
+    const allMems = await getMemories(); 
 
     dataArr.forEach(data => {
       const npc = posters.find(c => c.name === data.name) || posters[0];
       
-      // 匹配图片
       let finalImg = null;
       const rSeed = Math.floor(Math.random() * 999999);
       const t = String(data.imageType || '');
@@ -7993,7 +7997,7 @@ ${postersInfo}
         else if(t.includes('萌宠')) finalImg = `https://source.unsplash.com/random/400x400/?cat,dog&sig=${rSeed}`;
       }
 
-      // 🌟 魔法2：计算真实的错落时间
+      // 算真实的错落时间
       const offsetMs = (Number(data.timeOffset) || Math.floor(Math.random() * 60 + 2)) * 60000;
       const postTime = Date.now() - offsetMs;
 
@@ -8009,7 +8013,7 @@ ${postersInfo}
         comments: data.comments || []
       });
 
-      // 🌟 魔法3：潜意识打通！悄悄写进这个角色的专属外挂内存！
+      // 潜意识打通，写入外挂内存
       if(!allMems[npc.id]) allMems[npc.id] = [];
       const d = new Date(postTime);
       const shortDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
@@ -8018,13 +8022,13 @@ ${postersInfo}
         date: shortDate,
         title: '发了一条朋友圈',
         content: `我在朋友圈发了动态：“${String(data.text || '').trim()}”。`,
-        injectEnabled: true // 默认注入到AI脑海
+        injectEnabled: true 
       });
     });
 
     ms.sort((a,b)=>b.time-a.time);
     setMoments(ms);
-    await setMemories(allMems); // 封存记忆！
+    await setMemories(allMems); 
     renderMomentsFeed();
     
   } catch(e) {
