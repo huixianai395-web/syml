@@ -4384,12 +4384,22 @@ if(!isMe && isHtmlDoc(t)){
   function enforceCountRange(parts,min,max){let arr=[...(parts||[])].filter(Boolean);max=Math.max(1,max);if(arr.length>max){const keep=arr.slice(0,max-1),tail=arr.slice(max-1).join(' ');return [...keep,tail];}return arr;}
 
   async function emitAiSequential(parts,targetId,mode){
-    for(let i=0;i<parts.length;i++){
-      const arr=getChatArr(targetId);arr.push(toMsg({role:'assistant',text:parts[i],time:Date.now()}));setChatArr(targetId,arr);if(currentId===targetId) renderChat();
-      const len=parts[i]?.length||10;
-      const delay=mode==='offline'?1200+Math.floor(Math.random()*1200)+Math.min(1300,len*8):(i===0?850:1300)+Math.floor(Math.random()*(i===0?900:1400))+Math.min(1000,len*12);
-      await sleep(delay);
-    }
+  for(let i=0;i<parts.length;i++){
+    const cmd = (window._applyMusicCmdFromAI && window._applyMusicCmdFromAI(parts[i]));
+    if(cmd) continue;
+
+    const arr=getChatArr(targetId);
+    arr.push(toMsg({role:'assistant',text:parts[i],time:Date.now()}));
+    setChatArr(targetId,arr);
+    if(currentId===targetId) renderChat();
+
+    const len=parts[i]?.length||10;
+    const delay=mode==='offline'
+      ? 1200+Math.floor(Math.random()*1200)+Math.min(1300,len*8)
+      : (i===0?850:1300)+Math.floor(Math.random()*(i===0?900:1400))+Math.min(1000,len*12);
+
+    await sleep(delay);
+  }
   }
 
   function getApiState(){return getJ(K_API,{current:'默认',presets:{'默认':{base:'',key:'',model:'gpt-4o-mini',temp:0.8}}});}
@@ -4807,7 +4817,9 @@ let reqStart = Date.now(); // 🌟 蓝色魔法：按下秒表，记录 AI 开�
       }
      // 🌟 蓝色魔法：把 modeTag 塞进 system 提示词的末尾，防止被当成用户发言！
       system += `\n\n【系统强制指令】：${modeTag}`;
-      
+      system += '\n\n【音乐共享状态】\n'
+  + (window._musicContextForAI ? window._musicContextForAI() : '当前未播放音乐。')
+  + '\n【音乐控制约定】如果你想切歌或暂停，可输出：[music:next] / [music:prev] / [music:pause] / [music:play]。';
       const messages=[
         {role:'system',content:system},
         ...hist.map(x=>({
@@ -11256,5 +11268,191 @@ if (typeof _oldRenderBubble === 'undefined') {
     </div>
   </div>
 </div>
+  <script>
+(() => {
+  const MUSIC_API = 'https://your-music-proxy.workers.dev'; // ←换成你的
+
+  window.musicState = {
+    list: [],
+    idx: -1,
+    playing: false,
+    title: '',
+    artist: '',
+    id: '',
+    lrc: [],
+    currentLine: '',
+    nextLine: '',
+    progress: 0
+  };
+
+  function injectMusicBtn(){
+    const right = document.querySelector('#chatRoom .head-right');
+    if(!right || document.getElementById('musicBtn')) return;
+    const btn = document.createElement('button');
+    btn.id = 'musicBtn';
+    btn.className = 'icon-btn';
+    btn.innerHTML = '♪';
+    btn.style.cssText = 'width:32px;height:32px;border-radius:10px;border:1px solid #dce5f0;background:rgba(238,244,250,.8);color:#5c7094;';
+    btn.onclick = openMusicModal;
+    right.prepend(btn);
+  }
+
+  function ensureMusicModal(){
+    if(document.getElementById('musicModal')) return;
+    const html = `
+    <div id="musicModal" class="modal" style="z-index:12000;">
+      <div class="modal-card" style="max-width:360px;">
+        <h3 style="margin:0 0 10px;">搜歌听歌</h3>
+        <div class="row">
+          <input id="musicKw" class="input" placeholder="输入歌名/歌手">
+          <button class="btn p" id="musicSearchBtn">搜索</button>
+        </div>
+        <div id="musicNow" class="small" style="margin:10px 0;">未播放</div>
+        <div id="musicLyricLine" class="small" style="color:#5c7094;margin-bottom:8px;">歌词：-</div>
+        <div id="musicList" class="list" style="max-height:280px;overflow:auto;"></div>
+        <div class="row" style="justify-content:space-between;margin-top:10px;">
+          <button class="btn" id="musicPrevBtn">上一首</button>
+          <button class="btn" id="musicPlayPauseBtn">播放/暂停</button>
+          <button class="btn" id="musicNextBtn">下一首</button>
+        </div>
+      </div>
+    </div>
+    <audio id="musicAudio" preload="none"></audio>`;
+    document.body.insertAdjacentHTML('beforeend', html);
+
+    document.getElementById('musicSearchBtn').onclick = doMusicSearch;
+    document.getElementById('musicPrevBtn').onclick = () => switchTrack(-1);
+    document.getElementById('musicNextBtn').onclick = () => switchTrack(1);
+    document.getElementById('musicPlayPauseBtn').onclick = togglePlay;
+
+    const audio = document.getElementById('musicAudio');
+    audio.addEventListener('timeupdate', syncLyric);
+    audio.addEventListener('ended', () => switchTrack(1));
+
+    document.getElementById('musicModal').addEventListener('click', e => {
+      if(e.target.id === 'musicModal') e.target.classList.remove('active');
+    });
+  }
+
+  function openMusicModal(){ ensureMusicModal(); document.getElementById('musicModal').classList.add('active'); }
+
+  async function doMusicSearch(){
+    const kw = (document.getElementById('musicKw').value || '').trim();
+    if(!kw) return;
+    const r = await fetch(`${MUSIC_API}/search?q=${encodeURIComponent(kw)}`);
+    const j = await r.json();
+    const songs = (j.result?.songs || []).map(s => ({
+      id: String(s.id),
+      title: s.name,
+      artist: (s.ar||[]).map(a=>a.name).join('/')
+    }));
+    window.musicState.list = songs;
+    renderMusicList();
+  }
+
+  function renderMusicList(){
+    const box = document.getElementById('musicList');
+    box.innerHTML = window.musicState.list.map((s,i)=>`
+      <div class="item" onclick="window._pickSong(${i})">
+        <div class="main"><div class="name">${s.title}</div><div class="preview">${s.artist}</div></div>
+      </div>`).join('') || '<div class="small">无结果</div>';
+  }
+
+  window._pickSong = async function(i){
+    const s = window.musicState.list[i]; if(!s) return;
+    window.musicState.idx = i;
+    window.musicState.id = s.id;
+    window.musicState.title = s.title;
+    window.musicState.artist = s.artist;
+
+    const [uRes, lRes] = await Promise.all([
+      fetch(`${MUSIC_API}/song?id=${s.id}`).then(r=>r.json()),
+      fetch(`${MUSIC_API}/lyric?id=${s.id}`).then(r=>r.json())
+    ]);
+
+    const url = uRes.data?.[0]?.url || '';
+    if(!url) return alert('这首歌暂无可播放音源');
+    const audio = document.getElementById('musicAudio');
+    audio.src = url;
+    await audio.play();
+
+    window.musicState.playing = true;
+    window.musicState.lrc = parseLrc(lRes.lrc?.lyric || '');
+    refreshNow();
+  }
+
+  function parseLrc(text){
+    return String(text).split('\n').map(line=>{
+      const m = line.match(/\[(\d+):(\d+(?:\.\d+)?)\](.*)/);
+      if(!m) return null;
+      return { t: Number(m[1])*60 + Number(m[2]), line: m[3].trim() };
+    }).filter(Boolean);
+  }
+
+  function syncLyric(){
+    const a = document.getElementById('musicAudio');
+    const arr = window.musicState.lrc;
+    const t = a.currentTime || 0;
+    window.musicState.progress = t;
+
+    let idx = arr.findIndex((x,i)=> t>=x.t && (!arr[i+1] || t<arr[i+1].t));
+    if(idx < 0) idx = 0;
+
+    window.musicState.currentLine = arr[idx]?.line || '';
+    window.musicState.nextLine = arr[idx+1]?.line || '';
+
+    const el = document.getElementById('musicLyricLine');
+    if(el) el.textContent = '歌词：' + (window.musicState.currentLine || '-');
+    refreshNow();
+  }
+
+  function refreshNow(){
+    const n = document.getElementById('musicNow');
+    if(n) n.textContent = window.musicState.title ? `正在播放：${window.musicState.title} - ${window.musicState.artist}` : '未播放';
+    const chatSub = document.getElementById('chatSub');
+    if(chatSub && window.musicState.title){
+      chatSub.textContent = `♪ ${window.musicState.title}`;
+    }
+  }
+
+  function togglePlay(){
+    const a = document.getElementById('musicAudio');
+    if(!a.src) return;
+    if(a.paused){ a.play(); window.musicState.playing = true; }
+    else { a.pause(); window.musicState.playing = false; }
+  }
+
+  function switchTrack(step){
+    const list = window.musicState.list;
+    if(!list.length) return;
+    let i = window.musicState.idx < 0 ? 0 : window.musicState.idx + step;
+    if(i<0) i=list.length-1;
+    if(i>=list.length) i=0;
+    window._pickSong(i);
+  }
+
+  // 给 AI 的“听歌状态”
+  window._musicContextForAI = function(){
+    const m = window.musicState;
+    if(!m.title) return '当前未播放音乐。';
+    return `当前正在一起听歌：${m.title} - ${m.artist}
+当前歌词：${m.currentLine || '（前奏/间奏）'}
+下一句：${m.nextLine || ''}
+播放状态：${m.playing ? '播放中' : '暂停'}`;
+  };
+
+  // AI 切歌命令执行
+  window._applyMusicCmdFromAI = function(text){
+    const t = String(text||'').trim();
+    if(t === '[music:next]'){ switchTrack(1); return true; }
+    if(t === '[music:prev]'){ switchTrack(-1); return true; }
+    if(t === '[music:pause]'){ const a=document.getElementById('musicAudio'); a?.pause(); window.musicState.playing=false; return true; }
+    if(t === '[music:play]'){ const a=document.getElementById('musicAudio'); a?.play(); window.musicState.playing=true; return true; }
+    return false;
+  };
+
+  setTimeout(() => { injectMusicBtn(); ensureMusicModal(); }, 800);
+})();
+  </script>
 </body>
 </html>
