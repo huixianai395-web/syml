@@ -10933,21 +10933,42 @@ window._openMusicSearch = function() {
   document.getElementById('bsmKeyword').focus();
 };
 
-// 执行全网聚合搜索
+// 执行全网聚合搜索（🌟 蓝色高定：多重影分身并发搜索引擎 V4.0）
 window._doMusicSearch = async function() {
   const keyword = document.getElementById('bsmKeyword').value.trim();
   if(!keyword) return;
   
   const box = document.getElementById('bsmResults');
-  box.innerHTML = `<div style="text-align:center; color:#5c7094; padding:20px 0; font-size:13px;">正在全网打捞音源...</div>`;
+  box.innerHTML = `<div style="text-align:center; color:#5c7094; padding:20px 0; font-size:13px;">正在破解多重音频节点...<br><span style="font-size:11px; opacity:0.7;">（正在并发抓取不同版本）</span></div>`;
   
   try {
-    // 使用聚合 API 拉取列表（返回多个版本）
-    const res = await fetch(`https://api.vvhan.com/api/music?keyword=${encodeURIComponent(keyword)}&type=search`);
-    const data = await res.json();
+    // 🌟 核心破壁魔法：同时发射 5 个请求，抓取前 5 个不同的版本！
+    const tasks = [1, 2, 3, 4, 5].map(n => 
+      fetch(`https://api.lolimi.cn/API/wangyi/api.php?msg=${encodeURIComponent(keyword)}&n=${n}`)
+        .then(r => r.json())
+        .catch(() => null)
+    );
     
-    if(data && data.success && data.data && data.data.length > 0) {
-      box.innerHTML = data.data.map(song => `
+    // 等待所有影分身带着数据回来
+    const results = await Promise.all(tasks);
+    const validSongs = [];
+    
+    results.forEach(data => {
+      if (data && data.code === 200 && data.data && data.data.url) {
+        // 智能去重逻辑：防止返回一模一样的音源
+        if(!validSongs.some(s => s.url === data.data.url)) {
+          validSongs.push({
+            name: data.data.song || keyword,
+            singer: data.data.singer || '未知歌手',
+            url: data.data.url
+          });
+        }
+      }
+    });
+    
+    // 如果抓到了数据，就渲染绝美列表！
+    if(validSongs.length > 0) {
+      box.innerHTML = validSongs.map(song => `
         <div class="bsm-item" onclick="window._addAndPlaySong('${esc(song.name)}', '${esc(song.singer)}', '${song.url}')">
           <div style="flex:1; min-width:0;">
             <div style="font-size:14px; font-weight:bold; color:#3d4a6a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(song.name)}</div>
@@ -10957,10 +10978,28 @@ window._doMusicSearch = async function() {
         </div>
       `).join('');
     } else {
-      box.innerHTML = `<div style="text-align:center; color:#e74c3c; padding:20px 0; font-size:13px;">没有找到这首歌的免密版本哦~</div>`;
+      throw new Error('主节点全部失效');
     }
   } catch(e) { 
-    box.innerHTML = `<div style="text-align:center; color:#e74c3c; padding:20px 0; font-size:13px;">网络波动，打捞失败啦</div>`;
+    // 🌟 终极兜底：如果上面的并发全挂了，用另一个备用 API 强行抓一首歌回来！
+    try {
+      const fbRes = await fetch(`https://api.vvhan.com/api/wyMusic?name=${encodeURIComponent(keyword)}&type=json`);
+      const fbData = await fbRes.json();
+      if(fbData && fbData.success && fbData.info && fbData.info.url) {
+        box.innerHTML = `
+          <div class="bsm-item" onclick="window._addAndPlaySong('${esc(fbData.info.name)}', '${esc(fbData.info.auther)}', '${fbData.info.url}')">
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:14px; font-weight:bold; color:#3d4a6a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(fbData.info.name)}</div>
+              <div style="font-size:11px; color:#7a86a8; margin-top:4px;">${esc(fbData.info.auther)}</div>
+            </div>
+            <div style="color:#a5cfff; font-size:20px; font-weight:bold;">+</div>
+          </div>
+        `;
+        return;
+      }
+    } catch(err) {}
+
+    box.innerHTML = `<div style="text-align:center; color:#e74c3c; padding:20px 0; font-size:13px;">免费音源接口被挤爆啦，晚点再试吧宝宝~</div>`;
   }
 };
 
