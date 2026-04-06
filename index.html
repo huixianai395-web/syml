@@ -9417,12 +9417,24 @@ window._sendToAI = async function(chatId, hiddenPrompt, isSilent) {
   system += `\n\n${hiddenPrompt}`;
 
   const apiMsgs = [
-    { role: 'system', content: system },
-    ...hist.map(x => ({ role: x.role==='user'?'user':'assistant', content: x.text }))
-  ];
+  { role: 'system', content: system },
+  ...hist.map(x => ({ role: x.role==='user'?'user':'assistant', content: x.text })),
+  // 🌟 关键锚点：静默召唤时补一个 user 触发，防空返回
+  ...(isSilent ? [{ role: 'user', content: '现在请你主动发起一段自然聊天开场。' }] : [])
+];
 
   try {
-    const out = await callApi(apiMsgs);
+    let out = '';
+try {
+  out = await callApi(apiMsgs);
+} catch (e) {
+  throw e;
+}
+
+// 🌟 空响应兜底，避免整条链路直接炸掉
+if (!String(out || '').trim()) {
+  out = '{"messages":["在吗？"]}';
+}
     let parts = [];
 
     if (st.mode === 'offline') {
