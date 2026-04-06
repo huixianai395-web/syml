@@ -7858,7 +7858,9 @@ ${viewersInfo}
 【核心任务】：
 1. 必须虚构 3～5个玩家的【普通微信好友】和男主们穿插排队评论回复，点赞速度和回复必须极度贴合人设与当前时间。
 2. 男主们也可以看人设偶尔亲自回复那些虚构配角。
-3. 整个评论区的评论总数必须在 8到 12条之间，呈现出真实的微信感！`;
+3.男主和男主之间都有一种微妙的敌意，有危机感，绝对不会友好互动。
+4.男主和男主之间也不会知道对方的身份，都不是一个圈子的人，就当潜在情敌处理。
+5. 整个评论区的评论总数必须在 8到 12条之间，呈现出真实的微信感！`;
     }
     else {
       const contacts = getContacts() || [];
@@ -7935,7 +7937,7 @@ window._generateNPCMoment = async function() {
   }).join('\n\n');
 
   try {
-    // 🌟 完美融合老婆的提示词，并加入防幻觉补丁！
+    // 🌟 完美融合老婆的提示词，加入防幻觉与防盗号双重铁律！
     const sysPrompt = `你是“微信朋友圈真人生成器”。
 当前时间：${getSysTimeStr()}。
 玩家名字：${meName}。
@@ -7948,14 +7950,15 @@ ${postersInfo}
 2. 每位发布者生成1条朋友圈，内容生活化，活人感强，有微情绪波动和真实语气。
 3. 【平行宇宙原则】：每个男主都有自己绝对独立的社交圈！点赞和评论的人【必须】是你根据他的人设虚构的专属朋友、同事或家人（要有具体的中文名字或真实备注风）。【绝对禁止】候选列表里的男主们互相点赞或评论！他们互不认识，没有任何交集！
 4. 【时间流逝感】：为每个人生成一个 timeOffset（代表几分钟前发的，范围在 2 到 300 之间），体现真实的时间差。
-5. 【防幻觉铁律】：如果 "imageType" 是 "无"，代表这条朋友圈【只有纯文字】！即使文案里提到了“照片、腹肌、截图”，那也是他在私聊里发给玩家的，朋友圈里【绝对没有配图】！评论区的好友【绝对不能】假装看到了照片！只能对他的文字内容进行吐槽或八卦！
+5. 【防幻觉铁律】：如果 "imageType" 是 "无"，代表这条朋友圈【只有纯文字】！即使文案里提到了照片，朋友圈里也【绝对没有配图】！评论区的好友只能对他的文字内容进行吐槽或八卦！
 6. 口语化，活人感强，贴合人设。
-7. 一次输出完整结果：每条动态建议点赞6~18个、评论8~16条。（必须达到这个数量，不要偷懒！）
+7. 一次输出完整结果：每条动态建议点赞6~18个、评论8~16条。
 8. 如果有近期聊天摘要，可以偶尔（30%概率）顺着聊天话题暗戳戳发一条。
 9. 每个角色发的内容必须和上次截然不同，不能重复同类主题！
 10. 语气完全符合人设！有的话多有的就几个字，有的爱emoji有的一本正经，看人设来！
-11.回复的时候看人设决定回复谁回复多少个人，不需要每个人都必须回，主要看人设，贴合人设的回复就行。评论区也必须真实活人。
-12. 输出严格JSON数组，不要markdown。
+11. 【身份隔离铁律】：绝对、严禁在点赞和评论中出现玩家（${meName}）或“我”、“玩家”的名字！你不能代替玩家做任何互动！玩家的点赞和评论只能由真实世界里的她亲自操作！
+12.回复的时候看人设决定回复谁回复多少个人，不需要每个人都必须回，主要看人设，贴合人设的回复就行。评论区也必须真实活人。
+13.输出严格JSON数组，不要markdown。
 
 输出严格JSON数组格式：
 [
@@ -7974,7 +7977,7 @@ ${postersInfo}
 
     const out = await callApi([
       { role: 'system', content: sysPrompt },
-      { role: 'user', content: '立刻生成他们各自独立的朋友圈！注意必须满足评论数量要求和防幻觉原则！' }
+      { role: 'user', content: '立刻生成他们各自独立的朋友圈！注意必须满足评论数量要求、防幻觉原则以及身份隔离铁律！' }
     ]);
 
     const cleaned = out.replace(/```json|```/g, '').trim();
@@ -7997,9 +8000,12 @@ ${postersInfo}
         else if(t.includes('萌宠')) finalImg = `https://source.unsplash.com/random/400x400/?cat,dog&sig=${rSeed}`;
       }
 
-      // 算真实的错落时间
       const offsetMs = (Number(data.timeOffset) || Math.floor(Math.random() * 60 + 2)) * 60000;
       const postTime = Date.now() - offsetMs;
+
+      // 🌟 物理拦截网：代码级剔除任何企图冒充老婆的评论和点赞！
+      const safeLikes = (data.likes || []).filter(n => n !== meName && n !== '我' && n !== '玩家');
+      const safeComments = (data.comments || []).filter(c => c.authorName !== meName && c.authorName !== '我' && c.authorName !== '玩家');
 
       ms.unshift({
         id: 'm_' + Date.now() + Math.floor(Math.random()*1000),
@@ -8009,8 +8015,8 @@ ${postersInfo}
         text: String(data.text || '').trim(),
         images: finalImg ? [finalImg] : [],
         time: postTime,
-        likes: data.likes || [],
-        comments: data.comments || []
+        likes: safeLikes,
+        comments: safeComments
       });
 
       // 潜意识打通，写入外挂内存
