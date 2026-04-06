@@ -7868,7 +7868,7 @@ ${viewersInfo}
 ${timeContext}
 【核心任务】：
 1. 必须虚构 5~7个符合他身份的【专属微信好友】来排队吐槽或调侃他。
-2. 男主"${npc.name}"看到后，看人设亲自回复路人好友，语气是熟人间的互怼、高冷或玩笑。
+2. 男主"${npc.name}"看到后，看人设亲自回复好友，语气是熟人间的互怼、高冷或玩笑，看人设决定回哪个人，要不要回。不需要全都回复，一切都看人设来绝对。
 3. 整个评论区总数必须在 7到 10条之间。
 4. 【绝对禁止】提其他男主！这是他的私人圈子！`;
     }
@@ -7916,26 +7916,22 @@ ${timeContext}
 
 window._generateNPCMoment = async function() {
   await initMomentsStore();
-
   const contacts = getContacts() || [];
   if (contacts.length === 0) return alert('宝宝，你还没加联系人呢！');
 
   const me = getMe();
   const meName = me.name || '我';
-
   const refreshBtn = document.getElementById('momentsRefreshBtn');
   refreshBtn?.classList.add('is-loading');
 
   const shuffled = [...contacts].sort(() => 0.5 - Math.random());
   const posters = shuffled.slice(0, Math.floor(Math.random() * 3) + 2);
+  
+  // 给AI提供一点他们最近的聊天记忆，避免发圈太生硬
   const chatsMap = getChats() || {};
   const postersInfo = posters.map(c => {
-    const recent = (chatsMap[c.id] || [])
-      .filter(m => m.text && !m.text.includes('<div') && !m.text.startsWith('[img]') && !m.text.startsWith('[stk:') && !m.text.startsWith('[voice:'))
-      .slice(-24)
-      .map(m => `${m.role==='user'?meName:c.name}: ${String(m.text).slice(0,50)}`)
-      .join(' | ');
-    return `- 名字：${c.name}\n- 人设：${c.persona || '自然'}\n- 近期互动：${recent || '（暂无）'}`;
+    const recent = (chatsMap[c.id] || []).filter(m => m.text && !m.text.includes('<div')).slice(-5).map(m => String(m.text).slice(0,20)).join('|');
+    return `- 姓名：${c.name}\n- 人设：${c.persona || '自然'}\n- 近期聊天：${recent || '暂无'}`;
   }).join('\n\n');
 
   try {
@@ -7945,65 +7941,47 @@ window._generateNPCMoment = async function() {
 
 【发布者候选】
 ${postersInfo}
-
 【核心铁律】
 1. 文案必须贴合发布时间和人设，拒绝模板句、鸡汤机、口号机。
-2. 每位发布者生成1条朋友圈，内容生活化，有微情绪波动和真实语气。
-3. 评论区与点赞必须全部使用“具名好友”（中文姓名/备注风格），严禁“路人好友/路人甲/网友A/同事A/朋友C/群友D”等代称。
-4. 严禁把玩家(${meName})加入自动点赞或自动评论（玩家只由真实点击产生互动）。
-5. 严禁出现“user/User/用户”作为名字。
+2. 每位发布者生成1条朋友圈，内容生活化，活人感强，有微情绪波动和真实语气。
+3. 【平行宇宙原则】：每个男主都有自己绝对独立的社交圈！点赞和评论的人【必须】是你根据他的人设虚构的专属朋友、同事或家人（要有具体的中文名字或真实备注风）。【绝对禁止】候选列表里的男主们互相点赞或评论！他们互不认识，没有任何交集！
+4. 【时间流逝感】：为每个人生成一个 timeOffset（代表几分钟前发的，范围在 2 到 300 之间），体现真实的时间差。
 6. 口语化，活人感强，贴合人设。
 7. 一次输出完整结果：每条动态建议点赞6~18个、评论8~16条。
 8.如果有近期聊天摘要，可以偶尔（30%概率）顺着聊天话题暗戳戳发一条。
 9.每个角色发的内容必须和上次截然不同，不能重复同类主题！
 10.语气完全符合人设！有的话多有的就几个字，有的爱emoji有的一本正经，看人设来！
 11. 输出严格JSON数组，不要markdown。
-
-输出格式：
+输出严格JSON数组格式：
 [
   {
     "name":"发布者名字",
     "text":"朋友圈文案",
     "imageType":"风景/美食/自拍/夜景/萌宠/无",
-    "timeOffset":0,
-    "likes":["..."],
+    "timeOffset": 随机整数(2-300),
+    "likes":["虚构好友A", "虚构好友B"],
     "comments":[
-      {"authorName":"...","text":"..."},
-      {"authorName":"发布者名字","replyTo":"某个具名好友","text":"..."}
+      {"authorName":"虚构好友A","text":"..."},
+      {"authorName":"发布者名字","replyTo":"虚构好友A","text":"..."}
     ]
   }
 ]`;
 
     const out = await callApi([
       { role: 'system', content: sysPrompt },
-      { role: 'user', content: '现在生成。' }
+      { role: 'user', content: '立刻生成他们各自独立的朋友圈！' }
     ]);
 
     const cleaned = out.replace(/```json|```/g, '').trim();
     const dataArr = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
-
-    const isRoleName = (n) => contacts.some(c => c.name === n);
-    const isBadAlias = (n) => /路人|网友|群友|同事[A-Z]|朋友[A-Z]|甲|乙|丙|丁|某某|用户|user/i.test(String(n||''));
-    const normName = (n) => {
-      const s = String(n || '').trim();
-      if(!s) return '';
-      if(/^user$/i.test(s) || s === '玩家' || s === '用户' || s === meName) return '';
-      return s;
-    };
-
-    const namedPool = ['林知夏','周予安','沈言','许嘉言','陆明川','江晚','程叙','顾临','温言','苏清禾','唐序','贺南'];
-    const pickNamed = (usedSet) => {
-      const cand = namedPool.find(x => !usedSet.has(x) && x !== meName);
-      if(cand) return cand;
-      return '陈' + Math.floor(Math.random()*90+10);
-    };
-
+    
     const ms = getMoments();
+    const allMems = await getMemories(); // 🌟 调取外挂内存！
 
     dataArr.forEach(data => {
       const npc = posters.find(c => c.name === data.name) || posters[0];
-      const roleName = npc.name;
-
+      
+      // 匹配图片
       let finalImg = null;
       const rSeed = Math.floor(Math.random() * 999999);
       const t = String(data.imageType || '');
@@ -8015,67 +7993,42 @@ ${postersInfo}
         else if(t.includes('萌宠')) finalImg = `https://source.unsplash.com/random/400x400/?cat,dog&sig=${rSeed}`;
       }
 
-      let likes = (data.likes || []).map(normName).filter(Boolean);
-      likes = likes.filter(x => x !== roleName && !isRoleName(x) && !isBadAlias(x));
-      likes = [...new Set(likes)];
-      const likeUsed = new Set(likes);
-      while(likes.length < 8){
-        const n = pickNamed(likeUsed);
-        likeUsed.add(n);
-        likes.push(n);
-      }
-      likes = likes.slice(0,20);
-
-      let comments = (data.comments || []).map(c => ({
-        authorName: normName(c.authorName),
-        replyTo: normName(c.replyTo || ''),
-        text: String(c.text || '').trim()
-      })).filter(c => c.authorName && c.text);
-
-      comments = comments.filter(c => {
-        if(isBadAlias(c.authorName)) return false;
-        if(c.authorName === roleName) return true;
-        if(c.authorName === meName) return false;
-        if(isRoleName(c.authorName)) return false;
-        return true;
-      });
-
-      comments = comments.map(c => {
-        if(c.authorName !== roleName){
-          return { authorName:c.authorName, replyTo:'', text:c.text };
-        }
-        if(c.replyTo && isBadAlias(c.replyTo)) return { authorName:c.authorName, replyTo:'', text:c.text };
-        if(c.replyTo && isRoleName(c.replyTo)) return { authorName:c.authorName, replyTo:'', text:c.text };
-        return c;
-      });
-
-      const cUsed = new Set(comments.map(x=>x.authorName));
-      const fallbackText = ['今天这条状态很有你味道。','这张图拍得真有氛围。','你最近状态不错诶。','这个点发这个，懂了。','有被你的文案戳到。'];
-      while(comments.length < 8){
-        const n = pickNamed(cUsed);
-        cUsed.add(n);
-        comments.push({ authorName:n, replyTo:'', text:fallbackText[Math.floor(Math.random()*fallbackText.length)] });
-      }
-      comments = comments.slice(0,18);
+      // 🌟 魔法2：计算真实的错落时间
+      const offsetMs = (Number(data.timeOffset) || Math.floor(Math.random() * 60 + 2)) * 60000;
+      const postTime = Date.now() - offsetMs;
 
       ms.unshift({
         id: 'm_' + Date.now() + Math.floor(Math.random()*1000),
         authorId: npc.id,
-        authorName: roleName,
+        authorName: npc.name,
         authorAvatar: npc.avatar || 'https://via.placeholder.com/120',
-        text: String(data.text || '').trim() || '今天也在认真生活。',
+        text: String(data.text || '').trim(),
         images: finalImg ? [finalImg] : [],
-        time: Date.now() - (Number(data.timeOffset||0) * 60000),
-        likes,
-        comments
+        time: postTime,
+        likes: data.likes || [],
+        comments: data.comments || []
+      });
+
+      // 🌟 魔法3：潜意识打通！悄悄写进这个角色的专属外挂内存！
+      if(!allMems[npc.id]) allMems[npc.id] = [];
+      const d = new Date(postTime);
+      const shortDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      allMems[npc.id].unshift({
+        id: 'mem_' + Date.now() + Math.floor(Math.random()*1000),
+        date: shortDate,
+        title: '发了一条朋友圈',
+        content: `我在朋友圈发了动态：“${String(data.text || '').trim()}”。`,
+        injectEnabled: true // 默认注入到AI脑海
       });
     });
 
     ms.sort((a,b)=>b.time-a.time);
     setMoments(ms);
+    await setMemories(allMems); // 封存记忆！
     renderMomentsFeed();
+    
   } catch(e) {
-    alert('刷新失败：' + (e?.message || e));
+    alert('刷新失败啦宝宝：' + (e?.message || e));
   } finally {
     refreshBtn?.classList.remove('is-loading');
   }
