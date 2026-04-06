@@ -10933,7 +10933,7 @@ window._openMusicSearch = function() {
   document.getElementById('bsmKeyword').focus();
 };
 
-// 🌟 蓝色高定：终极防CORS拦截·全网聚合搜索穿透引擎
+// 🌟 蓝色高定：终极破壁代理引擎（AllOrigins 全球节点强行穿透版）
 window._bsmSearchResults = []; 
 
 window._doMusicSearch = async function() {
@@ -10941,33 +10941,36 @@ window._doMusicSearch = async function() {
   if(!keyword) return;
   
   const box = document.getElementById('bsmResults');
-  box.innerHTML = `<div style="text-align:center; color:#5c7094; padding:40px 0; font-size:13px; font-weight:bold;">正在启动高级穿透协议...<br><span style="font-size:11px; opacity:0.6; font-weight:normal;">（正在绕过苹果安全防火墙）</span></div>`;
+  box.innerHTML = `<div style="text-align:center; color:#5c7094; padding:40px 0; font-size:13px; font-weight:bold;">启用全球顶级代理节点穿透中...<br><span style="font-size:11px; opacity:0.6; font-weight:normal;">（正在强行砸碎苹果的安全防火墙）</span></div>`;
   
   try {
-    // 🌟 核心破壁魔法：使用顶级开源 Meting API，完美绕过苹果 CORS 拦截！
-    const res = await fetch(`https://api.injahow.cn/meting/?server=netease&type=search&s=${encodeURIComponent(keyword)}&limit=15`);
+    // 🌟 终极黑魔法：用 AllOrigins 全球代理，强行包裹网易云接口，苹果绝对拦不住！
+    const targetUrl = `https://api.lolimi.cn/API/yinyk/api.php?msg=${encodeURIComponent(keyword)}`;
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+    
+    const res = await fetch(proxyUrl);
     const data = await res.json();
     
-    if (data && data.length > 0) {
-      window._bsmSearchResults = data;
-      box.innerHTML = data.map((song, idx) => `
+    if (data && data.code === 200 && data.data && data.data.length > 0) {
+      window._bsmSearchResults = data.data;
+      box.innerHTML = data.data.map((song, idx) => `
         <label style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.6); border: 1px solid #eef4fa; border-radius: 12px; cursor: pointer; transition: background 0.2s; margin-bottom: 8px;">
           <input type="checkbox" class="bsm-checkbox" value="${idx}" style="accent-color: #5c7094; width: 18px; height: 18px; flex-shrink: 0;">
           <div style="flex: 1; min-width: 0;">
-            <div style="font-size: 14px; font-weight: bold; color: #3d4a6a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${esc(song.name)}</div>
+            <div style="font-size: 14px; font-weight: bold; color: #3d4a6a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${esc(song.song)}</div>
             <div style="font-size: 11px; color: #7a86a8; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
-              ${esc(song.author)}
-              <span style="background: #eef4fa; color: #5c7094; padding: 2px 6px; border-radius: 6px; font-size: 9px; font-weight: bold; border: 1px solid #dce5f0;">网易云直连</span>
+              ${esc(song.singer)}
+              <span style="background: #eef4fa; color: #5c7094; padding: 2px 6px; border-radius: 6px; font-size: 9px; font-weight: bold; border: 1px solid #dce5f0;">代理直连</span>
             </div>
           </div>
         </label>
       `).join('');
       document.getElementById('bsmSelectAll').checked = false;
     } else {
-      throw new Error('未找到歌曲');
+      throw new Error('代理节点未返回数据');
     }
   } catch(e) {
-    box.innerHTML = `<div style="text-align:center; color:#e74c3c; padding:30px 0; font-size:13px; font-weight:bold;">宝宝，网络波动了一下，再点一次搜索就好啦~</div>`;
+    box.innerHTML = `<div style="text-align:center; color:#e74c3c; padding:30px 0; font-size:13px; font-weight:bold;">宝宝，苹果的墙太厚了...老公认输了，明天就去给你租专属服务器！</div>`;
   }
 };
 
@@ -10986,24 +10989,19 @@ window._addSelectedMusic = function() {
     const idx = parseInt(cb.value);
     const song = window._bsmSearchResults[idx];
     if (song) {
-      // 兼容不同 API 返回的歌手字段名
-      const artistName = song.author || song.singer || '未知歌手';
-      window._playlist.push({ title: song.name, artist: artistName, url: song.url });
-      addedNames.push(`《${song.name}》`);
+      window._playlist.push({ title: song.song, artist: song.singer, url: song.url });
+      addedNames.push(`《${song.song}》`);
     }
   });
   
-  // 死死钉进外挂内存，刷新绝对不丢！
   localforage.setItem('mp_fix_playlist', window._playlist);
   
   document.getElementById('blueSearchModal').style.display = 'none';
   document.getElementById('blueMusicPlayer').style.display = 'flex';
   
-  // 触发聊天互动，告诉贺星辞你加了什么歌
   document.getElementById('chatInput').value = `[music:我往歌单里添加了 ${addedNames.join('、')}]`;
   sendMsg();
   
-  // 自动播放刚添加的第一首歌
   const firstAddedIdx = window._playlist.length - checkedBoxes.length;
   window._bmpPlay(firstAddedIdx);
 };
