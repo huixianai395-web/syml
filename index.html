@@ -11062,13 +11062,14 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
   </div>
 </div>
 
-<!-- 🌟 蓝色高定：初雪海盐蓝 & 歌词收藏终极全网音乐外挂引擎 -->
+<!-- 🌟 蓝色高定：初雪海盐蓝 & 熊猫/歌曲宝 VIP破解引擎 -->
 <script>
 (() => {
   const METING_API = 'https://api.i-meto.com/meting/api';
-  window.musicState = { list: [], idx: -1, playing: false, title: '', artist: '', url: '', lrc: [], currentLine: '', nextLine: '', progress: 0 };
+  // 🌟 黑魔法：跨域代理，专门用来去盗版网站“偷”数据
+  const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
   
-  // 🌟 本地收藏夹外挂硬盘
+  window.musicState = { list: [], idx: -1, playing: false, title: '', artist: '', url: '', lrc: [], currentLine: '' };
   let favPlaylist = JSON.parse(localStorage.getItem('mp_music_playlist') || '[]');
   let currentTab = 'search'; 
 
@@ -11080,9 +11081,7 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     btn.className = 'icon-btn';
     btn.style.cssText = 'width:32px;height:32px;border-radius:10px;border:1px solid #dce5f0;background:rgba(238,244,250,.8);color:#5c7094;display:grid;place-items:center;box-shadow:none;transition:transform 0.2s;';
     btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#5c7094;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`;
-    btn.onmousedown = () => btn.style.transform = 'scale(0.9)';
-    btn.onmouseup = () => btn.style.transform = 'scale(1)';
-    btn.onclick = openMusicModal;
+    btn.onclick = () => { ensureMusicModal(); document.getElementById('musicModal').classList.add('active'); window._switchMusicTab(currentTab); };
     right.prepend(btn);
   }
 
@@ -11094,43 +11093,33 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
         
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
           <div style="display:flex; gap:12px; font-size:15px; font-weight:800; color:#a0aaba;">
-            <span id="tabSearch" style="cursor:pointer; color:#3d4a6a; transition:color 0.2s;" onclick="window._switchMusicTab('search')">全网搜索</span>
-            <span id="tabFav" style="cursor:pointer; transition:color 0.2s;" onclick="window._switchMusicTab('fav')">我的收藏夹</span>
+            <span id="tabSearch" style="cursor:pointer; color:#3d4a6a;" onclick="window._switchMusicTab('search')">全网搜索</span>
+            <span id="tabFav" style="cursor:pointer;" onclick="window._switchMusicTab('fav')">我的收藏夹</span>
           </div>
           <div onclick="document.getElementById('musicModal').classList.remove('active')" style="color:#7a86a8; font-size:24px; cursor:pointer; line-height:1;">×</div>
         </div>
         
         <div id="searchArea" style="display:flex; gap:8px; margin-bottom:16px;">
-          <!-- 🌟 终极武器：加入酷狗和酷我，周杰伦随便搜！ -->
-          <select id="musicServer" style="background:rgba(255,255,255,0.6); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; font-size:13px; padding:8px; outline:none; cursor:pointer;">
+          <select id="musicServer" style="background:rgba(255,255,255,0.6); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; font-size:13px; padding:8px; outline:none;">
             <option value="netease">网易云</option>
             <option value="tencent">QQ音乐</option>
-            <option value="kugou">酷狗 (VIP推荐)</option>
-            <option value="kuwo">酷我 (无损源)</option>
+            <option value="gequbao">💎 VIP破解线路</option>
           </select>
-          <input id="musicKw" class="input" placeholder="搜全网..." style="flex:1; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; font-size:13px; padding:8px 12px; outline:none;">
+          <input id="musicKw" class="input" placeholder="搜周杰伦试试..." style="flex:1; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; font-size:13px; padding:8px 12px; outline:none;">
           <button class="btn p" id="musicSearchBtn" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:12px; padding:0 16px; font-weight:bold; box-shadow:none;">搜索</button>
         </div>
 
-        <!-- 🌟 绝美初雪海盐蓝歌词画卷 -->
         <div style="background:rgba(238,244,250,0.5); border:1px solid #dce5f0; border-radius:16px; padding:12px; margin-bottom:16px; text-align:center; min-height:60px; display:flex; flex-direction:column; justify-content:center;">
            <div id="musicNow" style="font-size:11px; color:#a0aaba; font-weight:bold; letter-spacing:1px; margin-bottom:6px;">当前未播放</div>
-           <div id="lyricLine1" style="font-size:14px; font-weight:bold; color:#5c7094; transition:all 0.3s; min-height:20px; text-shadow:0 1px 2px rgba(255,255,255,0.8);"></div>
-           <div id="lyricLine2" style="font-size:11px; color:#a0aaba; transition:all 0.3s; min-height:16px; margin-top:4px;"></div>
+           <div id="lyricLine1" style="font-size:14px; font-weight:bold; color:#5c7094; transition:all 0.3s; min-height:20px;"></div>
         </div>
         
         <div id="musicList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; margin-bottom:16px; min-height:150px;"></div>
         
         <div style="display:flex; justify-content:center; align-items:center; gap:24px; padding-top:16px; border-top:1px dashed #dce5f0;">
-          <button class="btn" id="musicPrevBtn" style="background:transparent; border:none; padding:0; cursor:pointer; color:#5c7094;">
-            <svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg>
-          </button>
-          <button class="btn" id="musicPlayPauseBtn" style="width:48px;height:48px;border-radius:50%;background:#eef4fa;border:1px solid #dce5f0;color:#5c7094;display:grid;place-items:center;cursor:pointer;box-shadow:0 4px 12px rgba(92,112,148,0.05);">
-            <svg id="playIconSvg" viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;margin-left:2px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-          </button>
-          <button class="btn" id="musicNextBtn" style="background:transparent; border:none; padding:0; cursor:pointer; color:#5c7094;">
-            <svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
-          </button>
+          <button class="btn" id="musicPrevBtn" style="background:transparent; border:none; padding:0; cursor:pointer; color:#5c7094;"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
+          <button class="btn" id="musicPlayPauseBtn" style="width:48px;height:48px;border-radius:50%;background:#eef4fa;border:1px solid #dce5f0;color:#5c7094;display:grid;place-items:center;cursor:pointer;"><svg id="playIconSvg" viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;margin-left:2px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></button>
+          <button class="btn" id="musicNextBtn" style="background:transparent; border:none; padding:0; cursor:pointer; color:#5c7094;"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
         </div>
       </div>
     </div>
@@ -11141,13 +11130,8 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     document.getElementById('musicPrevBtn').onclick = () => switchTrack(-1);
     document.getElementById('musicNextBtn').onclick = () => switchTrack(1);
     document.getElementById('musicPlayPauseBtn').onclick = togglePlay;
-    
-    const audio = document.getElementById('musicAudio');
-    audio.addEventListener('timeupdate', syncLyric);
-    audio.addEventListener('ended', () => switchTrack(1));
+    document.getElementById('musicAudio').addEventListener('ended', () => switchTrack(1));
   }
-
-  function openMusicModal(){ ensureMusicModal(); document.getElementById('musicModal').classList.add('active'); window._switchMusicTab(currentTab); }
 
   window._switchMusicTab = function(tab) {
     currentTab = tab;
@@ -11164,9 +11148,25 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     const btn = document.getElementById('musicSearchBtn');
     btn.textContent = '...';
     try {
-      const r = await fetch(`${METING_API}?server=${server}&type=search&id=${encodeURIComponent(kw)}`);
-      const j = await r.json();
-      window.musicState.list = (j || []).map(s => ({ ...s, server })); 
+      if(server === 'gequbao') {
+        // 🌟 破解魔法：直接通过代理抓取歌曲宝的搜索页面
+        const searchUrl = `https://www.gequbao.com/s/${encodeURIComponent(kw)}`;
+        const htmlText = await fetch(CORS_PROXY + encodeURIComponent(searchUrl)).then(r=>r.text());
+        
+        // 用正则粗暴提取前几首歌的链接和名字
+        const regex = /<a href="\/music\/(\d+)" class="text-primary"[^>]*>(.*?)<\/a>.*?<div class="text-success[^>]*>(.*?)<\/div>/g;
+        let match, results = [];
+        while ((match = regex.exec(htmlText)) !== null && results.length < 10) {
+            let title = match[2].replace(/<[^>]+>/g, '').trim();
+            let author = match[3].replace(/<[^>]+>/g, '').trim();
+            results.push({ id: match[1], title: title, author: author, server: 'gequbao' });
+        }
+        window.musicState.list = results;
+      } else {
+        const r = await fetch(`${METING_API}?server=${server}&type=search&id=${encodeURIComponent(kw)}`);
+        const j = await r.json();
+        window.musicState.list = (j || []).map(s => ({ ...s, server })); 
+      }
       renderMusicList();
     } catch(e) { alert('搜索失败了宝宝！'); }
     btn.textContent = '搜索';
@@ -11175,47 +11175,19 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
   function renderMusicList(){
     const box = document.getElementById('musicList');
     const dataList = currentTab === 'search' ? window.musicState.list : favPlaylist;
+    if(!dataList.length) { box.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:12px; padding:40px 0;">空空如也~</div>`; return; }
     
-    if(!dataList.length) { 
-      box.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:12px; padding:40px 0;">${currentTab === 'search' ? '空空如也，换个词搜搜看~' : '收藏夹空空如也<br>快去搜索页添加喜欢的歌吧'}</div>`; 
-      return; 
-    }
-    
-    box.innerHTML = dataList.map((s, i) => {
-      const isFav = favPlaylist.some(f => f.id === s.id && f.server === s.server);
-      const favIcon = isFav 
-        ? `<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#5c7094;fill:#eef4fa;stroke-width:2;cursor:pointer;" onclick="event.stopPropagation(); window._toggleFav(${i})"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`
-        : `<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#a0aaba;fill:none;stroke-width:2;cursor:pointer;" onclick="event.stopPropagation(); window._toggleFav(${i})"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
-
-      return `
-      <div style="padding:12px 14px; background:rgba(255,255,255,0.6); border:1px solid #eef4fa; border-radius:12px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:background 0.2s;" onclick="window._pickSong(${i})" onmouseover="this.style.background='#eef4fa'" onmouseout="this.style.background='rgba(255,255,255,0.6)'">
+    box.innerHTML = dataList.map((s, i) => `
+      <div style="padding:12px 14px; background:rgba(255,255,255,0.6); border:1px solid #eef4fa; border-radius:12px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="window._pickSong(${i})">
         <div style="flex:1; min-width:0;">
-          <div style="font-size:13px; font-weight:800; color:#3d4a6a; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${safeEsc(s.title)}</div>
+          <div style="font-size:13px; font-weight:800; color:#3d4a6a; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.title}</div>
           <div style="font-size:11px; color:#7a86a8; display:flex; align-items:center; gap:6px;">
-            <span style="background:#eef4fa; padding:2px 6px; border-radius:4px; color:#5c7094;">${s.server==='netease'?'网易云':(s.server==='kugou'?'酷狗':(s.server==='kuwo'?'酷我':'QQ音乐'))}</span>
-            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${safeEsc(s.author)}</span>
+            <span style="background:#eef4fa; padding:2px 6px; border-radius:4px; color:#5c7094;">${s.server==='gequbao'?'💎 破解版':'标准版'}</span>
+            <span>${s.author}</span>
           </div>
         </div>
-        <div style="padding:10px;">${favIcon}</div>
-      </div>`;
-    }).join('');
+      </div>`).join('');
   }
-
-  const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
-
-  window._toggleFav = function(idx) {
-    const dataList = currentTab === 'search' ? window.musicState.list : favPlaylist;
-    const song = dataList[idx];
-    if(!song) return;
-    const existIdx = favPlaylist.findIndex(f => f.id === song.id && f.server === song.server);
-    if(existIdx > -1) {
-      favPlaylist.splice(existIdx, 1);
-    } else {
-      favPlaylist.unshift(song);
-    }
-    localStorage.setItem('mp_music_playlist', JSON.stringify(favPlaylist));
-    renderMusicList();
-  };
 
   window._pickSong = async function(i){
     const dataList = currentTab === 'search' ? window.musicState.list : favPlaylist;
@@ -11225,72 +11197,32 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     window.musicState.idx = i; 
     window.musicState.title = s.title; 
     window.musicState.artist = s.author;
-    window.musicState.lrc = [];
-    
-    document.getElementById('musicNow').innerHTML = `<span style="color:#2f66d8;">加载音源与歌词中...</span>`;
-    document.getElementById('lyricLine1').textContent = '';
-    document.getElementById('lyricLine2').textContent = '';
+    document.getElementById('musicNow').innerHTML = `<span style="color:#2f66d8;">加载音源中...</span>`;
 
     try {
-      const audio = document.getElementById('musicAudio');
-      audio.src = s.url; 
+      let finalUrl = s.url;
+      if(s.server === 'gequbao') {
+        // 🌟 破解魔法第二步：抓取真实 MP3 链接
+        const detailUrl = `https://www.gequbao.com/music/${s.id}`;
+        const detailHtml = await fetch(CORS_PROXY + encodeURIComponent(detailUrl)).then(r=>r.text());
+        const urlMatch = detailHtml.match(/const url = '([^']+)'/);
+        if(urlMatch && urlMatch[1]) finalUrl = urlMatch[1];
+        else throw new Error('解析失败');
+      }
       
-      // 异步拉取歌词
-      fetch(`${METING_API}?server=${s.server}&type=lyric&id=${s.id}`).then(r=>r.json()).then(j => {
-         window.musicState.lrc = parseLrc(j.lyric || '');
-      }).catch(()=>{});
-
+      const audio = document.getElementById('musicAudio');
+      audio.src = finalUrl; 
       await audio.play();
       window.musicState.playing = true;
       refreshUI();
-    } catch(e) { document.getElementById('musicNow').textContent = '这首歌暂时听不了哦宝宝'; }
-  }
-
-  function parseLrc(text){
-    return String(text).split('\n').map(line=>{
-      const m = line.match(/\[(\d+):(\d+(?:\.\d+)?)\](.*)/);
-      if(!m) return null;
-      return { t: Number(m[1])*60 + Number(m[2]), line: m[3].trim() };
-    }).filter(Boolean);
-  }
-
-  function syncLyric(){
-    const a = document.getElementById('musicAudio');
-    const arr = window.musicState.lrc;
-    if(!arr.length) return;
-    const t = a.currentTime || 0;
-
-    let idx = arr.findIndex((x,i)=> t>=x.t && (!arr[i+1] || t<arr[i+1].t));
-    if(idx < 0) idx = 0;
-
-    const cur = arr[idx]?.line || '';
-    const nxt = arr[idx+1]?.line || '';
-
-    if(window.musicState.currentLine !== cur) {
-       window.musicState.currentLine = cur;
-       window.musicState.nextLine = nxt;
-       const l1 = document.getElementById('lyricLine1');
-       const l2 = document.getElementById('lyricLine2');
-       if(l1 && l2) {
-         l1.textContent = cur || '♪';
-         l2.textContent = nxt || '';
-       }
-    }
+    } catch(e) { document.getElementById('musicNow').textContent = '这首暂时听不了哦宝宝'; }
   }
 
   function refreshUI(){
     const n = document.getElementById('musicNow');
-    if(n) n.innerHTML = window.musicState.title ? `<span style="color:#5c7094; font-weight:800;">正在播放：${safeEsc(window.musicState.title)}</span> <span style="color:#a0aaba;">- ${safeEsc(window.musicState.artist)}</span>` : '未播放';
+    if(n) n.innerHTML = window.musicState.title ? `<span style="color:#5c7094; font-weight:800;">正在播放：${window.musicState.title}</span>` : '未播放';
     const svg = document.getElementById('playIconSvg');
-    if(svg) {
-      if(window.musicState.playing) {
-        svg.innerHTML = `<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>`;
-        svg.style.marginLeft = '0';
-      } else {
-        svg.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"></polygon>`;
-        svg.style.marginLeft = '2px';
-      }
-    }
+    if(svg) svg.innerHTML = window.musicState.playing ? `<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>` : `<polygon points="5 3 19 12 5 21 5 3"></polygon>`;
   }
 
   function togglePlay(){
@@ -11307,17 +11239,6 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     if(i<0) i=list.length-1; if(i>=list.length) i=0;
     window._pickSong(i);
   }
-
-  // 🌟 蓝色终极魔法：带“模糊雷达”的隐形切歌拦截器！
-  window._applyMusicCmdFromAI = function(text){
-    const t = String(text||'').trim();
-    // 使用正则模糊匹配，无视前面的 [沈昼白]： 等名字前缀！
-    if(/\[music:next\]/.test(t)){ switchTrack(1); return true; }
-    if(/\[music:prev\]/.test(t)){ switchTrack(-1); return true; }
-    if(/\[music:pause\]/.test(t)){ document.getElementById('musicAudio')?.pause(); window.musicState.playing=false; refreshUI(); return true; }
-    if(/\[music:play\]/.test(t)){ document.getElementById('musicAudio')?.play(); window.musicState.playing=true; refreshUI(); return true; }
-    return false;
-  };
 
   setTimeout(() => { injectMusicBtn(); ensureMusicModal(); }, 800);
 })();
