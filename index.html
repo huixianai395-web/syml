@@ -1,3 +1,5 @@
+
+
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -11104,26 +11106,26 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
   }
 
   function injectChatBanner() {
-    if(document.getElementById('chatMusicBanner')) return;
-    const room = document.getElementById('chatRoom');
-    const banner = document.createElement('div');
-    banner.id = 'chatMusicBanner';
-    banner.style.cssText = 'display:none; position:absolute; top:calc(60px + var(--safe-top)); left:16px; right:16px; background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; padding:12px 16px; border-radius:20px; align-items:center; cursor:pointer; z-index:40; box-shadow:0 8px 24px rgba(92,112,148,0.12); flex-direction:row; justify-content:space-between;';
-    banner.onclick = () => { document.getElementById('musicModal').classList.add('active'); };
-    banner.innerHTML = `
-      <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
-        <div style="position:relative; width:36px; height:36px;">
-          <img id="bannerMeAv" src="https://api.dicebear.com/7.x/initials/svg?seed=Me&backgroundColor=eef4fa&textColor=5c7094" style="width:28px; height:28px; border-radius:50%; object-fit:cover; border:2px solid #fff; box-shadow:0 2px 8px rgba(92,112,148,0.15); position:absolute; left:0; top:4px;">
-          <img id="bannerTaAv" src="https://api.dicebear.com/7.x/initials/svg?seed=Ta&backgroundColor=eef4fa&textColor=5c7094" style="width:28px; height:28px; border-radius:50%; object-fit:cover; border:2px solid #fff; box-shadow:0 2px 8px rgba(92,112,148,0.15); position:absolute; right:0; top:4px; z-index:2;">
+      if(document.getElementById('chatMusicBanner')) return;
+      const room = document.getElementById('chatRoom');
+      const banner = document.createElement('div');
+      banner.id = 'chatMusicBanner';
+      banner.style.cssText = 'display:none; position:absolute; top:calc(60px + var(--safe-top)); left:16px; right:16px; background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; padding:12px 16px; border-radius:20px; align-items:center; cursor:pointer; z-index:40; box-shadow:0 8px 24px rgba(92,112,148,0.12); flex-direction:column;';
+      banner.onclick = () => { document.getElementById('musicModal').classList.add('active'); };
+      banner.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+          <img id="bannerMeAv" src="https://api.dicebear.com/7.x/initials/svg?seed=Me&backgroundColor=eef4fa&textColor=5c7094" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid #fff; box-shadow:0 2px 8px rgba(92,112,148,0.15);">
+          <div style="flex:1; margin:0 12px; display:flex; flex-direction:column; align-items:center; overflow:hidden;">
+            <div id="bannerTitle" style="font-size:12px; font-weight:bold; color:#3d4a6a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">未播放</div>
+            <svg viewBox="0 0 100 20" style="width:100%; height:16px; stroke:#8ca8d8; stroke-width:1.5; fill:none; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 2px 4px rgba(140,168,216,0.3)); margin-top:2px;">
+              <path class="ecg-line" d="M0,10 L30,10 L35,2 L45,18 L55,5 L60,10 L100,10" />
+            </svg>
+            <div id="bannerLyric" style="font-size:10px; color:#7a86a8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; margin-top:2px;">点击展开全息舱...</div>
+          </div>
+          <img id="bannerTaAv" src="https://api.dicebear.com/7.x/initials/svg?seed=Ta&backgroundColor=eef4fa&textColor=5c7094" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid #fff; box-shadow:0 2px 8px rgba(92,112,148,0.15);">
         </div>
-        <div style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
-          <div id="bannerTitle" style="font-size:13px; font-weight:bold; color:#3d4a6a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">未播放</div>
-          <div id="bannerLyric" style="font-size:11px; color:#7a86a8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;">点击展开心跳共振舱...</div>
-        </div>
-      </div>
-      <div id="bannerPlayBtn" style="width:28px; height:28px; border-radius:50%; background:#eef4fa; border:1px solid #dce5f0; display:grid; place-items:center; color:#5c7094;"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;margin-left:2px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div>
-    `;
-    room.appendChild(banner);
+      `;
+      room.appendChild(banner);
   }
 
   function ensureMusicModal(){
@@ -11131,46 +11133,87 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     injectChatBanner();
     const html = `
     <div id="musicModal" class="modal" style="z-index:12000; background:rgba(0,0,0,0.3); backdrop-filter:blur(6px);" onclick="if(event.target===this) this.classList.remove('active')">
-      <div class="modal-card" style="width:92%; max-width:380px; max-height:85dvh; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; box-shadow:0 12px 40px rgba(92,112,148,0.2); border-radius:24px; padding:24px; display:flex; flex-direction:column;">
+      <div class="modal-card" style="width:92%; max-width:400px; max-height:85dvh; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; box-shadow:0 12px 40px rgba(92,112,148,0.2); border-radius:24px; padding:20px; display:flex; flex-direction:column;">
         
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; position:relative;">
-          <img id="musicMeAv" src="https://api.dicebear.com/7.x/initials/svg?seed=Me&backgroundColor=eef4fa&textColor=5c7094" style="width:44px; height:44px; border-radius:50%; border:2px solid #fff; box-shadow:0 4px 12px rgba(92,112,148,0.15); object-fit:cover; cursor:pointer;" onclick="window._changeMusicAv('me')">
-          <div style="position:absolute; left:50%; top:0; transform:translateX(-50%); width:40px; height:4px; background:#dce5f0; border-radius:2px;"></div>
-          <img id="musicTaAv" src="https://api.dicebear.com/7.x/initials/svg?seed=Ta&backgroundColor=eef4fa&textColor=5c7094" style="width:44px; height:44px; border-radius:50%; border:2px solid #fff; box-shadow:0 4px 12px rgba(92,112,148,0.15); object-fit:cover; cursor:pointer;" onclick="window._changeMusicAv('ta')">
-        </div>
-        
-        <div id="musicNow" style="font-size:16px; color:#3d4a6a; text-align:center; font-weight:bold; margin-bottom:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:1px;">♪ 未播放</div>
-        
-        <div class="lyric-mask" style="height:72px; margin-bottom:20px;">
-          <div id="musicLyricInner" class="lyric-inner" style="line-height:24px; font-size:13px;"><br>🤍 旋律在海盐蓝中流淌...<br><br></div>
-        </div>
-        
-        <div style="display:flex; align-items:center; gap:12px; font-size:11px; color:#7a86a8; font-family:ui-monospace, monospace; margin-bottom:24px;">
-          <span id="musicCurTime">00:00</span>
-          <input type="range" id="musicProgress" value="0" min="0" max="100" style="flex:1; height:4px; border-radius:2px; background:rgba(92,112,148,0.2); accent-color:#5c7094; outline:none; cursor:pointer;">
-          <span id="musicTotTime">00:00</span>
-        </div>
-        
-        <div style="display:flex; justify-content:center; align-items:center; gap:24px; margin-bottom:24px;">
-          <button class="btn" onclick="window._toggleLoopMode()" id="musicLoopBtn" style="background:transparent; border:none; padding:0; cursor:pointer; color:#7a86a8; font-size:13px; font-weight:bold;">列表</button>
-          <button class="btn" id="musicPrevBtn" style="background:transparent; border:none; padding:0; cursor:pointer; color:#5c7094;"><svg viewBox="0 0 24 24" style="width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
-          <button class="btn" id="musicPlayPauseBtn" style="width:52px;height:52px;border-radius:16px;background:#eef4fa;border:1px solid #dce5f0;color:#5c7094;display:grid;place-items:center;cursor:pointer;box-shadow:0 4px 12px rgba(92,112,148,0.1);"><svg id="playIconSvg" viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;margin-left:2px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></button>
-          <button class="btn" id="musicNextBtn" style="background:transparent; border:none; padding:0; cursor:pointer; color:#5c7094;"><svg viewBox="0 0 24 24" style="width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
-        </div>
-        
-        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #dce5f0; padding-top:16px;">
-          <div style="font-size:12px; color:#5c7094; font-weight:bold; cursor:pointer;" onclick="document.getElementById('musicModal').classList.remove('active')">悬浮至聊天</div>
-          <div style="display:flex; gap:8px;">
-            <button class="btn" onclick="document.getElementById('localMusicUpload').click()" style="background:transparent; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; padding:4px 12px; font-weight:bold; font-size:11px;">本地</button>
-            <input id="musicKw" class="input" placeholder="搜歌..." style="width:80px; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:11px; padding:4px 8px; outline:none;">
-            <button class="btn p" id="musicSearchBtn" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:4px 12px; font-weight:bold; font-size:11px; box-shadow:none;">搜索</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-shrink:0;">
+          <h3 style="margin:0; color:#3d4a6a; font-size:18px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
+            <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+            心跳共振舱
+          </h3>
+          <div style="display:flex; gap:12px; align-items:center;">
+            <div onclick="window._toggleChatBanner()" style="font-size:12px; color:#5c7094; font-weight:bold; background:#eef4fa; padding:4px 10px; border-radius:12px; cursor:pointer; border:1px solid #dce5f0; display:flex; align-items:center; gap:4px;">
+              <svg viewBox="0 0 24 24" style="width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              悬浮至聊天
+            </div>
+            <div onclick="document.getElementById('musicModal').classList.remove('active')" style="color:#7a86a8; font-size:26px; cursor:pointer; line-height:1;">×</div>
           </div>
         </div>
-        <input type="file" id="localMusicUpload" accept="audio/*" style="display:none;">
         
-        <div id="musicList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; margin-top:16px; max-height:150px; scrollbar-width:none;"></div>
+        <div style="display:flex; gap:8px; margin-bottom:16px; flex-shrink:0;">
+          <input id="musicKw" class="input" placeholder="搜免费翻唱..." style="flex:1; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; font-size:14px; padding:8px 12px; outline:none;">
+          <button class="btn p" id="musicSearchBtn" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:12px; padding:0 16px; font-weight:bold; box-shadow:none;">搜索</button>
+          <button class="btn" onclick="document.getElementById('localMusicUpload').click()" style="background:transparent; border:1px solid #dce5f0; color:#5c7094; border-radius:12px; padding:0 12px; font-weight:bold;">本地</button>
+          <input type="file" id="localMusicUpload" accept="audio/*" style="display:none;">
+        </div>
+
+        <div style="background:linear-gradient(135deg, #eef4fa, #dce5f0); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:inset 0 2px 10px rgba(255,255,255,0.5); flex-shrink:0;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding:0 10px;">
+            <div style="position:relative; cursor:pointer;" onclick="window._changeMusicAv('me')" title="点击换头像">
+              <img id="musicMeAv" src="https://via.placeholder.com/48" style="width:44px; height:44px; border-radius:50%; border:2px solid #fff; box-shadow:0 4px 12px rgba(92,112,148,0.15); object-fit:cover;">
+            </div>
+            <div style="flex:1; height:20px; position:relative; display:flex; justify-content:center; align-items:center; margin:0 8px;">
+               <svg viewBox="0 0 100 20" style="width:100%; height:20px; stroke:#8ca8d8; stroke-width:1.5; fill:none; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 2px 4px rgba(140,168,216,0.3));">
+                 <path class="ecg-line" d="M0,10 L30,10 L35,2 L45,18 L55,5 L60,10 L100,10" />
+               </svg>
+            </div>
+            <div style="position:relative; cursor:pointer;" onclick="window._changeMusicAv('ta')" title="点击换头像">
+              <img id="musicTaAv" src="https://via.placeholder.com/48" style="width:44px; height:44px; border-radius:50%; border:2px solid #fff; box-shadow:0 4px 12px rgba(92,112,148,0.15); object-fit:cover;">
+            </div>
+          </div>
+          <input type="file" id="musicAvUploadFile" accept="image/*" style="display:none;" onchange="window._handleMusicAvUpload(event)">
+
+          <div id="musicNow" style="font-size:15px; color:#3d4a6a; text-align:center; font-weight:bold; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">当前未播放</div>
+          
+          <div class="lyric-mask"><div id="musicLyricInner" class="lyric-inner"><br>🤍 旋律在海盐蓝中流淌...<br><br></div></div>
+          
+          <div style="display:flex; align-items:center; gap:8px; margin-top:12px; font-size:11px; color:#5c7094; font-family:ui-monospace, monospace;">
+            <span id="musicCurTime">00:00</span>
+            <input type="range" id="musicProgress" value="0" min="0" max="100" style="flex:1; height:4px; border-radius:2px; background:rgba(92,112,148,0.2); accent-color:#5c7094; outline:none; cursor:pointer;">
+            <span id="musicTotTime">00:00</span>
+          </div>
+          
+          <div style="display:flex; justify-content:center; align-items:center; gap:20px; margin-top:12px;">
+            <button class="btn" onclick="window._toggleLoopMode()" id="musicLoopBtn" style="background:transparent; border:none; padding:0; cursor:pointer; color:#7a86a8; font-size:12px; font-weight:bold;">列表</button>
+            <button class="btn" id="musicPrevBtn" style="background:transparent; border:none; padding:0; cursor:pointer; color:#5c7094;"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
+            <button class="btn" id="musicPlayPauseBtn" style="width:44px;height:44px;border-radius:50%;background:#fff;border:1px solid #dce5f0;color:#5c7094;display:grid;place-items:center;cursor:pointer;box-shadow:0 4px 12px rgba(92,112,148,0.1);"><svg id="playIconSvg" viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;margin-left:2px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></button>
+            <button class="btn" id="musicNextBtn" style="background:transparent; border:none; padding:0; cursor:pointer; color:#5c7094;"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
+          </div>
+        </div>
+        
+        <div style="display:flex; gap:16px; margin-bottom:8px; border-bottom:1px solid #dce5f0; padding-bottom:4px; flex-shrink:0;">
+          <div id="tabPlaylist" onclick="window._switchMusicTab('playlist')" style="font-size:14px; font-weight:bold; color:#3d4a6a; cursor:pointer; border-bottom:2px solid #5c7094; padding-bottom:4px;">我的歌单</div>
+          <div id="tabSearch" onclick="window._switchMusicTab('search')" style="font-size:14px; font-weight:bold; color:#a0aaba; cursor:pointer; padding-bottom:4px;">搜索结果</div>
+        </div>
+        <div id="musicList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; min-height:160px; scrollbar-width:none;"></div>
       </div>
     </div>
+    
+    <!-- 🌟 灵魂歌词注入器弹窗 -->
+    <div id="lyricEditModal" class="modal" style="z-index:13000; background:rgba(0,0,0,0.3); backdrop-filter:blur(6px); display:none;" onclick="if(event.target===this) this.style.display='none'">
+      <div class="modal-card" style="width:90%; max-width:360px; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:24px; padding:20px; margin:auto; margin-top:15vh; box-shadow:0 12px 40px rgba(92,112,148,0.2);">
+        <div style="font-size:16px; font-weight:bold; color:#3d4a6a; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+          <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+          注入灵魂歌词
+        </div>
+        <div style="font-size:11px; color:#7a86a8; margin-bottom:12px; line-height:1.5;">请去网易云/QQ音乐网页版复制带有 <b>[00:00.00]</b> 时间轴的 LRC 歌词，直接贴在下面：</div>
+        <textarea id="lyricInputArea" class="ta" style="width:100%; height:180px; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; border-radius:12px; padding:12px; font-size:12px; color:#5c7094; font-family:ui-monospace, monospace; resize:vertical; outline:none; box-sizing:border-box;"></textarea>
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+          <button class="btn" onclick="document.getElementById('lyricEditModal').style.display='none'" style="background:transparent; border:1px solid #dce5f0; color:#7a86a8; border-radius:10px; padding:6px 16px; font-weight:bold;">取消</button>
+          <button class="btn p" onclick="window._saveLocalLyric()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:6px 16px; font-weight:bold;">注入</button>
+        </div>
+      </div>
+    </div>
+    
     <audio id="musicAudio" preload="none"></audio>`;
     document.body.insertAdjacentHTML('beforeend', html);
 
@@ -11205,13 +11248,7 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
       const reader = new FileReader();
       reader.onload = function(ev) {
         const audioBase64 = ev.target.result;
-        window.musicState.playlist.unshift({ 
-          title: customName.trim(), 
-          author: '本地私藏', 
-          url: audioBase64, 
-          lrc: '', 
-          rawLrc: '' 
-        });
+        window.musicState.playlist.unshift({ title: customName.trim(), author: '本地私藏', url: audioBase64, lrc: '', rawLrc: '' });
         localforage.setItem('mp_fix_playlist_v4', window.musicState.playlist);
         window._switchMusicTab('playlist');
         window._pickSong(0, true);
@@ -11237,7 +11274,7 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
         for(let i=0; i<lrcArr.length; i++) {
           if(audio.currentTime >= lrcArr[i].time) activeIdx = i; else break;
         }
-        inner.style.transform = `translateY(-${activeIdx * 24}px)`;
+        inner.style.transform = `translateY(-${activeIdx * 18}px)`;
         Array.from(inner.children).forEach((child, i) => {
           if(i === activeIdx) { child.style.color = '#3d4a6a'; child.style.opacity = '1'; child.style.textShadow = '0 0 8px rgba(165,207,255,0.8)'; }
           else { child.style.color = '#5c7094'; child.style.opacity = '0.4'; child.style.textShadow = 'none'; }
@@ -11338,6 +11375,7 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
           <div style="font-size:11px; color:#7a86a8;">${s.author}</div>
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
+          <!-- 🌟 歌词注入入口 -->
           <div onclick="event.stopPropagation(); window._openLyricModal(${i})" style="color:#a5cfff; cursor:pointer; display:flex; align-items:center;" title="注入歌词">
             <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
           </div>
@@ -11346,6 +11384,7 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
       </div>`).join('');
   }
 
+  // 🌟 歌词注入魔法函数
   window._openLyricModal = function(i) {
     window.musicState.editLyricIdx = i;
     const s = window.musicState.playlist[i];
@@ -11360,7 +11399,11 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
       window.musicState.playlist[idx].rawLrc = txt;
       localforage.setItem('mp_fix_playlist_v4', window.musicState.playlist);
       document.getElementById('lyricEditModal').style.display = 'none';
-      if(window.musicState.idx === idx) { window._pickSong(idx, false); }
+      
+      // 如果刚好在播这首歌，瞬间刷新歌词！
+      if(window.musicState.idx === idx) {
+         window._pickSong(idx, false); 
+      }
       alert('✨ 灵魂歌词注入成功！');
     }
   };
@@ -11380,7 +11423,7 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     window.musicState.title = s.title; 
     window.musicState.artist = s.author;
     window.musicState.lyrics = []; 
-    document.getElementById('musicNow').innerHTML = '<span style="color:#2f66d8;">解析音源中...</span>';
+    document.getElementById('musicNow').innerHTML = `<span style="color:#2f66d8;">解析音源中...</span>`;
     document.getElementById('musicLyricInner').innerHTML = '<div style="height:18px;">🎵 正在加载...</div>';
     document.getElementById('musicLyricInner').style.transform = 'translateY(0)';
     if(window.musicState.currentTab === 'playlist') renderPlaylist();
@@ -11401,11 +11444,12 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
       }
     }
 
+    // 🌟 歌词解析引擎 (优先读取你贴进去的 rawLrc)
     const parseLrc = (txt) => {
-      const lines = txt.split('\\n');
+      const lines = txt.split('\n');
       const lrcArr = [];
       lines.forEach(l => {
-        const match = l.match(/\\[(\\d{2,}):(\\d{2})\\.(\\d{2,3})\\](.*)/);
+        const match = l.match(/\[(\d{2,}):(\d{2})\.(\d{2,3})\](.*)/);
         if(match) {
           const msStr = match[3].length === 2 ? match[3] + '0' : match[3];
           const ms = parseFloat('0.' + msStr);
@@ -11414,7 +11458,7 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
         }
       });
       window.musicState.lyrics = lrcArr;
-      document.getElementById('musicLyricInner').innerHTML = lrcArr.length ? lrcArr.map(l => '<div style="height:24px; transition:all 0.3s;">' + l.text + '</div>').join('') : '<div style="height:24px;">🤍 纯音乐，请欣赏...</div>';
+      document.getElementById('musicLyricInner').innerHTML = lrcArr.length ? lrcArr.map(l => `<div style="height:18px; transition:all 0.3s;">${l.text}</div>`).join('') : '<div style="height:18px;">🤍 纯音乐，请欣赏...</div>';
     };
 
     if(s.rawLrc) {
@@ -11431,7 +11475,7 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
       window._refreshMusicUI();
 
       if(triggerChat && window.currentId) {
-        const msgText = '[music:' + s.title + ' - ' + s.author + ']';
+        const msgText = `[music:${s.title} - ${s.author}]`;
         const arr = window.getChatArr(window.currentId);
         arr.push({ id: 'm_'+Date.now(), role: 'user', text: msgText, time: Date.now(), stored: true });
         window.setChatArr(window.currentId, arr);
@@ -11441,10 +11485,10 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
   };
 
   window._refreshMusicUI = function(){
-    const titleText = window.musicState.title ? '♪ ' + window.musicState.title : '未播放';
+    const titleText = window.musicState.title ? `♪ ${window.musicState.title}` : '未播放';
     const n = document.getElementById('musicNow');
     const bn = document.getElementById('bannerTitle');
-    if(n) n.innerHTML = window.musicState.title ? '<span style="color:#5c7094; font-weight:bold;">' + titleText + '</span> <span style="color:#a0aaba;">- ' + window.musicState.artist + '</span>' : '未播放';
+    if(n) n.innerHTML = window.musicState.title ? `<span style="color:#5c7094; font-weight:bold;">${titleText}</span> <span style="color:#a0aaba;">- ${window.musicState.artist}</span>` : '未播放';
     if(bn) bn.textContent = titleText;
     
     const topBtn = document.getElementById('musicBtn');
@@ -11465,10 +11509,10 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     const svg = document.getElementById('playIconSvg');
     if(svg) {
       if(window.musicState.playing) {
-        svg.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
+        svg.innerHTML = `<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>`;
         svg.style.marginLeft = '0';
       } else {
-        svg.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
+        svg.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"></polygon>`;
         svg.style.marginLeft = '2px';
       }
     }
@@ -11491,17 +11535,17 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
 
   window._musicContextForAI = function() {
     if(window.musicState && window.musicState.playing && window.musicState.title) {
-      let prompt = '【一起听歌中】你和玩家正在使用“全息音乐舱”同步听歌，你们的头像被一条跳动的心电图连线连在一起，氛围极其暧昧。当前播放：《' + window.musicState.title + ' - ' + window.musicState.artist + '》。';
+      let prompt = `【一起听歌中】你和玩家正在使用“全息音乐舱”同步听歌，你们的头像被一条跳动的心电图连线连在一起，氛围极其暧昧。当前播放：《${window.musicState.title} - ${window.musicState.artist}》。`;
       
       const audio = document.getElementById('musicAudio');
       const lrcArr = window.musicState.lyrics;
       if(audio && lrcArr && lrcArr.length > 0) {
         let curLine = '';
         for(let i=0; i<lrcArr.length; i++) { if(audio.currentTime >= lrcArr[i].time) curLine = lrcArr[i].text; else break; }
-        if(curLine) prompt += '\\n【实时歌词雷达】：正好唱到这句歌词——“' + curLine + '”。';
+        if(curLine) prompt += `\n【实时歌词雷达】：正好唱到这句歌词——“${curLine}”。`;
       }
       
-      prompt += '\\n【男主行动要求】：请极度贴合你的人设，自然、主动地在回复中提及这首歌的氛围、当前这句歌词，或者感受到你们心跳相连的悸动感！如果是傲娇请别扭地承认好听，如果是直球请借着歌词表白！';
+      prompt += `\n【男主行动要求】：请极度贴合你的人设，自然、主动地在回复中提及这首歌的氛围、当前这句歌词，或者感受到你们心跳相连的悸动感！如果是傲娇请别扭地承认好听，如果是直球请借着歌词表白！`;
       return prompt;
     }
     return '当前未播放音乐。';
@@ -11530,7 +11574,5 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
   }, 800);
 })();
 </script>
-</pre>
-</div>
 </body>
 </html>
