@@ -11063,11 +11063,11 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     <div id="ifWbList" style="flex:1; overflow-y:auto; padding:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; flex-direction:column; gap:12px;"></div>
   </div>
 </div>
-<!-- 🌟 蓝色高定：初雪海盐蓝 & 真实音源解析多线程聚合引擎 -->
+<!-- 🌟 蓝色高定：初雪海盐蓝 & 极简稳定版音乐引擎 -->
 <script>
 (() => {
   const METING_API = 'https://api.i-meto.com/meting/api';
-  window.musicState = { list: [], idx: -1, playing: false, title: '', artist: '', url: '', selected: new Set() };
+  window.musicState = { list: [], idx: -1, playing: false, title: '', artist: '', url: '' };
   let favPlaylist = JSON.parse(localStorage.getItem('mp_music_playlist') || '[]');
   let currentTab = 'search'; 
 
@@ -11091,23 +11091,26 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
         
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
           <div style="display:flex; gap:12px; font-size:15px; font-weight:800; color:#a0aaba;">
-            <span id="tabSearch" style="cursor:pointer; color:#3d4a6a; transition:color 0.2s;" onclick="window._switchMusicTab('search')">全网聚合</span>
-            <span id="tabFav" style="cursor:pointer; transition:color 0.2s;" onclick="window._switchMusicTab('fav')">我的列表</span>
+            <span id="tabSearch" style="cursor:pointer; color:#3d4a6a; transition:color 0.2s;" onclick="window._switchMusicTab('search')">免费曲库</span>
+            <span id="tabFav" style="cursor:pointer; transition:color 0.2s;" onclick="window._switchMusicTab('fav')">我的私藏</span>
           </div>
           <div onclick="document.getElementById('musicModal').classList.remove('active')" style="color:#7a86a8; font-size:24px; cursor:pointer; line-height:1;">×</div>
         </div>
         
         <div id="searchArea" style="display:flex; gap:8px; margin-bottom:12px;">
-          <input id="musicKw" class="input" placeholder="输入歌名，一键搜遍全网..." style="flex:1; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; font-size:13px; padding:8px 12px; outline:none;">
-          <button class="btn p" id="musicSearchBtn" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:12px; padding:0 16px; font-weight:bold; box-shadow:none;">聚合搜索</button>
+          <select id="musicServer" style="background:rgba(255,255,255,0.6); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; font-size:13px; padding:8px; outline:none;">
+            <option value="netease">网易云</option>
+            <option value="kugou">酷狗源</option>
+          </select>
+          <input id="musicKw" class="input" placeholder="搜免费版或Live版..." style="flex:1; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; font-size:13px; padding:8px 12px; outline:none;">
+          <button class="btn p" id="musicSearchBtn" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:12px; padding:0 16px; font-weight:bold; box-shadow:none;">搜索</button>
         </div>
 
-        <div id="batchActionArea" style="display:flex; justify-content:space-between; align-items:center; padding-bottom:8px; border-bottom:1px solid #dce5f0; margin-bottom:8px;">
-           <div style="display:flex; align-items:center; gap:6px; cursor:pointer; color:#5c7094; font-size:13px;" onclick="window._toggleSelectAll()">
-              <div id="selectAllIcon" style="width:16px; height:16px; border:1px solid #dce5f0; border-radius:4px; display:flex; justify-content:center; align-items:center;"></div>
-              <span style="font-weight:bold;">全选</span>
-           </div>
-           <button id="addSelectedBtn" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:4px 12px; font-size:12px; font-weight:bold; cursor:pointer; transition:all 0.2s;" onclick="window._addSelectedToPlaylist()">添加选中 (0)</button>
+        <!-- 🌟 优雅的本地直传通道 -->
+        <div id="localActionArea" style="display:flex; justify-content:space-between; align-items:center; padding-bottom:8px; border-bottom:1px solid #dce5f0; margin-bottom:8px;">
+           <span style="color:#7a86a8; font-size:11px;">VIP歌曲请下载后通过本地导入👇</span>
+           <button style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:4px 12px; font-size:12px; font-weight:bold; cursor:pointer;" onclick="document.getElementById('localMusicInput').click()">📁 导入本地 MP3</button>
+           <input type="file" id="localMusicInput" accept="audio/*" style="display:none;" onchange="window._handleLocalUpload(event)">
         </div>
 
         <div style="background:rgba(238,244,250,0.5); border:1px solid #dce5f0; border-radius:16px; padding:12px; margin-bottom:16px; text-align:center; min-height:40px; display:flex; flex-direction:column; justify-content:center;">
@@ -11138,80 +11141,36 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     document.getElementById('tabSearch').style.color = tab === 'search' ? '#3d4a6a' : '#a0aaba';
     document.getElementById('tabFav').style.color = tab === 'fav' ? '#3d4a6a' : '#a0aaba';
     document.getElementById('searchArea').style.display = tab === 'search' ? 'flex' : 'none';
-    document.getElementById('batchActionArea').style.display = tab === 'search' ? 'flex' : 'none';
-    window.musicState.selected.clear();
-    updateBatchUI();
     renderMusicList();
+  };
+
+  window._handleLocalUpload = function(e) {
+    const file = e.target.files[0];
+    if(!file) return;
+    const localUrl = URL.createObjectURL(file);
+    const title = file.name.replace(/\.[^/.]+$/, "");
+    const newSong = { id: 'local_' + Date.now(), title: title, author: '本地高音质', server: 'local', url: localUrl };
+    
+    favPlaylist.unshift(newSong);
+    localStorage.setItem('mp_music_playlist', JSON.stringify(favPlaylist));
+    window._switchMusicTab('fav');
+    window._pickSong(0);
   };
 
   async function doMusicSearch(){
     const kw = document.getElementById('musicKw').value.trim();
+    const server = document.getElementById('musicServer').value;
     if(!kw) return;
     const btn = document.getElementById('musicSearchBtn');
-    btn.textContent = '聚合中...';
-    
+    btn.textContent = '...';
     try {
-      const servers = ['netease', 'tencent', 'kugou'];
-      const promises = servers.map(server => 
-        fetch(`${METING_API}?server=${server}&type=search&id=${encodeURIComponent(kw)}`)
-          .then(r => r.json())
-          .then(j => (j || []).map(s => ({ ...s, server, uniqueId: s.id + '_' + server })))
-          .catch(() => []) 
-      );
-      
-      const results = await Promise.all(promises);
-      window.musicState.list = results.flat().sort(() => Math.random() - 0.5); 
-      
-      window.musicState.selected.clear();
-      updateBatchUI();
+      const r = await fetch(`${METING_API}?server=${server}&type=search&id=${encodeURIComponent(kw)}`);
+      const j = await r.json();
+      window.musicState.list = (j || []).map(s => ({ ...s, server, uniqueId: s.id + '_' + server })); 
       renderMusicList();
-    } catch(e) { alert('搜索失败了宝宝！'); }
-    btn.textContent = '聚合搜索';
+    } catch(e) { alert('网络有点小脾气，稍后再试哦~'); }
+    btn.textContent = '搜索';
   }
-
-  window._toggleSelect = function(idx) {
-    if(currentTab !== 'search') return;
-    const s = window.musicState.list[idx];
-    if(window.musicState.selected.has(s.uniqueId)) window.musicState.selected.delete(s.uniqueId);
-    else window.musicState.selected.add(s.uniqueId);
-    updateBatchUI();
-    renderMusicList();
-  };
-
-  window._toggleSelectAll = function() {
-    if(window.musicState.selected.size === window.musicState.list.length && window.musicState.list.length > 0) window.musicState.selected.clear();
-    else window.musicState.list.forEach(s => window.musicState.selected.add(s.uniqueId));
-    updateBatchUI();
-    renderMusicList();
-  };
-
-  function updateBatchUI() {
-    const count = window.musicState.selected.size;
-    const total = window.musicState.list.length;
-    document.getElementById('addSelectedBtn').textContent = `添加选中 (${count})`;
-    document.getElementById('addSelectedBtn').style.background = count > 0 ? '#5c7094' : '#eef4fa';
-    document.getElementById('addSelectedBtn').style.color = count > 0 ? '#fff' : '#5c7094';
-    
-    const allIcon = document.getElementById('selectAllIcon');
-    if(count > 0 && count === total) {
-      allIcon.innerHTML = `<svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:#5c7094;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-      allIcon.style.background = '#eef4fa';
-    } else {
-      allIcon.innerHTML = '';
-      allIcon.style.background = 'transparent';
-    }
-  }
-
-  window._addSelectedToPlaylist = function() {
-    const selectedSongs = window.musicState.list.filter(s => window.musicState.selected.has(s.uniqueId));
-    if(selectedSongs.length === 0) return;
-    selectedSongs.reverse().forEach(song => {
-      if(!favPlaylist.some(f => f.uniqueId === song.uniqueId)) favPlaylist.unshift(song);
-    });
-    localStorage.setItem('mp_music_playlist', JSON.stringify(favPlaylist));
-    window.musicState.selected.clear();
-    window._switchMusicTab('fav');
-  };
 
   window._playFromSearch = function(i) {
     const song = window.musicState.list[i];
@@ -11231,28 +11190,17 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     const dataList = currentTab === 'search' ? window.musicState.list : favPlaylist;
     
     if(!dataList.length) { 
-      box.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:12px; padding:40px 0;">${currentTab === 'search' ? '空空如也，换个词搜搜看~' : '播放列表空空如也'}</div>`; 
+      box.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:12px; padding:40px 0;">${currentTab === 'search' ? '搜搜看，点击直接加入私藏并播放~' : '播放列表空空如也，快去导入吧'}</div>`; 
       return; 
     }
     
     box.innerHTML = dataList.map((s, i) => {
-      const isSelected = window.musicState.selected.has(s.uniqueId);
-      const bg = isSelected ? '#eef4fa' : 'rgba(255,255,255,0.6)';
-      
-      let leftIcon = '';
-      if(currentTab === 'search') {
-        leftIcon = isSelected 
-          ? `<div style="width:18px; height:18px; border:1px solid #5c7094; border-radius:6px; background:#5c7094; display:flex; justify-content:center; align-items:center; margin-right:12px; cursor:pointer;" onclick="event.stopPropagation(); window._toggleSelect(${i})"><svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"></polyline></svg></div>`
-          : `<div style="width:18px; height:18px; border:1px solid #dce5f0; border-radius:6px; margin-right:12px; cursor:pointer; background:#fff;" onclick="event.stopPropagation(); window._toggleSelect(${i})"></div>`;
-      }
-
       return `
-      <div style="padding:10px 12px; background:${bg}; border:1px solid #eef4fa; border-radius:12px; display:flex; align-items:center; cursor:pointer; transition:all 0.2s;" onclick="currentTab === 'search' ? window._playFromSearch(${i}) : window._pickSong(${i})">
-        ${leftIcon}
+      <div style="padding:10px 12px; background:rgba(255,255,255,0.6); border:1px solid #eef4fa; border-radius:12px; display:flex; align-items:center; cursor:pointer; transition:all 0.2s;" onclick="currentTab === 'search' ? window._playFromSearch(${i}) : window._pickSong(${i})">
         <div style="flex:1; min-width:0;">
           <div style="font-size:13px; font-weight:800; color:#3d4a6a; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.title}</div>
           <div style="font-size:11px; color:#7a86a8; display:flex; align-items:center; gap:6px;">
-            <span style="background:#eef4fa; padding:2px 6px; border-radius:4px; color:#5c7094;">${s.server==='netease'?'网易云':(s.server==='kugou'?'酷狗源':'QQ音乐')}</span>
+            <span style="background:#eef4fa; padding:2px 6px; border-radius:4px; color:#5c7094;">${s.server==='local'?'📁 本地直传':(s.server==='netease'?'网易云':'酷狗源')}</span>
             <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.author}</span>
           </div>
         </div>
@@ -11260,24 +11208,26 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     }).join('');
   }
 
-  // 🌟 核心修复：拿着ID去获取真实的音源链接！
   window._pickSong = async function(i){
     const s = favPlaylist[i]; if(!s) return;
     window.musicState.list = favPlaylist;
     window.musicState.idx = i; 
     window.musicState.title = s.title; 
     window.musicState.artist = s.author;
-    document.getElementById('musicNow').innerHTML = `<span style="color:#2f66d8;">正在获取真实音源...</span>`;
+    document.getElementById('musicNow').innerHTML = `<span style="color:#2f66d8;">加载音源中...</span>`;
     
     try {
-      // 二次请求：获取真正的歌曲详情
-      const res = await fetch(`${METING_API}?server=${s.server}&type=song&id=${s.id}`);
-      const data = await res.json();
-      
-      // 解析出真正的 MP3 地址
-      const realUrl = (data && data[0] && data[0].url) ? data[0].url : s.url;
-      
-      if(!realUrl || realUrl.includes('null')) throw new Error('版权限制');
+      let realUrl = s.url;
+      // 如果是网络歌曲，尝试获取最新有效链接
+      if (s.server !== 'local') {
+         const res = await fetch(`${METING_API}?server=${s.server}&type=song&id=${s.id}`);
+         const data = await res.json();
+         if(data && data[0] && data[0].url && !data[0].url.includes('null')) {
+            realUrl = data[0].url;
+         } else {
+            throw new Error('版权锁死');
+         }
+      }
 
       const audio = document.getElementById('musicAudio');
       audio.src = realUrl; 
@@ -11285,7 +11235,7 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
       window.musicState.playing = true;
       refreshUI();
     } catch(e) { 
-      document.getElementById('musicNow').innerHTML = `<span style="color:#ff3b30;">这首歌被平台锁死了，换个电台版或者酷狗版吧宝宝</span>`; 
+      document.getElementById('musicNow').innerHTML = `<span style="color:#dce5f0; background:#5c7094; padding:2px 8px; border-radius:10px;">这首被版权锁啦，请用本地导入~</span>`; 
     }
   }
 
@@ -11311,6 +11261,7 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     window._pickSong(i);
   }
 
+  // 隐形外挂切歌拦截器
   window._applyMusicCmdFromAI = function(text){
     const t = String(text||'').trim();
     if(/\[music:next\]/.test(t)){ switchTrack(1); return true; }
