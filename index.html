@@ -2724,22 +2724,10 @@ body {
     </button>
   </div>
     </div>
-    <!-- 🌟 蓝色高定：独立潜意识溯回抽屉 -->
-<div id="ivHistoryDrawer" class="chat-iv-dropdown hidden" style="max-height: 50dvh; display: flex; flex-direction: column; padding: 0; z-index: 45;">
-  <div style="padding: 12px 16px; border-bottom: 1px solid #dce5f0; display: flex; justify-content: space-between; align-items: center; background: rgba(238,244,250,0.4); flex-shrink: 0;">
-    <div style="font-size: 13px; font-weight: 800; color: #5c7094; letter-spacing: 1px; display: flex; align-items: center; gap: 6px;">
-      <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-      潜意识溯回
-    </div>
-    <div style="display: flex; gap: 10px;">
-      <button class="btn" id="ivManageBtn" onclick="window._toggleIvManage()" style="background: transparent; color: #7a86a8; border: 1px solid #dce5f0; padding: 4px 10px; font-size: 11px; border-radius: 8px;">管理</button>
-      <button class="btn" onclick="document.getElementById('ivHistoryDrawer').classList.add('hidden')" style="background: #eef4fa; color: #5c7094; border: 1px solid #dce5f0; padding: 4px 10px; font-size: 11px; border-radius: 8px; font-weight: bold;">收起</button>
-    </div>
-  </div>
-  <div id="ivHistoryList" style="flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 12px;"></div>
-  <div id="ivBatchBar" class="hidden" style="padding: 10px 16px; border-top: 1px solid #dce5f0; background: rgba(250,252,255,0.95); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
-    <span id="ivSelCount" style="font-size: 12px; color: #7a86a8; font-weight: bold;">已选 0 项</span>
-    <button class="btn d" onclick="window._deleteSelectedIv()" style="background: #fcf2f2; color: #b57b7b; border: 1px solid #f2dcdc; padding: 6px 16px; border-radius: 8px; font-size: 12px; font-weight: bold;">抹除记忆</button>
+   <!-- 🌟 蓝色高定：悬浮于屏幕中央的 3D 纯净心声舱 -->
+<div id="ivHistoryDrawer" class="hidden" style="position:fixed; inset:0; z-index:9999; background:rgba(238,244,250,0.3); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; opacity:1; transition:opacity 0.3s;" onclick="this.classList.add('hidden')">
+  <div id="ivHistoryList" style="width:85%; max-width:340px; perspective:1000px;" onclick="event.stopPropagation()">
+    <!-- 卡片会在这里由 JS 动态生成 -->
   </div>
 </div>
     <div id="chatMsgs"></div><div id="offlinePalettePanel" class="off-palette-panel global">
@@ -4073,59 +4061,43 @@ window._ivManageMode = false;
 
 
 
-    // 🌟 蓝色的放映机齿轮：记住当前正在看哪一页 (0是最新的)
+    
+
+ // 🌟 蓝色的放映机齿轮：记住当前页码
     window._ivCurrentIndex = 0;
 
-    // 🌟 魔法1：点一下开，再点一下关！(Toggle 逻辑)
     window._showInnerVoiceModal = function() {
       if(!currentId) return;
       const drawer = document.getElementById('ivHistoryDrawer');
       if(!drawer) return;
       
-      // 如果抽屉已经打开了，就丝滑地收起它！
       if(!drawer.classList.contains('hidden')) {
         drawer.classList.add('hidden');
         return;
       }
-      
       const c = getContactById(currentId);
       const st = normSettings(c?.settings);
       if(st.innerVoice && !c?.isGroup) {
         drawer.classList.remove('hidden');
         window._ivCurrentIndex = 0; 
-        window._renderIvHistory();
+        window._renderIvHistory(0); // 0代表初次弹出
       }
     };
 
-    // 🌟 魔法2：纯净无按钮的翻书卡片！
-    window._renderIvHistory = function() {
+    // 🌟 魔法2：自带 3D 翻页动画的悬浮卡片
+    window._renderIvHistory = function(direction = 0) {
       if(!currentId) return;
       const c = getContactById(currentId);
       const st = normSettings(c?.settings);
       const list = st.voiceHistory || [];
       const box = document.getElementById('ivHistoryList');
-      const drawer = document.getElementById('ivHistoryDrawer');
-
-      if(!box || !drawer) return;
-
-      // 强行隐藏掉之前那个带“管理”和“收起”的旧头部，以及旧的批量删除栏！
-      const oldHeader = box.previousElementSibling;
-      if(oldHeader) oldHeader.style.display = 'none';
-      const batchBar = document.getElementById('ivBatchBar');
-      if(batchBar) batchBar.style.display = 'none';
-
-      // 把抽屉本身的背景变透明，让卡片悬浮起来
-      drawer.style.padding = '10px 16px';
-      drawer.style.background = 'transparent';
-      drawer.style.boxShadow = 'none';
-      drawer.style.border = 'none';
+      if(!box) return;
 
       if(list.length === 0) {
-        box.innerHTML = `<div style="text-align:center; padding:30px 0; color:#a0aaba; font-size:12px; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border-radius:16px; border:1px solid #dce5f0; box-shadow:0 8px 24px rgba(92,112,148,0.08);">TA此刻心如止水，暂无潜意识波动...</div>`;
+        box.innerHTML = `<div style="padding:40px 20px; text-align:center; background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-radius:24px; border:1px solid rgba(255,255,255,0.8); color:#a0aaba; font-size:13px; box-shadow:0 20px 40px rgba(92,112,148,0.1);">TA此刻心如止水，暂无潜意识波动...</div>`;
         return;
       }
 
-      // 齿轮防错机制
       if(window._ivCurrentIndex >= list.length) window._ivCurrentIndex = list.length - 1;
       if(window._ivCurrentIndex < 0) window._ivCurrentIndex = 0;
 
@@ -4133,46 +4105,55 @@ window._ivManageMode = false;
       const d = new Date(v.time);
       const timeStr = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
 
-      // 生成底部的海盐蓝呼吸小圆点（最多显示10个）
+      // 呼吸灯
       const totalDots = Math.min(list.length, 10);
       let dotsHtml = '';
       for(let i=0; i<totalDots; i++){
         let isCur = false;
         if(list.length <= 10) { isCur = (i === window._ivCurrentIndex); } 
         else { let mappedIdx = Math.floor((window._ivCurrentIndex / list.length) * 10); isCur = (i === mappedIdx); }
-        dotsHtml += `<div style="width:5px; height:5px; border-radius:50%; background:${isCur ? '#5c7094' : '#dce5f0'}; transition:background 0.3s;"></div>`;
+        dotsHtml += `<div style="width:6px; height:6px; border-radius:50%; background:${isCur ? '#5c7094' : 'rgba(92,112,148,0.15)'}; transition:all 0.4s ease; transform:scale(${isCur ? 1.2 : 1});"></div>`;
       }
 
-      // 🌟 蓝色高定：自带隐形触控区的绝美悬浮卡片
+      // 决定播放哪个动画
+      const animClass = direction === 1 ? 'flip-next' : (direction === -1 ? 'flip-prev' : 'flip-in');
+
       box.innerHTML = `
-        <div style="position:relative; display:flex; flex-direction:column; padding:20px; background:rgba(250, 252, 255, 0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:20px; box-shadow:0 12px 40px rgba(92,112,148,0.12); overflow:hidden; transition:opacity 0.3s;">
+        <style>
+          @keyframes flipIn { from { opacity:0; transform:translateY(10px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+          @keyframes flipNext { from { opacity:0; transform:translateX(20px) rotateY(10deg); } to { opacity:1; transform:translateX(0) rotateY(0); } }
+          @keyframes flipPrev { from { opacity:0; transform:translateX(-20px) rotateY(-10deg); } to { opacity:1; transform:translateX(0) rotateY(0); } }
+          .flip-in { animation: flipIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+          .flip-next { animation: flipNext 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+          .flip-prev { animation: flipPrev 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        </style>
+        <div class="${animClass}" style="position:relative; display:flex; flex-direction:column; padding:24px; background:rgba(250,252,255,0.85); backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px); border:1px solid rgba(255,255,255,0.8); border-radius:24px; box-shadow:0 20px 40px rgba(92,112,148,0.15), inset 0 1px 1px rgba(255,255,255,0.9); overflow:hidden;">
           
-          <div style="display:flex; justify-content:space-between; align-items:center; position:relative; z-index:10; margin-bottom:12px; border-bottom:1px dashed #eef4fa; padding-bottom:8px;">
-            <div style="font-size:11px; color:#a0aaba; display:flex; align-items:center; gap:6px; font-family:ui-monospace, monospace;">
-              <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:#a0aaba; fill:none; stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <div style="display:flex; justify-content:space-between; align-items:center; position:relative; z-index:10; margin-bottom:16px; border-bottom:1px solid rgba(92,112,148,0.1); padding-bottom:12px;">
+            <div style="font-size:12px; color:#7a86a8; display:flex; align-items:center; gap:6px; font-family:ui-monospace, monospace; font-weight:bold;">
+              <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#a5cfff; fill:none; stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
               ${timeStr}
             </div>
-            <button class="btn" onclick="window._ivDelCurrent()" style="background:transparent; color:#b57b7b; border:none; font-size:11px; padding:0; cursor:pointer; font-weight:bold;">抹除</button>
+            <button class="btn" onclick="window._ivDelCurrent()" style="background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid rgba(242,220,220,0.8); border-radius:8px; font-size:11px; padding:4px 10px; cursor:pointer; font-weight:bold; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">抹除</button>
           </div>
 
-          <div style="font-size:14px; color:#5c7094; font-style:italic; line-height:1.6; text-align:justify; min-height:60px; display:flex; align-items:center; position:relative; z-index:10; pointer-events:none;">
+          <div style="font-size:15px; color:#3d4a6a; font-style:italic; line-height:1.7; text-align:justify; min-height:80px; display:flex; align-items:center; position:relative; z-index:10; pointer-events:none; font-weight:500;">
             "${safeEsc(v.text)}"
           </div>
 
-          <div style="display:flex; justify-content:center; gap:5px; margin-top:16px; position:relative; z-index:10; pointer-events:none;">
+          <div style="display:flex; justify-content:center; gap:6px; margin-top:20px; position:relative; z-index:10; pointer-events:none;">
             ${dotsHtml}
           </div>
 
-          <!-- 🌟 隐形的翻书触控区！左半边新(回到过去)，右半边旧(追溯历史) -->
-          <div onclick="window._ivGoNewer()" style="position:absolute; left:0; top:0; bottom:0; width:50%; z-index:5; cursor:pointer;" title="点左侧：较新的心声"></div>
-          <div onclick="window._ivGoOlder()" style="position:absolute; right:0; top:0; bottom:0; width:50%; z-index:5; cursor:pointer;" title="点右侧：较旧的心声"></div>
+          <!-- 隐形翻页触控区 -->
+          <div onclick="window._ivGoNewer()" style="position:absolute; left:0; top:0; bottom:0; width:50%; z-index:5; cursor:pointer;" title="点左边看较新"></div>
+          <div onclick="window._ivGoOlder()" style="position:absolute; right:0; top:0; bottom:0; width:50%; z-index:5; cursor:pointer;" title="点右边看较旧"></div>
         </div>
       `;
     };
 
-    // 翻页与删除魔法
-    window._ivGoOlder = function() { window._ivCurrentIndex++; window._renderIvHistory(); };
-    window._ivGoNewer = function() { window._ivCurrentIndex--; window._renderIvHistory(); };
+    window._ivGoOlder = function() { window._ivCurrentIndex++; window._renderIvHistory(1); };
+    window._ivGoNewer = function() { window._ivCurrentIndex--; window._renderIvHistory(-1); };
     window._ivDelCurrent = function() {
       if(!confirm('老婆，确定要彻底抹除这条潜意识吗？')) return;
       const c = getContactById(currentId);
@@ -4181,7 +4162,7 @@ window._ivManageMode = false;
       const v = list[window._ivCurrentIndex];
       st.voiceHistory = list.filter(x => x.id !== v.id);
       updateContact(currentId, { settings: st });
-      window._renderIvHistory();
+      window._renderIvHistory(0);
     };
   function applyModeUI(){const c=getContactById(currentId),st=normSettings(c?.settings);$('chatRoom').classList.toggle('offline',st.mode==='offline');updateChatSub();}
 
