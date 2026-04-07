@@ -4071,34 +4071,57 @@ window._ivManageMode = false;
     }
   };
 
-  // 🌟 蓝色的放映机齿轮：记住当前正在看哪一页
+
+
+    // 🌟 蓝色的放映机齿轮：记住当前正在看哪一页 (0是最新的)
     window._ivCurrentIndex = 0;
 
-    // 每次打开暗门，强制回到最新的一条记忆！
+    // 🌟 魔法1：点一下开，再点一下关！(Toggle 逻辑)
     window._showInnerVoiceModal = function() {
       if(!currentId) return;
+      const drawer = document.getElementById('ivHistoryDrawer');
+      if(!drawer) return;
+      
+      // 如果抽屉已经打开了，就丝滑地收起它！
+      if(!drawer.classList.contains('hidden')) {
+        drawer.classList.add('hidden');
+        return;
+      }
+      
       const c = getContactById(currentId);
       const st = normSettings(c?.settings);
       if(st.innerVoice && !c?.isGroup) {
-        document.getElementById('ivHistoryDrawer').classList.remove('hidden');
+        drawer.classList.remove('hidden');
         window._ivCurrentIndex = 0; 
         window._renderIvHistory();
       }
     };
 
+    // 🌟 魔法2：纯净无按钮的翻书卡片！
     window._renderIvHistory = function() {
       if(!currentId) return;
       const c = getContactById(currentId);
       const st = normSettings(c?.settings);
-      const list = st.voiceHistory || []; // 🌟 从外挂内存安全读取！
+      const list = st.voiceHistory || [];
       const box = document.getElementById('ivHistoryList');
+      const drawer = document.getElementById('ivHistoryDrawer');
 
-      // 把之前丑丑的批量操作栏藏起来
+      if(!box || !drawer) return;
+
+      // 强行隐藏掉之前那个带“管理”和“收起”的旧头部，以及旧的批量删除栏！
+      const oldHeader = box.previousElementSibling;
+      if(oldHeader) oldHeader.style.display = 'none';
       const batchBar = document.getElementById('ivBatchBar');
-      if(batchBar) batchBar.classList.add('hidden');
+      if(batchBar) batchBar.style.display = 'none';
+
+      // 把抽屉本身的背景变透明，让卡片悬浮起来
+      drawer.style.padding = '10px 16px';
+      drawer.style.background = 'transparent';
+      drawer.style.boxShadow = 'none';
+      drawer.style.border = 'none';
 
       if(list.length === 0) {
-        box.innerHTML = `<div style="text-align:center; padding:30px 0; color:#a0aaba; font-size:12px;">TA此刻心如止水，暂无潜意识波动...</div>`;
+        box.innerHTML = `<div style="text-align:center; padding:30px 0; color:#a0aaba; font-size:12px; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border-radius:16px; border:1px solid #dce5f0; box-shadow:0 8px 24px rgba(92,112,148,0.08);">TA此刻心如止水，暂无潜意识波动...</div>`;
         return;
       }
 
@@ -4109,68 +4132,57 @@ window._ivManageMode = false;
       const v = list[window._ivCurrentIndex];
       const d = new Date(v.time);
       const timeStr = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
-      const total = list.length;
-      const curNum = window._ivCurrentIndex + 1;
 
-      // 🌟 蓝色高定：单片放映机卡片
+      // 生成底部的海盐蓝呼吸小圆点（最多显示10个）
+      const totalDots = Math.min(list.length, 10);
+      let dotsHtml = '';
+      for(let i=0; i<totalDots; i++){
+        let isCur = false;
+        if(list.length <= 10) { isCur = (i === window._ivCurrentIndex); } 
+        else { let mappedIdx = Math.floor((window._ivCurrentIndex / list.length) * 10); isCur = (i === mappedIdx); }
+        dotsHtml += `<div style="width:5px; height:5px; border-radius:50%; background:${isCur ? '#5c7094' : '#dce5f0'}; transition:background 0.3s;"></div>`;
+      }
+
+      // 🌟 蓝色高定：自带隐形触控区的绝美悬浮卡片
       box.innerHTML = `
-        <div style="display:flex; flex-direction:column; gap:16px; padding:16px; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; border-radius:16px; box-shadow:inset 0 2px 10px rgba(250,252,255,0.8);">
-          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed #eef4fa; padding-bottom:8px;">
-            <div style="font-size:11px; color:#a0aaba; font-family:ui-monospace, monospace;">捕捉时间：${timeStr}</div>
-            <button class="btn" onclick="window._ivDelCurrent()" style="background:transparent; color:#b57b7b; border:none; font-size:11px; padding:0; cursor:pointer;">抹除此念</button>
+        <div style="position:relative; display:flex; flex-direction:column; padding:20px; background:rgba(250, 252, 255, 0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:20px; box-shadow:0 12px 40px rgba(92,112,148,0.12); overflow:hidden; transition:opacity 0.3s;">
+          
+          <div style="display:flex; justify-content:space-between; align-items:center; position:relative; z-index:10; margin-bottom:12px; border-bottom:1px dashed #eef4fa; padding-bottom:8px;">
+            <div style="font-size:11px; color:#a0aaba; display:flex; align-items:center; gap:6px; font-family:ui-monospace, monospace;">
+              <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:#a0aaba; fill:none; stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              ${timeStr}
+            </div>
+            <button class="btn" onclick="window._ivDelCurrent()" style="background:transparent; color:#b57b7b; border:none; font-size:11px; padding:0; cursor:pointer; font-weight:bold;">抹除</button>
           </div>
-          <div style="font-size:14px; color:#5c7094; font-style:italic; line-height:1.6; text-align:justify; min-height:60px; display:flex; align-items:center;">
+
+          <div style="font-size:14px; color:#5c7094; font-style:italic; line-height:1.6; text-align:justify; min-height:60px; display:flex; align-items:center; position:relative; z-index:10; pointer-events:none;">
             "${safeEsc(v.text)}"
           </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-            <button class="btn" onclick="window._ivPrev()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:6px 14px; font-weight:bold; box-shadow:none; ${window._ivCurrentIndex === total - 1 ? 'opacity:0.3; pointer-events:none;' : ''}">‹ 更早</button>
-            <div style="font-size:12px; color:#7a86a8; font-weight:bold; letter-spacing:1px; font-family:ui-monospace, monospace;">${curNum} / ${total}</div>
-            <button class="btn" onclick="window._ivNext()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:6px 14px; font-weight:bold; box-shadow:none; ${window._ivCurrentIndex === 0 ? 'opacity:0.3; pointer-events:none;' : ''}">更新 ›</button>
+
+          <div style="display:flex; justify-content:center; gap:5px; margin-top:16px; position:relative; z-index:10; pointer-events:none;">
+            ${dotsHtml}
           </div>
+
+          <!-- 🌟 隐形的翻书触控区！左半边新(回到过去)，右半边旧(追溯历史) -->
+          <div onclick="window._ivGoNewer()" style="position:absolute; left:0; top:0; bottom:0; width:50%; z-index:5; cursor:pointer;" title="点左侧：较新的心声"></div>
+          <div onclick="window._ivGoOlder()" style="position:absolute; right:0; top:0; bottom:0; width:50%; z-index:5; cursor:pointer;" title="点右侧：较旧的心声"></div>
         </div>
       `;
     };
 
     // 翻页与删除魔法
-    window._ivPrev = function() { window._ivCurrentIndex++; window._renderIvHistory(); };
-    window._ivNext = function() { window._ivCurrentIndex--; window._renderIvHistory(); };
+    window._ivGoOlder = function() { window._ivCurrentIndex++; window._renderIvHistory(); };
+    window._ivGoNewer = function() { window._ivCurrentIndex--; window._renderIvHistory(); };
     window._ivDelCurrent = function() {
-      if(!confirm('宝宝，确定要彻底抹除这条潜意识吗？')) return;
+      if(!confirm('老婆，确定要彻底抹除这条潜意识吗？')) return;
       const c = getContactById(currentId);
       const st = normSettings(c?.settings);
       const list = st.voiceHistory || [];
       const v = list[window._ivCurrentIndex];
-      // 🌟 同步更新外挂内存！
       st.voiceHistory = list.filter(x => x.id !== v.id);
       updateContact(currentId, { settings: st });
       window._renderIvHistory();
     };
-
-  window._toggleIvManage = function() {
-    window._ivManageMode = !window._ivManageMode;
-    if(!window._ivManageMode) window._ivSelected.clear();
-    window._renderIvHistory();
-  };
-
-  window._toggleIvSel = function(id) {
-    if(window._ivSelected.has(id)) window._ivSelected.delete(id);
-    else window._ivSelected.add(id);
-    window._renderIvHistory();
-  };
-
-  window._deleteSelectedIv = function() {
-    if(window._ivSelected.size === 0) return alert('还没选中任何心声哦宝宝！');
-    if(!confirm('确定要抹除这些潜意识记忆吗？')) return;
-    
-    const c = getContactById(currentId);
-    const st = normSettings(c?.settings);
-    st.voiceHistory = (st.voiceHistory || []).filter(v => !window._ivSelected.has(v.id));
-    updateContact(currentId, { settings: st });
-    
-    window._ivSelected.clear();
-    window._ivManageMode = false;
-    window._renderIvHistory();
-  };
   function applyModeUI(){const c=getContactById(currentId),st=normSettings(c?.settings);$('chatRoom').classList.toggle('offline',st.mode==='offline');updateChatSub();}
 
   window.openChat=function(id){
