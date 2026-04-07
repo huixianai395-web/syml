@@ -4084,7 +4084,7 @@ window._ivManageMode = false;
       }
     };
 
-    // 🌟 魔法2：自带 3D 翻页动画的悬浮卡片
+   // 🌟 魔法2：自带微动效的悬浮卡片
     window._renderIvHistory = function(direction = 0) {
       if(!currentId) return;
       const c = getContactById(currentId);
@@ -4115,7 +4115,7 @@ window._ivManageMode = false;
         dotsHtml += `<div style="width:6px; height:6px; border-radius:50%; background:${isCur ? '#5c7094' : 'rgba(92,112,148,0.15)'}; transition:all 0.4s ease; transform:scale(${isCur ? 1.2 : 1});"></div>`;
       }
 
-      // 🌟 蓝色高定：极简护眼的微动效引擎，拒绝晃眼！
+      // 🌟 蓝色高定：极简护眼的微动效引擎
       const animClass = direction === 1 ? 'slide-next-iv' : (direction === -1 ? 'slide-prev-iv' : 'fade-in-iv');
 
       box.innerHTML = `
@@ -4151,11 +4151,12 @@ window._ivManageMode = false;
           <div onclick="window._ivGoOlder()" style="position:absolute; right:0; top:0; bottom:0; width:50%; z-index:5; cursor:pointer;" title="点右边看较旧"></div>
         </div>
       `;
+    }; // 🌟🌟🌟 救命的盖子就在这里！！我把它死死焊上了！！
 
     window._ivGoOlder = function() { window._ivCurrentIndex++; window._renderIvHistory(1); };
     window._ivGoNewer = function() { window._ivCurrentIndex--; window._renderIvHistory(-1); };
     window._ivDelCurrent = function() {
-      if(!confirm('确定要彻底抹除这条潜意识吗？')) return;
+      if(!confirm('老婆，确定要彻底抹除这条潜意识吗？')) return;
       const c = getContactById(currentId);
       const st = normSettings(c?.settings);
       const list = st.voiceHistory || [];
