@@ -4115,18 +4115,19 @@ window._ivManageMode = false;
         dotsHtml += `<div style="width:6px; height:6px; border-radius:50%; background:${isCur ? '#5c7094' : 'rgba(92,112,148,0.15)'}; transition:all 0.4s ease; transform:scale(${isCur ? 1.2 : 1});"></div>`;
       }
 
-      // 决定播放哪个动画
-      const animClass = direction === 1 ? 'flip-next' : (direction === -1 ? 'flip-prev' : 'flip-in');
+      // 🌟 蓝色高定：极简护眼的微动效引擎，拒绝晃眼！
+      const animClass = direction === 1 ? 'slide-next-iv' : (direction === -1 ? 'slide-prev-iv' : 'fade-in-iv');
 
       box.innerHTML = `
         <style>
-          @keyframes flipIn { from { opacity:0; transform:translateY(10px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
-          @keyframes flipNext { from { opacity:0; transform:translateX(20px) rotateY(10deg); } to { opacity:1; transform:translateX(0) rotateY(0); } }
-          @keyframes flipPrev { from { opacity:0; transform:translateX(-20px) rotateY(-10deg); } to { opacity:1; transform:translateX(0) rotateY(0); } }
-          .flip-in { animation: flipIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-          .flip-next { animation: flipNext 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-          .flip-prev { animation: flipPrev 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+          @keyframes fadeInIv { from { opacity:0; transform:scale(0.98); } to { opacity:1; transform:scale(1); } }
+          @keyframes slideNextIv { from { opacity:0; transform:translateX(15px); } to { opacity:1; transform:translateX(0); } }
+          @keyframes slidePrevIv { from { opacity:0; transform:translateX(-15px); } to { opacity:1; transform:translateX(0); } }
+          .fade-in-iv { animation: fadeInIv 0.3s ease-out forwards; }
+          .slide-next-iv { animation: slideNextIv 0.25s ease-out forwards; }
+          .slide-prev-iv { animation: slidePrevIv 0.25s ease-out forwards; }
         </style>
+        
         <div class="${animClass}" style="position:relative; display:flex; flex-direction:column; padding:24px; background:rgba(250,252,255,0.85); backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px); border:1px solid rgba(255,255,255,0.8); border-radius:24px; box-shadow:0 20px 40px rgba(92,112,148,0.15), inset 0 1px 1px rgba(255,255,255,0.9); overflow:hidden;">
           
           <div style="display:flex; justify-content:space-between; align-items:center; position:relative; z-index:10; margin-bottom:16px; border-bottom:1px solid rgba(92,112,148,0.1); padding-bottom:12px;">
@@ -4150,12 +4151,11 @@ window._ivManageMode = false;
           <div onclick="window._ivGoOlder()" style="position:absolute; right:0; top:0; bottom:0; width:50%; z-index:5; cursor:pointer;" title="点右边看较旧"></div>
         </div>
       `;
-    };
 
     window._ivGoOlder = function() { window._ivCurrentIndex++; window._renderIvHistory(1); };
     window._ivGoNewer = function() { window._ivCurrentIndex--; window._renderIvHistory(-1); };
     window._ivDelCurrent = function() {
-      if(!confirm('老婆，确定要彻底抹除这条潜意识吗？')) return;
+      if(!confirm('确定要彻底抹除这条潜意识吗？')) return;
       const c = getContactById(currentId);
       const st = normSettings(c?.settings);
       const list = st.voiceHistory || [];
