@@ -4071,46 +4071,80 @@ window._ivManageMode = false;
     }
   };
 
-  window._renderIvHistory = function() {
-    if(!currentId) return;
-    const c = getContactById(currentId);
-    const st = normSettings(c?.settings);
-    const list = st.voiceHistory || [];
-    const box = document.getElementById('ivHistoryList');
-    const batchBar = document.getElementById('ivBatchBar');
-    const manageBtn = document.getElementById('ivManageBtn');
-    
-    if(batchBar) batchBar.classList.toggle('hidden', !window._ivManageMode);
-    if(manageBtn) manageBtn.textContent = window._ivManageMode ? '取消' : '管理';
-    document.getElementById('ivSelCount').textContent = `已选 ${window._ivSelected.size} 项`;
+  // 🌟 蓝色的放映机齿轮：记住当前正在看哪一页
+    window._ivCurrentIndex = 0;
 
-    if(list.length === 0) {
-      box.innerHTML = `<div style="text-align:center; padding:30px 0; color:#a0aaba; font-size:12px;">暂无被捕捉到的潜意识...</div>`;
-      return;
-    }
+    // 每次打开暗门，强制回到最新的一条记忆！
+    window._showInnerVoiceModal = function() {
+      if(!currentId) return;
+      const c = getContactById(currentId);
+      const st = normSettings(c?.settings);
+      if(st.innerVoice && !c?.isGroup) {
+        document.getElementById('ivHistoryDrawer').classList.remove('hidden');
+        window._ivCurrentIndex = 0; 
+        window._renderIvHistory();
+      }
+    };
 
-    box.innerHTML = list.map(v => {
-      const isSel = window._ivSelected.has(v.id);
-      const checkHtml = window._ivManageMode ? `
-        <div style="margin-right:12px; cursor:pointer;" onclick="window._toggleIvSel('${v.id}')">
-          <div style="width:18px; height:18px; border-radius:50%; border:1px solid ${isSel ? '#5c7094' : '#dce5f0'}; background:${isSel ? '#eef4fa' : '#fff'}; display:grid; place-items:center; color:${isSel ? '#5c7094' : 'transparent'}; font-size:12px; transition:all 0.2s;">✓</div>
-        </div>
-      ` : '';
-      
+    window._renderIvHistory = function() {
+      if(!currentId) return;
+      const c = getContactById(currentId);
+      const st = normSettings(c?.settings);
+      const list = st.voiceHistory || []; // 🌟 从外挂内存安全读取！
+      const box = document.getElementById('ivHistoryList');
+
+      // 把之前丑丑的批量操作栏藏起来
+      const batchBar = document.getElementById('ivBatchBar');
+      if(batchBar) batchBar.classList.add('hidden');
+
+      if(list.length === 0) {
+        box.innerHTML = `<div style="text-align:center; padding:30px 0; color:#a0aaba; font-size:12px;">TA此刻心如止水，暂无潜意识波动...</div>`;
+        return;
+      }
+
+      // 齿轮防错机制
+      if(window._ivCurrentIndex >= list.length) window._ivCurrentIndex = list.length - 1;
+      if(window._ivCurrentIndex < 0) window._ivCurrentIndex = 0;
+
+      const v = list[window._ivCurrentIndex];
       const d = new Date(v.time);
       const timeStr = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+      const total = list.length;
+      const curNum = window._ivCurrentIndex + 1;
 
-      return `
-      <div style="display:flex; align-items:flex-start; padding:12px; background:rgba(255,255,255,0.6); border:1px solid ${isSel ? '#a5cfff' : '#eef4fa'}; border-radius:12px; transition:all 0.2s;">
-        ${checkHtml}
-        <div style="flex:1; min-width:0;">
-          <div style="font-size:10px; color:#a0aaba; margin-bottom:4px;">${timeStr}</div>
-          <div style="font-size:13px; color:#5c7094; font-style:italic; line-height:1.5;">${safeEsc(v.text)}</div>
+      // 🌟 蓝色高定：单片放映机卡片
+      box.innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:16px; padding:16px; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; border-radius:16px; box-shadow:inset 0 2px 10px rgba(250,252,255,0.8);">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed #eef4fa; padding-bottom:8px;">
+            <div style="font-size:11px; color:#a0aaba; font-family:ui-monospace, monospace;">捕捉时间：${timeStr}</div>
+            <button class="btn" onclick="window._ivDelCurrent()" style="background:transparent; color:#b57b7b; border:none; font-size:11px; padding:0; cursor:pointer;">抹除此念</button>
+          </div>
+          <div style="font-size:14px; color:#5c7094; font-style:italic; line-height:1.6; text-align:justify; min-height:60px; display:flex; align-items:center;">
+            "${safeEsc(v.text)}"
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+            <button class="btn" onclick="window._ivPrev()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:6px 14px; font-weight:bold; box-shadow:none; ${window._ivCurrentIndex === total - 1 ? 'opacity:0.3; pointer-events:none;' : ''}">‹ 更早</button>
+            <div style="font-size:12px; color:#7a86a8; font-weight:bold; letter-spacing:1px; font-family:ui-monospace, monospace;">${curNum} / ${total}</div>
+            <button class="btn" onclick="window._ivNext()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:6px 14px; font-weight:bold; box-shadow:none; ${window._ivCurrentIndex === 0 ? 'opacity:0.3; pointer-events:none;' : ''}">更新 ›</button>
+          </div>
         </div>
-      </div>
       `;
-    }).join('');
-  };
+    };
+
+    // 翻页与删除魔法
+    window._ivPrev = function() { window._ivCurrentIndex++; window._renderIvHistory(); };
+    window._ivNext = function() { window._ivCurrentIndex--; window._renderIvHistory(); };
+    window._ivDelCurrent = function() {
+      if(!confirm('宝宝，确定要彻底抹除这条潜意识吗？')) return;
+      const c = getContactById(currentId);
+      const st = normSettings(c?.settings);
+      const list = st.voiceHistory || [];
+      const v = list[window._ivCurrentIndex];
+      // 🌟 同步更新外挂内存！
+      st.voiceHistory = list.filter(x => x.id !== v.id);
+      updateContact(currentId, { settings: st });
+      window._renderIvHistory();
+    };
 
   window._toggleIvManage = function() {
     window._ivManageMode = !window._ivManageMode;
