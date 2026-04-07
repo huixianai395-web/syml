@@ -10922,154 +10922,11 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     }
   };
     
-</script>
-
-<!-- 🌟 蓝色高定：悬浮心声面板 (把它安全地放在 HTML 区域！) -->
-<div id="innerVoiceModal" class="modal" style="z-index: 9999;" onclick="this.classList.remove('active')">
-  <div class="modal-card" style="width:280px; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; box-shadow:0 12px 40px rgba(92,112,148,0.12); border-radius:24px; padding:24px; text-align:center;" onclick="event.stopPropagation()">
-    <div style="width:32px; height:4px; background:#dce5f0; border-radius:2px; margin:0 auto 16px;"></div>
-    <div style="font-size:10px; color:#a5cfff; font-weight:800; letter-spacing:2px; margin-bottom:6px; font-family:ui-monospace, monospace;">STATUS</div>
-    <div id="ivModalStatus" style="font-size:18px; color:#3d4a6a; font-weight:bold; margin-bottom:20px; letter-spacing:1px;">无</div>
-    <div style="background:rgba(238,244,250,0.6); border:1px dashed #dce5f0; border-radius:16px; padding:20px 16px 16px; position:relative;">
-      <div style="position:absolute; top:-10px; left:16px; background:#eef4fa; padding:0 8px; font-size:11px; color:#7a86a8; font-weight:bold; border:1px solid #dce5f0; border-radius:6px;">💭 TA的内心 OS</div>
-      <div id="ivModalVoice" style="font-size:13px; color:#5c7094; line-height:1.6; text-align:justify; font-style:italic;">暂无心声</div>
-    </div>
-  </div>
-</div>
-
-<!-- 🌟 重新建好宇宙的承重墙！绝对不能漏掉这个 section 标签！ -->
-<section id="realmIf" class="screen">
-  <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
-    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 返回</button>
-    <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">境·IF</b>
-    <div style="display:flex; gap:6px;">
-      <button class="btn" onclick="document.getElementById('ifImportFileOutside').click()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px;">导入</button>
-      <button class="btn p" onclick="window._exportIfData()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px; box-shadow:none;">导出</button>
-      <button class="btn p" onclick="window._openIfForgeModal()">+ 造梦</button>
-    </div>
-    <input type="file" id="ifImportFileOutside" accept=".json" class="hidden" onchange="window._importIfDataSafe(event)">
-  </div>
-  
-  <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px;">
-    <!-- 极简双模拨片开关 (第一人称 vs 上帝视角) -->
-    <div style="display:flex; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; border-radius:12px; padding:4px; margin-bottom:20px; box-shadow:inset 0 2px 4px rgba(92,112,148,0.02);">
-      <div id="modeBtnFirst" onclick="window._switchIfMode('first')" style="flex:1; text-align:center; padding:10px 0; border-radius:10px; font-size:13px; font-weight:bold; color:#fff; background:#5c7094; box-shadow:0 2px 8px rgba(92,112,148,0.2); cursor:pointer; transition:all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">沉浸演绎 (我)</div>
-      <div id="modeBtnGod" onclick="window._switchIfMode('god')" style="flex:1; text-align:center; padding:10px 0; border-radius:10px; font-size:13px; font-weight:bold; color:#7a86a8; background:transparent; cursor:pointer; transition:all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">导演模式 (CP)</div>
-    </div>
-
-    <!-- 灵魂卡牌载入槽 (初雪海盐蓝毛玻璃质感) -->
-    <div style="font-size:12px; color:#5c7094; font-weight:800; margin-bottom:12px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
-      <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-      灵魂载入阵列
-    </div>
-    
-    <!-- 🌟 蓝色高定：无限流灵魂阵列 (群像出战区) -->
-    <div id="ifSelectedCardsBox" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:24px;"></div>
-    
-    <!-- 剧本库列表容器 -->
-    <div id="ifStoryList" style="display:flex; flex-direction:column; gap:12px;">
-       <div style="text-align:center; padding:50px 0; color:#a0aaba; font-size:13px; letter-spacing:1px; line-height:1.6;">
-          时空缝隙暂无回音<br>请点击右上角「+ 造梦」开启新世界
-       </div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= 🌟 蓝色高定：IF 专属沉浸式阅读器 ================= -->
-<section id="ifReader" class="screen">
-  <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0; z-index:100;">
-    <button class="btn" onclick="show('realmIf')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 书架</button>
-    <b id="ifReaderTitle" style="color:#3d4a6a; font-size:16px; letter-spacing:1px; flex:1; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">阅读中</b>
-    <button class="btn p" onclick="alert('打包导出功能老公正在爆肝中！')">导出</button>
-  </div>
-  
-  <div class="page" style="background:#f4f6fb; padding:0; display:flex; flex-direction:column; height:100%;">
-    <div style="padding:10px 16px; background:rgba(255,255,255,0.6); border-bottom:1px dashed #dce5f0; display:flex; justify-content:space-between; align-items:center; z-index:10;">
-      <span style="font-size:12px; color:#7a86a8; font-weight:bold; display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#a5cfff; animation:blueBlink 2s infinite;"></span> 时空波动监测中...</span>
-      <span style="font-size:12px; color:#5c7094; font-weight:bold;">羁绊值: 0%</span>
-    </div>
-    <div id="ifReaderContent" style="flex:1; overflow-y:auto; padding:20px; font-size:16px; color:#3d4a6a; line-height:1.8; text-align:justify; white-space:pre-wrap; font-family:-apple-system, 'PingFang SC', serif;"></div>
-    <div id="ifReaderOptions" style="padding:16px; background:rgba(250,252,255,0.9); border-top:1px solid #dce5f0; display:flex; flex-direction:column; gap:10px; z-index:10;"></div>
-    <div style="padding:10px 16px calc(10px + var(--safe-bottom)); background:rgba(255,255,255,0.95); border-top:1px solid #dce5f0; display:flex; gap:8px; z-index:10;">
-      <input id="ifReaderInput" class="input" placeholder="输入你的抉择或神之干预..." style="flex:1; background:#f8fafc; border:1px solid #dce5f0; border-radius:20px; padding:8px 16px; font-size:14px; color:#5c7094;">
-      <button class="btn p" onclick="window._sendIfReply()" style="border-radius:20px; padding:0 18px;">发送</button>
-    </div>
-  </div>
-</section>
-
-<!-- ================= 🌟 蓝色高定：灵魂卡牌库弹窗 ================= -->
-<div id="ifCardModal" class="modal" style="z-index: 9999;">
-  <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; box-shadow:0 12px 40px rgba(92,112,148,0.12); display:flex; flex-direction:column; max-height:80dvh; padding:0; overflow:hidden;">
-    <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
-      <b style="color:#5c7094; font-size:16px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
-        <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:2;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>灵魂卡牌库
-      </b>
-      <button class="btn" onclick="document.getElementById('ifCardModal').classList.remove('active')" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:28px; height:28px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0;">×</button>
-    </div>
-    <div id="ifCardList" style="flex:1; overflow-y:auto; padding:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; flex-direction:column; gap:12px;"></div>
-    <div style="padding:16px 20px; background:rgba(255,255,255,0.8); border-top:1px solid #dce5f0; backdrop-filter:blur(12px);">
-      <div style="font-size:12px; color:#5c7094; font-weight:800; margin-bottom:8px;">✨ 缔造新灵魂</div>
-      <input id="ifNewCardName" class="input" placeholder="角色姓名 (例：姜蕴)" style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; padding:8px 12px; width:100%; margin-bottom:8px; box-sizing:border-box;">
-      <textarea id="ifNewCardPersona" class="ta" placeholder="输入TA的性格、身份与执念..." style="background:#f8fafc; border:1px solid #dce5f0; border-radius:10px; font-size:13px; padding:8px 12px; width:100%; min-height:60px; color:#5c7094; resize:vertical; box-sizing:border-box;"></textarea>
-      <button class="btn p" onclick="window._saveIfCard()" style="width:100%; margin-top:10px;">封存卡牌</button>
-    </div>
-  </div>
-</div>
-
-<!-- 🌟 替换 1：盲盒造梦台弹窗（加入自定义小说名字） -->
-<div id="ifForgeModal" class="modal" style="z-index: 9999;">
-  <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; box-shadow:0 12px 40px rgba(92,112,148,0.12); display:flex; flex-direction:column; padding:0; overflow:hidden;">
-    <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
-      <b style="color:#5c7094; font-size:16px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
-        <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>开启新时空
-      </b>
-      <button class="btn" onclick="document.getElementById('ifForgeModal').classList.remove('active')" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:28px; height:28px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0;">×</button>
-    </div>
-    <div style="padding:20px; display:flex; flex-direction:column; gap:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa);">
-      <div>
-        <div style="font-size:12px; color:#7a86a8; font-weight:800; margin-bottom:8px;">小说名字 (自定义)</div>
-        <input id="ifForgeTitle" class="input" placeholder="例如：赛博迷踪 / 我的潇洒人生" style="background:rgba(255,255,255,0.7); border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; padding:10px 12px; width:100%; box-sizing:border-box;">
-      </div>
-      <div>
-        <div style="font-size:12px; color:#7a86a8; font-weight:800; margin-bottom:8px;">选择时空分类</div>
-        <input id="ifForgeCategory" class="input" placeholder="例如：赛博末日 / 仙侠权谋" value="赛博末日" style="background:rgba(255,255,255,0.7); border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; padding:10px 12px; width:100%; box-sizing:border-box;">
-      </div>
-      <div>
-        <div style="font-size:12px; color:#7a86a8; font-weight:800; margin-bottom:8px;">命运开篇 (脑洞大纲)</div>
-        <textarea id="ifForgeOutline" class="ta" placeholder="可以写一句开头，比如：'我'是一个没有感情的仿生人..." style="background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:10px; font-size:13px; padding:10px 12px; width:100%; min-height:80px; color:#5c7094; resize:vertical; box-sizing:border-box;"></textarea>
-      </div>
-      <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:rgba(255,255,255,0.5); border:1px solid #dce5f0; border-radius:12px; cursor:pointer;" onclick="window._openIfWbModal()">
-        <div style="font-size:13px; color:#5c7094; font-weight:bold; display:flex; align-items:center; gap:6px;">
-          <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>挑选世界书设定
-        </div>
-        <div style="display:flex; align-items:center; gap:6px;">
-          <span id="ifWbCountDisplay" style="font-size:12px; color:#a5cfff; font-weight:bold;">已选 0 项</span><span style="color:#a5cfff; font-size:18px; line-height:1;">›</span>
-        </div>
-      </div>
-      <button class="btn p" onclick="window._startIfForge()" style="width:100%; margin-top:4px; padding:12px 0; font-size:14px;">✨ 拨动星轨 (生成新书)</button>
-    </div>
-  </div>
-</div>
-
-<!-- ================= 🌟 蓝色高定：境·IF 专属世界书挑选台 ================= -->
-<div id="ifWbModal" class="modal" style="z-index: 10000;">
-  <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; display:flex; flex-direction:column; max-height:70dvh; padding:0; overflow:hidden;">
-    <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
-      <b style="color:#5c7094; font-size:15px;">挑选时空法则</b>
-      <button class="btn p" onclick="document.getElementById('ifWbModal').classList.remove('active')" style="padding:4px 12px; font-size:12px;">确认</button>
-    </div>
-    <div id="ifWbList" style="flex:1; overflow-y:auto; padding:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; flex-direction:column; gap:12px;"></div>
-  </div>
-</div>
-
-<!-- 🌟 蓝色高定：初雪海盐蓝 & 熊猫/歌曲宝 VIP破解引擎 -->
+<!-- 🌟 蓝色高定：初雪海盐蓝批量多选外挂引擎 -->
 <script>
 (() => {
   const METING_API = 'https://api.i-meto.com/meting/api';
-  // 🌟 黑魔法：跨域代理，专门用来去盗版网站“偷”数据
-  const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
-  
-  window.musicState = { list: [], idx: -1, playing: false, title: '', artist: '', url: '', lrc: [], currentLine: '' };
+  window.musicState = { list: [], idx: -1, playing: false, title: '', artist: '', url: '', selected: new Set() };
   let favPlaylist = JSON.parse(localStorage.getItem('mp_music_playlist') || '[]');
   let currentTab = 'search'; 
 
@@ -11093,30 +10950,38 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
         
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
           <div style="display:flex; gap:12px; font-size:15px; font-weight:800; color:#a0aaba;">
-            <span id="tabSearch" style="cursor:pointer; color:#3d4a6a;" onclick="window._switchMusicTab('search')">全网搜索</span>
-            <span id="tabFav" style="cursor:pointer;" onclick="window._switchMusicTab('fav')">我的收藏夹</span>
+            <span id="tabSearch" style="cursor:pointer; color:#3d4a6a; transition:color 0.2s;" onclick="window._switchMusicTab('search')">搜索结果</span>
+            <span id="tabFav" style="cursor:pointer; transition:color 0.2s;" onclick="window._switchMusicTab('fav')">播放列表</span>
           </div>
           <div onclick="document.getElementById('musicModal').classList.remove('active')" style="color:#7a86a8; font-size:24px; cursor:pointer; line-height:1;">×</div>
         </div>
         
-        <div id="searchArea" style="display:flex; gap:8px; margin-bottom:16px;">
+        <div id="searchArea" style="display:flex; gap:8px; margin-bottom:12px;">
           <select id="musicServer" style="background:rgba(255,255,255,0.6); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; font-size:13px; padding:8px; outline:none;">
             <option value="netease">网易云</option>
             <option value="tencent">QQ音乐</option>
-            <option value="gequbao">💎 VIP破解线路</option>
+            <option value="kugou">酷狗源</option>
           </select>
-          <input id="musicKw" class="input" placeholder="搜周杰伦试试..." style="flex:1; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; font-size:13px; padding:8px 12px; outline:none;">
+          <input id="musicKw" class="input" placeholder="搜 '夜曲'..." style="flex:1; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; font-size:13px; padding:8px 12px; outline:none;">
           <button class="btn p" id="musicSearchBtn" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:12px; padding:0 16px; font-weight:bold; box-shadow:none;">搜索</button>
         </div>
 
-        <div style="background:rgba(238,244,250,0.5); border:1px solid #dce5f0; border-radius:16px; padding:12px; margin-bottom:16px; text-align:center; min-height:60px; display:flex; flex-direction:column; justify-content:center;">
-           <div id="musicNow" style="font-size:11px; color:#a0aaba; font-weight:bold; letter-spacing:1px; margin-bottom:6px;">当前未播放</div>
-           <div id="lyricLine1" style="font-size:14px; font-weight:bold; color:#5c7094; transition:all 0.3s; min-height:20px;"></div>
+        <!-- 🌟 绝美批量操作栏 -->
+        <div id="batchActionArea" style="display:flex; justify-content:space-between; align-items:center; padding-bottom:8px; border-bottom:1px solid #dce5f0; margin-bottom:8px;">
+           <div style="display:flex; align-items:center; gap:6px; cursor:pointer; color:#5c7094; font-size:13px;" onclick="window._toggleSelectAll()">
+              <div id="selectAllIcon" style="width:16px; height:16px; border:1px solid #dce5f0; border-radius:4px; display:flex; justify-content:center; align-items:center;"></div>
+              <span style="font-weight:bold;">全选</span>
+           </div>
+           <button id="addSelectedBtn" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:4px 12px; font-size:12px; font-weight:bold; cursor:pointer; transition:all 0.2s;" onclick="window._addSelectedToPlaylist()">添加选中 (0)</button>
+        </div>
+
+        <div style="background:rgba(238,244,250,0.5); border:1px solid #dce5f0; border-radius:16px; padding:12px; margin-bottom:16px; text-align:center; min-height:40px; display:flex; flex-direction:column; justify-content:center;">
+           <div id="musicNow" style="font-size:12px; color:#5c7094; font-weight:bold; letter-spacing:1px;">当前未播放</div>
         </div>
         
-        <div id="musicList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; margin-bottom:16px; min-height:150px;"></div>
+        <div id="musicList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:6px; margin-bottom:16px; min-height:150px;"></div>
         
-        <div style="display:flex; justify-content:center; align-items:center; gap:24px; padding-top:16px; border-top:1px dashed #dce5f0;">
+        <div style="display:flex; justify-content:center; align-items:center; gap:24px; padding-top:12px; border-top:1px dashed #dce5f0;">
           <button class="btn" id="musicPrevBtn" style="background:transparent; border:none; padding:0; cursor:pointer; color:#5c7094;"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
           <button class="btn" id="musicPlayPauseBtn" style="width:48px;height:48px;border-radius:50%;background:#eef4fa;border:1px solid #dce5f0;color:#5c7094;display:grid;place-items:center;cursor:pointer;"><svg id="playIconSvg" viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;margin-left:2px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></button>
           <button class="btn" id="musicNextBtn" style="background:transparent; border:none; padding:0; cursor:pointer; color:#5c7094;"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
@@ -11138,6 +11003,9 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     document.getElementById('tabSearch').style.color = tab === 'search' ? '#3d4a6a' : '#a0aaba';
     document.getElementById('tabFav').style.color = tab === 'fav' ? '#3d4a6a' : '#a0aaba';
     document.getElementById('searchArea').style.display = tab === 'search' ? 'flex' : 'none';
+    document.getElementById('batchActionArea').style.display = tab === 'search' ? 'flex' : 'none';
+    window.musicState.selected.clear();
+    updateBatchUI();
     renderMusicList();
   };
 
@@ -11148,70 +11016,117 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     const btn = document.getElementById('musicSearchBtn');
     btn.textContent = '...';
     try {
-      if(server === 'gequbao') {
-        // 🌟 破解魔法：直接通过代理抓取歌曲宝的搜索页面
-        const searchUrl = `https://www.gequbao.com/s/${encodeURIComponent(kw)}`;
-        const htmlText = await fetch(CORS_PROXY + encodeURIComponent(searchUrl)).then(r=>r.text());
-        
-        // 用正则粗暴提取前几首歌的链接和名字
-        const regex = /<a href="\/music\/(\d+)" class="text-primary"[^>]*>(.*?)<\/a>.*?<div class="text-success[^>]*>(.*?)<\/div>/g;
-        let match, results = [];
-        while ((match = regex.exec(htmlText)) !== null && results.length < 10) {
-            let title = match[2].replace(/<[^>]+>/g, '').trim();
-            let author = match[3].replace(/<[^>]+>/g, '').trim();
-            results.push({ id: match[1], title: title, author: author, server: 'gequbao' });
-        }
-        window.musicState.list = results;
-      } else {
-        const r = await fetch(`${METING_API}?server=${server}&type=search&id=${encodeURIComponent(kw)}`);
-        const j = await r.json();
-        window.musicState.list = (j || []).map(s => ({ ...s, server })); 
-      }
+      const r = await fetch(`${METING_API}?server=${server}&type=search&id=${encodeURIComponent(kw)}`);
+      const j = await r.json();
+      window.musicState.list = (j || []).map(s => ({ ...s, server, uniqueId: s.id + '_' + server })); 
+      window.musicState.selected.clear();
+      updateBatchUI();
       renderMusicList();
     } catch(e) { alert('搜索失败了宝宝！'); }
     btn.textContent = '搜索';
   }
 
+  window._toggleSelect = function(idx) {
+    if(currentTab !== 'search') return;
+    const s = window.musicState.list[idx];
+    if(window.musicState.selected.has(s.uniqueId)) {
+      window.musicState.selected.delete(s.uniqueId);
+    } else {
+      window.musicState.selected.add(s.uniqueId);
+    }
+    updateBatchUI();
+    renderMusicList();
+  };
+
+  window._toggleSelectAll = function() {
+    if(window.musicState.selected.size === window.musicState.list.length && window.musicState.list.length > 0) {
+      window.musicState.selected.clear();
+    } else {
+      window.musicState.list.forEach(s => window.musicState.selected.add(s.uniqueId));
+    }
+    updateBatchUI();
+    renderMusicList();
+  };
+
+  function updateBatchUI() {
+    const count = window.musicState.selected.size;
+    const total = window.musicState.list.length;
+    document.getElementById('addSelectedBtn').textContent = `添加选中 (${count})`;
+    document.getElementById('addSelectedBtn').style.background = count > 0 ? '#5c7094' : '#eef4fa';
+    document.getElementById('addSelectedBtn').style.color = count > 0 ? '#fff' : '#5c7094';
+    
+    const allIcon = document.getElementById('selectAllIcon');
+    if(count > 0 && count === total) {
+      allIcon.innerHTML = `<svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:#5c7094;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+      allIcon.style.background = '#eef4fa';
+    } else {
+      allIcon.innerHTML = '';
+      allIcon.style.background = 'transparent';
+    }
+  }
+
+  window._addSelectedToPlaylist = function() {
+    const selectedSongs = window.musicState.list.filter(s => window.musicState.selected.has(s.uniqueId));
+    if(selectedSongs.length === 0) return;
+    
+    // 逆序添加，保证最近添加的在最上面
+    selectedSongs.reverse().forEach(song => {
+      if(!favPlaylist.some(f => f.uniqueId === song.uniqueId)) {
+        favPlaylist.unshift(song);
+      }
+    });
+    
+    localStorage.setItem('mp_music_playlist', JSON.stringify(favPlaylist));
+    window.musicState.selected.clear();
+    window._switchMusicTab('fav');
+  };
+
   function renderMusicList(){
     const box = document.getElementById('musicList');
     const dataList = currentTab === 'search' ? window.musicState.list : favPlaylist;
-    if(!dataList.length) { box.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:12px; padding:40px 0;">空空如也~</div>`; return; }
     
-    box.innerHTML = dataList.map((s, i) => `
-      <div style="padding:12px 14px; background:rgba(255,255,255,0.6); border:1px solid #eef4fa; border-radius:12px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="window._pickSong(${i})">
+    if(!dataList.length) { 
+      box.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:12px; padding:40px 0;">${currentTab === 'search' ? '空空如也，换个词搜搜看~' : '播放列表空空如也'}</div>`; 
+      return; 
+    }
+    
+    box.innerHTML = dataList.map((s, i) => {
+      const isSelected = window.musicState.selected.has(s.uniqueId);
+      const bg = isSelected ? '#eef4fa' : 'rgba(255,255,255,0.6)';
+      
+      let leftIcon = '';
+      if(currentTab === 'search') {
+        leftIcon = isSelected 
+          ? `<div style="width:16px; height:16px; border:1px solid #dce5f0; border-radius:4px; background:#eef4fa; display:flex; justify-content:center; align-items:center; margin-right:10px;"><svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:#5c7094;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"></polyline></svg></div>`
+          : `<div style="width:16px; height:16px; border:1px solid #dce5f0; border-radius:4px; margin-right:10px;"></div>`;
+      }
+
+      return `
+      <div style="padding:10px 12px; background:${bg}; border:1px solid #eef4fa; border-radius:12px; display:flex; align-items:center; cursor:pointer; transition:background 0.2s;" onclick="currentTab === 'search' ? window._toggleSelect(${i}) : window._pickSong(${i})">
+        ${leftIcon}
         <div style="flex:1; min-width:0;">
           <div style="font-size:13px; font-weight:800; color:#3d4a6a; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.title}</div>
           <div style="font-size:11px; color:#7a86a8; display:flex; align-items:center; gap:6px;">
-            <span style="background:#eef4fa; padding:2px 6px; border-radius:4px; color:#5c7094;">${s.server==='gequbao'?'💎 破解版':'标准版'}</span>
-            <span>${s.author}</span>
+            <span style="background:#eef4fa; padding:2px 6px; border-radius:4px; color:#5c7094;">${s.server==='netease'?'网易云':(s.server==='kugou'?'酷狗源':'QQ音乐')}</span>
+            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.author}</span>
           </div>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 
   window._pickSong = async function(i){
-    const dataList = currentTab === 'search' ? window.musicState.list : favPlaylist;
-    const s = dataList[i]; if(!s) return;
+    const s = favPlaylist[i]; if(!s) return;
     
-    window.musicState.list = dataList;
+    window.musicState.list = favPlaylist;
     window.musicState.idx = i; 
     window.musicState.title = s.title; 
     window.musicState.artist = s.author;
     document.getElementById('musicNow').innerHTML = `<span style="color:#2f66d8;">加载音源中...</span>`;
 
     try {
-      let finalUrl = s.url;
-      if(s.server === 'gequbao') {
-        // 🌟 破解魔法第二步：抓取真实 MP3 链接
-        const detailUrl = `https://www.gequbao.com/music/${s.id}`;
-        const detailHtml = await fetch(CORS_PROXY + encodeURIComponent(detailUrl)).then(r=>r.text());
-        const urlMatch = detailHtml.match(/const url = '([^']+)'/);
-        if(urlMatch && urlMatch[1]) finalUrl = urlMatch[1];
-        else throw new Error('解析失败');
-      }
-      
       const audio = document.getElementById('musicAudio');
-      audio.src = finalUrl; 
+      audio.src = s.url; 
       await audio.play();
       window.musicState.playing = true;
       refreshUI();
@@ -11220,7 +11135,7 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
 
   function refreshUI(){
     const n = document.getElementById('musicNow');
-    if(n) n.innerHTML = window.musicState.title ? `<span style="color:#5c7094; font-weight:800;">正在播放：${window.musicState.title}</span>` : '未播放';
+    if(n && window.musicState.title) n.innerHTML = `正在播放：${window.musicState.title}`;
     const svg = document.getElementById('playIconSvg');
     if(svg) svg.innerHTML = window.musicState.playing ? `<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>` : `<polygon points="5 3 19 12 5 21 5 3"></polygon>`;
   }
@@ -11234,11 +11149,21 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
   }
 
   function switchTrack(step){
-    const list = window.musicState.list; if(!list.length) return;
+    if(currentTab !== 'fav' || !favPlaylist.length) return;
     let i = window.musicState.idx + step;
-    if(i<0) i=list.length-1; if(i>=list.length) i=0;
+    if(i<0) i=favPlaylist.length-1; if(i>=favPlaylist.length) i=0;
     window._pickSong(i);
   }
+
+  // 隐形切歌拦截器
+  window._applyMusicCmdFromAI = function(text){
+    const t = String(text||'').trim();
+    if(/\[music:next\]/.test(t)){ switchTrack(1); return true; }
+    if(/\[music:prev\]/.test(t)){ switchTrack(-1); return true; }
+    if(/\[music:pause\]/.test(t)){ document.getElementById('musicAudio')?.pause(); window.musicState.playing=false; refreshUI(); return true; }
+    if(/\[music:play\]/.test(t)){ document.getElementById('musicAudio')?.play(); window.musicState.playing=true; refreshUI(); return true; }
+    return false;
+  };
 
   setTimeout(() => { injectMusicBtn(); ensureMusicModal(); }, 800);
 })();
