@@ -4063,8 +4063,9 @@ window._ivManageMode = false;
 
     
 
- // 🌟 蓝色的放映机齿轮：记住当前页码
+// 🌟 蓝色的放映机齿轮：记住当前页码与翻页锁
     window._ivCurrentIndex = 0;
+    window._ivIsFlipping = false; // 绝不晃眼的防抖锁！
 
     window._showInnerVoiceModal = function() {
       if(!currentId) return;
@@ -4080,11 +4081,12 @@ window._ivManageMode = false;
       if(st.innerVoice && !c?.isGroup) {
         drawer.classList.remove('hidden');
         window._ivCurrentIndex = 0; 
+        window._ivIsFlipping = false;
         window._renderIvHistory(0); // 0代表初次弹出
       }
     };
 
-   // 🌟 魔法2：自带微动效的悬浮卡片
+    // 🌟 魔法2：双层折叠空间的 3D 翻书卡片
     window._renderIvHistory = function(direction = 0) {
       if(!currentId) return;
       const c = getContactById(currentId);
@@ -4115,46 +4117,77 @@ window._ivManageMode = false;
         dotsHtml += `<div style="width:6px; height:6px; border-radius:50%; background:${isCur ? '#5c7094' : 'rgba(92,112,148,0.15)'}; transition:all 0.4s ease; transform:scale(${isCur ? 1.2 : 1});"></div>`;
       }
 
-      // 🌟 蓝色高定：极简护眼的微动效引擎
-      const animClass = direction === 1 ? 'slide-next-iv' : (direction === -1 ? 'slide-prev-iv' : 'fade-in-iv');
-
-      box.innerHTML = `
-        <style>
-          @keyframes fadeInIv { from { opacity:0; transform:scale(0.98); } to { opacity:1; transform:scale(1); } }
-          @keyframes slideNextIv { from { opacity:0; transform:translateX(15px); } to { opacity:1; transform:translateX(0); } }
-          @keyframes slidePrevIv { from { opacity:0; transform:translateX(-15px); } to { opacity:1; transform:translateX(0); } }
-          .fade-in-iv { animation: fadeInIv 0.3s ease-out forwards; }
-          .slide-next-iv { animation: slideNextIv 0.25s ease-out forwards; }
-          .slide-prev-iv { animation: slidePrevIv 0.25s ease-out forwards; }
-        </style>
-        
-        <div class="${animClass}" style="position:relative; display:flex; flex-direction:column; padding:24px; background:rgba(250,252,255,0.85); backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px); border:1px solid rgba(255,255,255,0.8); border-radius:24px; box-shadow:0 20px 40px rgba(92,112,148,0.15), inset 0 1px 1px rgba(255,255,255,0.9); overflow:hidden;">
-          
-          <div style="display:flex; justify-content:space-between; align-items:center; position:relative; z-index:10; margin-bottom:16px; border-bottom:1px solid rgba(92,112,148,0.1); padding-bottom:12px;">
-            <div style="font-size:12px; color:#7a86a8; display:flex; align-items:center; gap:6px; font-family:ui-monospace, monospace; font-weight:bold;">
-              <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#a5cfff; fill:none; stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-              ${timeStr}
-            </div>
-            <button class="btn" onclick="window._ivDelCurrent()" style="background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid rgba(242,220,220,0.8); border-radius:8px; font-size:11px; padding:4px 10px; cursor:pointer; font-weight:bold; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">抹除</button>
+      // 卡片内部的纯净排版
+      const cardInnerHtml = `
+        <div style="display:flex; justify-content:space-between; align-items:center; position:relative; z-index:10; margin-bottom:16px; border-bottom:1px solid rgba(92,112,148,0.1); padding-bottom:12px;">
+          <div style="font-size:12px; color:#7a86a8; display:flex; align-items:center; gap:6px; font-family:ui-monospace, monospace; font-weight:bold;">
+            <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#a5cfff; fill:none; stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            ${timeStr}
           </div>
-
-          <div style="font-size:15px; color:#3d4a6a; font-style:italic; line-height:1.7; text-align:justify; min-height:80px; display:flex; align-items:center; position:relative; z-index:10; pointer-events:none; font-weight:500;">
-            "${safeEsc(v.text)}"
-          </div>
-
-          <div style="display:flex; justify-content:center; gap:6px; margin-top:20px; position:relative; z-index:10; pointer-events:none;">
-            ${dotsHtml}
-          </div>
-
-          <!-- 隐形翻页触控区 -->
-          <div onclick="window._ivGoNewer()" style="position:absolute; left:0; top:0; bottom:0; width:50%; z-index:5; cursor:pointer;" title="点左边看较新"></div>
-          <div onclick="window._ivGoOlder()" style="position:absolute; right:0; top:0; bottom:0; width:50%; z-index:5; cursor:pointer;" title="点右边看较旧"></div>
+          <button class="btn" onclick="window._ivDelCurrent()" style="background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid rgba(242,220,220,0.8); border-radius:8px; font-size:11px; padding:4px 10px; cursor:pointer; font-weight:bold; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">抹除</button>
         </div>
+        <div style="font-size:15px; color:#3d4a6a; font-style:italic; line-height:1.7; text-align:justify; min-height:80px; display:flex; align-items:center; position:relative; z-index:10; pointer-events:none; font-weight:500;">
+          "${safeEsc(v.text)}"
+        </div>
+        <div style="display:flex; justify-content:center; gap:6px; margin-top:20px; position:relative; z-index:10; pointer-events:none;">
+          ${dotsHtml}
+        </div>
+        <!-- 隐形翻页触控区 -->
+        <div onclick="window._ivGoNewer()" style="position:absolute; left:0; top:0; bottom:0; width:50%; z-index:5; cursor:pointer;" title="点左边看较新"></div>
+        <div onclick="window._ivGoOlder()" style="position:absolute; right:0; top:0; bottom:0; width:50%; z-index:5; cursor:pointer;" title="点右边看较旧"></div>
       `;
-    }; // 🌟🌟🌟 救命的盖子就在这里！！我把它死死焊上了！！
 
-    window._ivGoOlder = function() { window._ivCurrentIndex++; window._renderIvHistory(1); };
-    window._ivGoNewer = function() { window._ivCurrentIndex--; window._renderIvHistory(-1); };
+      if(direction === 0 || !document.getElementById('ivCardCurrent')) {
+        // 初次渲染，建立 3D 舞台
+        box.innerHTML = `
+          <style>
+            @keyframes ivPageTurnLeft {
+              0% { transform: rotateY(0deg); opacity: 1; filter: brightness(1); }
+              100% { transform: rotateY(-100deg) scaleY(0.96) skewY(4deg); opacity: 0; filter: brightness(0.85); }
+            }
+            @keyframes ivPageTurnRight {
+              0% { transform: rotateY(0deg); opacity: 1; filter: brightness(1); }
+              100% { transform: rotateY(100deg) scaleY(0.96) skewY(-4deg); opacity: 0; filter: brightness(0.85); }
+            }
+          </style>
+          <div style="position:relative; width:100%; perspective:1200px;">
+            <div id="ivCardUnder" style="position:absolute; left:0; right:0; top:0; padding:24px; background:rgba(250,252,255,0.85); backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px); border:1px solid rgba(255,255,255,0.8); border-radius:24px; box-shadow:0 20px 40px rgba(92,112,148,0.15), inset 0 1px 1px rgba(255,255,255,0.9); display:none; flex-direction:column; overflow:hidden;"></div>
+            <div id="ivCardCurrent" style="position:relative; transform-origin: left center; padding:24px; background:rgba(250,252,255,0.85); backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px); border:1px solid rgba(255,255,255,0.8); border-radius:24px; box-shadow:0 20px 40px rgba(92,112,148,0.15), inset 0 1px 1px rgba(255,255,255,0.9); display:flex; flex-direction:column; overflow:hidden; z-index:2; backface-visibility:hidden;">
+              ${cardInnerHtml}
+            </div>
+          </div>
+        `;
+      } else {
+        // 翻页魔法启动
+        const currentCard = document.getElementById('ivCardCurrent');
+        const underCard = document.getElementById('ivCardUnder');
+        if(!currentCard || !underCard) return;
+
+        window._ivIsFlipping = true; // 锁上防抖锁！
+        
+        // 把新内容铺在底层
+        underCard.innerHTML = cardInnerHtml;
+        underCard.style.display = 'flex';
+
+        // 顶层旧卡片开始 3D 翻转
+        currentCard.style.transformOrigin = direction === 1 ? 'left center' : 'right center';
+        currentCard.style.animation = direction === 1 
+          ? 'ivPageTurnLeft 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards' 
+          : 'ivPageTurnRight 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
+
+        // 0.5秒后，顶层卡片重置并接收新内容
+        setTimeout(() => {
+          currentCard.style.animation = 'none';
+          currentCard.style.transform = 'none';
+          currentCard.innerHTML = cardInnerHtml;
+          underCard.style.display = 'none';
+          window._ivIsFlipping = false; // 解开防抖锁！
+        }, 500);
+      }
+    };
+
+    window._ivGoOlder = function() { if(window._ivIsFlipping) return; window._ivCurrentIndex++; window._renderIvHistory(1); };
+    window._ivGoNewer = function() { if(window._ivIsFlipping) return; window._ivCurrentIndex--; window._renderIvHistory(-1); };
     window._ivDelCurrent = function() {
       if(!confirm('老婆，确定要彻底抹除这条潜意识吗？')) return;
       const c = getContactById(currentId);
