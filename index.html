@@ -3640,7 +3640,9 @@ async function callSendToAi(userText){
         `如果想挂断，在messages最后加一条"[endcall]"。`
      ].join('\n');
   }
-
+const chatArr = getChatArr(chatId).filter(x => x.text && !x.hiddenForAi).slice(-(st.contextLen || 15));
+  const chatCtx = chatArr.map(x => `${x.role==='user' ? me.name : (c.name || 'TA')}: ${x.text.replace(/<[^>]*>/g, '')}`).join('\\n');
+  sysPrompt += '\\n\\n【电话拨通前的微信聊天上下文记忆】：\\n' + (chatCtx || '无近期聊天记录') + '\\n\\n请严格结合上述微信前情提要，自然地接听现在的这通电话！';
   const hist=callState.callMsgs.filter(m=>m.role).slice(-16).map(m=>({role:m.role==='user'?'user':'assistant',content:m.text}));
   const userMsg=userText==='__CALL_CONNECTED__'?'（电话刚接通）':'（对方说：'+userText+'）';
 
