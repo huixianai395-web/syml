@@ -11061,52 +11061,60 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     <div id="ifWbList" style="flex:1; overflow-y:auto; padding:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; flex-direction:column; gap:12px;"></div>
   </div>
 </div>
+<!-- 🌟 蓝色高定：初雪海盐蓝 & 毛玻璃音乐外挂引擎 -->
 <script>
 (() => {
   const MUSIC_API = 'https://dry-unit-a432music-proxy-clean.huixianai395.workers.dev';
+  window.musicState = { list: [], idx: -1, playing: false, title: '', artist: '', id: '', url: '' };
 
-  window.musicState = {
-    list: [],
-    idx: -1,
-    playing: false,
-    title: '',
-    artist: '',
-    id: '',
-    lrc: [],
-    currentLine: '',
-    nextLine: '',
-    progress: 0
-  };
-
+  // 1. 注入高级线性图标的入口按钮
   function injectMusicBtn(){
     const right = document.querySelector('#chatRoom .head-right');
     if(!right || document.getElementById('musicBtn')) return;
     const btn = document.createElement('button');
     btn.id = 'musicBtn';
     btn.className = 'icon-btn';
-    btn.innerHTML = '♪';
-    btn.style.cssText = 'width:32px;height:32px;border-radius:10px;border:1px solid #dce5f0;background:rgba(238,244,250,.8);color:#5c7094;';
+    btn.style.cssText = 'width:32px;height:32px;border-radius:10px;border:1px solid #dce5f0;background:rgba(238,244,250,.8);color:#5c7094;display:grid;place-items:center;box-shadow:none;transition:transform 0.2s;';
+    btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#5c7094;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`;
+    btn.onmousedown = () => btn.style.transform = 'scale(0.9)';
+    btn.onmouseup = () => btn.style.transform = 'scale(1)';
     btn.onclick = openMusicModal;
     right.prepend(btn);
   }
 
+  // 2. 注入初雪海盐蓝毛玻璃弹窗
   function ensureMusicModal(){
     if(document.getElementById('musicModal')) return;
     const html = `
-    <div id="musicModal" class="modal" style="z-index:12000;">
-      <div class="modal-card" style="max-width:360px;">
-        <h3 style="margin:0 0 10px;">搜歌听歌</h3>
-        <div class="row">
-          <input id="musicKw" class="input" placeholder="输入歌名/歌手">
-          <button class="btn p" id="musicSearchBtn">搜索</button>
+    <div id="musicModal" class="modal" style="z-index:12000; background:rgba(0,0,0,0.2); backdrop-filter:blur(4px);">
+      <div class="modal-card" style="max-width:360px; background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; box-shadow:0 12px 40px rgba(92,112,148,0.15); border-radius:24px; padding:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <h3 style="margin:0; color:#3d4a6a; font-size:16px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
+            <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#5c7094;fill:none;stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+            音乐探索
+          </h3>
+          <div onclick="document.getElementById('musicModal').classList.remove('active')" style="color:#7a86a8; font-size:24px; cursor:pointer; line-height:1;">×</div>
         </div>
-        <div id="musicNow" class="small" style="margin:10px 0;">未播放</div>
-        <div id="musicLyricLine" class="small" style="color:#5c7094;margin-bottom:8px;">歌词：-</div>
-        <div id="musicList" class="list" style="max-height:280px;overflow:auto;"></div>
-        <div class="row" style="justify-content:space-between;margin-top:10px;">
-          <button class="btn" id="musicPrevBtn">上一首</button>
-          <button class="btn" id="musicPlayPauseBtn">播放/暂停</button>
-          <button class="btn" id="musicNextBtn">下一首</button>
+        
+        <div style="display:flex; gap:8px; margin-bottom:16px;">
+          <input id="musicKw" class="input" placeholder="输入歌名或歌手..." style="flex:1; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; font-size:13px; padding:8px 12px; outline:none;">
+          <button class="btn p" id="musicSearchBtn" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:12px; padding:0 16px; font-weight:bold; box-shadow:none;">搜索</button>
+        </div>
+
+        <div id="musicNow" style="font-size:11px; color:#a0aaba; text-align:center; margin-bottom:12px; letter-spacing:1px;">当前未播放</div>
+        
+        <div id="musicList" style="max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; margin-bottom:16px;"></div>
+        
+        <div style="display:flex; justify-content:center; align-items:center; gap:24px; padding-top:16px; border-top:1px dashed #dce5f0;">
+          <button class="btn" id="musicPrevBtn" style="background:transparent; border:none; padding:0; cursor:pointer; color:#5c7094;">
+            <svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg>
+          </button>
+          <button class="btn" id="musicPlayPauseBtn" style="width:48px;height:48px;border-radius:50%;background:#eef4fa;border:1px solid #dce5f0;color:#5c7094;display:grid;place-items:center;cursor:pointer;box-shadow:0 4px 12px rgba(92,112,148,0.05);">
+            <svg id="playIconSvg" viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;margin-left:2px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          </button>
+          <button class="btn" id="musicNextBtn" style="background:transparent; border:none; padding:0; cursor:pointer; color:#5c7094;">
+            <svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+          </button>
         </div>
       </div>
     </div>
@@ -11117,14 +11125,7 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     document.getElementById('musicPrevBtn').onclick = () => switchTrack(-1);
     document.getElementById('musicNextBtn').onclick = () => switchTrack(1);
     document.getElementById('musicPlayPauseBtn').onclick = togglePlay;
-
-    const audio = document.getElementById('musicAudio');
-    audio.addEventListener('timeupdate', syncLyric);
-    audio.addEventListener('ended', () => switchTrack(1));
-
-    document.getElementById('musicModal').addEventListener('click', e => {
-      if(e.target.id === 'musicModal') e.target.classList.remove('active');
-    });
+    document.getElementById('musicAudio').addEventListener('ended', () => switchTrack(1));
   }
 
   function openMusicModal(){ ensureMusicModal(); document.getElementById('musicModal').classList.add('active'); }
@@ -11132,79 +11133,58 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
   async function doMusicSearch(){
     const kw = (document.getElementById('musicKw').value || '').trim();
     if(!kw) return;
-    const r = await fetch(`${MUSIC_API}/search?q=${encodeURIComponent(kw)}`);
-    const j = await r.json();
-    const songs = (j.result?.songs || []).map(s => ({
-      id: String(s.id),
-      title: s.name,
-      artist: (s.ar||[]).map(a=>a.name).join('/')
-    }));
-    window.musicState.list = songs;
-    renderMusicList();
+    const btn = document.getElementById('musicSearchBtn');
+    btn.textContent = '...';
+    try {
+      const r = await fetch(`${MUSIC_API}/search?q=${encodeURIComponent(kw)}`);
+      const j = await r.json();
+      window.musicState.list = (j.result?.songs || []).map(s => ({
+        id: String(s.id), title: s.name, artist: (s.ar||[]).map(a=>a.name).join('/')
+      }));
+      renderMusicList();
+    } catch(e) { alert('搜索失败了宝宝！'); }
+    btn.textContent = '搜索';
   }
 
   function renderMusicList(){
     const box = document.getElementById('musicList');
+    if(!window.musicState.list.length) { box.innerHTML = '<div style="text-align:center; color:#a0aaba; font-size:12px; padding:20px 0;">空空如也，换个词搜搜看~</div>'; return; }
     box.innerHTML = window.musicState.list.map((s,i)=>`
-      <div class="item" onclick="window._pickSong(${i})">
-        <div class="main"><div class="name">${s.title}</div><div class="preview">${s.artist}</div></div>
-      </div>`).join('') || '<div class="small">无结果</div>';
+      <div onclick="window._pickSong(${i})" style="padding:10px 12px; background:rgba(255,255,255,0.5); border:1px solid #eef4fa; border-radius:12px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#eef4fa'" onmouseout="this.style.background='rgba(255,255,255,0.5)'">
+        <div style="font-size:13px; font-weight:bold; color:#3d4a6a; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.title}</div>
+        <div style="font-size:11px; color:#7a86a8;">${s.artist}</div>
+      </div>`).join('');
   }
 
   window._pickSong = async function(i){
     const s = window.musicState.list[i]; if(!s) return;
-    window.musicState.idx = i;
-    window.musicState.id = s.id;
-    window.musicState.title = s.title;
-    window.musicState.artist = s.artist;
-
-    const [uRes, lRes] = await Promise.all([
-      fetch(`${MUSIC_API}/song?id=${s.id}`).then(r=>r.json()),
-      fetch(`${MUSIC_API}/lyric?id=${s.id}`).then(r=>r.json())
-    ]);
-
-    const url = uRes.data?.[0]?.url || '';
-    if(!url) return alert('这首歌暂无可播放音源');
-    const audio = document.getElementById('musicAudio');
-    audio.src = url;
-    await audio.play();
-
-    window.musicState.playing = true;
-    window.musicState.lrc = parseLrc(lRes.lrc?.lyric || '');
-    refreshNow();
+    window.musicState.idx = i; window.musicState.id = s.id;
+    window.musicState.title = s.title; window.musicState.artist = s.artist;
+    document.getElementById('musicNow').innerHTML = `<span style="color:#2f66d8;">加载音源中...</span>`;
+    try {
+      const r = await fetch(`${MUSIC_API}/song?id=${s.id}`);
+      const j = await r.json();
+      const url = j.data?.[0]?.url || '';
+      if(!url) throw new Error('无音源');
+      const audio = document.getElementById('musicAudio');
+      audio.src = url; await audio.play();
+      window.musicState.playing = true;
+      refreshUI();
+    } catch(e) { document.getElementById('musicNow').textContent = '这首歌暂时听不了哦宝宝'; }
   }
 
-  function parseLrc(text){
-    return String(text).split('\n').map(line=>{
-      const m = line.match(/\[(\d+):(\d+(?:\.\d+)?)\](.*)/);
-      if(!m) return null;
-      return { t: Number(m[1])*60 + Number(m[2]), line: m[3].trim() };
-    }).filter(Boolean);
-  }
-
-  function syncLyric(){
-    const a = document.getElementById('musicAudio');
-    const arr = window.musicState.lrc;
-    const t = a.currentTime || 0;
-    window.musicState.progress = t;
-
-    let idx = arr.findIndex((x,i)=> t>=x.t && (!arr[i+1] || t<arr[i+1].t));
-    if(idx < 0) idx = 0;
-
-    window.musicState.currentLine = arr[idx]?.line || '';
-    window.musicState.nextLine = arr[idx+1]?.line || '';
-
-    const el = document.getElementById('musicLyricLine');
-    if(el) el.textContent = '歌词：' + (window.musicState.currentLine || '-');
-    refreshNow();
-  }
-
-  function refreshNow(){
+  function refreshUI(){
     const n = document.getElementById('musicNow');
-    if(n) n.textContent = window.musicState.title ? `正在播放：${window.musicState.title} - ${window.musicState.artist}` : '未播放';
-    const chatSub = document.getElementById('chatSub');
-    if(chatSub && window.musicState.title){
-      chatSub.textContent = `♪ ${window.musicState.title}`;
+    if(n) n.innerHTML = window.musicState.title ? `<span style="color:#5c7094; font-weight:bold;">♪ ${window.musicState.title}</span> <span style="color:#a0aaba;">- ${window.musicState.artist}</span>` : '未播放';
+    const svg = document.getElementById('playIconSvg');
+    if(svg) {
+      if(window.musicState.playing) {
+        svg.innerHTML = `<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>`;
+        svg.style.marginLeft = '0';
+      } else {
+        svg.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"></polygon>`;
+        svg.style.marginLeft = '2px';
+      }
     }
   }
 
@@ -11213,37 +11193,17 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     if(!a.src) return;
     if(a.paused){ a.play(); window.musicState.playing = true; }
     else { a.pause(); window.musicState.playing = false; }
+    refreshUI();
   }
 
   function switchTrack(step){
-    const list = window.musicState.list;
-    if(!list.length) return;
-    let i = window.musicState.idx < 0 ? 0 : window.musicState.idx + step;
-    if(i<0) i=list.length-1;
-    if(i>=list.length) i=0;
+    const list = window.musicState.list; if(!list.length) return;
+    let i = window.musicState.idx + step;
+    if(i<0) i=list.length-1; if(i>=list.length) i=0;
     window._pickSong(i);
   }
 
-  // 给 AI 的“听歌状态”
-  window._musicContextForAI = function(){
-    const m = window.musicState;
-    if(!m.title) return '当前未播放音乐。';
-    return `当前正在一起听歌：${m.title} - ${m.artist}
-当前歌词：${m.currentLine || '（前奏/间奏）'}
-下一句：${m.nextLine || ''}
-播放状态：${m.playing ? '播放中' : '暂停'}`;
-  };
-
-  // AI 切歌命令执行
-  window._applyMusicCmdFromAI = function(text){
-    const t = String(text||'').trim();
-    if(t === '[music:next]'){ switchTrack(1); return true; }
-    if(t === '[music:prev]'){ switchTrack(-1); return true; }
-    if(t === '[music:pause]'){ const a=document.getElementById('musicAudio'); a?.pause(); window.musicState.playing=false; return true; }
-    if(t === '[music:play]'){ const a=document.getElementById('musicAudio'); a?.play(); window.musicState.playing=true; return true; }
-    return false;
-  };
-
+  // 启动注入
   setTimeout(() => { injectMusicBtn(); ensureMusicModal(); }, 800);
 })();
 </script>
