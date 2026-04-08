@@ -4447,7 +4447,7 @@ if(!isMe && isHtmlDoc(t)){
   $('clearQuoteBtn').onclick=()=>{composeQuote=null;updateQuoteBar();};
 
   function pushUser(text){
-    const arr=getChatArr(currentId);
+    const arr=getChatArr(currentId).filter(m => !(m.id && String(m.id).startsWith('iv_fav_')));
     arr.push(toMsg({role:'user',text,time:Date.now(),stored:true,quote:composeQuote?{...composeQuote}:null}));
     setChatArr(currentId,arr);composeQuote=null;updateQuoteBar();updateContactPreview(currentId);
   }
