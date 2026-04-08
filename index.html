@@ -4996,6 +4996,13 @@ async function sendMsg(){
     if(!hist.length) return;
     setTyping(chatId,true);
 let reqStart = Date.now(); // 🌟 蓝色魔法：按下秒表，记录 AI 开始思考的时间！
+  let reqStart = Date.now(); // 🌟 蓝色魔法：按下秒表，记录 AI 开始思考的时间！
+
+        // 🚨 蓝色真实物理断网：如果他拉黑了你，你的消息直接进黑洞，连 API 都不调！
+        if (st.isBlockedByHim) {
+            setTimeout(() => { setTyping(chatId, false); }, 500);
+            return; // 🔪 彻底掐断！上帝来了他也收不到，绝对不可能有任何回复！
+  }
     try{
      // 🌟 核心修改：加入群聊双模路由！
       let system = '';
