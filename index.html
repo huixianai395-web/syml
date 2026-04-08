@@ -3852,7 +3852,11 @@ function refreshFontSizeUI(){
   // 🌟 蓝色的救命放大镜：没有它长按面板就会崩溃！
   function getMsgById(chatId, mid) { return getChatArr(chatId).find(x => x.id === mid) || null; }
 // ===== 🚑 蓝色紧急抢救：被误杀的四大核心神经元 =====
-  function getChatArr(id){ return getChats()[id]||[]; }
+  function getChatArr(id){ 
+    const arr = getChats()[id]||[]; 
+    // 🌟 蓝色净化魔法：把之前测试时不小心存进内存的“假气泡”彻底溶解！
+    return arr.filter(m => !(m.id && String(m.id).startsWith('iv_fav_'))); 
+  }
   function setChatArr(id,arr){ const m=getChats(); m[id]=arr; setChats(m); }
   
   function updateContact(id,v){
@@ -4214,23 +4218,7 @@ window._ivManageMode = false;
       updateContact(currentId, { settings: st });
 
       if(v.favorite) {
-        // 🌟 蓝色偷渡魔法：向主聊天流注入隐形收藏！
-        const arr = getChatArr(currentId);
-        arr.push({
-          id: 'iv_fav_' + v.id,
-          role: 'assistant',
-          text: `【心声珍藏】\n${v.text}`,
-          time: v.time,
-          favorite: true,
-          hiddenForAi: true, // 绝对不让 AI 发现！
-          stored: true
-        });
-        setChatArr(currentId, arr);
         alert('✨ 成功将这句心声刻入【拾光珍藏馆】！');
-      } else {
-        // 如果取消收藏，就把隐形消息抽出来销毁
-        const arr = getChatArr(currentId).filter(m => m.id !== 'iv_fav_' + v.id);
-        setChatArr(currentId, arr);
       }
       
       window._renderIvHistory(0); // 瞬间重绘，点亮星星！
@@ -5489,10 +5477,22 @@ document.getElementById('globalImportFile').onchange = async function(e) {
   function getAllFavorites(){
     const chats=getChats(),contacts=getContacts(),cmap={}; contacts.forEach(c=>cmap[c.id]=c.name||'聊天');
     const out=[];
+    // 1. 捞取普通聊天里的收藏
     Object.keys(chats||{}).forEach(cid=>{
       (Array.isArray(chats[cid])?chats[cid]:[]).map(toMsg).forEach(m=>{
         if(m.favorite) out.push({chatId:cid,chatName:cmap[cid]||'聊天',id:m.id,role:m.role,text:m.text||'',time:m.time||Date.now()});
       });
+    });
+    // 2. 🌟 捞取潜意识心声里的收藏！直接读取，绝不污染聊天流！
+    contacts.forEach(c => {
+      const st = normSettings(c.settings);
+      if(st.voiceHistory && Array.isArray(st.voiceHistory)) {
+        st.voiceHistory.forEach(v => {
+          if(v.favorite) {
+            out.push({ chatId: c.id, chatName: c.name || '聊天', id: v.id, role: 'assistant', text: `【心声珍藏】\n${v.text}`, time: v.time || Date.now() });
+          }
+        });
+      }
     });
     out.sort((a,b)=>b.time-a.time);return out;
   }
@@ -5545,22 +5545,49 @@ document.getElementById('globalImportFile').onchange = async function(e) {
     if(favSelected.has(k)) favSelected.delete(k); else favSelected.add(k);
     renderFavorites();
   };
-  window._favCopy=async (chatId,mid)=>{const m=getChatArr(chatId).find(x=>x.id===mid);if(!m) return;await copyText(m.text||'');};
-  window._favJump=(chatId,mid)=>{openChat(chatId);setTimeout(()=>{const el=document.querySelector(`.msg-item[data-mid="${mid}"]`);if(!el) return;el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.add('jumping');setTimeout(()=>el.classList.remove('jumping'),1200);},120);};
-  window._favUnstar=(chatId,mid)=>{const arr=getChatArr(chatId),i=arr.findIndex(x=>x.id===mid);if(i<0) return;arr[i].favorite=false;setChatArr(chatId,arr);if(currentId===chatId) renderChat();favSelected.delete(favKey(chatId,mid));renderFavorites();};
+  window._favCopy=async (chatId,mid)=>{
+    let text = '';
+    const m=getChatArr(chatId).find(x=>x.id===mid);
+    if(m) text = m.text;
+    else {
+      const c = getContactById(chatId);
+      if(c) {
+        const v = (normSettings(c.settings).voiceHistory||[]).find(x=>x.id===mid);
+        if(v) text = `【心声珍藏】\n${v.text}`;
+      }
+    }
+    if(text) await copyText(text||'');
+  };
+  window._favJump=(chatId,mid)=>{
+    const m=getChatArr(chatId).find(x=>x.id===mid);
+    if(!m) return alert('宝宝，这是一条潜意识心声，只能在拾光珍藏馆里偷偷看，无法在聊天记录中定位哦！');
+    openChat(chatId);setTimeout(()=>{const el=document.querySelector(`.msg-item[data-mid="${mid}"]`);if(!el) return;el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.add('jumping');setTimeout(()=>el.classList.remove('jumping'),1200);},120);
+  };
+  window._favUnstar=(chatId,mid)=>{
+    const arr=getChatArr(chatId);
+    const i=arr.findIndex(x=>x.id===mid);
+    if(i>-1) {
+      arr[i].favorite=false; setChatArr(chatId,arr); if(currentId===chatId) renderChat();
+    } else {
+      const c = getContactById(chatId);
+      if(c) {
+        const st = normSettings(c.settings);
+        const vIdx = (st.voiceHistory||[]).findIndex(v => v.id === mid);
+        if(vIdx > -1) { st.voiceHistory[vIdx].favorite = false; updateContact(chatId, { settings: st }); }
+      }
+    }
+    favSelected.delete(favKey(chatId,mid)); renderFavorites();
+  };
 
-  
   $('refreshFavBtn').onclick=()=>{updateFavNow();renderFavorites();};
-// 💌 唤醒拾光珍藏馆的专属神经元 (带防爆盾版)
   if($('openFavBtn')) {
     $('openFavBtn').onclick=()=>{
-      renderFavorites();
-      updateFavNow();
+      renderFavorites(); updateFavNow();
       if(window.favNowTimer) clearInterval(window.favNowTimer);
       window.favNowTimer=setInterval(updateFavNow,1000);
       show('favorites');
     };
-                                           }
+  }
   $('favMultiBtn').onclick=()=>setFavSelectMode(!favSelectMode);
   $('favExitMultiBtn').onclick=()=>setFavSelectMode(false);
   $('favSelectAllBtn').onclick=()=>{
@@ -5586,6 +5613,15 @@ document.getElementById('globalImportFile').onchange = async function(e) {
       arr.forEach(m=>{ if(map[cid].has(m.id)) m.favorite=false; });
       setChatArr(cid,arr);
       if(currentId===cid) renderChat();
+      
+      const c = getContactById(cid);
+      if(c) {
+        const st = normSettings(c.settings);
+        if(st.voiceHistory) {
+          st.voiceHistory.forEach(v => { if(map[cid].has(v.id)) v.favorite = false; });
+          updateContact(cid, { settings: st });
+        }
+      }
     });
     favSelected.clear();
     renderFavorites();
