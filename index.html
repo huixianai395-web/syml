@@ -9906,25 +9906,41 @@ try {
 }
 
 // 🌟 空响应兜底，避免整条链路直接炸掉
-if (!String(out || '').trim()) {
-  out = '{"messages":["在吗？"]}';
-}
-    let parts = [];
+            if (!String(out || '').trim()) {
+              out = '{"messages":["在吗？"]}';
+            }
 
-    if (st.mode === 'offline') {
-      parts = [String(out || '').trim()].filter(Boolean);
-    } else {
-      const cleaned = String(out || '').replace(/```json|```/g, '').trim();
-      const m2 = cleaned.match(/\{[\s\S]*\}/);
-      if (m2) {
-        const data = JSON.parse(m2[0]);
-        parts = Array.isArray(data.messages) ? data.messages.filter(Boolean) : [cleaned];
-      } else {
-        parts = [cleaned];
-      }
-    }
+            // 🌟 蓝色高定：在后台掉落引擎里，精准抓取解除拉黑指令！
+            const rawOut = String(out || '');
+            const unblockCmd = '[' + 'sys:unblock' + ']';
+            let newlyUnblocked = false;
+            if(rawOut.includes(unblockCmd)) {
+                st.isBlockedByHim = false;
+                updateContact(chatId, { settings: st });
+                newlyUnblocked = true;
+            }
 
-    await _emitSilentAiSequential(chatId, parts);
+            let parts = [];
+
+            if (st.mode === 'offline') {
+              parts = [String(out || '').trim()].filter(Boolean);
+            } else {
+              const cleaned = String(out || '').replace(/```json|```/g, '').trim();
+              const m2 = cleaned.match(/\{[\s\S]*\}/);
+              if (m2) {
+                const data = JSON.parse(m2[0]);
+                parts = Array.isArray(data.messages) ? data.messages.filter(Boolean) : [cleaned];
+              } else {
+                parts = [cleaned];
+              }
+            }
+
+            // 🌟 蓝色美学魔法：把正式的系统提示塞在第一句话前面！
+            if (newlyUnblocked) {
+                parts.unshift('<div style="text-align:center; margin:10px 0; width:100%; pointer-events:none;"><span style="font-size:11px; color:#7a86a8; background:rgba(238,244,250,0.6); padding:4px 12px; border-radius:12px; border:1px solid #dce5f0; letter-spacing:0.5px;">对方已将你移出黑名单，现在可以开始聊天了</span></div>');
+            }
+
+            await _emitSilentAiSequential(chatId, parts);
  } catch(e) {
   console.log('后台主动发消息失败:', e);
   throw e; // 🌟关键：抛出错误，给“立即召唤”按钮接住
