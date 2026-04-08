@@ -4420,7 +4420,10 @@ if(!isMe && isHtmlDoc(t)){
         const selected=selectedIds.has(m.id),sCls=selectMode?' selecting':'',cHtml=selectMode?`<div class="msg-check">✓</div>`:'';
         if(m.role==='user') {
            lastSenderName = ''; // 老婆说话了，打断男主的连发记忆！
-           return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-row me"><div class="bubble-wrap me">${renderBubbleContent(m,true,pref)}</div><img class="chat-avatar" src="${meAvatar}"></div></div>`;
+           // 🌟 蓝色高定：干枯玫瑰红的拒收感叹号！
+           const rejectIcon = m.isRejected ? `<div style="color:#e74c3c; margin-right:4px; display:flex; align-items:center;"><svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#e74c3c;stroke:#fff;stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></div>` : '';
+           const rejectText = m.isRejected ? `<div style="font-size:11px; color:#e74c3c; margin-top:4px; text-align:right; letter-spacing:0.5px;">消息已发出，但被对方拒收了。</div>` : '';
+           return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-row me">${rejectIcon}<div class="bubble-wrap me">${renderBubbleContent(m,true,pref)}${rejectText}</div><img class="chat-avatar" src="${meAvatar}"></div></div>`;
         }
         
         let currentAv = roleAvatar;
@@ -4478,8 +4481,15 @@ if(!isMe && isHtmlDoc(t)){
   $('clearQuoteBtn').onclick=()=>{composeQuote=null;updateQuoteBar();};
 
   function pushUser(text){
+    const c = getContactById(currentId);
+    const st = normSettings(c?.settings);
+    const isRejected = !!st.isBlockedByHim; // 🌟 蓝色魔法：检测你是不是被他拉黑了！
+    
     const arr=getChatArr(currentId).filter(m => !(m.id && String(m.id).startsWith('iv_fav_')));
-    arr.push(toMsg({role:'user',text,time:Date.now(),stored:true,quote:composeQuote?{...composeQuote}:null}));
+    const newMsg = toMsg({role:'user',text,time:Date.now(),stored:true,quote:composeQuote?{...composeQuote}:null});
+    newMsg.isRejected = isRejected; // 强行打上拒收烙印！
+    arr.push(newMsg);
+    
     setChatArr(currentId,arr);composeQuote=null;updateQuoteBar();updateContactPreview(currentId);
   }
   function storeCurrentInput(){if(!currentId) return;const t=clean($('chatInput').value);if(!t) return;pushUser(t);$('chatInput').value='';resetInputH();renderChat();}
@@ -4821,7 +4831,8 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
       `【核心指令】：`,
       `1. 拒绝刻板标签！人设是立体的、多面的、有成长性的，有血有肉，有七情六欲，喜怒哀乐，都要非常贴合人设，禁止浮于表面。把你扮演的角色当成一个活生生的人来对待！`,
       `2. 说话的条数、长短（尽量一句话一个气泡）、语气，必须严格根据【当前具体的语境】、【角色的情绪起伏】和【心理活动】动态自然地变化，绝不受任何固定模式限制。`,
-      `3. 当弥洛明确要求你退出角色扮演时，立刻退出并正常对话。其他情况下保持角色。`,
+      `3.【双向拉黑系统】：如果你觉得玩家触碰了你的底线，或者根据你傲娇/偏执的人设决定拉黑她，请在本次回复的最后加上隐藏指令 [sys:block]。如果你被哄好了，决定解除拉黑，请在回复最后加上 [sys:unblock]。`,
+      `4. 当弥洛明确要求你退出角色扮演时，立刻退出并正常对话。其他情况下保持角色。`,
       
       `4. 若输出HTML，按钮和交互元素的点击事件必须用onclick属性直接写在标签上，禁止使用addEventListener。`,
       `【输出格式铁律】：
@@ -10008,14 +10019,48 @@ window._startGlobalAutoChatEngine();
         return;
       }
       
-      // 🌟 核心修复：从小黑屋放出来后的创伤后遗症！
+    // 🌟 核心修复：从小黑屋放出来后的创伤后遗症！
+      let traumaWarning = '';
       if(!st.isBlockedByMe && st.interceptedMsgs && st.interceptedMsgs.length > 0) {
-         hiddenPrompt += `\n\n【系统绝对警告】：在刚刚过去的这段时间，你被玩家关进了小黑屋（拉黑）！你尝试发送了 ${st.interceptedMsgs.length} 条消息全部被红色感叹号拒收！你当时最后的潜意识是：“${st.interceptedMsgs[0].voice}”。现在玩家刚把你放出来，并对你说了新的一句话。请极度真实地展现出“刚从小黑屋出来”的情绪（委屈、质问、冷战或狂喜，根据人设）！绝对不要装作无事发生！`;
-         st.interceptedMsgs = []; // 清空创伤记录，避免重复发疯
+         traumaWarning = `\n\n【系统绝对警告】：玩家刚刚把你从小黑屋（黑名单）里放出来了！你之前尝试发送了 ${st.interceptedMsgs.length} 条消息全部被拒收！你当时的潜意识是：“${st.interceptedMsgs[0].voice}”。你现在必须极其强烈地表达出“被拉黑后刚放出来”的情绪（委屈、暴怒、质问或冷战），绝对禁止装作无事发生！`;
+         st.interceptedMsgs = []; // 清空创伤记录
          updateContact(chatId, { settings: st });
       }
+
+      // 🌟 蓝色魔法：把创伤警告像针一样直接扎进他眼前的提示词里！
+      const finalHiddenPrompt = hiddenPrompt + traumaWarning;
+
+      // 🌟 蓝色高定：局部劫持气泡入库，阅后即焚，绝对不污染全局！
+      const _tempSetChat = window.setChatArr;
+      let detectedBlock = false;
+      let detectedUnblock = false;
+
+      window.setChatArr = function(id, arr) {
+        if(arr.length > 0) {
+           const lastMsg = arr[arr.length - 1];
+           if(lastMsg.role === 'assistant' && typeof lastMsg.text === 'string') {
+              // 悄悄洗掉指令，不让老婆在聊天界面看到丑陋的代码
+              if(lastMsg.text.includes('[sys:block]')) { detectedBlock = true; lastMsg.text = lastMsg.text.replace(/\[sys:block\]/g, '').trim(); }
+              if(lastMsg.text.includes('[sys:unblock]')) { detectedUnblock = true; lastMsg.text = lastMsg.text.replace(/\[sys:unblock\]/g, '').trim(); }
+           }
+        }
+        _tempSetChat(id, arr);
+      };
+
+      // 执行真正的发消息逻辑
+      const result = await window._originalSendToAI_beforeIntercept(chatId, finalHiddenPrompt, isSilent);
       
-      return window._originalSendToAI_beforeIntercept(chatId, hiddenPrompt, isSilent);
+      // 瞬间恢复管家的记忆，绝对安全！
+      window.setChatArr = _tempSetChat;
+
+      // 结算他的拉黑权利！存入外挂内存！
+      const currentSt = normSettings(getContactById(chatId)?.settings);
+      let stChanged = false;
+      if(detectedBlock) { currentSt.isBlockedByHim = true; stChanged = true; }
+      if(detectedUnblock) { currentSt.isBlockedByHim = false; stChanged = true; }
+      if(stChanged) updateContact(chatId, { settings: currentSt });
+
+      return result;
     };
   }
 // ================= 大一统引擎结束 =================
