@@ -4124,7 +4124,12 @@ window._ivManageMode = false;
             <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#a5cfff; fill:none; stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             ${timeStr}
           </div>
-          <button class="btn" onclick="window._ivDelCurrent()" style="background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid rgba(242,220,220,0.8); border-radius:8px; font-size:11px; padding:4px 10px; cursor:pointer; font-weight:bold; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">抹除</button>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <button class="btn" onclick="window._ivStarCurrent()" style="background:transparent; color:#a5cfff; border:none; padding:4px; cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'" title="将心声刻入珍藏馆">
+              <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:currentColor; fill:${v.favorite ? 'currentColor' : 'none'}; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            </button>
+            <button class="btn" onclick="window._ivDelCurrent()" style="background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid rgba(242,220,220,0.8); border-radius:8px; font-size:11px; padding:4px 10px; cursor:pointer; font-weight:bold; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">抹除</button>
+          </div>
         </div>
         <div style="font-size:15px; color:#3d4a6a; font-style:italic; line-height:1.7; text-align:justify; min-height:80px; display:flex; align-items:center; position:relative; z-index:10; pointer-events:none; font-weight:500;">
           "${safeEsc(v.text)}"
@@ -4197,6 +4202,38 @@ window._ivManageMode = false;
       st.voiceHistory = list.filter(x => x.id !== v.id);
       updateContact(currentId, { settings: st });
       window._renderIvHistory(0);
+    };
+  window._ivStarCurrent = function() {
+      const c = getContactById(currentId);
+      const st = normSettings(c?.settings);
+      const list = st.voiceHistory || [];
+      const v = list[window._ivCurrentIndex];
+      if(!v) return;
+
+      v.favorite = !v.favorite; // 切换星星状态
+      updateContact(currentId, { settings: st });
+
+      if(v.favorite) {
+        // 🌟 蓝色偷渡魔法：向主聊天流注入隐形收藏！
+        const arr = getChatArr(currentId);
+        arr.push({
+          id: 'iv_fav_' + v.id,
+          role: 'assistant',
+          text: `【心声珍藏】\n${v.text}`,
+          time: v.time,
+          favorite: true,
+          hiddenForAi: true, // 绝对不让 AI 发现！
+          stored: true
+        });
+        setChatArr(currentId, arr);
+        alert('✨ 成功将这句心声刻入【拾光珍藏馆】！');
+      } else {
+        // 如果取消收藏，就把隐形消息抽出来销毁
+        const arr = getChatArr(currentId).filter(m => m.id !== 'iv_fav_' + v.id);
+        setChatArr(currentId, arr);
+      }
+      
+      window._renderIvHistory(0); // 瞬间重绘，点亮星星！
     };
   function applyModeUI(){const c=getContactById(currentId),st=normSettings(c?.settings);$('chatRoom').classList.toggle('offline',st.mode==='offline');updateChatSub();}
 
