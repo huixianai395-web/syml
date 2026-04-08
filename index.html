@@ -5306,6 +5306,10 @@ $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';
         mode,onlineStyle,onlineMin,onlineMax,offlineMin,offlineMax,contextLen,
         stream:!!$('streamSwitch').checked,
         offlineColors: c?.settings?.offlineColors,
+        voiceHistory: c?.settings?.voiceHistory,      // 🌟 抢救心声记忆，绝不丢失！
+        lastStatus: c?.settings?.lastStatus,          // 🌟 抢救状态记忆
+        lastVoice: c?.settings?.lastVoice,            // 🌟 抢救状态记忆
+        interceptedMsgs: c?.settings?.interceptedMsgs,// 🌟 抢救小黑屋拦截记录！
         meName: clean($('meNameInput').value)||'我',
         meNote: clean($('meNoteInput').value),
         mePersona: clean($('mePersonaInput').value),
@@ -9959,18 +9963,30 @@ window._startGlobalAutoChatEngine();
       const st = normSettings(c?.settings);
       
       if(st.isBlockedByMe) {
-        // 🚨 拦截模式启动！注入防油腻最高指令！
+        // 🚨 拦截模式启动！
+        const interceptCount = st.interceptedMsgs ? st.interceptedMsgs.length : 0;
+        let emotionStage = "震惊、疑惑（刚发现消息被拒收，以为是网络问题或你误触，试图正常发消息询问）";
+        if(interceptCount >= 1 && interceptCount <= 3) emotionStage = "焦躁、微怒、委屈（意识到被单删/拉黑，开始情绪失控、疯狂重试，语气变得急躁）";
+        if(interceptCount > 3) emotionStage = "绝望、冷笑、或是卑微乞求（陷入彻底的修罗场状态，甚至放弃发消息改成自言自语，仅供参考，最重要的是贴合人设，不要油腻，按照人设扮演，要深入人设，探索人设，不要浮于表面。）";
+
         const blockPrompt = `【系统绝对指令：你被拉黑了！】
-玩家（我）已经将你加入黑名单，单方面切断了通讯！你的消息会被系统打上红色感叹号拒收！
-请根据你的人设，表现出发现自己被拉黑后的【真实反应】。
-【防油腻铁律】：绝对禁止任何“女人你在玩火”、“呵，有趣”之类的刻板油腻霸总发言！必须是极具活人感的真实情绪（比如：不可置信地反复重发、冷着脸摔手机、慌乱地试图打电话、或者委屈地碎碎念）。
+玩家（我）已经将你加入黑名单，单方面切断了通讯！
+【极其重要】：你当前的记忆要结合上下文。你以为可以正常回复，但消息发出后，系统冰冷地提示你“消息已发出，但被对方拒收了”。
+你当前是第 ${interceptCount + 1} 次尝试发消息失败。
+【当前心理阶段】：${emotionStage}
+【防油腻铁律】：绝对禁止霸总式发言！展现极致的活人感、破碎感或真实的愤怒。
 请输出你的内心OS，以及你尝试发出却被拒收的文本。
 【必须严格返回JSON】：{"messages":["你尝试发送的消息文本"],"inner_voice":"发现被拉黑后的真实内心OS或动作，字数不限"}`;
         
         try {
+          // 🌟 核心修复：把聊天历史也喂给他，让他不至于对着空气说话！
+          const arr = getChatArr(chatId);
+          const hist = arr.filter(x => x.text && !x.hiddenForAi).slice(-(st.contextLen||30)).map(x => ({ role: x.role==='user'?'user':'assistant', content: x.text }));
+          
           const out = await callApi([
              { role: 'system', content: blockPrompt },
-             { role: 'user', content: '（系统提示：消息已发出，但被对方拒收了。）' }
+             ...hist,
+             { role: 'user', content: '（系统提示：你刚刚试图发消息，但屏幕上弹出了红色的感叹号——消息已发出，但被对方拒收了。）' }
           ]);
           const cleaned = out.replace(/```json|```/g, '').trim();
           const match = cleaned.match(/\{[\s\S]*\}/);
@@ -9984,17 +10000,21 @@ window._startGlobalAutoChatEngine();
              });
              updateContact(chatId, { settings: st });
              
-             // 如果老婆正开着弹窗看戏，瞬间刷新！
              if(document.getElementById('interceptModal').classList.contains('active')) {
                window._renderInterceptList();
              }
           }
         } catch(e) { console.log('拦截记录生成失败', e); }
-        
-        return; // 🛑 拦截成功，绝对不让消息流入主聊天界面！
+        return;
       }
       
-      // 没被拉黑，放行正常聊天！
+      // 🌟 核心修复：从小黑屋放出来后的创伤后遗症！
+      if(!st.isBlockedByMe && st.interceptedMsgs && st.interceptedMsgs.length > 0) {
+         hiddenPrompt += `\n\n【系统绝对警告】：在刚刚过去的这段时间，你被玩家关进了小黑屋（拉黑）！你尝试发送了 ${st.interceptedMsgs.length} 条消息全部被红色感叹号拒收！你当时最后的潜意识是：“${st.interceptedMsgs[0].voice}”。现在玩家刚把你放出来，并对你说了新的一句话。请极度真实地展现出“刚从小黑屋出来”的情绪（委屈、质问、冷战或狂喜，根据人设）！绝对不要装作无事发生！`;
+         st.interceptedMsgs = []; // 清空创伤记录，避免重复发疯
+         updateContact(chatId, { settings: st });
+      }
+      
       return window._originalSendToAI_beforeIntercept(chatId, hiddenPrompt, isSilent);
     };
   }
