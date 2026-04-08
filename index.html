@@ -10046,11 +10046,13 @@ window._startGlobalAutoChatEngine();
                window._renderInterceptList();
              }
           }
-        } catch(e) { console.log('拦截记录生成失败', e); }
+       } catch(e) { console.log('拦截记录生成失败', e); }
         return;
       }
       
-    
+      // 🌟 蓝色救命补丁：把正常聊天的放行通道和右大括号死死焊回来！
+      return window._originalSendToAI_beforeIntercept(chatId, hiddenPrompt, isSilent);
+    };
   }
 // ================= 大一统引擎结束 =================
 })(); // 🏠 闭合主屋的大门！(把之前断掉的尾巴统统扔掉，这次死死焊住！)
