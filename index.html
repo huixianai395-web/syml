@@ -3655,7 +3655,7 @@ function startCallUI(type,dir,chatId,callerName=''){
 }
 
 function connectCall(){
-  if(window._activeCallAudio) { window._activeCallAudio.pause(); if(window._activeCallAudio) { window._activeCallAudio.pause(); } // 🌟 蓝色高定：只暂停，绝对不许杀掉 VIP 播放器！ }
+  if(window._activeCallAudio) { window._activeCallAudio.pause(); window._activeCallAudio = null; }
   callState.phase='connected';callState.active=true;callState.start=Date.now();
   $('callStatus').textContent='';
   $('callInputRow').classList.remove('hidden');
@@ -3668,7 +3668,7 @@ function connectCall(){
   }
 
 function endCall(reason){
-  if(window._activeCallAudio) { window._activeCallAudio.pause(); if(window._activeCallAudio) { window._activeCallAudio.pause(); } // 🌟 蓝色高定：只暂停，绝对不许杀掉 VIP 播放器！ }
+  if(window._activeCallAudio) { window._activeCallAudio.pause(); window._activeCallAudio = null; }
   const wasActive=callState.active,dur=callState.start?fmtCallDur(Date.now()-callState.start):'00:00',chatId=callState.chatId,type=callState.type;
   clearInterval(callState.timer);
   $('callOverlay').classList.add('hidden');
