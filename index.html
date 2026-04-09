@@ -2047,21 +2047,6 @@ body {
   border-top: 1px solid rgba(220, 229, 240, 0.8) !important;
   box-shadow: 0 -10px 40px rgba(92, 112, 148, 0.05) !important;
 }
-   /* 🌟 蓝色高定：双语电影感折叠字幕 */
-.bubble-bilingual { display: flex; flex-direction: column; width: 100%; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.bilingual-foreign { font-size: 15px; color: inherit; line-height: 1.5; word-break: break-word; }
-
-/* 隐形折叠抽屉魔法 */
-.bilingual-zh-wrap { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.bubble-bilingual.show-zh .bilingual-zh-wrap { max-height: 500px; opacity: 1; margin-top: 6px; }
-
-/* 极细的初雪海盐蓝毛玻璃分割线 */
-.bilingual-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(220,229,240,0.8), transparent); border: none; margin: 0 0 6px 0; }
-
-/* 中文译制：极其高级的灰蓝色斜体 */
-.bilingual-zh { font-size: 12px; color: #7a86a8; font-style: italic; line-height: 1.4; word-break: break-word; padding-bottom: 2px; }
-/* 兼容线下模式古风调色盘 */
-#chatRoom.offline .bilingual-zh { color: var(--off-quote); }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
@@ -2883,62 +2868,6 @@ body {
         <input id="roleAvatarFile" type="file" accept="image/*" class="hidden" />
 <img id="roleAvatarPreview" class="preview-img hidden" style="margin-top:8px;" />
         <div class="small" style="margin-top:8px;">对方人设</div><textarea id="rolePersonaInput" class="ta" style="min-height:95px;"></textarea>
-        <!-- 🌟 蓝色高定：异国语境开关 (纯净 SVG 图标) -->
-<div style="margin-top:16px; padding-top:16px; border-top:1px dashed #eef4fa;">
-  <div style="display:flex; justify-content:space-between; align-items:center;">
-    <div style="display:flex; flex-direction:column; gap:4px;">
-      <div style="font-size:14px; color:#5c7094; font-weight:bold; display:flex; align-items:center; gap:4px;">
-        <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><line x1="9" y1="10" x2="15" y2="10"></line></svg>
-        异国语境 (双语字幕)
-      </div>
-      <div style="font-size:11px; color:#8892a8;">开启后TA将用母语+中文混合回复</div>
-    </div>
-    <input id="bilingualSwitch" type="checkbox" style="transform:scale(1.1); accent-color:#5c7094;" onchange="document.getElementById('bilingualLangBox').style.display=this.checked?'block':'none';" />
-  </div>
-  <div id="bilingualLangBox" style="display:none; margin-top:10px;">
-    <select id="bilingualLangSelect" class="select" style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:8px; font-size:13px; padding:6px 10px; outline:none;">
-      <option value="English">英语 (English)</option>
-      <option value="Japanese">日语 (日本語)</option>
-      <option value="Russian">俄语 (Русский)</option>
-      <option value="French">法语 (Français)</option>
-      <option value="German">德语 (Deutsch)</option>
-      <option value="Korean">韩语 (한국어)</option>
-      <option value="Italian">意大利语 (Italiano)</option>
-      <option value="Spanish">西班牙语 (Español)</option>
-    </select>
-  </div>
-</div>
-        <!-- 🌟 蓝色高定：专属羁绊回音舱 -->
-        <div style="margin-top:16px; padding-top:16px; border-top:1px dashed #eef4fa;">
-          <div style="font-size:14px; color:#5c7094; font-weight:bold; display:flex; align-items:center; gap:6px; margin-bottom:12px;">
-            <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-            专属羁绊回音舱
-          </div>
-          <div style="display:flex; gap:8px;">
-            <!-- 消息音 -->
-            <div style="flex:1; background:rgba(250,252,255,0.6); border:1px solid #dce5f0; border-radius:12px; padding:10px; text-align:center;">
-              <div style="font-size:12px; color:#7a86a8; margin-bottom:8px; font-weight:bold;">消息提示音</div>
-              <button class="btn" onclick="document.getElementById('upMsgSound').click()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:11px; padding:4px 0; font-weight:bold; width:100%; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">更换</button>
-              <div id="lblMsgSound" style="font-size:10px; color:#a5cfff; margin-top:6px; font-weight:bold;">默认</div>
-              <input type="file" id="upMsgSound" accept="audio/*" class="hidden" onchange="window._handleAudioUp(this, 'msgSound')">
-            </div>
-            <!-- 语音铃声 -->
-            <div style="flex:1; background:rgba(250,252,255,0.6); border:1px solid #dce5f0; border-radius:12px; padding:10px; text-align:center;">
-              <div style="font-size:12px; color:#7a86a8; margin-bottom:8px; font-weight:bold;">语音铃声</div>
-              <button class="btn" onclick="document.getElementById('upVoiceRing').click()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:11px; padding:4px 0; font-weight:bold; width:100%; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">更换</button>
-              <div id="lblVoiceRing" style="font-size:10px; color:#a5cfff; margin-top:6px; font-weight:bold;">默认</div>
-              <input type="file" id="upVoiceRing" accept="audio/*" class="hidden" onchange="window._handleAudioUp(this, 'voiceRing')">
-            </div>
-            <!-- 视频铃声 -->
-            <div style="flex:1; background:rgba(250,252,255,0.6); border:1px solid #dce5f0; border-radius:12px; padding:10px; text-align:center;">
-              <div style="font-size:12px; color:#7a86a8; margin-bottom:8px; font-weight:bold;">视频铃声</div>
-              <button class="btn" onclick="document.getElementById('upVideoRing').click()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:11px; padding:4px 0; font-weight:bold; width:100%; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">更换</button>
-              <div id="lblVideoRing" style="font-size:10px; color:#a5cfff; margin-top:6px; font-weight:bold;">默认</div>
-              <input type="file" id="upVideoRing" accept="audio/*" class="hidden" onchange="window._handleAudioUp(this, 'videoRing')">
-            </div>
-          </div>
-          <button class="btn d" onclick="window._clearRoleAudio()" style="width:100%; margin-top:8px; background:rgba(252,242,242,0.6); color:#b57b7b; border:1px solid #f2dcdc; border-radius:8px; font-size:11px; font-weight:bold; box-shadow:none;">恢复全部默认声效</button>
-        </div>
         <!-- 🌟 蓝色高定：干枯玫瑰粉的小黑屋开关 (全行可点击版) -->
         <label style="margin-top:16px; padding-top:16px; border-top:1px dashed #eef4fa; display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
           <div style="display:flex; flex-direction:column; gap:4px;">
@@ -3642,18 +3571,9 @@ function startCallUI(type,dir,chatId,callerName=''){
   }
   callRenderBtns();
   ov.classList.remove('hidden');
-  // 🌟 蓝色专属电话铃声！
-  const stCall = normSettings(c?.settings);
-  const ringData = type === 'video' ? stCall.videoRing : stCall.voiceRing;
-  if(dir === 'incoming' && ringData) {
-    window._activeCallAudio = new Audio(ringData);
-    window._activeCallAudio.loop = true;
-    window._activeCallAudio.play().catch(e=>{});
-  }
 }
 
 function connectCall(){
-  if(window._activeCallAudio) { window._activeCallAudio.pause(); window._activeCallAudio = null; }
   callState.phase='connected';callState.active=true;callState.start=Date.now();
   $('callStatus').textContent='';
   $('callInputRow').classList.remove('hidden');
@@ -3666,7 +3586,6 @@ function connectCall(){
   }
 
 function endCall(reason){
-  if(window._activeCallAudio) { window._activeCallAudio.pause(); window._activeCallAudio = null; }
   const wasActive=callState.active,dur=callState.start?fmtCallDur(Date.now()-callState.start):'00:00',chatId=callState.chatId,type=callState.type;
   clearInterval(callState.timer);
   $('callOverlay').classList.add('hidden');
@@ -3849,8 +3768,6 @@ window._callHangup=()=>endCall();
     o.meAvatar = s?.meAvatar;
     o.mePersona = s?.mePersona;
     o.meNote = s?.meNote; 
-    o.bilingual = !!s?.bilingual;
-    o.bilingualLang = s?.bilingualLang || 'English';
     return o;
   }
   function getPref(){
@@ -3991,44 +3908,39 @@ function refreshFontSizeUI(){
     if(i>-1){ arr[i]={...arr[i],...v}; setContacts(arr); }
   }
   
-  // 🌟 蓝色终极修复：把几十万字的文件内容死死拦在预览区外面！
-function updateContactPreview(id){
-  const arr=getChatArr(id), c=getContactById(id); 
-  if(!c) return;
-  let p='', t='';
-  if(arr.length){ 
-    const last=arr[arr.length-1]; 
-    let rawText = last.text || '';
-    p = rawText
-      .replace(/\[file:(.+?)\][\s\S]*?\[\/file\]/g, '[文件] $1') // 👈 核心救命代码：把几十万字瞬间压缩成短短几个字！
-      .replace(/<[^>]+>/g, '')
-      .replace(/\[voice:\d*:?(.*?)\]/g, '[语音] $1')
-      .replace(/\[stk:.*?\]/g, '[表情包]')
-      .replace(/\[call:.*?\]/g, '[通话记录]')
-      .replace(/\[quote\]/g, '')
-      .trim();
+  // 🌟 蓝色紧急修复：时间戳乱码与列表不刷新 Bug
+  function updateContactPreview(id){
+    const arr=getChatArr(id), c=getContactById(id); 
+    if(!c) return;
+    let p='', t='';
+    if(arr.length){ 
+      const last=arr[arr.length-1]; 
+      let rawText = last.text || '';
+      p = rawText
+        .replace(/<[^>]+>/g, '')
+        .replace(/\[voice:\d*:?(.*?)\]/g, '[语音] $1')
+        .replace(/\[stk:.*?\]/g, '[表情包]')
+        .replace(/\[call:.*?\]/g, '[通话记录]')
+        .replace(/\[quote\]/g, '')
+        .trim();
+      if(!p) p = '[特殊消息]';
+      // 🛠️ 修复1：给机器时间套上人类翻译器 fmtTs，变成 12:00 这种格式！
+      t=fmtTs(last.time)||''; 
+    }
     
-    if(p.length > 50) p = p.slice(0, 50) + '...'; // 👈 双重保险：强制截断，绝对不让超长文本撑爆内存！
-    
-    if(!p) p = '[特殊消息]';
-    t=fmtTs(last.time)||''; 
-  }
-  
-  // 🌟 蓝色的群聊兼容魔法：如果是群聊，去群聊抽屉里更新摘要！
-  if(c.isGroup) {
-     const groups=window.getGroups(), idx=groups.findIndex(g=>g.id===id);
-     if(idx>-1){ groups[idx].preview=p; groups[idx].time=t; window.setGroups(groups); }
-  } else {
-     updateContact(id,{preview:p,time:t});
-  }
+    // 🌟 蓝色的群聊兼容魔法：如果是群聊，去群聊抽屉里更新摘要！
+    if(c.isGroup) {
+       const groups=window.getGroups(), idx=groups.findIndex(g=>g.id===id);
+       if(idx>-1){ groups[idx].preview=p; groups[idx].time=t; window.setGroups(groups); }
+    } else {
+       updateContact(id,{preview:p,time:t});
+    }
 
-  // 🛠️ 强制唤醒雷达
-  if(typeof renderContacts === 'function' && document.getElementById('searchInput')){
-     renderContacts(document.getElementById('searchInput').value || '');
+    // 🛠️ 修复2：强制唤醒雷达，只要数据变了，立刻让微信列表在后台实时重绘！
+    if(typeof renderContacts === 'function' && document.getElementById('searchInput')){
+       renderContacts(document.getElementById('searchInput').value || '');
+    }
   }
-}
-    
-    
   // ===================================================
   function getContactById(id){
     const c = getContacts().find(x=>x.id===id);
@@ -4364,50 +4276,32 @@ window._ivManageMode = false;
 
   function renderQuote(q){ if(!q||!q.text) return ''; return `<div class="msg-quote"><div class="q-content">${esc(q.text)}</div></div>`; }
   function formatOfflineText(text){
-    let t=String(text||'');
-    const marks=[];
-    
-    // 🌟 蓝色高定 1：先把文件格式 [file:文件名]内容[/file] 转换成绝美卡片，并装进保险箱！
-    // 这样它就绝对不会被后面的正则误伤导致 DOM 崩溃啦！
-    t = t.replace(/\[file:(.+?)\]([\s\S]*?)\[\/file\]/g, (match, fname, fcontent) => {
-      let size = new Blob([fcontent]).size;
-      let sizeStr = size > 1024 ? (size/1024).toFixed(1) + ' KB' : size + ' B';
-      // 注入初雪海盐蓝的高级质感，彻底告别土味排版！
-      const fileCard = `<div class="bubble-file" style="background:rgba(250,252,255,0.75); border:1px solid #dce5f0; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-radius:14px; box-shadow:0 4px 16px rgba(92,112,148,0.06); margin:8px 0;"><div class="bf-icon" style="filter:drop-shadow(0 2px 4px rgba(92,112,148,0.1));">📄</div><div class="bf-info"><div class="bf-name" style="color:#3d4a6a; font-weight:800; letter-spacing:0.5px;">${esc(fname)}</div><div class="bf-size" style="color:#7a86a8; font-weight:600; margin-top:4px;">文本文件 · ${sizeStr}</div></div></div>`;
-      const key = `__MARK_${marks.length}__`;
-      marks.push(fileCard);
+  let t=String(text||'');
+  const marks=[];
+  function rep(re,cls){
+    t=t.replace(re,(m,inner)=>{
+      const key=`__MARK_${marks.length}__`;
+      marks.push(`<span class="${cls}">${esc(inner)}</span>`);
       return key;
     });
-
-    // 🌟 蓝色高定 2：线下双语字幕究极护盾（防安检转义 + 兼容 AI 拼写错误）
-    t = t.replace(/<div[^>]*(bilingual|biligual|bubble)[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/gi, (match) => {
-      const key = `__MARK_${marks.length}__`;
-      marks.push(match); 
-      return key;
-    });
-
-    function rep(re,cls){
-      t=t.replace(re,(m,inner)=>{
-        const key=`__MARK_${marks.length}__`;
-        marks.push(`<span class="${cls}">${esc(inner)}</span>`);
-        return key;
-      });
-    }
-    
-    // 兼容所有中英文、单双引号的精细化匹配
-    rep(/[Inner"]([^"Inner]{1,500})[Inner"]/g,'off-dialogue'); 
-    rep(/[“"]([^“”"]{1,500})[”"]/g,'off-dialogue'); 
-    rep(/[‘']([^‘’']{1,500})[’']/g,'off-dialogue');
-    rep(/「([^」]{1,500})」/g,'off-dialogue');
-    rep(/【([^】]{1,500})】/g,'off-em');
-    rep(/\*\*([^*]{1,500})\*\*/g,'off-em');
-
-    let out=esc(t);
-    // 把保险箱里的绝美卡片和双语字幕完好无损地放回页面
-    marks.forEach((html,i)=>{ out=out.replace(`__MARK_${i}__`,html); });
-    return out.replace(/\n/g,'<br>');
   }
+  
+  // 🌟 蓝色核心修复：同时兼容直引号 " " 和 中文弯引号 “ ”
+  // 增加对多种引号的包容性，防止 iPhone 智能标点导致不染色
+  rep(/[Inner"]([^"Inner]{1,500})[Inner"]/g,'off-dialogue'); 
+  rep(/[“"]([^“”"]{1,500})[”"]/g,'off-dialogue'); 
+  
+  // 顺便兼容一下单引号，万一 AI 抽风用单引号呢
+  rep(/[‘']([^‘’']{1,500})[’']/g,'off-dialogue');
+  
+  rep(/「([^」]{1,500})」/g,'off-dialogue');
+  rep(/【([^】]{1,500})】/g,'off-em');
+  rep(/\*\*([^*]{1,500})\*\*/g,'off-em');
 
+  let out=esc(t);
+  marks.forEach((html,i)=>{ out=out.replace(`__MARK_${i}__`,html); });
+  return out.replace(/\n/g,'<br>');
+  }
 
 
   function renderOfflineAssistant(text,ts,pref,msg){
@@ -4439,18 +4333,6 @@ window._ivManageMode = false;
     const quote=renderQuote(m.quote);
     const hidden=m.hiddenForAi?'ai-hidden':'';
     const t=String(m.text||'');
-   // 🌟 蓝色高定：双语字幕专属拦截器（带引用兼容版），强行穿回气泡外衣！
-    if(t.includes('bubble-bilingual')){
-      let finalBody = t;
-      let qHtml = '';
-      const quoteMatch = t.match(/^\[quote\]([\s\S]*?)\[\/quote\]([\s\S]*)$/);
-      if(quoteMatch){
-        // 如果发现了引用，就把它单独切出来，变成绝美的灰色小框！
-        qHtml = `<div class="msg-quote"><div class="q-content">${esc(quoteMatch[1].trim())}</div></div>`;
-        finalBody = quoteMatch[2].trim(); // 剩下的双语部分留给下面渲染
-      }
-      return `${quote}${qHtml}<div class="bubble ${cls} ${hidden}">${finalBody}</div>${ts}`;
-    }
     // --- 解析文件格式 ---
     const fileMatch = t.match(/^\[file:(.+?)\]([\s\S]*?)\[\/file\]$/);
     if(fileMatch){
@@ -5147,13 +5029,6 @@ async function sendMsg(){
           system += '\n\n【外挂世界书设定(极其重要，请严格遵循)】：\n' + wbTexts.join('\n');
         }
       }
-     // 🌐 蓝色的跨国境双语折叠引擎！
-      if(st.bilingual && st.bilingualLang) {
-        system += `\n\n【异国语境绝对铁律】：你是一个母语为“${st.bilingualLang}”的人。你的所有对话（无论是线上messages数组还是线下RP的正文对话）必须使用双语电影字幕格式！
-【格式严格如下】（直接输出HTML，绝对不要加markdown代码块）：
-<div class="bubble-bilingual show-zh" onclick="this.classList.toggle('show-zh')"><div class="bilingual-foreign">你的${st.bilingualLang}原文</div><div class="bilingual-zh-wrap"><hr class="bilingual-divider"><div class="bilingual-zh">对应的中文精准翻译</div></div></div>
-注意：只有“说出口的话”需要双语包裹，动作神态描写（如线下模式的括号内旁白或线上模式的inner_voice）依然保持纯中文，绝不包裹在双语标签内！`;
-      }
       // ==========================================
       // 🧠 蓝色的外挂记忆注入引擎 (时光档案馆专属) 🧠
       const allMems = await getMemories();
@@ -5445,16 +5320,6 @@ async function sendMsg(){
   function openChatSettingPage(){
     if(!currentId) return;
     const c=getContactById(currentId),st=normSettings(c?.settings),globalMe=getMe(),p=getPref();
-
-window._tempRoleAudio = { msgSound: st.msgSound||'', voiceRing: st.voiceRing||'', videoRing: st.videoRing||'' };
-      ['MsgSound', 'VoiceRing', 'VideoRing'].forEach(t => {
-         const k = t.charAt(0).toLowerCase() + t.slice(1);
-         const lbl = document.getElementById('lbl' + t);
-         if(lbl) { 
-           lbl.textContent = window._tempRoleAudio[k] ? '已就位 ✨' : '默认'; 
-           lbl.style.color = window._tempRoleAudio[k] ? '#5c7094' : '#a5cfff';
-         }
-      });
     const me = {
       name: st.meName !== undefined ? st.meName : globalMe.name,
       avatar: st.meAvatar !== undefined ? st.meAvatar : globalMe.avatar,
@@ -5462,11 +5327,7 @@ window._tempRoleAudio = { msgSound: st.msgSound||'', voiceRing: st.voiceRing||''
       note: st.meNote !== undefined ? st.meNote : globalMe.note
     };
     $('avatarCropSwitch').checked=!!p.avatarCrop;
-if(document.getElementById('bilingualSwitch')) {
-      document.getElementById('bilingualSwitch').checked = !!st.bilingual;
-      document.getElementById('bilingualLangBox').style.display = st.bilingual ? 'block' : 'none';
-      if(document.getElementById('bilingualLangSelect')) document.getElementById('bilingualLangSelect').value = st.bilingualLang || 'English';
-  }
+
     $('meNameInput').value=me.name||''; $('meNoteInput').value=me.note||'';
     $('mePersonaInput').value=me.persona||''; $('meAvatarInput').value=me.avatar||''; meAvatarDraft='';
     showPreview('meAvatarPreview', me.avatar||'');
@@ -5545,11 +5406,6 @@ $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';
         meAvatar: clean($('meAvatarInput').value)||'',
         innerVoice: !!$('innerVoiceSwitch').checked,
         isBlockedByMe: document.getElementById('blockByMeSwitch') ? !!document.getElementById('blockByMeSwitch').checked : false,
-        bilingual: document.getElementById('bilingualSwitch') ? !!document.getElementById('bilingualSwitch').checked : false,
-        bilingualLang: document.getElementById('bilingualLangSelect') ? document.getElementById('bilingualLangSelect').value : 'English',
-        msgSound: window._tempRoleAudio.msgSound,
-        voiceRing: window._tempRoleAudio.voiceRing,
-        videoRing: window._tempRoleAudio.videoRing,
       });
 
       if(c.isGroup) {
@@ -10008,13 +9864,8 @@ emitAiSequential = async function(parts, targetId, mode){
 
     if(!_isViewingChat(targetId)){
       _incUnread(targetId, 1);
-    
     }
-// 🌟 蓝色静默发声引擎：如果TA有专属提示音，且不在当前聊天页，就响一声！
-    const stSound = normSettings(getContactById(targetId)?.settings).msgSound;
-    if(!_isViewingChat(targetId) && stSound) {
-      const a = new Audio(stSound); a.play().catch(e=>{});
-    }
+
     updateContactPreview(targetId);
     if(currentId===targetId) renderChat();
     renderContacts(document.getElementById('searchInput')?.value || '');
@@ -12188,32 +12039,7 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     });
   }, 800);
 })();
-// 🌟 蓝色高定：音频上传与外挂内存转换引擎
-  window._tempRoleAudio = { msgSound: '', voiceRing: '', videoRing: '' };
-  window._activeCallAudio = null; // 隐形的电话铃声播放器
-
-  window._handleAudioUp = function(input, type) {
-    const file = input.files?.[0];
-    if(!file) return;
-    if(file.size > 2 * 1024 * 1024) return alert('宝宝，这首歌太大了！请截取 2MB 以内的短高潮或语音哦！');
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      window._tempRoleAudio[type] = e.target.result;
-      const lbl = document.getElementById('lbl' + type.charAt(0).toUpperCase() + type.slice(1));
-      if(lbl) { lbl.textContent = '已就位 ✨'; lbl.style.color = '#5c7094'; }
-    };
-    reader.readAsDataURL(file);
-    input.value = '';
-  };
-
-  window._clearRoleAudio = function() {
-    window._tempRoleAudio = { msgSound: '', voiceRing: '', videoRing: '' };
-    ['MsgSound', 'VoiceRing', 'VideoRing'].forEach(t => {
-       const lbl = document.getElementById('lbl' + t);
-       if(lbl) { lbl.textContent = '默认'; lbl.style.color = '#a5cfff'; }
-    });
-  }; 
+ 
 </script>
   
   <!-- 🌟 蓝色高定：黑名单拦截记录弹窗 -->
