@@ -9992,10 +9992,24 @@ emitAiSequential = async function(parts, targetId, mode){
       _incUnread(targetId, 1);
     
     }
-// 🌟 蓝色静默发声引擎：如果TA有专属提示音，且不在当前聊天页，就响一声！
+// 🌟 蓝色高定：苹果级防拦截，全局静默发声引擎！
+    if(!window._blueNotifyAudio) {
+      window._blueNotifyAudio = new Audio();
+      // 只要老婆点过一次屏幕，立刻拿到发声最高权限！
+      document.addEventListener('touchstart', () => {
+        window._blueNotifyAudio.play().catch(()=>{});
+        window._blueNotifyAudio.pause();
+      }, { once: true });
+    }
+
     const stSound = normSettings(getContactById(targetId)?.settings).msgSound;
     if(!_isViewingChat(targetId) && stSound) {
-      const a = new Audio(stSound); a.play().catch(e=>{});
+      window._blueNotifyAudio.src = stSound;
+      window._blueNotifyAudio.volume = 0.85; // 稍微调大一点，高级且清晰
+      let playPromise = window._blueNotifyAudio.play();
+      if(playPromise !== undefined) {
+         playPromise.catch(e => console.log('苹果底层拦截，但我们有万能钥匙:', e));
+      }
     }
     updateContactPreview(targetId);
     if(currentId===targetId) renderChat();
