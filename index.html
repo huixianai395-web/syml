@@ -4458,10 +4458,15 @@ if(!isMe && isHtmlDoc(t)){
             const sender = allContacts.find(x => x.name === lastSenderName);
             if(sender) lastSenderAv = sender.avatar; else lastSenderAv = roleAvatar;
           } 
-          // 如果没有署名，但记忆库里有人，就直接沿用他的头像和名字！
-          currentAv = lastSenderAv;
-          if(lastSenderName) nameLabel = `<div style="font-size:10px; color:#888; margin-bottom:2px; margin-left:4px;">${safeEsc(lastSenderName)}</div>`;
+        currentAv = lastSenderAv;
+        if(lastSenderName) nameLabel = `<div style="font-size:10px; color:#888; margin-bottom:2px; margin-left:4px;">${safeEsc(lastSenderName)}</div>`;
         }
+        
+        // 🌟 蓝色高定：真正的无头像系统提示拦截器！剥离头像和气泡！
+        if (tempM.text.includes('sys-unblock-msg')) {
+            return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}${tempM.text}</div>`;
+        }
+        
         return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-row"><img class="chat-avatar" src="${currentAv}"><div class="bubble-wrap ai">${nameLabel}${renderBubbleContent(tempM,false,pref)}</div></div></div>`;
       }).join('');
     }
@@ -5245,9 +5250,9 @@ async function sendMsg(){
         parts=mergeOrphanQuotes(parts); 
         parts=parts.filter(p=>isHtmlFrag(p)?true:p.trim().length>0);
 
-        // 🌟 蓝色美学魔法：只要解除了拉黑，强行在最前面塞入系统提示气泡！
+        // 🌟 蓝色美学魔法：加上专属通行证 sys-unblock-msg！
         if (newlyUnblocked) {
-            parts.unshift('<div style="text-align:center; margin:10px 0; width:100%; pointer-events:none;"><span style="font-size:11px; color:#5c7094; background:rgba(238,244,250,0.75); padding:4px 12px; border-radius:12px; border:1px solid #dce5f0; backdrop-filter: blur(6px); letter-spacing:0.5px;">对方已将你移出黑名单，现在可以开始聊天了</span></div>');
+            parts.unshift('<div class="sys-unblock-msg" style="text-align:center; margin:10px 0; width:100%; pointer-events:none;"><span style="font-size:11px; color:#5c7094; background:rgba(238,244,250,0.75); padding:4px 12px; border-radius:12px; border:1px solid #dce5f0; backdrop-filter: blur(6px); letter-spacing:0.5px;">对方已将你移出黑名单，现在可以开始聊天了</span></div>');
         }
       
         for(let pi=parts.length-1;pi>=0;pi--){
@@ -9936,9 +9941,9 @@ try {
             parts = [cleaned];
         }
 
-        // 🌟 蓝色美学魔法：在主动聊天引擎中，精准插入毛玻璃系统提示！
+       // 🌟 蓝色美学魔法：加上专属通行证 sys-unblock-msg！
         if (newlyUnblocked) {
-            parts.unshift('<div style="text-align:center; margin:10px 0; width:100%; pointer-events:none;"><span style="font-size:11px; color:#5c7094; background:rgba(238,244,250,0.75); padding:4px 12px; border-radius:12px; border:1px solid #dce5f0; backdrop-filter: blur(6px); letter-spacing:0.5px;">对方已将你移出黑名单，现在可以开始聊天了</span></div>');
+            parts.unshift('<div class="sys-unblock-msg" style="text-align:center; margin:10px 0; width:100%; pointer-events:none;"><span style="font-size:11px; color:#5c7094; background:rgba(238,244,250,0.75); padding:4px 12px; border-radius:12px; border:1px solid #dce5f0; backdrop-filter: blur(6px); letter-spacing:0.5px;">对方已将你移出黑名单，现在可以开始聊天了</span></div>');
         }
 
         await _emitSilentAiSequential(chatId, parts);
