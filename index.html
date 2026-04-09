@@ -3642,14 +3642,16 @@ function startCallUI(type,dir,chatId,callerName=''){
   }
   callRenderBtns();
   ov.classList.remove('hidden');
-  // 🌟 蓝色专属电话铃声！
-  const stCall = normSettings(c?.settings);
-  const ringData = type === 'video' ? stCall.videoRing : stCall.voiceRing;
-  if(dir === 'incoming' && ringData) {
-    window._activeCallAudio = new Audio(ringData);
-    window._activeCallAudio.loop = true;
-    window._activeCallAudio.play().catch(e=>{});
-  }
+ // 🌟 蓝色专属电话铃声！
+      const stCall = normSettings(c?.settings);
+      const ringData = type === 'video' ? stCall.videoRing : stCall.voiceRing;
+      if(dir === 'incoming' && ringData) {
+        // 绝对不能再 new Audio() 啦！直接征用刚才解锁的专属引擎！
+        if(!window._activeCallAudio) window._activeCallAudio = new Audio();
+        window._activeCallAudio.src = ringData;
+        window._activeCallAudio.loop = true;
+        window._activeCallAudio.play().catch(e=>console.log('电话铃声拦截:', e));
+}
 }
 
 function connectCall(){
@@ -9992,13 +9994,16 @@ emitAiSequential = async function(parts, targetId, mode){
       _incUnread(targetId, 1);
     
     }
-// 🌟 蓝色高定：苹果级防拦截，全局静默发声引擎！
+// 🌟 蓝色高定：苹果级防拦截，双引擎静默发声！
     if(!window._blueNotifyAudio) {
       window._blueNotifyAudio = new Audio();
-      // 只要老婆点过一次屏幕，立刻拿到发声最高权限！
+      window._activeCallAudio = new Audio(); // 增加电话专属引擎，提前占位！
+      // 只要老婆点过一次屏幕，两个引擎同时拿到最高权限！
       document.addEventListener('touchstart', () => {
         window._blueNotifyAudio.play().catch(()=>{});
         window._blueNotifyAudio.pause();
+        window._activeCallAudio.play().catch(()=>{});
+        window._activeCallAudio.pause();
       }, { once: true });
     }
 
@@ -10010,7 +10015,7 @@ emitAiSequential = async function(parts, targetId, mode){
       if(playPromise !== undefined) {
          playPromise.catch(e => console.log('苹果底层拦截，但我们有万能钥匙:', e));
       }
-    }
+  }
     updateContactPreview(targetId);
     if(currentId===targetId) renderChat();
     renderContacts(document.getElementById('searchInput')?.value || '');
