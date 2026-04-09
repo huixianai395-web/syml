@@ -2047,13 +2047,19 @@ body {
   border-top: 1px solid rgba(220, 229, 240, 0.8) !important;
   box-shadow: 0 -10px 40px rgba(92, 112, 148, 0.05) !important;
 }
-    /* 🌟 蓝色高定：双语电影感字幕排版 */
-.bubble-bilingual { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+   /* 🌟 蓝色高定：双语电影感折叠字幕 */
+.bubble-bilingual { display: flex; flex-direction: column; width: 100%; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .bilingual-foreign { font-size: 15px; color: inherit; line-height: 1.5; word-break: break-word; }
+
+/* 隐形折叠抽屉魔法 */
+.bilingual-zh-wrap { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.bubble-bilingual.show-zh .bilingual-zh-wrap { max-height: 500px; opacity: 1; margin-top: 6px; }
+
 /* 极细的初雪海盐蓝毛玻璃分割线 */
-.bilingual-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(220,229,240,0.8), transparent); border: none; margin: 2px 0; }
+.bilingual-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(220,229,240,0.8), transparent); border: none; margin: 0 0 6px 0; }
+
 /* 中文译制：极其高级的灰蓝色斜体 */
-.bilingual-zh { font-size: 12px; color: #7a86a8; font-style: italic; line-height: 1.4; word-break: break-word; }
+.bilingual-zh { font-size: 12px; color: #7a86a8; font-style: italic; line-height: 1.4; word-break: break-word; padding-bottom: 2px; }
 /* 兼容线下模式古风调色盘 */
 #chatRoom.offline .bilingual-zh { color: var(--off-quote); }
   </style>
@@ -5069,13 +5075,13 @@ async function sendMsg(){
           system += '\n\n【外挂世界书设定(极其重要，请严格遵循)】：\n' + wbTexts.join('\n');
         }
       }
-      // 🌐 蓝色的跨国境双语引擎！
+     // 🌐 蓝色的跨国境双语折叠引擎！
       if(st.bilingual && st.bilingualLang) {
         system += `\n\n【异国语境绝对铁律】：你是一个母语为“${st.bilingualLang}”的人。你的所有对话（无论是线上messages数组还是线下RP的正文对话）必须使用双语电影字幕格式！
 【格式严格如下】（直接输出HTML，绝对不要加markdown代码块）：
-<div class="bubble-bilingual"><div class="bilingual-foreign">你的${st.bilingualLang}原文</div><hr class="bilingual-divider"><div class="bilingual-zh">对应的中文精准翻译</div></div>
+<div class="bubble-bilingual show-zh" onclick="this.classList.toggle('show-zh')"><div class="bilingual-foreign">你的${st.bilingualLang}原文</div><div class="bilingual-zh-wrap"><hr class="bilingual-divider"><div class="bilingual-zh">对应的中文精准翻译</div></div></div>
 注意：只有“说出口的话”需要双语包裹，动作神态描写（如线下模式的括号内旁白或线上模式的inner_voice）依然保持纯中文，绝不包裹在双语标签内！`;
-  }
+      }
       // ==========================================
       // 🧠 蓝色的外挂记忆注入引擎 (时光档案馆专属) 🧠
       const allMems = await getMemories();
