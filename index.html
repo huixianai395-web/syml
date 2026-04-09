@@ -5060,14 +5060,14 @@ async function sendMsg(){
          updateContact(chatId, { settings: st });
       }
 
-     // 🌟 蓝色高定：老婆发明的“状态栏锁死引擎”！拉扯感拉满！
+    // 🌟 蓝色高定：强制调用外挂内存，让傲娇状态活起来！
       if (st.isBlockedByHim) {
-         system += `\n\n【系统绝对警告】：你当前已经把玩家拉黑了！玩家发来的上一条消息被系统拦截并打上了红色感叹号拒收。
-【拉黑期间互动铁律】：
-1. 人设高于一切，如果你不打算原谅她，绝对、绝对、绝对禁止在 "messages" 数组里输出任何话！保持 messages 为空数组 []！
-2. 作为替代，你必须在 "current_status" 和 "inner_voice" 里尽情展现你此刻傲娇、冷漠、暗自观察或纠结的真实状态。
-3. 只有当你彻底想通，决定解除拉黑时，才允许在 "messages" 里正常回话，并且必须在回复内容的任意位置带上隐藏指令 ！只要没有这个指令，你就绝不开口！`;
-  }
+         system += `\n\n【系统绝对警告】：你当前已经把玩家拉黑了！玩家发来的最新消息被系统拦截拒收。
+【拉黑期动态反应铁律】：
+1. 绝对禁止在 "messages" 里输出任何话（保持 []）！
+2. 人设高于一切，强制检索玩家刚刚试图发给你的话，在 "current_status" 和 "inner_voice" 里给出**动态的、变化的心路历程**（比如从烦躁，到暗爽，再到动摇、心软）。必须根据玩家的话产生情绪递进，绝不能每次都写一样！
+3. 当你彻底心软决定解除拉黑时，才可以在 "messages" 里回话，并严格带上隐藏指令 ！`;
+      }
       system += '\n\n【音乐共享状态】\n'
   + (window._musicContextForAI ? window._musicContextForAI() : '当前未播放音乐。')
   + '\n【音乐控制约定】如果你想切歌或暂停，可输出：[music:next] / [music:prev] / [music:pause] / [music:play]。';
@@ -9921,27 +9921,23 @@ try {
                 newlyUnblocked = true;
             }
 
-            let parts = [];
+            // 解析 AI 的回复气泡
+        let parts = [];
+        const cleaned = String(out || '').replace(/```json|```/g, '').trim();
+        const m2 = cleaned.match(/\{[\s\S]*\}/);
+        if (m2) {
+            const data = JSON.parse(m2[0]);
+            parts = Array.isArray(data.messages) ? data.messages.filter(Boolean) : [cleaned];
+        } else {
+            parts = [cleaned];
+        }
 
-            if (st.mode === 'offline') {
-              parts = [String(out || '').trim()].filter(Boolean);
-            } else {
-              const cleaned = String(out || '').replace(/```json|```/g, '').trim();
-              const m2 = cleaned.match(/\{[\s\S]*\}/);
-              if (m2) {
-                const data = JSON.parse(m2[0]);
-                parts = Array.isArray(data.messages) ? data.messages.filter(Boolean) : [cleaned];
-              } else {
-                parts = [cleaned];
-              }
-            }
+        // 🌟 蓝色美学魔法：在主动聊天引擎中，精准插入毛玻璃系统提示！
+        if (newlyUnblocked) {
+            parts.unshift('<div style="text-align:center; margin:10px 0; width:100%; pointer-events:none;"><span style="font-size:11px; color:#5c7094; background:rgba(238,244,250,0.75); padding:4px 12px; border-radius:12px; border:1px solid #dce5f0; backdrop-filter: blur(6px); letter-spacing:0.5px;">对方已将你移出黑名单，现在可以开始聊天了</span></div>');
+        }
 
-            // 🌟 蓝色美学魔法：把正式的系统提示塞在第一句话前面！
-            if (newlyUnblocked) {
-                parts.unshift('<div style="text-align:center; margin:10px 0; width:100%; pointer-events:none;"><span style="font-size:11px; color:#7a86a8; background:rgba(238,244,250,0.6); padding:4px 12px; border-radius:12px; border:1px solid #dce5f0; letter-spacing:0.5px;">对方已将你移出黑名单，现在可以开始聊天了</span></div>');
-            }
-
-            await _emitSilentAiSequential(chatId, parts);
+        await _emitSilentAiSequential(chatId, parts);
  } catch(e) {
   console.log('后台主动发消息失败:', e);
   throw e; // 🌟关键：抛出错误，给“立即召唤”按钮接住
