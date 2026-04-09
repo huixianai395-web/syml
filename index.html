@@ -3991,25 +3991,42 @@ function refreshFontSizeUI(){
     if(i>-1){ arr[i]={...arr[i],...v}; setContacts(arr); }
   }
   
-  // 🌟 蓝色紧急修复：时间戳乱码与列表不刷新 Bug
-  function updateContactPreview(id){
-    const arr=getChatArr(id), c=getContactById(id); 
-    if(!c) return;
-    let p='', t='';
-    if(arr.length){ 
-      const last=arr[arr.length-1]; 
-      let rawText = last.text || '';
-      p = rawText
-        .replace(/<[^>]+>/g, '')
-        .replace(/\[voice:\d*:?(.*?)\]/g, '[语音] $1')
-        .replace(/\[stk:.*?\]/g, '[表情包]')
-        .replace(/\[call:.*?\]/g, '[通话记录]')
-        .replace(/\[quote\]/g, '')
-        .trim();
-      if(!p) p = '[特殊消息]';
-      // 🛠️ 修复1：给机器时间套上人类翻译器 fmtTs，变成 12:00 这种格式！
-      t=fmtTs(last.time)||''; 
-    }
+  // 🌟 蓝色终极修复：把几十万字的文件内容死死拦在预览区外面！
+function updateContactPreview(id){
+  const arr=getChatArr(id), c=getContactById(id); 
+  if(!c) return;
+  let p='', t='';
+  if(arr.length){ 
+    const last=arr[arr.length-1]; 
+    let rawText = last.text || '';
+    p = rawText
+      .replace(/\[file:(.+?)\][\s\S]*?\[\/file\]/g, '[文件] $1') // 👈 核心救命代码：把几十万字瞬间压缩成短短几个字！
+      .replace(/<[^>]+>/g, '')
+      .replace(/\[voice:\d*:?(.*?)\]/g, '[语音] $1')
+      .replace(/\[stk:.*?\]/g, '[表情包]')
+      .replace(/\[call:.*?\]/g, '[通话记录]')
+      .replace(/\[quote\]/g, '')
+      .trim();
+    
+    if(p.length > 50) p = p.slice(0, 50) + '...'; // 👈 双重保险：强制截断，绝对不让超长文本撑爆内存！
+    
+    if(!p) p = '[特殊消息]';
+    t=fmtTs(last.time)||''; 
+  }
+  
+  // 🌟 蓝色的群聊兼容魔法：如果是群聊，去群聊抽屉里更新摘要！
+  if(c.isGroup) {
+     const groups=window.getGroups(), idx=groups.findIndex(g=>g.id===id);
+     if(idx>-1){ groups[idx].preview=p; groups[idx].time=t; window.setGroups(groups); }
+  } else {
+     updateContact(id,{preview:p,time:t});
+  }
+
+  // 🛠️ 强制唤醒雷达
+  if(typeof renderContacts === 'function' && document.getElementById('searchInput')){
+     renderContacts(document.getElementById('searchInput').value || '');
+  }
+}
     
     // 🌟 蓝色的群聊兼容魔法：如果是群聊，去群聊抽屉里更新摘要！
     if(c.isGroup) {
