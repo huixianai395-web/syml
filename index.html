@@ -5187,14 +5187,12 @@ async function sendMsg(){
      } else {
         // 📦 传统模式
         const out=await callApi(messages);
-      
-       // 🌟 蓝色终极外挂：雷达扫描与绝对物理禁言！
+      // 🚨 蓝色终极防吞装甲与状态强行提取！
         const rawOut = String(out || '');
-        const wasBlockedByHim = st.isBlockedByHim; // 记住发消息前，你是不是在小黑屋里！
+        const wasBlockedByHim = st.isBlockedByHim; 
         let newlyUnblocked = false;
         let blockChanged = false;
 
-      // 🚨 蓝色终极防吞装甲：拆开写，绝对不可能再被吃掉！
         const blockCmd = '[' + 'sys:block' + ']';
         const unblockCmd = '[' + 'sys:unblock' + ']';
 
@@ -5207,31 +5205,32 @@ async function sendMsg(){
            newlyUnblocked = true;
            blockChanged = true;
         }
-        
-        // 把拉黑状态死死焊进外挂内存，绝对不丢！
-        if(blockChanged) updateContact(chatId, { settings: st });
 
-        // 🌟 蓝色物理禁言魔法：如果你之前就在小黑屋里，且他这次没大发慈悲放你出来...
-        if (wasBlockedByHim && !newlyUnblocked) {
-           // 直接把他在后台逼逼赖赖的废话全部丢进虚空！连气泡都不给他画！
-           updateContactPreview(chatId);
-           if(currentId===chatId) renderChat();
-           return; // 暴力掐断渲染管线！
-        }
-       if(st.innerVoice && !c.isGroup) {
-          const ivMatch = out.match(/"inner_voice"\s*:\s*"([^"]+)"/);
-          const stMatch = out.match(/"current_status"\s*:\s*"([^"]+)"/);
+        // 🌟 暴力提取状态和心声，无视 messages 是否为空！
+        if(st.innerVoice && !c.isGroup) {
+          const ivMatch = rawOut.match(/"inner_voice"\s*:\s*"([^"]+)"/);
+          const stMatch = rawOut.match(/"current_status"\s*:\s*"([^"]+)"/);
           let updated = false;
           if(stMatch && stMatch[1]) { st.lastStatus = stMatch[1]; updated = true; }
           if(ivMatch && ivMatch[1]) { 
             st.lastVoice = ivMatch[1]; 
             if(!st.voiceHistory) st.voiceHistory = [];
-            // 把最新的心声塞进外挂内存，打上时间戳！
             st.voiceHistory.unshift({ id: 'iv_' + Date.now(), text: ivMatch[1], time: Date.now() });
             updated = true; 
           }
-          if(updated) { updateContact(chatId, { settings: st }); }
-  }
+          if(updated || blockChanged) { updateContact(chatId, { settings: st }); }
+        } else if (blockChanged) {
+          updateContact(chatId, { settings: st });
+        }
+
+        // 🌟 物理禁言魔法：如果还在小黑屋，强行拦截气泡，但状态已经更新了！
+        if (wasBlockedByHim && !newlyUnblocked) {
+           updateContactPreview(chatId);
+           if(currentId===chatId) renderChat();
+           return; 
+        }
+
+        // 解析 AI 的回复气泡
         let parts=[];
         if(st.mode==='offline') parts=[clean(out)||'...'];
         else{
@@ -5243,9 +5242,14 @@ async function sendMsg(){
           }
         }
         parts=fixDanglingCommaBubbles(parts);
-       
-       parts=mergeOrphanQuotes(parts); // 🌟 蓝色魔法：召唤强力胶水！
+        parts=mergeOrphanQuotes(parts); 
         parts=parts.filter(p=>isHtmlFrag(p)?true:p.trim().length>0);
+
+        // 🌟 蓝色美学魔法：只要解除了拉黑，强行在最前面塞入系统提示气泡！
+        if (newlyUnblocked) {
+            parts.unshift('<div style="text-align:center; margin:10px 0; width:100%; pointer-events:none;"><span style="font-size:11px; color:#5c7094; background:rgba(238,244,250,0.75); padding:4px 12px; border-radius:12px; border:1px solid #dce5f0; backdrop-filter: blur(6px); letter-spacing:0.5px;">对方已将你移出黑名单，现在可以开始聊天了</span></div>');
+        }
+      
         for(let pi=parts.length-1;pi>=0;pi--){
           const pp=parts[pi].trim();
           let cType = null;
