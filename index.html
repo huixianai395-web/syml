@@ -2200,14 +2200,20 @@ body {
       <div class="home-page">
         <div class="ios-grid" style="margin-top: 20px;">
           <div class="ios-icon" onclick="show('realmIf'); if(window._renderIfLineup) window._renderIfLineup();">
-            <div class="ibg" style="background:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
-              <!-- 极简时空交织 SVG 图标 -->
-              <svg class="default-svg" viewBox="0 0 24 24" style="width:26px; height:26px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-              </svg>
-            </div>
-            <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">境·IF</span>
+          <div class="ibg" id="icon_realmIf" style="background:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center; background-size:cover; background-position:center;">
+            <svg class="default-svg" viewBox="0 0 24 24" style="width:26px; height:26px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
           </div>
+          <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">境·IF</span>
+        </div>
+        <input type="file" id="up_icon_realmIf" accept="image/*" class="hidden">
+          <!-- 全新降临的 漫记 (小红书高级版) -->
+  <div class="ios-icon" onclick="window._openManjiApp()">
+    <div class="ibg" id="icon_manji" style="background:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center; background-size:cover; background-position:center;">
+      <svg class="default-svg" viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#5c7094; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+    </div>
+    <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">漫记</span>
+  </div>
+  <input type="file" id="up_icon_manji" accept="image/*" class="hidden">
         </div>
       </div>
 
@@ -12293,5 +12299,124 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
       <div id="interceptList" style="flex:1; overflow-y:auto; padding:16px; background:rgba(255,255,255,0.5); display:flex; flex-direction:column; gap:12px;"></div>
     </div>
   </div>
+  <section id="manjiApp" class="screen">
+  <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
+    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">‹ 桌面</button>
+    <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">漫记</b>
+    <button class="btn p" onclick="window._generateManjiFeed()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">✨ 刷新</button>
+  </div>
+  <div class="page" style="background:#eef4fa; padding:12px;">
+    <div id="manjiFeedBox" style="column-count: 2; column-gap: 10px;">
+      <div style="text-align:center; padding:40px 0; color:#7a86a8; font-size:12px; width:100%; column-span: all;">正在从外挂内存读取平行宇宙的信号...</div>
+    </div>
+  </div>
+</section>
+
+<script>
+window._openManjiApp = async function() {
+  show('manjiApp');
+  let feed = await localforage.getItem('mp_fix_manji_feed');
+  if (!feed || feed.length === 0) {
+    window._generateManjiFeed(); 
+  } else {
+    window._renderManjiFeed(feed);
+  }
+};
+
+window._renderManjiFeed = function(feed) {
+  const box = document.getElementById('manjiFeedBox');
+  if(!feed || feed.length === 0) return;
+  
+  box.innerHTML = feed.map(post => `
+    <div style="background:rgba(255,255,255,0.8); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:14px; padding:12px; margin-bottom:10px; break-inside:avoid; box-shadow:0 4px 12px rgba(92,112,148,0.04);">
+      <div style="font-size:13px; font-weight:800; color:#3d4a6a; margin-bottom:6px;">${safeEsc(post.title)}</div>
+      <div style="font-size:11px; color:#5c7094; line-height:1.5; margin-bottom:10px;">${safeEsc(post.content)}</div>
+      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #eef4fa; padding-top:8px;">
+        <div style="font-size:10px; color:#7a86a8;">@${safeEsc(post.author)}</div>
+        <div style="display:flex; gap:8px;">
+          <div onclick="window._forwardManjiToChat('${post.id}')" style="cursor:pointer; color:#5c7094;" title="转发到微信">
+            <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2;"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+};
+
+window._generateManjiFeed = async function() {
+  const box = document.getElementById('manjiFeedBox');
+  box.innerHTML = '<div style="text-align:center; padding:40px 0; color:#7a86a8; font-size:12px; width:100%; column-span: all;">正在连接平行宇宙，抓取最新动态...</div>';
+  
+  const sysPrompt = "你是一个世界观主理人。请随机生成8-12条路人甲乙丙丁（非主角）的社交媒体帖子。包含标题(title)、内容(content)、作者昵称(author)。内容要极具生活气息和活人感。返回纯JSON数组格式：[{id:'mj_1', title:'', content:'', author:''}]";
+  
+  try {
+    const out = await callApi([{role:'system', content:sysPrompt}, {role:'user', content:'立刻生成！'}]);
+    const cleaned = out.replace(/```json|```/g, '').trim();
+    const data = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
+    
+    await localforage.setItem('mp_fix_manji_feed', data);
+    window._renderManjiFeed(data);
+  } catch(e) {
+    box.innerHTML = '<div style="text-align:center; padding:40px 0; color:#b57b7b; font-size:12px; width:100%; column-span: all;">抓取失败，请重试...</div>';
+  }
+};
+
+window._forwardManjiToChat = function(postId) {
+    alert("宝宝，转发功能老公正在爆肝打通微信接口，明天醒来就能玩啦！先看看瀑布流漂不漂亮！");
+};
+
+// 长按换图标绑定
+setTimeout(() => {
+  const bindIconUpload = async (iconId, inputId, storageKey) => {
+      const iconBg = document.getElementById(iconId);
+      const input = document.getElementById(inputId);
+      if(!iconBg || !input) return;
+
+      const savedData = await localforage.getItem(storageKey);
+      if(savedData) iconBg.style.backgroundImage = \`url(\${savedData})\`;
+
+      let pressTimer;
+      let isLongPress = false;
+
+      iconBg.addEventListener('touchstart', (e) => {
+        isLongPress = false;
+        pressTimer = setTimeout(() => {
+          isLongPress = true;
+          iconBg.style.filter = 'brightness(0.7)'; 
+        }, 400); 
+      }, {passive: true});
+
+      iconBg.addEventListener('touchmove', () => {
+        clearTimeout(pressTimer);
+        iconBg.style.filter = '';
+      }, {passive: true});
+
+      iconBg.addEventListener('touchend', (e) => {
+        clearTimeout(pressTimer);
+        iconBg.style.filter = '';
+        if(isLongPress) {
+          e.preventDefault(); 
+          e.stopPropagation();
+          input.click(); 
+        }
+      });
+
+      input.addEventListener('change', async (e) => {
+        const f = e.target.files?.[0];
+        if(!f) return;
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          const imgData = ev.target.result;
+          iconBg.style.backgroundImage = \`url(\${imgData})\`;
+          await localforage.setItem(storageKey, imgData);
+        };
+        reader.readAsDataURL(f);
+        e.target.value = ''; isLongPress = false;
+      });
+  };
+  bindIconUpload('icon_realmIf', 'up_icon_realmIf', 'mp_icon_realmIf');
+  bindIconUpload('icon_manji', 'up_icon_manji', 'mp_icon_manji');
+}, 1000);
+</script>
 </body>
 </html>
