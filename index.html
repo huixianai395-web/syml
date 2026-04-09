@@ -4320,6 +4320,12 @@ window._ivManageMode = false;
   function formatOfflineText(text){
   let t=String(text||'');
   const marks=[];
+    // 🌟 蓝色高定：线下双语字幕究极护盾（防安检转义 + 兼容 AI 拼写错误）
+      t = t.replace(/<div[^>]*(bilingual|biligual|bubble)[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/gi, (match) => {
+        const key = `__MARK_${marks.length}__`;
+        marks.push(match); // 把它装进保险箱，绝对不允许被后面的安检系统转义！
+        return key;
+      });
   function rep(re,cls){
     t=t.replace(re,(m,inner)=>{
       const key=`__MARK_${marks.length}__`;
