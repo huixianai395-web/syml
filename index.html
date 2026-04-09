@@ -10092,7 +10092,6 @@ window._openInterceptModal = function() {
              { role: 'user', content: '（系统提示：你刚刚试图发消息，但屏幕上弹出了红色的感叹号——消息已发出，但被对方拒收了。）' }
           ]);
           const cleaned = out.replace(/```json|```/g, '').trim();
-          const match = cleaned.match(/\{[\s\S]*\}/);
           if(match) {
              const data = JSON.parse(match[0]);
              if(!st.interceptedMsgs) st.interceptedMsgs = [];
@@ -10103,10 +10102,18 @@ window._openInterceptModal = function() {
              });
              updateContact(chatId, { settings: st });
              
+             // 🌟 蓝色高定小铃铛：即使被拦截在小黑屋，也在微信列表亮起红点，满足老婆的窥探欲！
+             if(typeof window._isViewingChat === 'function' && !window._isViewingChat(chatId)) {
+                 if(typeof window._incUnread === 'function') window._incUnread(chatId, 1);
+             }
+             if(typeof window.renderContacts === 'function') {
+                 window.renderContacts(document.getElementById('searchInput')?.value || '');
+             }
+             
              if(document.getElementById('interceptModal').classList.contains('active')) {
                window._renderInterceptList();
              }
-          }
+  }
        } catch(e) { console.log('拦截记录生成失败', e); }
         return;
       }
