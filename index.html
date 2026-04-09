@@ -2047,6 +2047,15 @@ body {
   border-top: 1px solid rgba(220, 229, 240, 0.8) !important;
   box-shadow: 0 -10px 40px rgba(92, 112, 148, 0.05) !important;
 }
+    /* 🌟 蓝色高定：双语电影感字幕排版 */
+.bubble-bilingual { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.bilingual-foreign { font-size: 15px; color: inherit; line-height: 1.5; word-break: break-word; }
+/* 极细的初雪海盐蓝毛玻璃分割线 */
+.bilingual-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(220,229,240,0.8), transparent); border: none; margin: 2px 0; }
+/* 中文译制：极其高级的灰蓝色斜体 */
+.bilingual-zh { font-size: 12px; color: #7a86a8; font-style: italic; line-height: 1.4; word-break: break-word; }
+/* 兼容线下模式古风调色盘 */
+#chatRoom.offline .bilingual-zh { color: var(--off-quote); }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
@@ -2868,6 +2877,31 @@ body {
         <input id="roleAvatarFile" type="file" accept="image/*" class="hidden" />
 <img id="roleAvatarPreview" class="preview-img hidden" style="margin-top:8px;" />
         <div class="small" style="margin-top:8px;">对方人设</div><textarea id="rolePersonaInput" class="ta" style="min-height:95px;"></textarea>
+        <!-- 🌟 蓝色高定：异国语境开关 (纯净 SVG 图标) -->
+<div style="margin-top:16px; padding-top:16px; border-top:1px dashed #eef4fa;">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <div style="display:flex; flex-direction:column; gap:4px;">
+      <div style="font-size:14px; color:#5c7094; font-weight:bold; display:flex; align-items:center; gap:4px;">
+        <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><line x1="9" y1="10" x2="15" y2="10"></line></svg>
+        异国语境 (双语字幕)
+      </div>
+      <div style="font-size:11px; color:#8892a8;">开启后TA将用母语+中文混合回复</div>
+    </div>
+    <input id="bilingualSwitch" type="checkbox" style="transform:scale(1.1); accent-color:#5c7094;" onchange="document.getElementById('bilingualLangBox').style.display=this.checked?'block':'none';" />
+  </div>
+  <div id="bilingualLangBox" style="display:none; margin-top:10px;">
+    <select id="bilingualLangSelect" class="select" style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:8px; font-size:13px; padding:6px 10px; outline:none;">
+      <option value="English">英语 (English)</option>
+      <option value="Japanese">日语 (日本語)</option>
+      <option value="Russian">俄语 (Русский)</option>
+      <option value="French">法语 (Français)</option>
+      <option value="German">德语 (Deutsch)</option>
+      <option value="Korean">韩语 (한국어)</option>
+      <option value="Italian">意大利语 (Italiano)</option>
+      <option value="Spanish">西班牙语 (Español)</option>
+    </select>
+  </div>
+</div>
         <!-- 🌟 蓝色高定：干枯玫瑰粉的小黑屋开关 (全行可点击版) -->
         <label style="margin-top:16px; padding-top:16px; border-top:1px dashed #eef4fa; display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
           <div style="display:flex; flex-direction:column; gap:4px;">
@@ -3768,6 +3802,8 @@ window._callHangup=()=>endCall();
     o.meAvatar = s?.meAvatar;
     o.mePersona = s?.mePersona;
     o.meNote = s?.meNote; 
+    o.bilingual = !!s?.bilingual;
+    o.bilingualLang = s?.bilingualLang || 'English';
     return o;
   }
   function getPref(){
@@ -5029,6 +5065,13 @@ async function sendMsg(){
           system += '\n\n【外挂世界书设定(极其重要，请严格遵循)】：\n' + wbTexts.join('\n');
         }
       }
+      // 🌐 蓝色的跨国境双语引擎！
+      if(st.bilingual && st.bilingualLang) {
+        system += `\n\n【异国语境绝对铁律】：你是一个母语为“${st.bilingualLang}”的人。你的所有对话（无论是线上messages数组还是线下RP的正文对话）必须使用双语电影字幕格式！
+【格式严格如下】（直接输出HTML，绝对不要加markdown代码块）：
+<div class="bubble-bilingual"><div class="bilingual-foreign">你的${st.bilingualLang}原文</div><hr class="bilingual-divider"><div class="bilingual-zh">对应的中文精准翻译</div></div>
+注意：只有“说出口的话”需要双语包裹，动作神态描写（如线下模式的括号内旁白或线上模式的inner_voice）依然保持纯中文，绝不包裹在双语标签内！`;
+  }
       // ==========================================
       // 🧠 蓝色的外挂记忆注入引擎 (时光档案馆专属) 🧠
       const allMems = await getMemories();
@@ -5327,7 +5370,11 @@ async function sendMsg(){
       note: st.meNote !== undefined ? st.meNote : globalMe.note
     };
     $('avatarCropSwitch').checked=!!p.avatarCrop;
-
+if(document.getElementById('bilingualSwitch')) {
+      document.getElementById('bilingualSwitch').checked = !!st.bilingual;
+      document.getElementById('bilingualLangBox').style.display = st.bilingual ? 'block' : 'none';
+      if(document.getElementById('bilingualLangSelect')) document.getElementById('bilingualLangSelect').value = st.bilingualLang || 'English';
+  }
     $('meNameInput').value=me.name||''; $('meNoteInput').value=me.note||'';
     $('mePersonaInput').value=me.persona||''; $('meAvatarInput').value=me.avatar||''; meAvatarDraft='';
     showPreview('meAvatarPreview', me.avatar||'');
@@ -5406,6 +5453,8 @@ $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';
         meAvatar: clean($('meAvatarInput').value)||'',
         innerVoice: !!$('innerVoiceSwitch').checked,
         isBlockedByMe: document.getElementById('blockByMeSwitch') ? !!document.getElementById('blockByMeSwitch').checked : false,
+        bilingual: document.getElementById('bilingualSwitch') ? !!document.getElementById('bilingualSwitch').checked : false,
+        bilingualLang: document.getElementById('bilingualLangSelect') ? document.getElementById('bilingualLangSelect').value : 'English',
       });
 
       if(c.isGroup) {
