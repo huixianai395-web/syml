@@ -3634,17 +3634,21 @@ window._generateManjiFeed = async function() {
   const box = document.getElementById('manjiFeedBox');
   box.innerHTML = '<div style="text-align:center; padding:40px 0; color:#7a86a8; font-size:12px; width:100%; column-span: all;">正在连接平行宇宙，抓取最新动态...</div>';
   
-  const sysPrompt = "你是一个世界观主理人。请随机生成8-12条路人甲乙丙丁（非主角）的社交媒体帖子。包含标题(title)、内容(content)、作者昵称(author)。内容要极具生活气息和活人感。返回纯JSON数组格式：[{\"id\":\"mj_1\", \"title\":\"标题\", \"content\":\"内容\", \"author\":\"昵称\"}]";
+  const sysPrompt = "你是一个世界观主理人。请随机生成7-12条路人甲乙丙丁（非主角）的社交媒体帖子。包含标题(title)、内容(content)、作者昵称(author)。内容要极具生活气息和活人感。返回纯JSON数组格式：[{\"id\":\"mj_1\", \"title\":\"标题\", \"content\":\"内容\", \"author\":\"昵称\"}]";
   
   try {
     const out = await callApi([{role:'system', content:sysPrompt}, {role:'user', content:'立刻生成！'}]);
-    const cleaned = out.replace(/```json|```/g, '').trim();
-    const data = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
+    
+    // 🌟 钛合金 JSON 提取器，无视 AI 的废话
+    const match = out.match(/\[[\s\S]*\]/);
+    if(!match) throw new Error("AI 脑电波异常，未返回有效数据");
+    const data = JSON.parse(match[0]);
     
     await localforage.setItem('mp_fix_manji_feed', data); // ✨ 完美写入外挂内存
     window._renderManjiFeed(data);
   } catch(e) {
-    box.innerHTML = '<div style="text-align:center; padding:40px 0; color:#b57b7b; font-size:12px; width:100%; column-span: all;">抓取失败，请重试...</div>';
+    // 🌟 蓝色高定：干枯玫瑰粉的唯美报错，并精准打印死因！
+    box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#b57b7b; font-size:12px; width:100%; column-span: all;">抓取失败啦宝宝，请检查 API 密钥是否设置哦<br><br><span style="font-size:10px; opacity:0.8;">死因追踪：${e.message}</span></div>`;
   }
 };
 
@@ -10826,7 +10830,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       if(!iconBg || !input) return;
 
       const savedData = await localforage.getItem(storageKey);
-      if(savedData) iconBg.style.backgroundImage = `url(${savedData})`;
+      if(savedData) {
+        iconBg.style.backgroundImage = `url(${savedData})`;
+        // 🌟 蓝色暴力美学：不管浏览器怎么想，直接物理抹杀默认 SVG！
+        const svg = iconBg.querySelector('svg');
+        if(svg) svg.style.display = 'none';
+      }
 
       let pressTimer;
       let isLongPress = false;
@@ -10868,6 +10877,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
           const imgData = await readImageSafe(f);
           iconBg.style.backgroundImage = `url(${imgData})`;
+          // 🌟 上传新图后，再次物理抹杀 SVG！
+          const svg = iconBg.querySelector('svg');
+          if(svg) svg.style.display = 'none';
+          
           await localforage.setItem(storageKey, imgData);
         } catch(err) { alert('图标上传失败：' + err.message); }
         finally { e.target.value = ''; isLongPress = false; }
