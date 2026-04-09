@@ -3614,12 +3614,15 @@ window._renderManjiFeed = function(feed) {
   const box = document.getElementById('manjiFeedBox');
   if(!feed || feed.length === 0) return;
   
+  // 🌟 蓝色终极修复：给漫记大别墅单独配一把专属的安全锁！
+  const _esc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  
   box.innerHTML = feed.map(post => `
     <div style="background:rgba(255,255,255,0.8); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:14px; padding:12px; margin-bottom:10px; break-inside:avoid; box-shadow:0 4px 12px rgba(92,112,148,0.04);">
-      <div style="font-size:13px; font-weight:800; color:#3d4a6a; margin-bottom:6px;">${safeEsc(post.title)}</div>
-      <div style="font-size:11px; color:#5c7094; line-height:1.5; margin-bottom:10px;">${safeEsc(post.content)}</div>
+      <div style="font-size:13px; font-weight:800; color:#3d4a6a; margin-bottom:6px;">${_esc(post.title)}</div>
+      <div style="font-size:11px; color:#5c7094; line-height:1.5; margin-bottom:10px;">${_esc(post.content)}</div>
       <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #eef4fa; padding-top:8px;">
-        <div style="font-size:10px; color:#7a86a8;">@${safeEsc(post.author)}</div>
+        <div style="font-size:10px; color:#7a86a8;">@${_esc(post.author)}</div>
         <div style="display:flex; gap:8px;">
           <div onclick="window._forwardManjiToChat('${post.id}')" style="cursor:pointer; color:#5c7094;" title="转发到微信">
             <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2;"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
