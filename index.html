@@ -3584,7 +3584,7 @@ window.changeReaderFontColor = function(colorHex){
       </div>
     </div>
   </div>
-<!-- 🌟 蓝色高定：漫记 (小红书) App 本体 -->
+<!-- 🌟 蓝色高定：漫记 (小红书) App 2.0 完全体 -->
 <section id="manjiApp" class="screen">
   <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
     <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">‹ 桌面</button>
@@ -3596,67 +3596,159 @@ window.changeReaderFontColor = function(colorHex){
       <div style="text-align:center; padding:40px 0; color:#7a86a8; font-size:12px; width:100%; column-span: all;">正在从外挂内存读取平行宇宙的信号...</div>
     </div>
   </div>
+
+  <!-- 🌟 详情页弹窗 (毛玻璃沉浸式) -->
+  <div id="manjiDetailModal" style="display:none; position:absolute; inset:0; z-index:100; background:rgba(250,252,255,0.95); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); flex-direction:column;">
+    <div style="padding:calc(12px + var(--safe-top)) 16px 12px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+      <button class="btn" onclick="document.getElementById('manjiDetailModal').style.display='none'" style="background:transparent; color:#5c7094; font-size:24px; padding:0 8px; line-height:1; border:none; box-shadow:none;">‹</button>
+      <div id="mdAuthor" style="font-size:14px; font-weight:bold; color:#3d4a6a; display:flex; align-items:center; gap:6px;"></div>
+      <div style="width:32px;"></div>
+    </div>
+    <div id="mdScroll" style="flex:1; overflow-y:auto; padding-bottom:calc(20px + var(--safe-bottom));">
+      <img id="mdImage" src="" style="width:100%; max-height:400px; object-fit:cover; display:none; background:#f4f6fb;">
+      <div style="padding:16px;">
+        <div id="mdTitle" style="font-size:16px; font-weight:800; color:#3d4a6a; margin-bottom:10px;"></div>
+        <div id="mdContent" style="font-size:14px; color:#5c7094; line-height:1.7; text-align:justify; white-space:pre-wrap; margin-bottom:20px;"></div>
+        <div style="height:1px; background:#dce5f0; margin-bottom:16px;"></div>
+        <div style="font-size:12px; color:#7a86a8; font-weight:bold; margin-bottom:12px;">共 <span id="mdCommentCount">0</span> 条评论</div>
+        <div id="mdComments" style="display:flex; flex-direction:column; gap:12px;"></div>
+      </div>
+    </div>
+    <div style="padding:10px 16px calc(10px + var(--safe-bottom)); background:rgba(250,252,255,0.9); border-top:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center;">
+      <input class="input" placeholder="说点什么吧..." style="flex:1; background:#eef4fa; border:1px solid #dce5f0; border-radius:20px; padding:8px 16px; font-size:13px; color:#5c7094; outline:none;" readonly onclick="alert('评论功能专属程序员正在爆肝中！先看看别人的神仙评论吧！')">
+      <div id="mdLikeBtn" style="display:flex; align-items:center; gap:4px; margin-left:16px; cursor:pointer; color:#7a86a8; font-size:13px; font-weight:bold; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'"></div>
+    </div>
+  </div>
 </section>
 
 <script>
-// 🌟 蓝色高定：漫记专属引擎 (语法修复版)
 window._openManjiApp = async function() {
   show('manjiApp');
   let feed = await localforage.getItem('mp_fix_manji_feed');
-  if (!feed || feed.length === 0) {
-    window._generateManjiFeed(); 
-  } else {
-    window._renderManjiFeed(feed);
-  }
+  if (!feed || feed.length === 0) { window._generateManjiFeed(); } 
+  else { window._renderManjiFeed(feed); }
 };
+
+// 🌟 初雪海盐蓝安全锁
+const _esc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 
 window._renderManjiFeed = function(feed) {
   const box = document.getElementById('manjiFeedBox');
   if(!feed || feed.length === 0) return;
   
-  // 🌟 蓝色终极修复：给漫记大别墅单独配一把专属的安全锁！
-  const _esc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
-  
-  box.innerHTML = feed.map(post => `
-    <div style="background:rgba(255,255,255,0.8); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:14px; padding:12px; margin-bottom:10px; break-inside:avoid; box-shadow:0 4px 12px rgba(92,112,148,0.04);">
-      <div style="font-size:13px; font-weight:800; color:#3d4a6a; margin-bottom:6px;">${_esc(post.title)}</div>
-      <div style="font-size:11px; color:#5c7094; line-height:1.5; margin-bottom:10px;">${_esc(post.content)}</div>
-      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #eef4fa; padding-top:8px;">
-        <div style="font-size:10px; color:#7a86a8;">@${_esc(post.author)}</div>
-        <div style="display:flex; gap:8px;">
-          <div onclick="window._forwardManjiToChat('${post.id}')" style="cursor:pointer; color:#5c7094;" title="转发到微信">
-            <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2;"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-          </div>
+  box.innerHTML = feed.map(post => {
+    // 渲染封面图
+    let imgHtml = '';
+    if(post.imgUrl) {
+      imgHtml = `<img src="${post.imgUrl}" style="width:100%; border-radius:10px; margin-bottom:8px; object-fit:cover; background:#eef4fa; min-height:120px;" loading="lazy">`;
+    }
+    
+    // 干枯玫瑰粉点赞图标
+    const likeColor = post.isLiked ? '#b57b7b' : '#7a86a8';
+    const likeFill = post.isLiked ? '#b57b7b' : 'none';
+    const svgHeart = `<svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:${likeColor}; fill:${likeFill}; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+
+    return `
+    <div onclick="window._openManjiDetail('${post.id}')" style="background:rgba(255,255,255,0.8); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:14px; padding:10px; margin-bottom:10px; break-inside:avoid; box-shadow:0 4px 12px rgba(92,112,148,0.04); cursor:pointer;">
+      ${imgHtml}
+      <div style="font-size:13px; font-weight:800; color:#3d4a6a; margin-bottom:6px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${_esc(post.title)}</div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+        <div style="font-size:10px; color:#7a86a8; display:flex; align-items:center; gap:4px;">
+          <div style="width:16px; height:16px; border-radius:50%; background:#eef4fa; color:#5c7094; display:grid; place-items:center; font-weight:bold; font-size:10px; border:1px solid #dce5f0;">${_esc(post.author).slice(0,1)}</div>
+          ${_esc(post.author)}
+        </div>
+        <div onclick="window._toggleManjiLike('${post.id}', event)" style="display:flex; align-items:center; gap:4px; font-size:11px; color:${likeColor}; font-weight:bold;">
+          ${svgHeart} ${post.likes || 0}
         </div>
       </div>
     </div>
-  `).join('');
+  `}).join('');
+};
+
+// 🌟 点赞引擎：瞬间写入外挂内存！
+window._toggleManjiLike = async function(id, e) {
+  if(e) e.stopPropagation();
+  let feed = await localforage.getItem('mp_fix_manji_feed');
+  let post = feed.find(p => p.id === id);
+  if(post) {
+    post.isLiked = !post.isLiked;
+    post.likes = (post.likes || 0) + (post.isLiked ? 1 : -1);
+    await localforage.setItem('mp_fix_manji_feed', feed); // ✨ 完美存入外挂内存
+    window._renderManjiFeed(feed);
+    
+    // 如果详情页开着，顺便更新详情页的赞
+    const modal = document.getElementById('manjiDetailModal');
+    if(modal.style.display === 'flex') window._openManjiDetail(id);
+  }
+};
+
+// 🌟 详情页引擎
+window._openManjiDetail = async function(id) {
+  let feed = await localforage.getItem('mp_fix_manji_feed');
+  let post = feed.find(p => p.id === id);
+  if(!post) return;
+
+  document.getElementById('mdAuthor').innerHTML = `<div style="width:24px; height:24px; border-radius:50%; background:#eef4fa; color:#5c7094; display:grid; place-items:center; font-weight:bold; font-size:12px; border:1px solid #dce5f0;">${_esc(post.author).slice(0,1)}</div> ${_esc(post.author)}`;
+  
+  const imgEl = document.getElementById('mdImage');
+  if(post.imgUrl) { imgEl.src = post.imgUrl; imgEl.style.display = 'block'; } 
+  else { imgEl.style.display = 'none'; }
+
+  document.getElementById('mdTitle').textContent = post.title;
+  document.getElementById('mdContent').textContent = post.content;
+  
+  // 渲染评论
+  const comments = post.comments || [];
+  document.getElementById('mdCommentCount').textContent = comments.length;
+  document.getElementById('mdComments').innerHTML = comments.map(c => `
+    <div style="display:flex; gap:10px; margin-bottom:6px;">
+      <div style="width:28px; height:28px; border-radius:50%; background:#f4f6fb; color:#7a86a8; display:grid; place-items:center; font-weight:bold; font-size:12px; border:1px solid #eef4fa; flex-shrink:0;">${_esc(c.user).slice(0,1)}</div>
+      <div style="flex:1;">
+        <div style="font-size:12px; color:#7a86a8; font-weight:bold; margin-bottom:2px;">${_esc(c.user)}</div>
+        <div style="font-size:13px; color:#3d4a6a; line-height:1.5;">${_esc(c.text)}</div>
+      </div>
+    </div>
+  `).join('') || '<div style="font-size:12px; color:#a0aaba; text-align:center; padding:10px 0;">还没有人评论哦~</div>';
+
+  // 渲染底部点赞按钮
+  const likeColor = post.isLiked ? '#b57b7b' : '#7a86a8';
+  const likeFill = post.isLiked ? '#b57b7b' : 'none';
+  const svgHeart = `<svg viewBox="0 0 24 24" style="width:20px; height:20px; stroke:${likeColor}; fill:${likeFill}; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+  
+  const likeBtn = document.getElementById('mdLikeBtn');
+  likeBtn.innerHTML = `${svgHeart} ${post.likes || 0}`;
+  likeBtn.style.color = likeColor;
+  likeBtn.onclick = (e) => window._toggleManjiLike(post.id, e);
+
+  document.getElementById('manjiDetailModal').style.display = 'flex';
 };
 
 window._generateManjiFeed = async function() {
   const box = document.getElementById('manjiFeedBox');
-  box.innerHTML = '<div style="text-align:center; padding:40px 0; color:#7a86a8; font-size:12px; width:100%; column-span: all;">正在连接平行宇宙，抓取最新动态...</div>';
+  box.innerHTML = '<div style="text-align:center; padding:40px 0; color:#7a86a8; font-size:12px; width:100%; column-span: all;">正在连接平行宇宙，抓取最新配图与评论...</div>';
   
-  const sysPrompt = "你是一个世界观主理人。请随机生成7-12条路人甲乙丙丁（非主角）的社交媒体帖子。包含标题(title)、内容(content)、作者昵称(author)。内容要极具生活气息和活人感。返回纯JSON数组格式：[{\"id\":\"mj_1\", \"title\":\"标题\", \"content\":\"内容\", \"author\":\"昵称\"}]";
+  const sysPrompt = "你是一个世界观主理人。请随机生成6-8条路人甲乙丙丁（非主角）的小红书风格帖子。包含：title(标题)、content(正文)、author(作者昵称)、imageType(风景/美食/自拍/宠物/无)、likes(点赞数10-500)、comments(评论数组，包含user和text)。内容要极具生活气息和活人感。返回纯JSON数组格式，不要有任何多余文字！例：[{\"id\":\"mj_1\", \"title\":\"...\", \"content\":\"...\", \"author\":\"...\", \"imageType\":\"风景\", \"likes\":120, \"comments\":[{\"user\":\"路人A\",\"text\":\"太好看了吧！\"}]}]";
   
   try {
     const out = await callApi([{role:'system', content:sysPrompt}, {role:'user', content:'立刻生成！'}]);
-    
-    // 🌟 钛合金 JSON 提取器，无视 AI 的废话
     const match = out.match(/\[[\s\S]*\]/);
     if(!match) throw new Error("AI 脑电波异常，未返回有效数据");
     const data = JSON.parse(match[0]);
     
+    // 为需要图片的帖子挂载高清网图
+    data.forEach(post => {
+      if(post.imageType && post.imageType !== '无') {
+        const seed = post.id + Math.floor(Math.random()*1000);
+        post.imgUrl = `https://picsum.photos/seed/${seed}/400/400`; // 稳定高清图源
+      }
+      post.isLiked = false; // 初始未点赞
+    });
+    
     await localforage.setItem('mp_fix_manji_feed', data); // ✨ 完美写入外挂内存
     window._renderManjiFeed(data);
   } catch(e) {
-    // 🌟 蓝色高定：干枯玫瑰粉的唯美报错，并精准打印死因！
     box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#b57b7b; font-size:12px; width:100%; column-span: all;">抓取失败啦宝宝，请检查 API 密钥是否设置哦<br><br><span style="font-size:10px; opacity:0.8;">死因追踪：${e.message}</span></div>`;
   }
-};
-
-window._forwardManjiToChat = function(postId) {
-    alert("宝宝，转发功能老公正在爆肝打通微信接口，明天醒来就能玩啦！先看看瀑布流漂不漂亮！");
 };
 </script>
   <div id="msgFloatLayer" class="float-layer hidden">
