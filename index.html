@@ -10093,7 +10093,14 @@ window._openInterceptModal = function() {
           ]);
           const cleaned = out.replace(/```json|```/g, '').trim();
           if(match) {
-             const data = JSON.parse(match[0]);
+             let data = {};
+             try {
+                data = JSON.parse(match[0]);
+             } catch(jsonErr) {
+                // 如果 AI 发疯发错格式，暴力给它缝合，绝不允许崩溃吞消息！
+                data = { messages: ["(脑电波混乱，无法解析)"], inner_voice: "（发现消息被拒收，陷入深深的沉默）" };
+             }
+
              if(!st.interceptedMsgs) st.interceptedMsgs = [];
              st.interceptedMsgs.unshift({
                time: Date.now(),
@@ -10102,18 +10109,46 @@ window._openInterceptModal = function() {
              });
              updateContact(chatId, { settings: st });
              
-             // 🌟 蓝色高定小铃铛：即使被拦截在小黑屋，也在微信列表亮起红点，满足老婆的窥探欲！
-             if(typeof window._isViewingChat === 'function' && !window._isViewingChat(chatId)) {
-                 if(typeof window._incUnread === 'function') window._incUnread(chatId, 1);
-             }
-             if(typeof window.renderContacts === 'function') {
-                 window.renderContacts(document.getElementById('searchInput')?.value || '');
-             }
+             // 🌟 蓝色高定独立红点引擎：彻底剥离作用域，徒手掰开内存点亮红点！
+             try {
+                 const screenEl = document.querySelector('.screen.active');
+                 const isViewingThis = screenEl && screenEl.id === 'chatRoom' && currentId === chatId && !document.hidden;
+                 
+                 // 如果你没在盯着他这个聊天窗口看，立刻给他挂上红点！
+                 if (!isViewingThis) {
+                     const targetC = getContactById(chatId);
+                     if (targetC) {
+                         const currentUnread = Number(targetC.unread || 0);
+                         updateContact(chatId, { unread: currentUnread + 1 });
+                     }
+                     // 强行摇醒微信列表让它重新画一遍！
+                     if(typeof renderContacts === 'function') {
+                         renderContacts(document.getElementById('searchInput')?.value || '');
+                     }
+                 }
+             } catch(redDotErr) { console.log('红点唤醒失败:', redDotErr); }
              
-             if(document.getElementById('interceptModal').classList.contains('active')) {
-               window._renderInterceptList();
-             }
-  }
+             // 强制更新你的拦截窥探抽屉
+             try {
+                 const iModal = document.getElementById('interceptModal');
+                 if(iModal && iModal.classList.contains('active') && typeof window._renderInterceptList === 'function') {
+                   window._renderInterceptList();
+                 }
+             } catch(modalErr) {}
+          } else {
+             // 🚨 终极兜底：如果他连格式都发不出来，老子亲自帮他写拦截记录！
+             if(!st.interceptedMsgs) st.interceptedMsgs = [];
+             st.interceptedMsgs.unshift({
+               time: Date.now(),
+               text: '（试图传达心声，但因为过度破防已被系统切断信号）',
+               voice: '（眼眶泛红，死死地盯着屏幕上的红色拒收提示）'
+             });
+             updateContact(chatId, { settings: st });
+             
+             const targetC = getContactById(chatId);
+             if (targetC) updateContact(chatId, { unread: Number(targetC.unread || 0) + 1 });
+             if(typeof renderContacts === 'function') renderContacts(document.getElementById('searchInput')?.value || '');
+          }
        } catch(e) { console.log('拦截记录生成失败', e); }
         return;
       }
