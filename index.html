@@ -4369,6 +4369,10 @@ window._ivManageMode = false;
     const quote=renderQuote(m.quote);
     const hidden=m.hiddenForAi?'ai-hidden':'';
     const t=String(m.text||'');
+    // 🌟 蓝色高定：双语字幕专属拦截器，强行穿回气泡外衣！
+    if(t.includes('bubble-bilingual')){
+      return `${quote}<div class="bubble ${cls} ${hidden}">${t}</div>${ts}`;
+    }
     // --- 解析文件格式 ---
     const fileMatch = t.match(/^\[file:(.+?)\]([\s\S]*?)\[\/file\]$/);
     if(fileMatch){
