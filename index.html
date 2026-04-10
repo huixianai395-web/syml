@@ -12772,5 +12772,367 @@ ${maleInfo}
       <div id="interceptList" style="flex:1; overflow-y:auto; padding:16px; background:rgba(255,255,255,0.5); display:flex; flex-direction:column; gap:12px;"></div>
     </div>
   </div>
+  <script>
+(function() {
+  // 🌟 自带独立系统时钟，彻底打破大别墅的作用域结界！
+  function getSysTimeStr() {
+    const d = new Date();
+    const w = ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
+    return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${w} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
+  
+  // 🌟 自带独立纯净剪刀，防病毒防乱码！
+  function safeEsc(s) {
+    return String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  }
+
+  const K_XHS_POSTS = 'mp_fix_xhs_posts';
+  
+  // 外挂内存抓取
+  async function getXhsPosts() { return (await localforage.getItem(K_XHS_POSTS)) || []; }
+  async function setXhsPosts(data) { await localforage.setItem(K_XHS_POSTS, data); window._renderXhsFeed(); }
+
+  // 渲染瀑布流
+  window._renderXhsFeed = async function() {
+    const posts = await getXhsPosts();
+    const box = document.getElementById('xhsWaterfall');
+    if(!box) return;
+    if(posts.length === 0) {
+      box.innerHTML = `<div style="text-align:center; padding:50px 0; color:#a0aaba; font-size:12px; column-span:all;">社区空空如也<br>快去发布第一条灵感碎片吧</div>`;
+      return;
+    }
+    
+    box.innerHTML = posts.map(p => `
+      <div class="xhs-card" onclick="window._openXhsDetail('${p.id}')">
+        ${p.img ? `<img class="xhs-img" src="${p.img}">` : ''}
+        <div class="xhs-title">${safeEsc(p.text)}</div>
+        <div class="xhs-footer">
+          <div class="xhs-user">
+            <img class="xhs-avatar" src="${p.authorAvatar || 'https://via.placeholder.com/40'}">
+            <div class="xhs-name">${safeEsc(p.authorName)}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; font-size:11px; color:#5c7094;">
+            <svg class="xhs-like-svg" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            ${p.likes?.length || 0}
+          </div>
+        </div>
+      </div>
+    `).join('');
+  };
+
+  // 触发 AI 的高能修罗场生态引擎
+  window._triggerXhsAI = async function(postId) {
+    const posts = await getXhsPosts();
+    const post = posts.find(x => x.id === postId);
+    if(!post) return;
+
+    const contacts = window.getContacts() || [];
+    const maleLeads = contacts.filter(c => !c.isGroup).map(c => `- ${c.name}：${c.persona}`).join('\\n');
+    
+    const sysPrompt = `你现在是高级社交网络模拟引擎。玩家发了一篇帖子：“${post.text}”。
+当前系统时间：${getSysTimeStr()}。
+【核心要求】：
+1. 你的任务是生成这篇帖子下的【真实活人评论区】。
+2. 男主是否出现，必须经过【性格阈值过滤】！结合以下男主设定：
+${maleLeads}
+如果某个男主性格高冷、工作狂、老干部，他极大概率不会评论，直接跳过他！如果性格粘人、吃醋、海王，才会秒回。严禁所有人像复读机一样全员到齐！
+3. 必须生成 5~8 个【野生路人网友】的评论。名字要有网感（如：熬夜敲代码的狗、纯爱战神），语气要带梗、接地气，有夸的、有吐槽的、甚至有杠精。
+4. 【格式铁律】：严格输出纯 JSON 数组，不要 markdown！
+[
+  { "name": "评论者名字", "isNpc": true(路人)或false(男主), "text": "评论内容", "ip": "IP属地" }
+]`;
+
+    try {
+      const out = await window.callApi([ { role: 'system', content: sysPrompt }, { role: 'user', content: '立刻生成评论区！' } ]);
+      const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
+      const comments = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
+      
+      comments.forEach((c, idx) => {
+        setTimeout(async () => {
+          const currentPosts = await getXhsPosts();
+          const target = currentPosts.find(x => x.id === postId);
+          if(target) {
+            target.comments = target.comments || [];
+            target.comments.push({
+              id: 'cmt_' + Date.now() + idx,
+              authorName: c.name,
+              isNpc: c.isNpc,
+              text: c.text,
+              ip: c.ip || '未知',
+              time: Date.now()
+            });
+            await setXhsPosts(currentPosts);
+            if (window._currentXhsPostId === postId && typeof window._renderXhsDetail === 'function') {
+              window._renderXhsDetail();
+            }
+          }
+        }, 3000 + (idx * (Math.random() * 4000 + 2000)));
+      });
+    } catch(e) { console.log('小红书生态引擎推演失败:', e); }
+  };
+
+  // 详情页与评论舱引擎
+  window._currentXhsPostId = null;
+
+  window._openXhsDetail = async function(postId) {
+    window._currentXhsPostId = postId;
+    const posts = await getXhsPosts();
+    const post = posts.find(x => x.id === postId);
+    if(!post) return;
+
+    let detailModal = document.getElementById('xhsDetailModal');
+    if (!detailModal) {
+      const modalHtml = `
+      <div id="xhsDetailModal" class="modal" style="z-index: 10000;">
+        <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; display:flex; flex-direction:column; padding:0; overflow:hidden; height:90dvh;">
+          <div style="padding:12px 16px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
+            <button class="btn" onclick="document.getElementById('xhsDetailModal').classList.remove('active'); window._currentXhsPostId=null;" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:32px; height:32px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0;">‹</button>
+            <div id="xhsDetailAuthor" style="display:flex; align-items:center; gap:8px;"></div>
+            <button class="btn" onclick="window._openXhsShareDrawer()" style="background:transparent; border:none; padding:0; color:#5c7094; cursor:pointer;">
+              <svg viewBox="0 0 24 24" style="width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            </button>
+          </div>
+          <div id="xhsDetailScroll" style="flex:1; overflow-y:auto; padding-bottom:20px; background:linear-gradient(180deg, #f4f6fb, #eef4fa);">
+            <div id="xhsDetailContent"></div>
+            <div style="width:32px; height:4px; background:#dce5f0; border-radius:2px; margin:20px auto;"></div>
+            <div id="xhsDetailComments" style="padding:0 16px;"></div>
+          </div>
+          <div style="padding:12px 16px calc(12px + var(--safe-bottom)); background:rgba(250,252,255,0.9); border-top:1px solid #dce5f0; display:flex; gap:10px; align-items:center;">
+            <input id="xhsCommentInput" class="input" placeholder="说点什么吧..." style="flex:1; background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:20px; padding:10px 16px; font-size:14px; color:#5c7094;">
+            <button class="btn p" onclick="window._sendXhsComment()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:20px; padding:0 18px; font-weight:bold; box-shadow:none;">发送</button>
+          </div>
+        </div>
+      </div>
+      <div id="xhsShareDrawer" style="display:none; position:fixed; bottom:0; left:0; right:0; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border-top:1px solid #dce5f0; border-radius:24px 24px 0 0; padding:20px 16px calc(20px + var(--safe-bottom)); z-index:10001; box-shadow:0 -10px 40px rgba(92,112,148,0.15); flex-direction:column; transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <b style="color:#3d4a6a; font-size:15px;">转发给...</b>
+          <span onclick="document.getElementById('xhsShareDrawer').style.transform='translateY(100%)'; setTimeout(()=>document.getElementById('xhsShareDrawer').style.display='none',300);" style="color:#7a86a8; font-size:22px; cursor:pointer;">×</span>
+        </div>
+        <div id="xhsShareContacts" style="display:flex; overflow-x:auto; gap:16px; padding-bottom:10px; scrollbar-width:none;"></div>
+      </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+
+    window._renderXhsDetail();
+    document.getElementById('xhsDetailModal').classList.add('active');
+  };
+
+  window._renderXhsDetail = async function() {
+    if(!window._currentXhsPostId) return;
+    const posts = await getXhsPosts();
+    const post = posts.find(x => x.id === window._currentXhsPostId);
+    if(!post) return;
+
+    document.getElementById('xhsDetailAuthor').innerHTML = `
+      <img src="${post.authorAvatar || 'https://via.placeholder.com/40'}" style="width:28px; height:28px; border-radius:50%; object-fit:cover; border:1px solid #dce5f0;">
+      <span style="font-size:14px; font-weight:800; color:#3d4a6a;">${safeEsc(post.authorName)}</span>
+    `;
+
+    const imgHtml = post.img ? `<img src="${post.img}" style="width:100%; object-fit:cover; border-radius:0 0 16px 16px;">` : '';
+    let timeStr = '刚刚';
+    const diff = Date.now() - post.time;
+    if (diff > 60000) timeStr = Math.floor(diff / 60000) + '分钟前';
+    if (diff > 3600000) timeStr = Math.floor(diff / 3600000) + '小时前';
+    
+    document.getElementById('xhsDetailContent').innerHTML = `
+      ${imgHtml}
+      <div style="padding:20px 16px 0 16px;">
+        <div style="font-size:16px; color:#3d4a6a; line-height:1.7; white-space:pre-wrap; word-break:break-word;">${safeEsc(post.text)}</div>
+        <div style="font-size:11px; color:#a0aaba; margin-top:12px;">发布于 ${timeStr}</div>
+      </div>
+    `;
+
+    const cmtBox = document.getElementById('xhsDetailComments');
+    if(!post.comments || post.comments.length === 0) {
+      cmtBox.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:12px; padding:20px 0;">还没有人评论，快来抢沙发吧~</div>`;
+    } else {
+      cmtBox.innerHTML = post.comments.map(c => `
+        <div style="display:flex; gap:12px; margin-bottom:16px;">
+          <img src="${c.avatar || 'https://api.dicebear.com/7.x/notionists/svg?seed='+encodeURIComponent(c.authorName)}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; flex-shrink:0; background:#eef4fa;">
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline;">
+              <span style="font-size:12px; font-weight:800; color:#7a86a8;">${safeEsc(c.authorName)}</span>
+              <span style="font-size:10px; color:#cdd7e8;">IP: ${safeEsc(c.ip || '未知')}</span>
+            </div>
+            <div style="font-size:14px; color:#3d4a6a; margin-top:4px; line-height:1.5;">${safeEsc(c.text)}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+  };
+
+  window._sendXhsComment = async function() {
+    const text = document.getElementById('xhsCommentInput').value.trim();
+    if(!text || !window._currentXhsPostId) return;
+
+    const meData = window.getMe ? window.getMe() : {};
+    const posts = await getXhsPosts();
+    const post = posts.find(x => x.id === window._currentXhsPostId);
+    if(!post) return;
+
+    post.comments = post.comments || [];
+    post.comments.push({
+      id: 'cmt_' + Date.now(),
+      authorName: meData.name || '我',
+      avatar: meData.avatar || '',
+      isNpc: false,
+      text: text,
+      ip: '本地',
+      time: Date.now()
+    });
+
+    await setXhsPosts(posts);
+    document.getElementById('xhsCommentInput').value = '';
+    window._renderXhsDetail();
+  };
+
+  window._openXhsShareDrawer = function() {
+    const contacts = (window.getContacts() || []).filter(c => !c.isGroup);
+    const box = document.getElementById('xhsShareContacts');
+    if(contacts.length === 0) {
+      box.innerHTML = `<div style="font-size:12px; color:#a0aaba;">通讯录空空如也~</div>`;
+    } else {
+      box.innerHTML = contacts.map(c => `
+        <div onclick="window._sharePostToChat('${c.id}')" style="display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; min-width:56px;">
+          <img src="${c.avatar || 'https://via.placeholder.com/56'}" style="width:50px; height:50px; border-radius:16px; object-fit:cover; border:1px solid #dce5f0;">
+          <span style="font-size:11px; color:#5c7094; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">${safeEsc(c.name)}</span>
+        </div>
+      `).join('');
+    }
+    const drawer = document.getElementById('xhsShareDrawer');
+    drawer.style.display = 'flex';
+    setTimeout(() => drawer.style.transform = 'translateY(0)', 10);
+  };
+
+  window._sharePostToChat = async function(chatId) {
+    if(!window._currentXhsPostId) return;
+    const posts = await getXhsPosts();
+    const post = posts.find(x => x.id === window._currentXhsPostId);
+    if(!post) return;
+
+    const cardHtml = `
+      <div class="card-xhs-share" style="background:rgba(250,252,255,0.85); border:1px solid #dce5f0; border-radius:12px; padding:12px; width:220px; box-shadow:0 4px 12px rgba(92,112,148,0.04); cursor:pointer;">
+        <div style="font-size:10px; color:#a5cfff; font-weight:800; margin-bottom:6px; display:flex; align-items:center; gap:4px;">
+          <svg viewBox="0 0 24 24" style="width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>灵感碎片
+        </div>
+        <div style="font-size:13px; color:#3d4a6a; font-weight:bold; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.5;">${safeEsc(post.text)}</div>
+        <div style="font-size:10px; color:#7a86a8; margin-top:8px;">By: ${safeEsc(post.authorName)}</div>
+      </div>
+    `;
+
+    const arr = window.getChatArr(chatId) || [];
+    arr.push({ id: 'm_' + Date.now(), role: 'user', text: cardHtml, time: Date.now(), stored: true });
+    window.setChatArr(chatId, arr);
+    
+    document.getElementById('xhsShareDrawer').style.transform = 'translateY(100%)';
+    setTimeout(() => document.getElementById('xhsShareDrawer').style.display = 'none', 300);
+    alert('✨ 笔记已成功转发给TA！');
+    if (window.currentId === chatId && typeof window.renderChat === 'function') window.renderChat();
+    
+    const hiddenPrompt = `【系统指令】：玩家刚刚向你转发了一篇小红书笔记，内容是：“${post.text}”。请你根据你的人设，自然地对这篇笔记发表看法。`;
+    if(typeof window._sendToAI === 'function') window._sendToAI(chatId, hiddenPrompt, true);
+  };
+
+  window._openXhsPublishModal = function() { document.getElementById('xhsPublishModal').classList.add('active'); };
+
+  let xhsDraftImg = '';
+  const fileInput = document.getElementById('xhsImgFile');
+  if(fileInput) {
+    fileInput.addEventListener('change', async (e) => {
+      const f = e.target.files?.[0];
+      if(!f) return;
+      try {
+        xhsDraftImg = await compressImage(f, false);
+        document.getElementById('xhsImgPreview').src = xhsDraftImg;
+        document.getElementById('xhsImgPreviewWrap').style.display = 'block';
+        document.getElementById('xhsAddImgBtn').style.display = 'none';
+      } catch(err) { alert('图片处理失败：' + err.message); } 
+      finally { e.target.value = ''; }
+    });
+  }
+
+  window._clearXhsImg = function() {
+    xhsDraftImg = '';
+    document.getElementById('xhsImgPreview').src = '';
+    document.getElementById('xhsImgPreviewWrap').style.display = 'none';
+    document.getElementById('xhsAddImgBtn').style.display = 'grid';
+  };
+
+  window._publishMyXhsPost = async function() {
+    const text = document.getElementById('xhsInputText').value.trim();
+    if(!text && !xhsDraftImg) return alert('总得写点什么或者发张图吧，老婆！');
+    
+    const meData = window.getMe ? window.getMe() : {};
+    const posts = await getXhsPosts();
+    const newId = 'x_' + Date.now();
+    
+    posts.unshift({
+      id: newId,
+      authorName: meData.name || '我',
+      authorAvatar: meData.avatar || 'https://via.placeholder.com/120',
+      text: text,
+      img: xhsDraftImg || '',
+      time: Date.now(),
+      likes: [],
+      comments: []
+    });
+    
+    await setXhsPosts(posts);
+    document.getElementById('xhsPublishModal').classList.remove('active');
+    document.getElementById('xhsInputText').value = '';
+    window._clearXhsImg();
+    
+    setTimeout(() => { if(window._triggerXhsAI) window._triggerXhsAI(newId); }, 1500);
+  };
+
+  window._generateNpcXhsPost = async function() {
+    const contacts = window.getContacts() || [];
+    if(contacts.length === 0) return alert('宝宝，你还没加联系人呢！');
+    
+    const btn = document.getElementById('xhsRefreshBtn');
+    if(btn) { btn.textContent = '刷新中...'; btn.style.pointerEvents = 'none'; }
+    
+    try {
+      const maleLeads = contacts.filter(c => !c.isGroup);
+      const maleInfo = maleLeads.map(c => `- ${c.name}：${c.persona}`).join('\\n');
+      const sysPrompt = `你现在是“灵感碎片”内容生成引擎。\n当前时间：${getSysTimeStr()}。\n【核心任务】：生成 1~2 篇高质量图文笔记。\n发布者必须从以下【已知角色（男主）】或你虚构的【野生路人网友】中随机选择。\n已知角色：\n${maleInfo}\n\n【图文铁律】：\n1. 笔记内容要极度贴合小红书风格：穿搭、探店、摄影、吐槽等。带适当的 Emoji 和 #话题标签。\n2. 必须生成一张极具氛围感的高级网图链接，从以下挑选：\n风景/建筑：https://source.unsplash.com/random/600x800/?city,architecture\n咖啡/探店：https://source.unsplash.com/random/600x800/?coffee,cafe\n萌宠：https://source.unsplash.com/random/600x800/?cat,dog\n穿搭/局部：https://source.unsplash.com/random/600x800/?fashion,ootd\n（必须加上随机数字防缓存，如 &sig=随机数）\n3. 必须严格返回纯 JSON 数组，格式如下：\n[\n  {\n    "authorName": "发布者名字",\n    "isMaleLead": true或false,\n    "text": "笔记正文",\n    "img": "配图URL"\n  }\n]`;
+      
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻生成绝美生活碎片！' }]);
+      const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
+      const dataArr = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
+      const posts = await getXhsPosts();
+      
+      dataArr.forEach(data => {
+        const isMale = data.isMaleLead;
+        const npc = isMale ? maleLeads.find(c => c.name === data.authorName) : null;
+        let avatar = 'https://api.dicebear.com/7.x/notionists/svg?seed=' + encodeURIComponent(data.authorName) + '&backgroundColor=eef4fa';
+        if(npc && npc.avatar) avatar = npc.avatar;
+        
+        let finalImg = data.img;
+        if(finalImg.includes('unsplash.com')) {
+          finalImg += (finalImg.includes('?') ? '&' : '?') + 'sig=' + Math.floor(Math.random() * 99999);
+        }
+        
+        posts.unshift({
+          id: 'x_' + Date.now() + Math.floor(Math.random()*1000),
+          authorName: data.authorName,
+          authorAvatar: avatar,
+          text: data.text,
+          img: finalImg,
+          time: Date.now() - Math.floor(Math.random() * 3600000), 
+          likes: [],
+          comments: []
+        });
+      });
+      await setXhsPosts(posts);
+    } catch(e) {
+      alert('生态引擎刷新失败：' + (e.message || e));
+    } finally {
+      if(btn) { btn.textContent = '刷新'; btn.style.pointerEvents = 'auto'; }
+    }
+  };
+})();
+  </script>
 </body>
 </html>
