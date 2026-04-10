@@ -12755,8 +12755,8 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
 1. 小红书特有的极度真实的日常碎碎念、吐槽、感悟。自带 1~6个相关的 #话题标签。
 2. 绝对禁止在正文中包含任何图片URL！(程序会自动使用角色的头像作为封面)。
 3. 每篇必须生成【点赞数】(likeCount)和【评论区】(comments，每篇至少生成 10 到 18 条极其热闹的评论)。
-4. 【星光点赞分层】：如果发布者是明星/偶像/顶流/影帝/有名气的人设等…，他的帖子的 likeCount 必须填 50000 到 1200000 之间！且他底下的热门神评 likeCount 必须在 100000 到 5000000 之间！如果是普通人，帖子点赞在 50 到 5000 之间，评论点赞在 5 到 2000 之间。
-5. 【网感大一统】：虚构的路人中国网友必须起真实的中文网感昵称（如：不想上班、草莓碎碎冰），绝对禁止给中国路人起毫无意义的纯英文字母名！所有评论者的 ip 必须是真实的国内外IP，绝对禁止填"未知"。
+4. 【星光点赞分层】：如果发布者是明星/偶像/顶流/影帝/有名气的人设等…，他的帖子的 likeCount 必须填 50000 到 1200000 之间！且他底下的热门神评 likeCount 必须在 100000 到 1200000 之间！如果是普通人，帖子点赞在 5000 到 50000 之间，评论点赞在 500 到 17000 之间。
+5. 【网感大一统】：虚构的路人网友必须起网感昵称，所有评论者的 ip 必须是真实的国内外IP，绝对禁止填"未知"。
 6. 【防代充法则】：绝对、严禁、无论如何都不允许在评论区生成玩家（${meName}）或名为“user”、“我”、“玩家”的评论！谁敢代替玩家发言就直接判定为重大违规！
 
 【严格返回纯 JSON 数组，格式】：
@@ -12780,9 +12780,9 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
         let avatar = getCuteAvatar(data.authorName);
         if(npc && npc.avatar) avatar = npc.avatar;
         
-        const isStar = npc && /明星|偶像|影帝|顶流|爱豆|歌手|演员/i.test(npc.persona || '');
+        const isStar = npc && /明星|偶像|影帝|顶流|名人|爱豆|歌手|演员/i.test(npc.persona || '');
         const newId = 'x_' + Date.now() + Math.floor(Math.random()*1000);
-        let baseLikeCount = data.likeCount || (isStar ? Math.floor(Math.random() * 150000 + 20000) : Math.floor(Math.random() * 500 + 20));
+        let baseLikeCount = data.likeCount || (isStar ? Math.floor(Math.random() * 150000 + 20000) : Math.floor(Math.random() * 5008 + 7720));
 
         const finalComments = (data.comments || []).map((c, i) => {
            const cNpc = maleLeads.find(contact => norm(contact.name) === norm(c.name));
@@ -12791,7 +12791,7 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
            let safeIp = c.ip || provinces[Math.floor(Math.random()*provinces.length)];
            if(safeIp === '未知' || safeIp.includes('美国')) safeIp = provinces[Math.floor(Math.random()*provinces.length)];
 
-           const rndLikes = c.likeCount || (isStar ? Math.floor(Math.random() * 5000 + 100) : Math.floor(Math.random() * 100 + 2));
+           const rndLikes = c.likeCount || (isStar ? Math.floor(Math.random() * 5000 + 100) : Math.floor(Math.random() * 1100 + 2));
            return { id: 'cmt_' + Date.now() + i, authorName: c.name, avatar: cAvatar, text: c.text, ip: safeIp, time: Date.now(), likeCount: rndLikes };
         });
 
@@ -12810,7 +12810,7 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
 
       await setXhsPosts(posts);
 
-      if (Math.random() < 0.35 && posts.length > 0) {
+      if (Math.random() < 0.4 && posts.length > 0) {
         const npcPosts = posts.filter(p => p.authorName !== meName && maleLeads.some(c => norm(c.name) === norm(p.authorName)));
         if (npcPosts.length > 0) {
           const randomPost = npcPosts[Math.floor(Math.random() * npcPosts.length)];
@@ -13016,7 +13016,7 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
     const newId = 'x_' + Date.now();
     
     posts.unshift({
-      id: newId, authorName: meData.name || '我', authorAvatar: myAvatar, text: text, images: [], time: Date.now(), likes: [], fakeLikeCount: Math.floor(Math.random() * 50 + 10), comments: []
+      id: newId, authorName: meData.name || '我', authorAvatar: myAvatar, text: text, images: [], time: Date.now(), likes: [], fakeLikeCount: Math.floor(Math.random() * 50000 + 17010), comments: []
     });
     
     await setXhsPosts(posts);
