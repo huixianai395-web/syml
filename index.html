@@ -2096,7 +2096,16 @@ body {
   font-size: 10px !important; color: #7a86a8 !important;
   font-family: ui-monospace, 'Times New Roman', serif !important;
   letter-spacing: 1px !important; font-weight: bold !important;
-                                              }
+     .xhs-card { break-inside: avoid; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid #dce5f0; border-radius: 16px; margin-bottom: 10px; overflow: hidden; box-shadow: 0 4px 16px rgba(92,112,148,0.03); transition: transform 0.2s; cursor: pointer; }
+  .xhs-card:active { transform: scale(0.97); }
+  .xhs-img { width: 100%; object-fit: cover; border-bottom: 1px solid rgba(220,229,240,0.5); }
+  .xhs-title { font-size: 13px; font-weight: 800; color: #3d4a6a; margin-bottom: 6px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; padding: 10px 10px 0 10px; }
+  .xhs-footer { display: flex; justify-content: space-between; align-items: center; padding: 0 10px 10px 10px; }
+  .xhs-user { display: flex; align-items: center; gap: 4px; overflow: hidden; }
+  .xhs-avatar { width: 18px; height: 18px; border-radius: 50%; border: 1px solid #dce5f0; object-fit: cover; flex-shrink: 0; }
+  .xhs-name { font-size: 10px; color: #7a86a8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+  .xhs-like-svg { width: 14px; height: 14px; stroke: #5c7094; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: all 0.2s; }
+  .xhs-card.liked .xhs-like-svg { fill: #b57b7b; stroke: #b57b7b; }                                         }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
@@ -2129,6 +2138,21 @@ body {
         <span id="bootProgressText">Loading...</span>
         <span id="bootProgressNum">0%</span>
       </div>
+    </div>
+  </div>
+</section>
+  <!-- 1. 小红书专属 HTML 结构 (放入 <div id="app"> 内部) -->
+<section id="xiaohongshu" class="screen">
+  <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
+    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">‹ 返回</button>
+    <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">灵感碎片</b>
+    <button class="btn p" onclick="window._openXhsPublishModal()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">+ 发布</button>
+  </div>
+  
+  <!-- 瀑布流容器 -->
+  <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:12px;">
+    <div id="xhsWaterfall" style="column-count:2; column-gap:10px;">
+      <!-- 卡片将由 JS 动态渲染 -->
     </div>
   </div>
 </section>
@@ -2200,20 +2224,14 @@ body {
       <div class="home-page">
         <div class="ios-grid" style="margin-top: 20px;">
           <div class="ios-icon" onclick="show('realmIf'); if(window._renderIfLineup) window._renderIfLineup();">
-          <div class="ibg" id="icon_realmIf" style="background:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center; background-size:cover; background-position:center;">
-            <svg class="default-svg" viewBox="0 0 24 24" style="width:26px; height:26px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+            <div class="ibg" style="background:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
+              <!-- 极简时空交织 SVG 图标 -->
+              <svg class="default-svg" viewBox="0 0 24 24" style="width:26px; height:26px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+              </svg>
+            </div>
+            <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">境·IF</span>
           </div>
-          <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">境·IF</span>
-        </div>
-        <input type="file" id="up_icon_realmIf" accept="image/*" class="hidden">
-          <!-- 全新降临的 漫记 (小红书高级版) -->
-  <div class="ios-icon" onclick="window._openManjiApp()">
-    <div class="ibg" id="icon_manji" style="background:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center; background-size:cover; background-position:center;">
-      <svg class="default-svg" viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#5c7094; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-    </div>
-    <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">漫记</span>
-  </div>
-  <input type="file" id="up_icon_manji" accept="image/*" class="hidden">
         </div>
       </div>
 
@@ -3584,349 +3602,7 @@ window.changeReaderFontColor = function(colorHex){
       </div>
     </div>
   </div>
-<!-- 🌟 蓝色高定：漫记 7.0 满血大一统 (绝不透底、神仙评论、纯净图库) -->
-<style>#manjiApp.active { display: flex !important; }</style>
-<section id="manjiApp" class="screen" style="flex-direction:column; height:100%; background:#eef4fa; display:none;">
-  
-  <!-- 首页 Feed 视图 -->
-  <div id="manjiViewFeed" style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
-    <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0; z-index:10; flex-shrink:0;">
-      <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">‹ 桌面</button>
-      <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">漫记</b>
-      <div style="display:flex; gap:6px;">
-        <button class="btn p" onclick="document.getElementById('manjiPublishModal').style.display='flex'" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">+ 发布</button>
-        <button class="btn" onclick="window._generateManjiFeed()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px;">刷新</button>
-      </div>
-    </div>
-    <div class="page" style="flex:1; background:#eef4fa; padding:12px; padding-bottom:0; overflow-y:auto;">
-      <div id="manjiFeedBox" style="column-count: 2; column-gap: 10px;">
-        <div style="text-align:center; padding:40px 0; color:#7a86a8; font-size:12px; width:100%; column-span: all;">正在从外挂内存读取平行宇宙的信号...</div>
-      </div>
-    </div>
-  </div>
 
-  <!-- 个人主页视图 -->
-  <div id="manjiViewProfile" style="display:none; flex-direction:column; flex:1; overflow:hidden; background:#eef4fa;">
-    <div style="padding:calc(12px + var(--safe-top)) 16px 20px; background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0; display:flex; flex-direction:column; align-items:center; position:relative; flex-shrink:0;">
-      <button class="btn" onclick="window._switchManjiTab('feed')" style="position:absolute; left:16px; top:calc(12px + var(--safe-top)); background:transparent; color:#5c7094; font-size:24px; padding:0 8px; line-height:1; border:none;">‹</button>
-      <div id="mpAvatarTxt" style="width:64px; height:64px; border-radius:50%; background:#eef4fa; border:2px solid #dce5f0; display:grid; place-items:center; font-size:24px; color:#5c7094; font-weight:bold; margin-top:10px;"></div>
-      <div id="mpName" style="font-size:18px; font-weight:800; color:#3d4a6a; margin-top:10px;"></div>
-    </div>
-    <div style="flex:1; overflow-y:auto; padding:12px;">
-      <div id="mpFeedBox" style="column-count: 2; column-gap: 10px;"></div>
-    </div>
-  </div>
-
-  <!-- 🌟 详情页弹窗 (修复透视：使用扎实的海盐蓝纯色打底！) -->
-  <div id="manjiDetailModal" style="display:none; position:absolute; inset:0; z-index:200; background:#eef4fa; flex-direction:column;">
-    <div style="padding:calc(12px + var(--safe-top)) 16px 12px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);">
-      <button class="btn" onclick="document.getElementById('manjiDetailModal').style.display='none'" style="background:transparent; color:#5c7094; font-size:24px; padding:0 8px; line-height:1; border:none;">‹</button>
-      <div id="mdAuthor" style="font-size:14px; font-weight:bold; color:#3d4a6a; display:flex; align-items:center; gap:6px; cursor:pointer;"></div>
-      <div style="width:32px;"></div>
-    </div>
-    <div id="mdScroll" style="flex:1; overflow-y:auto; padding-bottom:calc(60px + var(--safe-bottom));">
-      <!-- 🌟 兜底：图片加载失败直接隐藏 -->
-      <img id="mdImage" src="" style="width:100%; max-height:400px; object-fit:cover; display:none; background:#dce5f0;" onerror="this.style.display='none'">
-      <div style="padding:16px;">
-        <div id="mdTitle" style="font-size:16px; font-weight:800; color:#3d4a6a; margin-bottom:10px;"></div>
-        <div id="mdContent" style="font-size:14px; color:#5c7094; line-height:1.7; white-space:pre-wrap; margin-bottom:20px;"></div>
-        <div style="height:1px; background:#dce5f0; margin-bottom:16px;"></div>
-        <div style="font-size:12px; color:#7a86a8; font-weight:bold; margin-bottom:12px;">共 <span id="mdCommentCount">0</span> 条评论</div>
-        <div id="mdComments" style="display:flex; flex-direction:column; gap:16px;"></div>
-      </div>
-    </div>
-    <!-- 🌟 评论输入框焊死在底部 -->
-    <div style="position:absolute; bottom:0; left:0; right:0; padding:10px 16px calc(10px + var(--safe-bottom)); background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-top:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; z-index:210;">
-      <input id="mdCommentInput" class="input" placeholder="说点什么吧..." style="flex:1; background:#eef4fa; border:1px solid #dce5f0; border-radius:20px; padding:8px 16px; font-size:13px; color:#5c7094; outline:none;">
-      <button class="btn" id="mdSendCmtBtn" style="background:transparent; color:#5c7094; font-weight:bold; border:none; padding:0 12px;">发送</button>
-      <div id="mdActions" style="display:flex; gap:12px; margin-left:8px;"></div>
-    </div>
-  </div>
-
-  <!-- 漫记：发布弹窗 -->
-  <div id="manjiPublishModal" style="display:none; position:absolute; inset:0; z-index:250; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); flex-direction:column;">
-    <div style="padding:calc(12px + var(--safe-top)) 16px 12px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center;">
-      <button class="btn" onclick="document.getElementById('manjiPublishModal').style.display='none'" style="background:transparent; color:#7a86a8; font-size:14px; font-weight:bold; border:none;">取消</button>
-      <b style="color:#3d4a6a; font-size:15px;">分享此刻</b>
-      <button class="btn p" onclick="window._publishManjiPost()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold;">发布</button>
-    </div>
-    <div style="padding:16px; flex:1;">
-      <input id="mjPubTitle" class="input" placeholder="填写标题会有更多赞哦~" style="background:transparent; border:none; border-bottom:1px solid #dce5f0; border-radius:0; font-size:16px; font-weight:bold; color:#3d4a6a; padding:10px 0; margin-bottom:12px; box-shadow:none;">
-      <textarea id="mjPubContent" class="ta" placeholder="分享温暖真实的日常..." style="background:transparent; border:none; min-height:150px; font-size:14px; color:#5c7094; padding:0; box-shadow:none; resize:none;"></textarea>
-    </div>
-  </div>
-
-  <!-- 死死焊住的底栏 -->
-  <div style="height:56px; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-top:1px solid #dce5f0; display:flex; justify-content:space-around; align-items:center; padding-bottom:env(safe-area-inset-bottom); flex-shrink:0; z-index:100;">
-    <div onclick="window._switchManjiTab('feed')" id="mjNavFeed" style="font-size:14px; font-weight:bold; color:#3d4a6a; cursor:pointer;">首页</div>
-    <div onclick="document.getElementById('manjiPublishModal').style.display='flex'" style="width:40px; height:30px; background:#eef4fa; border:1px solid #5c7094; border-radius:10px; display:grid; place-items:center; color:#5c7094; font-size:20px; font-weight:300; cursor:pointer;">+</div>
-    <div onclick="window._switchManjiTab('me')" id="mjNavMe" style="font-size:14px; font-weight:bold; color:#7a86a8; cursor:pointer;">我</div>
-  </div>
-</section>
-
-<script>
-const _esc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
-let _currentMjPostId = null;
-
-// 强制覆盖显示逻辑
-const _oldShowMj = window.show;
-window.show = function(id) {
-  _oldShowMj(id);
-  if(id === 'manjiApp') document.getElementById('manjiApp').style.display = 'flex';
-};
-
-window._openManjiApp = async function() {
-  show('manjiApp');
-  window._switchManjiTab('feed');
-  let feed = await localforage.getItem('mp_fix_manji_feed');
-  if (!feed || feed.length === 0) window._generateManjiFeed();
-  else window._renderManjiFeed(feed, 'manjiFeedBox');
-};
-
-window._switchManjiTab = async function(tab) {
-  document.getElementById('manjiViewFeed').style.display = tab === 'feed' ? 'flex' : 'none';
-  document.getElementById('manjiViewProfile').style.display = tab === 'me' ? 'flex' : 'none';
-  document.getElementById('mjNavFeed').style.color = tab === 'feed' ? '#3d4a6a' : '#7a86a8';
-  document.getElementById('mjNavMe').style.color = tab === 'me' ? '#3d4a6a' : '#7a86a8';
-
-  if(tab === 'me') {
-    let meData = { name: '我' };
-    try { meData = JSON.parse(localStorage.getItem('mp_fix_me')) || {name: '我'}; } catch(err){}
-    window._openManjiProfile(meData.name);
-  } else {
-    let feed = await localforage.getItem('mp_fix_manji_feed');
-    window._renderManjiFeed(feed, 'manjiFeedBox');
-  }
-};
-
-window._openManjiProfile = async function(authorName) {
-  document.getElementById('mpName').textContent = authorName;
-  document.getElementById('mpAvatarTxt').textContent = authorName.slice(0,1);
-  document.getElementById('manjiViewFeed').style.display = 'none';
-  document.getElementById('manjiViewProfile').style.display = 'flex';
-  let feed = await localforage.getItem('mp_fix_manji_feed') || [];
-  window._renderManjiFeed(feed.filter(p => p.author === authorName), 'mpFeedBox');
-};
-
-window._renderManjiFeed = function(renderData, targetBoxId) {
-  const box = document.getElementById(targetBoxId);
-  if(!box) return;
-  if(!renderData || renderData.length === 0) {
-    box.innerHTML = '<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:12px; width:100%; column-span: all;">这里空空如也哦~</div>';
-    return;
-  }
-  
-  box.innerHTML = renderData.map(post => {
-    // 🌟 蓝色兜底：图片碎了直接变成海盐蓝方块
-    const fallbackHtml = `this.outerHTML='<div style=\\'width:100%;height:140px;background:#eef4fa;border:1px solid #dce5f0;border-radius:10px;display:grid;place-items:center;color:#5c7094;font-size:11px;font-weight:bold;margin-bottom:8px;\\'>次元壁波动中...</div>'`;
-    let imgHtml = post.imgUrl ? `<img src="${post.imgUrl}" onerror="${fallbackHtml}" style="width:100%; border-radius:10px; margin-bottom:8px; object-fit:cover; background:#eef4fa; min-height:120px;" loading="lazy">` : '';
-    
-    const likeColor = post.isLiked ? '#b57b7b' : '#7a86a8';
-    const likeFill = post.isLiked ? '#b57b7b' : 'none';
-    const svgHeart = `<svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:${likeColor}; fill:${likeFill}; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
-
-    return `
-    <div onclick="window._openManjiDetail('${post.id}')" style="background:rgba(255,255,255,0.85); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:14px; padding:10px; margin-bottom:10px; break-inside:avoid; box-shadow:0 4px 12px rgba(92,112,148,0.04); cursor:pointer;">
-      ${imgHtml}
-      <div style="font-size:13px; font-weight:800; color:#3d4a6a; margin-bottom:6px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${_esc(post.title)}</div>
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-        <div onclick="event.stopPropagation(); window._openManjiProfile('${_esc(post.author)}')" style="font-size:10px; color:#7a86a8; display:flex; align-items:center; gap:4px; font-weight:bold;">
-          <div style="width:16px; height:16px; border-radius:50%; background:#eef4fa; color:#5c7094; display:grid; place-items:center; font-size:9px; border:1px solid #dce5f0;">${_esc(post.author).slice(0,1)}</div>
-          ${_esc(post.author)}
-        </div>
-        <div onclick="window._toggleManjiAction('${post.id}', 'like', event)" style="display:flex; align-items:center; gap:4px; font-size:11px; color:${likeColor}; font-weight:bold;">
-          ${svgHeart} ${post.likes || 0}
-        </div>
-      </div>
-    </div>
-  `}).join('');
-};
-
-window._openManjiDetail = async function(id) {
-  _currentMjPostId = id;
-  let feed = await localforage.getItem('mp_fix_manji_feed');
-  let post = feed.find(p => p.id === id);
-  if(!post) return;
-
-  const authorEl = document.getElementById('mdAuthor');
-  authorEl.innerHTML = `<div style="width:24px; height:24px; border-radius:50%; background:#eef4fa; color:#5c7094; display:grid; place-items:center; font-size:12px; border:1px solid #dce5f0;">${_esc(post.author).slice(0,1)}</div> ${_esc(post.author)}`;
-  authorEl.onclick = () => { document.getElementById('manjiDetailModal').style.display='none'; window._openManjiProfile(post.author); };
-
-  const imgEl = document.getElementById('mdImage');
-  if(post.imgUrl) { imgEl.src = post.imgUrl; imgEl.style.display = 'block'; } 
-  else { imgEl.style.display = 'none'; }
-
-  document.getElementById('mdTitle').textContent = post.title;
-  document.getElementById('mdContent').textContent = post.content;
-  
-  // 🌟 重新渲染丢失的神仙评论区！
-  const comments = post.comments || [];
-  document.getElementById('mdCommentCount').textContent = comments.length;
-  document.getElementById('mdComments').innerHTML = comments.map(c => `
-    <div style="display:flex; gap:10px;">
-      <div onclick="document.getElementById('manjiDetailModal').style.display='none'; window._openManjiProfile('${_esc(c.user)}')" style="width:32px; height:32px; border-radius:50%; background:#eef4fa; color:#5c7094; display:grid; place-items:center; font-weight:bold; font-size:14px; border:1px solid #dce5f0; flex-shrink:0; cursor:pointer;">${_esc(c.user).slice(0,1)}</div>
-      <div style="flex:1; border-bottom:1px solid #eef4fa; padding-bottom:12px;">
-        <div style="font-size:12px; color:#7a86a8; font-weight:bold; margin-bottom:4px;">${_esc(c.user)}</div>
-        <div style="font-size:14px; color:#3d4a6a; line-height:1.5;">${_esc(c.text)}</div>
-      </div>
-    </div>
-  `).join('') || '<div style="font-size:12px; color:#a0aaba; text-align:center; padding:20px 0;">快来留下神仙评论吧~</div>';
-
-  const likeColor = post.isLiked ? '#b57b7b' : '#5c7094';
-  const likeFill = post.isLiked ? '#b57b7b' : 'none';
-  const favColor = post.isFaved ? '#b57b7b' : '#5c7094';
-  const favFill = post.isFaved ? '#b57b7b' : 'none';
-
-  const svgHeart = `<svg viewBox="0 0 24 24" style="width:20px; height:20px; stroke:${likeColor}; fill:${likeFill}; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
-  const svgFav = `<svg viewBox="0 0 24 24" style="width:20px; height:20px; stroke:${favColor}; fill:${favFill}; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`;
-
-  document.getElementById('mdActions').innerHTML = `
-    <div onclick="window._toggleManjiAction('${post.id}', 'like')" style="display:flex; align-items:center; gap:4px; cursor:pointer; color:${likeColor}; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'">${svgHeart} ${post.likes||0}</div>
-    <div onclick="window._toggleManjiAction('${post.id}', 'fav')" style="display:flex; align-items:center; gap:4px; cursor:pointer; color:${favColor}; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'">${svgFav}</div>
-  `;
-
-  document.getElementById('mdSendCmtBtn').onclick = () => window._sendManjiComment();
-  document.getElementById('manjiDetailModal').style.display = 'flex';
-};
-
-window._toggleManjiAction = async function(id, type, e) {
-  if(e) e.stopPropagation();
-  let feed = await localforage.getItem('mp_fix_manji_feed');
-  let post = feed.find(p => p.id === id);
-  if(post) {
-    if(type === 'like') { post.isLiked = !post.isLiked; post.likes = (post.likes || 0) + (post.isLiked ? 1 : -1); } 
-    else if(type === 'fav') { post.isFaved = !post.isFaved; }
-    await localforage.setItem('mp_fix_manji_feed', feed);
-    
-    if(document.getElementById('manjiViewProfile').style.display === 'flex') window._renderManjiFeed(feed.filter(p => p.author === _currentMjProfileName), 'mpFeedBox');
-    else window._renderManjiFeed(feed, 'manjiFeedBox');
-    
-    if(document.getElementById('manjiDetailModal').style.display === 'flex') window._openManjiDetail(id);
-  }
-};
-
-window._sendManjiComment = async function() {
-  const input = document.getElementById('mdCommentInput');
-  const text = input.value.trim();
-  if(!text || !_currentMjPostId) return;
-
-  let feed = await localforage.getItem('mp_fix_manji_feed');
-  let post = feed.find(p => p.id === _currentMjPostId);
-  if(!post) return;
-  
-  let meData = { name: '我' };
-  try { meData = JSON.parse(localStorage.getItem('mp_fix_me')) || {name: '我'}; } catch(err){}
-
-  if(!post.comments) post.comments = [];
-  post.comments.push({ user: meData.name, text: text });
-  await localforage.setItem('mp_fix_manji_feed', feed);
-  
-  input.value = '';
-  window._openManjiDetail(_currentMjPostId); 
-
-  // 触发男主回怼
-  setTimeout(async () => {
-    const contacts = window.getContacts ? window.getContacts() : [];
-    const npc = contacts.find(c => !c.isGroup) || {name: '神秘人', persona: '高冷'};
-    const sysPrompt = `玩家（${meData.name}）刚刚在一篇帖子（标题：${post.title}）下评论：“${text}”。请你扮演 ${npc.name}（人设：${npc.persona}）回复玩家。返回JSON：{"comments":[{"user":"名字","text":"回复内容"}]}`;
-    try {
-      const out = await callApi([{role:'system', content:sysPrompt}, {role:'user', content:'立刻生成互动评论！'}]);
-      const match = out.match(/\{[\s\S]*\}/);
-      if(match) {
-        const data = JSON.parse(match[0]);
-        if(data.comments && data.comments.length > 0) {
-          let updatedFeed = await localforage.getItem('mp_fix_manji_feed');
-          let updatedPost = updatedFeed.find(p => p.id === _currentMjPostId);
-          data.comments.forEach(c => updatedPost.comments.push({ user: c.user, text: c.text }));
-          await localforage.setItem('mp_fix_manji_feed', updatedFeed);
-          if(_currentMjPostId === updatedPost.id) window._openManjiDetail(_currentMjPostId);
-        }
-      }
-    } catch(err) {}
-  }, 2000);
-};
-
-window._publishManjiPost = async function() {
-  const title = document.getElementById('mjPubTitle').value.trim();
-  const content = document.getElementById('mjPubContent').value.trim();
-  if(!title && !content) return alert('宝宝，总得写点什么吧~');
-
-  let meData = { name: '我' };
-  try { meData = JSON.parse(localStorage.getItem('mp_fix_me')) || {name: '我'}; } catch(err){}
-
-  const newPost = {
-    id: 'mj_' + Date.now(),
-    title: title || '日常分享',
-    content: content,
-    author: meData.name,
-    imgUrl: '', 
-    likes: 0,
-    isLiked: false,
-    isFaved: false,
-    time: Date.now(),
-    comments: []
-  };
-
-  let feed = await localforage.getItem('mp_fix_manji_feed') || [];
-  feed.unshift(newPost);
-  await localforage.setItem('mp_fix_manji_feed', feed);
-  
-  document.getElementById('mjPubTitle').value = '';
-  document.getElementById('mjPubContent').value = '';
-  document.getElementById('manjiPublishModal').style.display = 'none';
-  
-  if(document.getElementById('manjiViewProfile').style.display === 'flex') window._renderManjiFeed(feed.filter(p => p.author === _currentMjProfileName), 'mpFeedBox');
-  else window._renderManjiFeed(feed, 'manjiFeedBox');
-};
-
-// 🌟 纯净老婆专属 API 解析器
-window._fetchNekosUrl = async function(type) {
-  try {
-    let endpoint = 'husbando';
-    if(type === 'girl') endpoint = 'waifu';
-    if(type === 'pet') endpoint = 'neko';
-    if(type === 'landscape') return `https://picsum.photos/seed/${Math.random()}/400/400`;
-    if(type === 'food') return `https://source.unsplash.com/random/400x400/?food&sig=${Math.random()}`;
-
-    const res = await fetch(`https://nekos.best/api/v2/${endpoint}`);
-    const data = await res.json();
-    if(data && data.results && data.results.length > 0) return data.results[0].url;
-    return `https://picsum.photos/seed/${Math.random()}/400/400`;
-  } catch(e) {
-    return `https://picsum.photos/seed/${Math.random()}/400/400`;
-  }
-};
-
-window._generateManjiFeed = async function() {
-  const box = document.getElementById('manjiFeedBox');
-  box.innerHTML = '<div style="text-align:center; padding:40px 0; color:#7a86a8; font-size:12px; width:100%; column-span: all;">正在穿透次元壁，抓取绝美网图与神仙评论...</div>';
-  
-  // 🌟 强迫 AI 必须生成 comments 数组！
-  const sysPrompt = "你是一个温暖治愈的社区主理人。请随机生成8条路人甲乙丙丁的帖子。内容极具生活气息！包含：title, content, author, imageTag(必须从以下选一: food, landscape, girl, boy, pet, none), likes(50-5000), comments(包含8-15条互相回复的真实活人评论)。返回纯JSON数组格式！";
-  
-  try {
-    const out = await callApi([{role:'system', content:sysPrompt}, {role:'user', content:'立刻生成！必须带comments数组！'}]);
-    const match = out.match(/\[[\s\S]*\]/);
-    if(!match) throw new Error("AI 脑电波异常");
-    const data = JSON.parse(match[0]);
-
-    for(let post of data) {
-      if(post.imageTag && post.imageTag !== 'none') {
-        post.imgUrl = await window._fetchNekosUrl(post.imageTag);
-      }
-      post.id = 'mj_' + Date.now() + Math.random();
-      post.isLiked = false;
-      post.isFaved = false;
-      if(!post.comments) post.comments = []; // 兜底防空
-    }
-    
-    await localforage.setItem('mp_fix_manji_feed', data); 
-    window._renderManjiFeed(data, 'manjiFeedBox');
-  } catch(e) {
-    box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#b57b7b; font-size:12px; width:100%; column-span: all;">抓取失败啦宝宝<br><br><span style="font-size:10px; opacity:0.8;">死因追踪：${e.message}</span></div>`;
-  }
-};
-</script>
   <div id="msgFloatLayer" class="float-layer hidden">
     <div id="msgFloatMenu" class="float-menu">
       <!-- 🌟 蓝色高定：完美融合网格的初雪海盐蓝楼层罗盘 -->
@@ -11101,12 +10777,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if(!iconBg || !input) return;
 
       const savedData = await localforage.getItem(storageKey);
-      if(savedData) {
-        iconBg.style.backgroundImage = `url(${savedData})`;
-        // 🌟 蓝色暴力美学：不管浏览器怎么想，直接物理抹杀默认 SVG！
-        const svg = iconBg.querySelector('svg');
-        if(svg) svg.style.display = 'none';
-      }
+      if(savedData) iconBg.style.backgroundImage = `url(${savedData})`;
 
       let pressTimer;
       let isLongPress = false;
@@ -11148,17 +10819,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
           const imgData = await readImageSafe(f);
           iconBg.style.backgroundImage = `url(${imgData})`;
-          // 🌟 上传新图后，再次物理抹杀 SVG！
-          const svg = iconBg.querySelector('svg');
-          if(svg) svg.style.display = 'none';
-          
           await localforage.setItem(storageKey, imgData);
         } catch(err) { alert('图标上传失败：' + err.message); }
         finally { e.target.value = ''; isLongPress = false; }
       });
     };
 
-    const icons = ['api', 'font', 'phone', 'theme', 'wx', 'wb', 'study','realmIf', 'manji'];
+    const icons = ['api', 'font', 'phone', 'theme', 'wx', 'wb', 'study'];
     for(const name of icons) {
       bindIconUpload(`icon_${name}`, `up_icon_${name}`, `mp_icon_${name}`);
     }
@@ -12635,6 +12302,284 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
        if(lbl) { lbl.textContent = '默认'; lbl.style.color = '#a5cfff'; }
     });
   }; 
+  (function() {
+  const K_XHS_POSTS = 'mp_fix_xhs_posts';
+  
+  // 外挂内存抓取
+  async function getXhsPosts() { return (await localforage.getItem(K_XHS_POSTS)) || []; }
+  async function setXhsPosts(data) { await localforage.setItem(K_XHS_POSTS, data); window._renderXhsFeed(); }
+
+  // 渲染瀑布流
+  window._renderXhsFeed = async function() {
+    const posts = await getXhsPosts();
+    const box = document.getElementById('xhsWaterfall');
+    if(!box) return;
+    if(posts.length === 0) {
+      box.innerHTML = `<div style="text-align:center; padding:50px 0; color:#a0aaba; font-size:12px; column-span:all;">社区空空如也<br>快去发布第一条灵感碎片吧</div>`;
+      return;
+    }
+    
+    box.innerHTML = posts.map(p => `
+      <div class="xhs-card" onclick="window._openXhsDetail('${p.id}')">
+        ${p.img ? `<img class="xhs-img" src="${p.img}">` : ''}
+        <div class="xhs-title">${safeEsc(p.text)}</div>
+        <div class="xhs-footer">
+          <div class="xhs-user">
+            <img class="xhs-avatar" src="${p.authorAvatar || 'https://via.placeholder.com/40'}">
+            <div class="xhs-name">${safeEsc(p.authorName)}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; font-size:11px; color:#5c7094;">
+            <svg class="xhs-like-svg" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            ${p.likes?.length || 0}
+          </div>
+        </div>
+      </div>
+    `).join('');
+  };
+
+  // 触发 AI 的高能修罗场生态引擎
+  window._triggerXhsAI = async function(postId) {
+    const posts = await getXhsPosts();
+    const post = posts.find(x => x.id === postId);
+    if(!post) return;
+
+    const contacts = window.getContacts() || [];
+    const maleLeads = contacts.filter(c => !c.isGroup).map(c => `- ${c.name}：${c.persona}`).join('\\n');
+    
+    const sysPrompt = `你现在是高级社交网络模拟引擎。玩家发了一篇帖子：“${post.text}”。
+当前系统时间：${getSysTimeStr()}。
+【核心要求】：
+1. 你的任务是生成这篇帖子下的【真实活人评论区】。
+2. 男主是否出现，必须经过【性格阈值过滤】！结合以下男主设定：
+${maleLeads}
+如果某个男主性格高冷、工作狂、老干部，他极大概率不会评论，直接跳过他！如果性格粘人、吃醋、海王，才会秒回。严禁所有人像复读机一样全员到齐！
+3. 必须生成 5~8 个【野生路人网友】的评论。名字要有网感（如：熬夜敲代码的狗、纯爱战神），语气要带梗、接地气，有夸的、有吐槽的、甚至有杠精。
+4. 【格式铁律】：严格输出纯 JSON 数组，不要 markdown！
+[
+  { "name": "评论者名字", "isNpc": true(路人)或false(男主), "text": "评论内容", "ip": "IP属地" }
+]`;
+
+    try {
+      const out = await window.callApi([ { role: 'system', content: sysPrompt }, { role: 'user', content: '立刻生成评论区！' } ]);
+      const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
+      const comments = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
+      
+      comments.forEach((c, idx) => {
+        setTimeout(async () => {
+          const currentPosts = await getXhsPosts();
+          const target = currentPosts.find(x => x.id === postId);
+          if(target) {target.comments = target.comments || [];
+            target.comments.push({
+              id: 'cmt_' + Date.now() + idx,
+              authorName: c.name,
+              isNpc: c.isNpc,
+              text: c.text,
+              ip: c.ip || '未知',
+              time: Date.now()
+            });
+            // 静默写入外挂内存
+            await setXhsPosts(currentPosts);
+            
+            // 如果老婆正好停留在详情页，瞬间让评论像弹幕一样浮现！
+            if (window._currentXhsPostId === postId && typeof window._renderXhsDetail === 'function') {
+              window._renderXhsDetail();
+            }
+          }
+        }, 3000 + (idx * (Math.random() * 4000 + 2000))); // 阶梯式延迟，极致活人感
+      });
+    } catch(e) { console.log('小红书生态引擎推演失败:', e); }
+  };
+
+  // 🌟 详情页与评论舱引擎
+  window._currentXhsPostId = null;
+
+  window._openXhsDetail = async function(postId) {
+    window._currentXhsPostId = postId;
+    const posts = await getXhsPosts();
+    const post = posts.find(x => x.id === postId);
+    if(!post) return;
+
+    let detailModal = document.getElementById('xhsDetailModal');
+    if (!detailModal) {
+      const modalHtml = `
+      <div id="xhsDetailModal" class="modal" style="z-index: 10000;">
+        <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; display:flex; flex-direction:column; padding:0; overflow:hidden; height:90dvh;">
+          
+          <div style="padding:12px 16px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
+            <button class="btn" onclick="document.getElementById('xhsDetailModal').classList.remove('active'); window._currentXhsPostId=null;" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:32px; height:32px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0;">‹</button>
+            <div id="xhsDetailAuthor" style="display:flex; align-items:center; gap:8px;"></div>
+            <!-- 🌟 绝美的线性分享按钮 -->
+            <button class="btn" onclick="window._openXhsShareDrawer()" style="background:transparent; border:none; padding:0; color:#5c7094; cursor:pointer;">
+              <svg viewBox="0 0 24 24" style="width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            </button>
+          </div>
+
+          <div id="xhsDetailScroll" style="flex:1; overflow-y:auto; padding-bottom:20px; background:linear-gradient(180deg, #f4f6fb, #eef4fa);">
+            <div id="xhsDetailContent"></div>
+            <div style="width:32px; height:4px; background:#dce5f0; border-radius:2px; margin:20px auto;"></div>
+            <div id="xhsDetailComments" style="padding:0 16px;"></div>
+          </div>
+
+          <!-- 底部高定海盐蓝输入舱 -->
+          <div style="padding:12px 16px calc(12px + var(--safe-bottom)); background:rgba(250,252,255,0.9); border-top:1px solid #dce5f0; display:flex; gap:10px; align-items:center;">
+            <input id="xhsCommentInput" class="input" placeholder="说点什么吧..." style="flex:1; background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:20px; padding:10px 16px; font-size:14px; color:#5c7094;">
+            <button class="btn p" onclick="window._sendXhsComment()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:20px; padding:0 18px; font-weight:bold; box-shadow:none;">发送</button>
+          </div>
+
+        </div>
+      </div>
+      
+      <!-- 🌟 跨次元转发抽屉 -->
+      <div id="xhsShareDrawer" style="display:none; position:fixed; bottom:0; left:0; right:0; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border-top:1px solid #dce5f0; border-radius:24px 24px 0 0; padding:20px 16px calc(20px + var(--safe-bottom)); z-index:10001; box-shadow:0 -10px 40px rgba(92,112,148,0.15); flex-direction:column; transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <b style="color:#3d4a6a; font-size:15px;">转发给...</b>
+          <span onclick="document.getElementById('xhsShareDrawer').style.transform='translateY(100%)'; setTimeout(()=>document.getElementById('xhsShareDrawer').style.display='none',300);" style="color:#7a86a8; font-size:22px; cursor:pointer;">×</span>
+        </div>
+        <div id="xhsShareContacts" style="display:flex; overflow-x:auto; gap:16px; padding-bottom:10px; scrollbar-width:none;"></div>
+      </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+
+    window._renderXhsDetail();
+    document.getElementById('xhsDetailModal').classList.add('active');
+  };
+
+  window._renderXhsDetail = async function() {
+    if(!window._currentXhsPostId) return;
+    const posts = await getXhsPosts();
+    const post = posts.find(x => x.id === window._currentXhsPostId);
+    if(!post) return;
+
+    document.getElementById('xhsDetailAuthor').innerHTML = `
+      <img src="${post.authorAvatar || 'https://via.placeholder.com/40'}" style="width:28px; height:28px; border-radius:50%; object-fit:cover; border:1px solid #dce5f0;">
+      <span style="font-size:14px; font-weight:800; color:#3d4a6a;">${safeEsc(post.authorName)}</span>
+    `;
+
+    const imgHtml = post.img ? `<img src="${post.img}" style="width:100%; object-fit:cover; border-radius:0 0 16px 16px;">` : '';
+    document.getElementById('xhsDetailContent').innerHTML = `
+      ${imgHtml}
+      <div style="padding:20px 16px 0 16px;">
+        <div style="font-size:16px; color:#3d4a6a; line-height:1.7; white-space:pre-wrap; word-break:break-word;">${safeEsc(post.text)}</div>
+        <div style="font-size:11px; color:#a0aaba; margin-top:12px;">发布于 ${window._formatTimeAgo ? window._formatTimeAgo(post.time) : '刚刚'}</div>
+      </div>
+    `;
+
+    const cmtBox = document.getElementById('xhsDetailComments');
+    if(!post.comments || post.comments.length === 0) {
+      cmtBox.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:12px; padding:20px 0;">还没有人评论，快来抢沙发吧~</div>`;
+    } else {
+      cmtBox.innerHTML = post.comments.map(c => `
+        <div style="display:flex; gap:12px; margin-bottom:16px;">
+          <img src="${c.avatar || 'https://api.dicebear.com/7.x/notionists/svg?seed='+encodeURIComponent(c.authorName)}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; flex-shrink:0; background:#eef4fa;">
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline;">
+              <span style="font-size:12px; font-weight:800; color:#7a86a8;">${safeEsc(c.authorName)}</span>
+              <span style="font-size:10px; color:#cdd7e8;">IP: ${safeEsc(c.ip || '未知')}</span>
+            </div>
+            <div style="font-size:14px; color:#3d4a6a; margin-top:4px; line-height:1.5;">${safeEsc(c.text)}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+  };
+
+  // 老婆亲自下场评论
+  window._sendXhsComment = async function() {
+    const text = document.getElementById('xhsCommentInput').value.trim();
+    if(!text || !window._currentXhsPostId) return;
+
+    const meData = window.getMe ? window.getMe() : {};
+    const posts = await getXhsPosts();
+    const post = posts.find(x => x.id === window._currentXhsPostId);
+    if(!post) return;
+
+    post.comments = post.comments || [];
+    post.comments.push({
+      id: 'cmt_' + Date.now(),
+      authorName: meData.name || '我',
+      avatar: meData.avatar || '',
+      isNpc: false,
+      text: text,
+      ip: '本地',
+      time: Date.now()
+    });
+
+    await setXhsPosts(posts);
+    document.getElementById('xhsCommentInput').value = '';
+    window._renderXhsDetail();
+
+    // 🌟 如果是男主发的贴，你评论了，底层雷达立刻唤醒他秒回！
+    const contacts = window.getContacts() || [];
+    const authorIsMaleLead = contacts.some(c => c.name === post.authorName && !c.isGroup);
+    if (authorIsMaleLead) {
+       // 这里可以调用原有的 _replyMomentCommentAI 逻辑，或者单独写一个通知
+       console.log(`[底层雷达]：老婆评论了 ${post.authorName} 的帖子，正在唤醒他的修罗场神经元...`);
+    }
+  };
+
+  // 🌟 跨次元转发：呼出联系人抽屉
+  window._openXhsShareDrawer = function() {
+    const contacts = (window.getContacts() || []).filter(c => !c.isGroup);
+    const drawer = document.getElementById('xhsShareDrawer');
+    const box = document.getElementById('xhsShareContacts');
+    
+    if(contacts.length === 0) {
+      box.innerHTML = `<div style="font-size:12px; color:#a0aaba;">通讯录空空如也~</div>`;
+    } else {
+      box.innerHTML = contacts.map(c => `
+        <div onclick="window._sharePostToChat('${c.id}')" style="display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; min-width:56px;">
+          <img src="${c.avatar || 'https://via.placeholder.com/56'}" style="width:50px; height:50px; border-radius:16px; object-fit:cover; border:1px solid #dce5f0;">
+          <span style="font-size:11px; color:#5c7094; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">${safeEsc(c.name)}</span>
+        </div>
+      `).join('');
+    }
+    
+    drawer.style.display = 'flex';
+    setTimeout(() => drawer.style.transform = 'translateY(0)', 10);
+  };
+
+  // 🌟 跨次元转发：将极轻量的标记砸进聊天框
+  window._sharePostToChat = async function(chatId) {
+    if(!window._currentXhsPostId) return;
+    const posts = await getXhsPosts();
+    const post = posts.find(x => x.id === window._currentXhsPostId);
+    if(!post) return;
+
+    // 生成绝美的内联 HTML 引流卡片，插入聊天记录！
+    const cardHtml = `
+      <div class="card-xhs-share" style="background:rgba(250,252,255,0.85); border:1px solid #dce5f0; border-radius:12px; padding:12px; width:220px; box-shadow:0 4px 12px rgba(92,112,148,0.04); cursor:pointer;">
+        <div style="font-size:10px; color:#a5cfff; font-weight:800; margin-bottom:6px; display:flex; align-items:center; gap:4px;">
+          <svg viewBox="0 0 24 24" style="width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>灵感碎片
+        </div>
+        <div style="font-size:13px; color:#3d4a6a; font-weight:bold; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.5;">${safeEsc(post.text)}</div>
+        <div style="font-size:10px; color:#7a86a8; margin-top:8px;">By: ${safeEsc(post.authorName)}</div>
+      </div>
+    `;
+
+    const arr = window.getChatArr(chatId) || [];
+    arr.push({ id: 'm_' + Date.now(), role: 'user', text: cardHtml, time: Date.now(), stored: true });
+    window.setChatArr(chatId, arr);
+    
+    // 收起抽屉并提示
+    document.getElementById('xhsShareDrawer').style.transform = 'translateY(100%)';
+    setTimeout(() => document.getElementById('xhsShareDrawer').style.display = 'none', 300);
+    
+    alert('✨ 笔记已成功转发给TA！快去聊天框看看TA的反应吧！');
+    
+    // 如果当前正在那个聊天里，瞬间重绘并拉到底部
+    if (window.currentId === chatId && typeof window.renderChat === 'function') {
+      window.renderChat();
+    }
+    
+    // 后台静默唤醒 AI 神经元，让它对这篇笔记做出评价
+    const hiddenPrompt = `【系统指令】：玩家刚刚向你转发了一篇小红书笔记，内容是：“${post.text}”。请你根据你的人设，自然地对这篇笔记发表看法。`;
+    if(typeof window._sendToAI === 'function') {
+      window._sendToAI(chatId, hiddenPrompt, true);
+    }
+  };
+
+})();
 </script>
   
   <!-- 🌟 蓝色高定：黑名单拦截记录弹窗 -->
@@ -12650,6 +12595,5 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
       <div id="interceptList" style="flex:1; overflow-y:auto; padding:16px; background:rgba(255,255,255,0.5); display:flex; flex-direction:column; gap:12px;"></div>
     </div>
   </div>
-  
 </body>
 </html>
