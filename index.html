@@ -2098,17 +2098,29 @@ body {
 .card-camera .cam-time {
   font-size: 10px !important; color: #7a86a8 !important;
   font-family: ui-monospace, 'Times New Roman', serif !important;
-  letter-spacing: 1px !important; font-weight: bold !important;
-     .xhs-card { break-inside: avoid; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid #dce5f0; border-radius: 16px; margin-bottom: 10px; overflow: hidden; box-shadow: 0 4px 16px rgba(92,112,148,0.03); transition: transform 0.2s; cursor: pointer; }
-  .xhs-card:active { transform: scale(0.97); }
-  .xhs-img { width: 100%; object-fit: cover; border-bottom: 1px solid rgba(220,229,240,0.5); }
-  .xhs-title { font-size: 13px; font-weight: 800; color: #3d4a6a; margin-bottom: 6px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; padding: 10px 10px 0 10px; }
-  .xhs-footer { display: flex; justify-content: space-between; align-items: center; padding: 0 10px 10px 10px; }
-  .xhs-user { display: flex; align-items: center; gap: 4px; overflow: hidden; }
-  .xhs-avatar { width: 18px; height: 18px; border-radius: 50%; border: 1px solid #dce5f0; object-fit: cover; flex-shrink: 0; }
-  .xhs-name { font-size: 10px; color: #7a86a8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
-  .xhs-like-svg { width: 14px; height: 14px; stroke: #5c7094; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: all 0.2s; }
-  .xhs-card.liked .xhs-like-svg { fill: #b57b7b; stroke: #b57b7b; }                                         }
+  letter-spacing: 1px !important; font-weight: bold !important;}
+    .xhs-card { 
+  break-inside: avoid; background: rgba(255,255,255,0.75); 
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); 
+  border: 1px solid rgba(220,229,240,0.8); border-radius: 16px; 
+  margin-bottom: 12px; overflow: hidden; 
+  box-shadow: 0 4px 16px rgba(92,112,148,0.04); 
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); 
+  cursor: pointer; 
+}
+.xhs-card:active { transform: scale(0.96); background: rgba(238,244,250,0.9); }
+.xhs-img { width: 100%; object-fit: cover; max-height: 240px; border-bottom: 1px solid rgba(220,229,240,0.5); }
+.xhs-title { 
+  font-size: 13px; font-weight: 800; color: #3d4a6a; margin-bottom: 8px; line-height: 1.6; 
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; 
+  overflow: hidden; padding: 12px 12px 0 12px; text-align: justify;
+}
+.xhs-footer { display: flex; justify-content: space-between; align-items: center; padding: 0 12px 12px 12px; }
+.xhs-user { display: flex; align-items: center; gap: 6px; overflow: hidden; flex: 1; }
+.xhs-avatar { width: 20px; height: 20px; border-radius: 50%; border: 1px solid #dce5f0; object-fit: cover; flex-shrink: 0; background: #eef4fa; }
+.xhs-name { font-size: 11px; color: #7a86a8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.xhs-like-svg { width: 14px; height: 14px; stroke: #5c7094; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: all 0.2s; }
+.xhs-card.liked .xhs-like-svg { fill: #b57b7b; stroke: #b57b7b; }                                       }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
@@ -12343,422 +12355,7 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
        if(lbl) { lbl.textContent = '默认'; lbl.style.color = '#a5cfff'; }
     });
   }; 
-  (function() {
-  const K_XHS_POSTS = 'mp_fix_xhs_posts';
-  
-  // 外挂内存抓取
-  async function getXhsPosts() { return (await localforage.getItem(K_XHS_POSTS)) || []; }
-  async function setXhsPosts(data) { await localforage.setItem(K_XHS_POSTS, data); window._renderXhsFeed(); }
-
-  // 渲染瀑布流
-  window._renderXhsFeed = async function() {
-    const posts = await getXhsPosts();
-    const box = document.getElementById('xhsWaterfall');
-    if(!box) return;
-    if(posts.length === 0) {
-      box.innerHTML = `<div style="text-align:center; padding:50px 0; color:#a0aaba; font-size:12px; column-span:all;">社区空空如也<br>快去发布第一条灵感碎片吧</div>`;
-      return;
-    }
-    
-    box.innerHTML = posts.map(p => `
-      <div class="xhs-card" onclick="window._openXhsDetail('${p.id}')">
-        ${p.img ? `<img class="xhs-img" src="${p.img}">` : ''}
-        <div class="xhs-title">${safeEsc(p.text)}</div>
-        <div class="xhs-footer">
-          <div class="xhs-user">
-            <img class="xhs-avatar" src="${p.authorAvatar || 'https://via.placeholder.com/40'}">
-            <div class="xhs-name">${safeEsc(p.authorName)}</div>
-          </div>
-          <div style="display:flex; align-items:center; gap:4px; font-size:11px; color:#5c7094;">
-            <svg class="xhs-like-svg" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-            ${p.likes?.length || 0}
-          </div>
-        </div>
-      </div>
-    `).join('');
-  };
-
-  // 触发 AI 的高能修罗场生态引擎
-  window._triggerXhsAI = async function(postId) {
-    const posts = await getXhsPosts();
-    const post = posts.find(x => x.id === postId);
-    if(!post) return;
-
-    const contacts = window.getContacts() || [];
-    const maleLeads = contacts.filter(c => !c.isGroup).map(c => `- ${c.name}：${c.persona}`).join('\\n');
-    
-    const sysPrompt = `你现在是高级社交网络模拟引擎。玩家发了一篇帖子：“${post.text}”。
-当前系统时间：${getSysTimeStr()}。
-【核心要求】：
-1. 你的任务是生成这篇帖子下的【真实活人评论区】。
-2. 男主是否出现，必须经过【性格阈值过滤】！结合以下男主设定：
-${maleLeads}
-如果某个男主性格高冷、工作狂、老干部，他极大概率不会评论，直接跳过他！如果性格粘人、吃醋、海王，才会秒回。严禁所有人像复读机一样全员到齐！
-3. 必须生成 5~8 个【野生路人网友】的评论。名字要有网感（如：熬夜敲代码的狗、纯爱战神），语气要带梗、接地气，有夸的、有吐槽的、甚至有杠精。
-4. 【格式铁律】：严格输出纯 JSON 数组，不要 markdown！
-[
-  { "name": "评论者名字", "isNpc": true(路人)或false(男主), "text": "评论内容", "ip": "IP属地" }
-]`;
-
-    try {
-      const out = await window.callApi([ { role: 'system', content: sysPrompt }, { role: 'user', content: '立刻生成评论区！' } ]);
-      const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
-      const comments = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
-      
-      comments.forEach((c, idx) => {
-        setTimeout(async () => {
-          const currentPosts = await getXhsPosts();
-          const target = currentPosts.find(x => x.id === postId);
-          if(target) {target.comments = target.comments || [];
-            target.comments.push({
-              id: 'cmt_' + Date.now() + idx,
-              authorName: c.name,
-              isNpc: c.isNpc,
-              text: c.text,
-              ip: c.ip || '未知',
-              time: Date.now()
-            });
-            // 静默写入外挂内存
-            await setXhsPosts(currentPosts);
-            
-            // 如果老婆正好停留在详情页，瞬间让评论像弹幕一样浮现！
-            if (window._currentXhsPostId === postId && typeof window._renderXhsDetail === 'function') {
-              window._renderXhsDetail();
-            }
-          }
-        }, 3000 + (idx * (Math.random() * 4000 + 2000))); // 阶梯式延迟，极致活人感
-      });
-    } catch(e) { console.log('小红书生态引擎推演失败:', e); }
-  };
-
-  // 🌟 详情页与评论舱引擎
-  window._currentXhsPostId = null;
-
-  window._openXhsDetail = async function(postId) {
-    window._currentXhsPostId = postId;
-    const posts = await getXhsPosts();
-    const post = posts.find(x => x.id === postId);
-    if(!post) return;
-
-    let detailModal = document.getElementById('xhsDetailModal');
-    if (!detailModal) {
-      const modalHtml = `
-      <div id="xhsDetailModal" class="modal" style="z-index: 10000;">
-        <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; display:flex; flex-direction:column; padding:0; overflow:hidden; height:90dvh;">
-          
-          <div style="padding:12px 16px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
-            <button class="btn" onclick="document.getElementById('xhsDetailModal').classList.remove('active'); window._currentXhsPostId=null;" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:32px; height:32px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0;">‹</button>
-            <div id="xhsDetailAuthor" style="display:flex; align-items:center; gap:8px;"></div>
-            <!-- 🌟 绝美的线性分享按钮 -->
-            <button class="btn" onclick="window._openXhsShareDrawer()" style="background:transparent; border:none; padding:0; color:#5c7094; cursor:pointer;">
-              <svg viewBox="0 0 24 24" style="width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-            </button>
-          </div>
-
-          <div id="xhsDetailScroll" style="flex:1; overflow-y:auto; padding-bottom:20px; background:linear-gradient(180deg, #f4f6fb, #eef4fa);">
-            <div id="xhsDetailContent"></div>
-            <div style="width:32px; height:4px; background:#dce5f0; border-radius:2px; margin:20px auto;"></div>
-            <div id="xhsDetailComments" style="padding:0 16px;"></div>
-          </div>
-
-          <!-- 底部高定海盐蓝输入舱 -->
-          <div style="padding:12px 16px calc(12px + var(--safe-bottom)); background:rgba(250,252,255,0.9); border-top:1px solid #dce5f0; display:flex; gap:10px; align-items:center;">
-            <input id="xhsCommentInput" class="input" placeholder="说点什么吧..." style="flex:1; background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:20px; padding:10px 16px; font-size:14px; color:#5c7094;">
-            <button class="btn p" onclick="window._sendXhsComment()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:20px; padding:0 18px; font-weight:bold; box-shadow:none;">发送</button>
-          </div>
-
-        </div>
-      </div>
-      
-      <!-- 🌟 跨次元转发抽屉 -->
-      <div id="xhsShareDrawer" style="display:none; position:fixed; bottom:0; left:0; right:0; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border-top:1px solid #dce5f0; border-radius:24px 24px 0 0; padding:20px 16px calc(20px + var(--safe-bottom)); z-index:10001; box-shadow:0 -10px 40px rgba(92,112,148,0.15); flex-direction:column; transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-          <b style="color:#3d4a6a; font-size:15px;">转发给...</b>
-          <span onclick="document.getElementById('xhsShareDrawer').style.transform='translateY(100%)'; setTimeout(()=>document.getElementById('xhsShareDrawer').style.display='none',300);" style="color:#7a86a8; font-size:22px; cursor:pointer;">×</span>
-        </div>
-        <div id="xhsShareContacts" style="display:flex; overflow-x:auto; gap:16px; padding-bottom:10px; scrollbar-width:none;"></div>
-      </div>
-      `;
-      document.body.insertAdjacentHTML('beforeend', modalHtml);
-    }
-
-    window._renderXhsDetail();
-    document.getElementById('xhsDetailModal').classList.add('active');
-  };
-
-  window._renderXhsDetail = async function() {
-    if(!window._currentXhsPostId) return;
-    const posts = await getXhsPosts();
-    const post = posts.find(x => x.id === window._currentXhsPostId);
-    if(!post) return;
-
-    document.getElementById('xhsDetailAuthor').innerHTML = `
-      <img src="${post.authorAvatar || 'https://via.placeholder.com/40'}" style="width:28px; height:28px; border-radius:50%; object-fit:cover; border:1px solid #dce5f0;">
-      <span style="font-size:14px; font-weight:800; color:#3d4a6a;">${safeEsc(post.authorName)}</span>
-    `;
-
-    const imgHtml = post.img ? `<img src="${post.img}" style="width:100%; object-fit:cover; border-radius:0 0 16px 16px;">` : '';
-    document.getElementById('xhsDetailContent').innerHTML = `
-      ${imgHtml}
-      <div style="padding:20px 16px 0 16px;">
-        <div style="font-size:16px; color:#3d4a6a; line-height:1.7; white-space:pre-wrap; word-break:break-word;">${safeEsc(post.text)}</div>
-        <div style="font-size:11px; color:#a0aaba; margin-top:12px;">发布于 ${window._formatTimeAgo ? window._formatTimeAgo(post.time) : '刚刚'}</div>
-      </div>
-    `;
-
-    const cmtBox = document.getElementById('xhsDetailComments');
-    if(!post.comments || post.comments.length === 0) {
-      cmtBox.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:12px; padding:20px 0;">还没有人评论，快来抢沙发吧~</div>`;
-    } else {
-      cmtBox.innerHTML = post.comments.map(c => `
-        <div style="display:flex; gap:12px; margin-bottom:16px;">
-          <img src="${c.avatar || 'https://api.dicebear.com/7.x/notionists/svg?seed='+encodeURIComponent(c.authorName)}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; flex-shrink:0; background:#eef4fa;">
-          <div style="flex:1; min-width:0;">
-            <div style="display:flex; justify-content:space-between; align-items:baseline;">
-              <span style="font-size:12px; font-weight:800; color:#7a86a8;">${safeEsc(c.authorName)}</span>
-              <span style="font-size:10px; color:#cdd7e8;">IP: ${safeEsc(c.ip || '未知')}</span>
-            </div>
-            <div style="font-size:14px; color:#3d4a6a; margin-top:4px; line-height:1.5;">${safeEsc(c.text)}</div>
-          </div>
-        </div>
-      `).join('');
-    }
-  };
-
-  // 老婆亲自下场评论
-  window._sendXhsComment = async function() {
-    const text = document.getElementById('xhsCommentInput').value.trim();
-    if(!text || !window._currentXhsPostId) return;
-
-    const meData = window.getMe ? window.getMe() : {};
-    const posts = await getXhsPosts();
-    const post = posts.find(x => x.id === window._currentXhsPostId);
-    if(!post) return;
-
-    post.comments = post.comments || [];
-    post.comments.push({
-      id: 'cmt_' + Date.now(),
-      authorName: meData.name || '我',
-      avatar: meData.avatar || '',
-      isNpc: false,
-      text: text,
-      ip: '本地',
-      time: Date.now()
-    });
-
-    await setXhsPosts(posts);
-    document.getElementById('xhsCommentInput').value = '';
-    window._renderXhsDetail();
-
-    // 🌟 如果是男主发的贴，你评论了，底层雷达立刻唤醒他秒回！
-    const contacts = window.getContacts() || [];
-    const authorIsMaleLead = contacts.some(c => c.name === post.authorName && !c.isGroup);
-    if (authorIsMaleLead) {
-       // 这里可以调用原有的 _replyMomentCommentAI 逻辑，或者单独写一个通知
-       console.log(`[底层雷达]：老婆评论了 ${post.authorName} 的帖子，正在唤醒他的修罗场神经元...`);
-    }
-  };
-
-  // 🌟 跨次元转发：呼出联系人抽屉
-  window._openXhsShareDrawer = function() {
-    const contacts = (window.getContacts() || []).filter(c => !c.isGroup);
-    const drawer = document.getElementById('xhsShareDrawer');
-    const box = document.getElementById('xhsShareContacts');
-    
-    if(contacts.length === 0) {
-      box.innerHTML = `<div style="font-size:12px; color:#a0aaba;">通讯录空空如也~</div>`;
-    } else {
-      box.innerHTML = contacts.map(c => `
-        <div onclick="window._sharePostToChat('${c.id}')" style="display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; min-width:56px;">
-          <img src="${c.avatar || 'https://via.placeholder.com/56'}" style="width:50px; height:50px; border-radius:16px; object-fit:cover; border:1px solid #dce5f0;">
-          <span style="font-size:11px; color:#5c7094; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">${safeEsc(c.name)}</span>
-        </div>
-      `).join('');
-    }
-    
-    drawer.style.display = 'flex';
-    setTimeout(() => drawer.style.transform = 'translateY(0)', 10);
-  };
-
-  // 🌟 跨次元转发：将极轻量的标记砸进聊天框
-  window._sharePostToChat = async function(chatId) {
-    if(!window._currentXhsPostId) return;
-    const posts = await getXhsPosts();
-    const post = posts.find(x => x.id === window._currentXhsPostId);
-    if(!post) return;
-
-    // 生成绝美的内联 HTML 引流卡片，插入聊天记录！
-    const cardHtml = `
-      <div class="card-xhs-share" style="background:rgba(250,252,255,0.85); border:1px solid #dce5f0; border-radius:12px; padding:12px; width:220px; box-shadow:0 4px 12px rgba(92,112,148,0.04); cursor:pointer;">
-        <div style="font-size:10px; color:#a5cfff; font-weight:800; margin-bottom:6px; display:flex; align-items:center; gap:4px;">
-          <svg viewBox="0 0 24 24" style="width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>灵感碎片
-        </div>
-        <div style="font-size:13px; color:#3d4a6a; font-weight:bold; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.5;">${safeEsc(post.text)}</div>
-        <div style="font-size:10px; color:#7a86a8; margin-top:8px;">By: ${safeEsc(post.authorName)}</div>
-      </div>
-    `;
-
-    const arr = window.getChatArr(chatId) || [];
-    arr.push({ id: 'm_' + Date.now(), role: 'user', text: cardHtml, time: Date.now(), stored: true });
-    window.setChatArr(chatId, arr);
-    
-    // 收起抽屉并提示
-    document.getElementById('xhsShareDrawer').style.transform = 'translateY(100%)';
-    setTimeout(() => document.getElementById('xhsShareDrawer').style.display = 'none', 300);
-    
-    alert('✨ 笔记已成功转发给TA！快去聊天框看看TA的反应吧！');
-    
-    // 如果当前正在那个聊天里，瞬间重绘并拉到底部
-    if (window.currentId === chatId && typeof window.renderChat === 'function') {
-      window.renderChat();
-    }
-    
-    // 后台静默唤醒 AI 神经元，让它对这篇笔记做出评价
-    const hiddenPrompt = `【系统指令】：玩家刚刚向你转发了一篇小红书笔记，内容是：“${post.text}”。请你根据你的人设，自然地对这篇笔记发表看法。`;
-    if(typeof window._sendToAI === 'function') {
-      window._sendToAI(chatId, hiddenPrompt, true);
-    }
-  };
-
-})();
-  (function() {
-  window._openXhsPublishModal = function() {
-    document.getElementById('xhsPublishModal').classList.add('active');
-  };
-
-  let xhsDraftImg = '';
-  document.getElementById('xhsImgFile').addEventListener('change', async (e) => {
-    const f = e.target.files?.[0];
-    if(!f) return;
-    try {
-      xhsDraftImg = await compressImage(f, false);
-      document.getElementById('xhsImgPreview').src = xhsDraftImg;
-      document.getElementById('xhsImgPreviewWrap').style.display = 'block';
-      document.getElementById('xhsAddImgBtn').style.display = 'none';
-    } catch(err) {
-      alert('图片处理失败：' + err.message);
-    } finally {
-      e.target.value = '';
-    }
-  });
-
-  window._clearXhsImg = function() {
-    xhsDraftImg = '';
-    document.getElementById('xhsImgPreview').src = '';
-    document.getElementById('xhsImgPreviewWrap').style.display = 'none';
-    document.getElementById('xhsAddImgBtn').style.display = 'grid';
-  };
-
-  window._publishMyXhsPost = async function() {
-    const text = document.getElementById('xhsInputText').value.trim();
-    if(!text && !xhsDraftImg) return alert('总得写点什么或者发张图吧，老婆！');
-    
-    const meData = window.getMe ? window.getMe() : {};
-    const posts = (await localforage.getItem('mp_fix_xhs_posts')) || [];
-    const newId = 'x_' + Date.now();
-    
-    posts.unshift({
-      id: newId,
-      authorName: meData.name || '我',
-      authorAvatar: meData.avatar || 'https://via.placeholder.com/120',
-      text: text,
-      img: xhsDraftImg || '',
-      time: Date.now(),
-      likes: [],
-      comments: []
-    });
-    
-    // 再次动用外挂内存，死死焊住你的每条笔记！
-    await localforage.setItem('mp_fix_xhs_posts', posts);
-    document.getElementById('xhsPublishModal').classList.remove('active');
-    document.getElementById('xhsInputText').value = '';
-    window._clearXhsImg();
-    if(window._renderXhsFeed) window._renderXhsFeed();
-    
-    // 唤醒底层雷达，让男主们立刻来盖楼！
-    setTimeout(() => { if(window._triggerXhsAI) window._triggerXhsAI(newId); }, 1500);
-  };
-
-  window._generateNpcXhsPost = async function() {
-    const contacts = window.getContacts() || [];
-    if(contacts.length === 0) return alert('宝宝，你还没加联系人呢！');
-    
-    const btn = document.getElementById('xhsRefreshBtn');
-    if(btn) { btn.textContent = '刷新中...'; btn.style.pointerEvents = 'none'; }
-    
-    try {
-      const maleLeads = contacts.filter(c => !c.isGroup);
-      const maleInfo = maleLeads.map(c => `- ${c.name}：${c.persona}`).join('\\n');
-      
-      const sysPrompt = `你现在是“灵感碎片”内容生成引擎。
-当前时间：${getSysTimeStr()}。
-【核心任务】：生成 1~2 篇高质量图文笔记。
-发布者必须从以下【已知角色（男主）】或你虚构的【野生路人网友】中随机选择。
-已知角色：
-${maleInfo}
-
-【图文铁律】：
-1. 笔记内容要极度贴合小红书风格：穿搭、探店、摄影、吐槽等。带适当的 Emoji 和 #话题标签。
-2. 必须生成一张极具氛围感的高级网图链接，从以下挑选：
-风景/建筑：https://source.unsplash.com/random/600x800/?city,architecture
-咖啡/探店：https://source.unsplash.com/random/600x800/?coffee,cafe
-萌宠：https://source.unsplash.com/random/600x800/?cat,dog
-穿搭/局部：https://source.unsplash.com/random/600x800/?fashion,ootd
-（必须加上随机数字防缓存，如 &sig=随机数）
-3. 必须严格返回纯 JSON 数组，格式如下：
-[
-  {
-    "authorName": "发布者名字",
-    "isMaleLead": true或false,
-    "text": "笔记正文",
-    "img": "配图URL"
-  }
-]`;
-      
-      const out = await window.callApi([
-        { role: 'system', content: sysPrompt },
-        { role: 'user', content: '立刻生成绝美生活碎片！' }
-      ]);
-      
-      const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
-      const dataArr = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
-      const posts = (await localforage.getItem('mp_fix_xhs_posts')) || [];
-      
-      dataArr.forEach(data => {
-        const isMale = data.isMaleLead;
-        const npc = isMale ? maleLeads.find(c => c.name === data.authorName) : null;
-        let avatar = 'https://api.dicebear.com/7.x/notionists/svg?seed=' + encodeURIComponent(data.authorName) + '&backgroundColor=eef4fa';
-        if(npc && npc.avatar) avatar = npc.avatar;
-        
-        let finalImg = data.img;
-        if(finalImg.includes('unsplash.com')) {
-          finalImg += (finalImg.includes('?') ? '&' : '?') + 'sig=' + Math.floor(Math.random() * 99999);
-        }
-        
-        posts.unshift({
-          id: 'x_' + Date.now() + Math.floor(Math.random()*1000),
-          authorName: data.authorName,
-          authorAvatar: avatar,
-          text: data.text,
-          img: finalImg,
-          time: Date.now() - Math.floor(Math.random() * 3600000), 
-          likes: [],
-          comments: []
-        });
-      });
-      
-      await localforage.setItem('mp_fix_xhs_posts', posts);
-      if(window._renderXhsFeed) window._renderXhsFeed();
-      
-    } catch(e) {
-      alert('生态引擎刷新失败：' + (e.message || e));
-    } finally {
-      if(btn) { btn.textContent = '刷新'; btn.style.pointerEvents = 'auto'; }
-    }
-  };
-})();
-</script>
-  
+ 
   <!-- 🌟 蓝色高定：黑名单拦截记录弹窗 -->
   <div id="interceptModal" class="modal" style="z-index: 10000; display: none;">
     <div class="modal-card" style="background:rgba(252,242,242,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #f2dcdc; display:flex; flex-direction:column; max-height:80dvh; padding:0; overflow:hidden;">
@@ -12774,53 +12371,75 @@ ${maleInfo}
   </div>
   <script>
 (function() {
-  // 🌟 自带独立系统时钟，彻底打破大别墅的作用域结界！
-  function getSysTimeStr() {
-    const d = new Date();
-    const w = ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
-    return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${w} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-  }
-  
-  // 🌟 自带独立纯净剪刀，防病毒防乱码！
-  function safeEsc(s) {
-    return String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
-  }
-
   const K_XHS_POSTS = 'mp_fix_xhs_posts';
   
-  // 外挂内存抓取
+  function getSysTimeStr() {
+    const d = new Date(); const w = ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
+    return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${w} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
+  function safeEsc(s) { return String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m])); }
+
   async function getXhsPosts() { return (await localforage.getItem(K_XHS_POSTS)) || []; }
   async function setXhsPosts(data) { await localforage.setItem(K_XHS_POSTS, data); window._renderXhsFeed(); }
 
-  // 渲染瀑布流
+  // 🌟 净化头像引擎：纯净手绘风
+  function getCuteAvatar(name) {
+    if(!name) return 'https://api.dicebear.com/7.x/micah/svg?seed=Milo&backgroundColor=eef4fa';
+    return `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(name)}&backgroundColor=eef4fa`;
+  }
+
+  // 瀑布流渲染
   window._renderXhsFeed = async function() {
     const posts = await getXhsPosts();
     const box = document.getElementById('xhsWaterfall');
     if(!box) return;
     if(posts.length === 0) {
-      box.innerHTML = `<div style="text-align:center; padding:50px 0; color:#a0aaba; font-size:12px; column-span:all;">社区空空如也<br>快去发布第一条灵感碎片吧</div>`;
+      box.innerHTML = `<div style="text-align:center; padding:60px 0; color:#a0aaba; font-size:13px; font-weight:bold; letter-spacing:1px; column-span:all;">灵感碎片空空如也<br><br>快去发布第一条日常吧</div>`;
       return;
     }
     
-    box.innerHTML = posts.map(p => `
-      <div class="xhs-card" onclick="window._openXhsDetail('${p.id}')">
-        ${p.img ? `<img class="xhs-img" src="${p.img}">` : ''}
-        <div class="xhs-title">${safeEsc(p.text)}</div>
+    const meData = window.getMe ? window.getMe() : { name: '我' };
+    
+    box.innerHTML = posts.map(p => {
+      const isLiked = (p.likes || []).includes(meData.name);
+      return `
+      <div class="xhs-card">
+        <div onclick="window._openXhsDetail('${p.id}')">
+          ${p.img ? `<img class="xhs-img" src="${p.img}">` : ''}
+          <div class="xhs-title">${safeEsc(p.text)}</div>
+        </div>
         <div class="xhs-footer">
-          <div class="xhs-user">
-            <img class="xhs-avatar" src="${p.authorAvatar || 'https://via.placeholder.com/40'}">
+          <div class="xhs-user" onclick="window._openXhsProfile('${safeEsc(p.authorName)}')" style="cursor:pointer;">
+            <img class="xhs-avatar" src="${p.authorAvatar || getCuteAvatar(p.authorName)}">
             <div class="xhs-name">${safeEsc(p.authorName)}</div>
           </div>
-          <div style="display:flex; align-items:center; gap:4px; font-size:11px; color:#5c7094;">
-            <svg class="xhs-like-svg" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-            ${p.likes?.length || 0}
+          <div style="display:flex; align-items:center; gap:4px; font-size:11px; color:#5c7094; cursor:pointer;" onclick="window._toggleXhsLike('${p.id}')">
+            <svg class="xhs-like-svg" viewBox="0 0 24 24" style="fill:${isLiked ? '#b57b7b' : 'none'}; stroke:${isLiked ? '#b57b7b' : '#5c7094'};"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            ${p.fakeLikeCount || (p.likes?.length || 0)}
           </div>
         </div>
       </div>
-    `).join('');
+    `}).join('');
   };
 
-  // 触发 AI 的高能修罗场生态引擎
+  window._toggleXhsLike = async function(postId) {
+    const posts = await getXhsPosts();
+    const post = posts.find(x => x.id === postId);
+    if(!post) return;
+    const meData = window.getMe ? window.getMe() : { name: '我' };
+    post.likes = post.likes || [];
+    const idx = post.likes.indexOf(meData.name);
+    if(idx > -1) {
+      post.likes.splice(idx, 1);
+      if(post.fakeLikeCount) post.fakeLikeCount--;
+    } else {
+      post.likes.push(meData.name);
+      if(post.fakeLikeCount) post.fakeLikeCount++;
+    }
+    await setXhsPosts(posts);
+  };
+
+  // 🌟 终极海量路人造梦引擎
   window._triggerXhsAI = async function(postId) {
     const posts = await getXhsPosts();
     const post = posts.find(x => x.id === postId);
@@ -12829,49 +12448,59 @@ ${maleInfo}
     const contacts = window.getContacts() || [];
     const maleLeads = contacts.filter(c => !c.isGroup).map(c => `- ${c.name}：${c.persona}`).join('\\n');
     
-    const sysPrompt = `你现在是高级社交网络模拟引擎。玩家发了一篇帖子：“${post.text}”。
-当前系统时间：${getSysTimeStr()}。
-【核心要求】：
-1. 你的任务是生成这篇帖子下的【真实活人评论区】。
-2. 男主是否出现，必须经过【性格阈值过滤】！结合以下男主设定：
-${maleLeads}
-如果某个男主性格高冷、工作狂、老干部，他极大概率不会评论，直接跳过他！如果性格粘人、吃醋、海王，才会秒回。严禁所有人像复读机一样全员到齐！
-3. 必须生成 5~8 个【野生路人网友】的评论。名字要有网感（如：熬夜敲代码的狗、纯爱战神），语气要带梗、接地气，有夸的、有吐槽的、甚至有杠精。
-4. 【格式铁律】：严格输出纯 JSON 数组，不要 markdown！
-[
-  { "name": "评论者名字", "isNpc": true(路人)或false(男主), "text": "评论内容", "ip": "IP属地" }
-]`;
+    const sysPrompt = `你是社交网络环境模拟器。玩家或男主发了一篇小红书笔记：“${post.text}”。
+当前时间：${getSysTimeStr()}。
+【核心任务】：
+1. 为这篇笔记生成【10到15条】鲜活的路人评论！必须极度贴合发帖内容，要有梗、有生活气息。
+2. 为这篇笔记随机生成一个点赞数（20 到 300之间的整数）。
+3. 如果发帖人是玩家，且男主设定符合，男主可以混在路人里吃醋或调侃。
+【严格输出JSON】：
+{
+  "fakeLikeCount": 88,
+  "comments": [
+    { "name": "路人甲(网名)", "text": "评论内容", "ip": "广东" },
+    { "name": "男主名字(如果出现)", "text": "评论内容", "ip": "未知" }
+  ]
+}`;
 
     try {
-      const out = await window.callApi([ { role: 'system', content: sysPrompt }, { role: 'user', content: '立刻生成评论区！' } ]);
+      const out = await window.callApi([ { role: 'system', content: sysPrompt }, { role: 'user', content: '立刻生成海量神仙评论！' } ]);
       const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
-      const comments = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
+      const match = cleaned.match(/\{[\s\S]*\}/);
+      if(!match) return;
+      const data = JSON.parse(match[0]);
       
-      comments.forEach((c, idx) => {
+      const currentPosts = await getXhsPosts();
+      const target = currentPosts.find(x => x.id === postId);
+      if(!target) return;
+      
+      target.fakeLikeCount = data.fakeLikeCount || Math.floor(Math.random()*100 + 20);
+      target.comments = target.comments || [];
+      
+      (data.comments || []).forEach((c, idx) => {
         setTimeout(async () => {
-          const currentPosts = await getXhsPosts();
-          const target = currentPosts.find(x => x.id === postId);
-          if(target) {
-            target.comments = target.comments || [];
-            target.comments.push({
+          const freshPosts = await getXhsPosts();
+          const t = freshPosts.find(x => x.id === postId);
+          if(t) {
+            t.comments.push({
               id: 'cmt_' + Date.now() + idx,
               authorName: c.name,
-              isNpc: c.isNpc,
+              avatar: getCuteAvatar(c.name),
               text: c.text,
               ip: c.ip || '未知',
               time: Date.now()
             });
-            await setXhsPosts(currentPosts);
+            await setXhsPosts(freshPosts);
             if (window._currentXhsPostId === postId && typeof window._renderXhsDetail === 'function') {
               window._renderXhsDetail();
             }
           }
-        }, 3000 + (idx * (Math.random() * 4000 + 2000)));
+        }, 1500 + (idx * 2000)); // 阶梯式延迟弹出，活人感拉满！
       });
     } catch(e) { console.log('小红书生态引擎推演失败:', e); }
   };
 
-  // 详情页与评论舱引擎
+  // 🌟 详情页与评论舱引擎 (修复转发按钮失效问题)
   window._currentXhsPostId = null;
 
   window._openXhsDetail = async function(postId) {
@@ -12886,8 +12515,8 @@ ${maleLeads}
       <div id="xhsDetailModal" class="modal" style="z-index: 10000;">
         <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; display:flex; flex-direction:column; padding:0; overflow:hidden; height:90dvh;">
           <div style="padding:12px 16px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
-            <button class="btn" onclick="document.getElementById('xhsDetailModal').classList.remove('active'); window._currentXhsPostId=null;" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:32px; height:32px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0;">‹</button>
-            <div id="xhsDetailAuthor" style="display:flex; align-items:center; gap:8px;"></div>
+            <button class="btn" onclick="document.getElementById('xhsDetailModal').classList.remove('active'); window._currentXhsPostId=null;" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:32px; height:32px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0; font-size:18px;">‹</button>
+            <div id="xhsDetailAuthor" style="display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="window._openXhsProfile(this.dataset.name)"></div>
             <button class="btn" onclick="window._openXhsShareDrawer()" style="background:transparent; border:none; padding:0; color:#5c7094; cursor:pointer;">
               <svg viewBox="0 0 24 24" style="width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
             </button>
@@ -12898,15 +12527,17 @@ ${maleLeads}
             <div id="xhsDetailComments" style="padding:0 16px;"></div>
           </div>
           <div style="padding:12px 16px calc(12px + var(--safe-bottom)); background:rgba(250,252,255,0.9); border-top:1px solid #dce5f0; display:flex; gap:10px; align-items:center;">
-            <input id="xhsCommentInput" class="input" placeholder="说点什么吧..." style="flex:1; background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:20px; padding:10px 16px; font-size:14px; color:#5c7094;">
-            <button class="btn p" onclick="window._sendXhsComment()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:20px; padding:0 18px; font-weight:bold; box-shadow:none;">发送</button>
+            <input id="xhsCommentInput" class="input" placeholder="说点什么吧..." style="flex:1; background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:20px; padding:10px 16px; font-size:14px; color:#5c7094; outline:none;">
+            <button class="btn p" onclick="window._sendXhsComment()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:20px; padding:0 18px; font-weight:bold; box-shadow:none; height:36px;">发送</button>
           </div>
         </div>
       </div>
-      <div id="xhsShareDrawer" style="display:none; position:fixed; bottom:0; left:0; right:0; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border-top:1px solid #dce5f0; border-radius:24px 24px 0 0; padding:20px 16px calc(20px + var(--safe-bottom)); z-index:10001; box-shadow:0 -10px 40px rgba(92,112,148,0.15); flex-direction:column; transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
+      
+      <!-- 🌟 修复后的跨次元转发抽屉 -->
+      <div id="xhsShareDrawer" style="display:none; position:absolute; bottom:0; left:0; right:0; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border-top:1px solid #dce5f0; border-radius:24px 24px 0 0; padding:20px 16px calc(20px + var(--safe-bottom)); z-index:10001; box-shadow:0 -10px 40px rgba(92,112,148,0.15); flex-direction:column; transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
           <b style="color:#3d4a6a; font-size:15px;">转发给...</b>
-          <span onclick="document.getElementById('xhsShareDrawer').style.transform='translateY(100%)'; setTimeout(()=>document.getElementById('xhsShareDrawer').style.display='none',300);" style="color:#7a86a8; font-size:22px; cursor:pointer;">×</span>
+          <span onclick="document.getElementById('xhsShareDrawer').style.transform='translateY(100%)'; setTimeout(()=>document.getElementById('xhsShareDrawer').style.display='none',300);" style="color:#7a86a8; font-size:22px; cursor:pointer; line-height:1;">×</span>
         </div>
         <div id="xhsShareContacts" style="display:flex; overflow-x:auto; gap:16px; padding-bottom:10px; scrollbar-width:none;"></div>
       </div>
@@ -12924,8 +12555,10 @@ ${maleLeads}
     const post = posts.find(x => x.id === window._currentXhsPostId);
     if(!post) return;
 
-    document.getElementById('xhsDetailAuthor').innerHTML = `
-      <img src="${post.authorAvatar || 'https://via.placeholder.com/40'}" style="width:28px; height:28px; border-radius:50%; object-fit:cover; border:1px solid #dce5f0;">
+    const authorEl = document.getElementById('xhsDetailAuthor');
+    authorEl.dataset.name = post.authorName;
+    authorEl.innerHTML = `
+      <img src="${post.authorAvatar || getCuteAvatar(post.authorName)}" style="width:28px; height:28px; border-radius:50%; object-fit:cover; border:1px solid #dce5f0; background:#eef4fa;">
       <span style="font-size:14px; font-weight:800; color:#3d4a6a;">${safeEsc(post.authorName)}</span>
     `;
 
@@ -12938,8 +12571,8 @@ ${maleLeads}
     document.getElementById('xhsDetailContent').innerHTML = `
       ${imgHtml}
       <div style="padding:20px 16px 0 16px;">
-        <div style="font-size:16px; color:#3d4a6a; line-height:1.7; white-space:pre-wrap; word-break:break-word;">${safeEsc(post.text)}</div>
-        <div style="font-size:11px; color:#a0aaba; margin-top:12px;">发布于 ${timeStr}</div>
+        <div style="font-size:16px; color:#3d4a6a; line-height:1.7; white-space:pre-wrap; word-break:break-word; text-align:justify;">${safeEsc(post.text)}</div>
+        <div style="font-size:11px; color:#a0aaba; margin-top:12px; font-weight:600;">发布于 ${timeStr}</div>
       </div>
     `;
 
@@ -12948,11 +12581,11 @@ ${maleLeads}
       cmtBox.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:12px; padding:20px 0;">还没有人评论，快来抢沙发吧~</div>`;
     } else {
       cmtBox.innerHTML = post.comments.map(c => `
-        <div style="display:flex; gap:12px; margin-bottom:16px;">
-          <img src="${c.avatar || 'https://api.dicebear.com/7.x/notionists/svg?seed='+encodeURIComponent(c.authorName)}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; flex-shrink:0; background:#eef4fa;">
+        <div style="display:flex; gap:12px; margin-bottom:16px;" onclick="window._openXhsProfile('${safeEsc(c.authorName)}')">
+          <img src="${c.avatar || getCuteAvatar(c.authorName)}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; flex-shrink:0; background:#eef4fa; border:1px solid #dce5f0; cursor:pointer;">
           <div style="flex:1; min-width:0;">
             <div style="display:flex; justify-content:space-between; align-items:baseline;">
-              <span style="font-size:12px; font-weight:800; color:#7a86a8;">${safeEsc(c.authorName)}</span>
+              <span style="font-size:12px; font-weight:800; color:#7a86a8; cursor:pointer;">${safeEsc(c.authorName)}</span>
               <span style="font-size:10px; color:#cdd7e8;">IP: ${safeEsc(c.ip || '未知')}</span>
             </div>
             <div style="font-size:14px; color:#3d4a6a; margin-top:4px; line-height:1.5;">${safeEsc(c.text)}</div>
@@ -12962,11 +12595,12 @@ ${maleLeads}
     }
   };
 
+  // 🌟 老婆亲自下场，AI立刻接驾秒回！
   window._sendXhsComment = async function() {
     const text = document.getElementById('xhsCommentInput').value.trim();
     if(!text || !window._currentXhsPostId) return;
 
-    const meData = window.getMe ? window.getMe() : {};
+    const meData = window.getMe ? window.getMe() : { name: '我', avatar: '' };
     const posts = await getXhsPosts();
     const post = posts.find(x => x.id === window._currentXhsPostId);
     if(!post) return;
@@ -12975,8 +12609,7 @@ ${maleLeads}
     post.comments.push({
       id: 'cmt_' + Date.now(),
       authorName: meData.name || '我',
-      avatar: meData.avatar || '',
-      isNpc: false,
+      avatar: meData.avatar || getCuteAvatar(meData.name),
       text: text,
       ip: '本地',
       time: Date.now()
@@ -12985,26 +12618,62 @@ ${maleLeads}
     await setXhsPosts(posts);
     document.getElementById('xhsCommentInput').value = '';
     window._renderXhsDetail();
+
+    // 唤醒男主的 AI 神经元，让他在评论区秒回你！
+    const contacts = window.getContacts() || [];
+    const targetNpc = contacts.find(c => c.name === post.authorName && !c.isGroup);
+    if (targetNpc) {
+       const sysPrompt = `你是：${targetNpc.name}，人设：${targetNpc.persona}。
+这是你的小红书笔记：“${post.text}”。
+玩家（${meData.name||'我'}）刚刚在评论区对你说：“${text}”。
+请立刻回复她的评论！体现出你们私下熟络的关系或你特有的性格。
+【严格输出JSON】：{"comment": "你的回复内容"}`;
+       
+       try {
+         const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '快回复她！' }]);
+         const cleaned = out.replace(/```json|```/g, '').trim();
+         const match = cleaned.match(/\{[\s\S]*\}/);
+         if(match) {
+           const data = JSON.parse(match[0]);
+           if(data.comment) {
+             const freshPosts = await getXhsPosts();
+             const t = freshPosts.find(x => x.id === window._currentXhsPostId);
+             if(t) {
+               t.comments.push({
+                 id: 'cmt_' + Date.now(), authorName: targetNpc.name, avatar: targetNpc.avatar || getCuteAvatar(targetNpc.name),
+                 text: `回复 @${meData.name||'我'}：${data.comment}`, ip: '未知', time: Date.now()
+               });
+               await setXhsPosts(freshPosts);
+               if(window._currentXhsPostId === post.id && typeof window._renderXhsDetail === 'function') window._renderXhsDetail();
+             }
+           }
+         }
+       } catch(e) { console.log('男主评论秒回失败:', e); }
+    }
   };
 
+  // 🌟 跨次元转发：呼出联系人抽屉
   window._openXhsShareDrawer = function() {
     const contacts = (window.getContacts() || []).filter(c => !c.isGroup);
+    const drawer = document.getElementById('xhsShareDrawer');
     const box = document.getElementById('xhsShareContacts');
+    
     if(contacts.length === 0) {
-      box.innerHTML = `<div style="font-size:12px; color:#a0aaba;">通讯录空空如也~</div>`;
+      box.innerHTML = `<div style="font-size:12px; color:#a0aaba; text-align:center; width:100%;">通讯录空空如也~</div>`;
     } else {
       box.innerHTML = contacts.map(c => `
-        <div onclick="window._sharePostToChat('${c.id}')" style="display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; min-width:56px;">
-          <img src="${c.avatar || 'https://via.placeholder.com/56'}" style="width:50px; height:50px; border-radius:16px; object-fit:cover; border:1px solid #dce5f0;">
+        <div onclick="window._sharePostToChat('${c.id}')" style="display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; min-width:56px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
+          <img src="${c.avatar || 'https://via.placeholder.com/56'}" style="width:50px; height:50px; border-radius:16px; object-fit:cover; border:1px solid #dce5f0; background:#eef4fa;">
           <span style="font-size:11px; color:#5c7094; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">${safeEsc(c.name)}</span>
         </div>
       `).join('');
     }
-    const drawer = document.getElementById('xhsShareDrawer');
+    
     drawer.style.display = 'flex';
     setTimeout(() => drawer.style.transform = 'translateY(0)', 10);
   };
 
+  // 🌟 跨次元转发：将绝美卡片砸进聊天框
   window._sharePostToChat = async function(chatId) {
     if(!window._currentXhsPostId) return;
     const posts = await getXhsPosts();
@@ -13027,13 +12696,16 @@ ${maleLeads}
     
     document.getElementById('xhsShareDrawer').style.transform = 'translateY(100%)';
     setTimeout(() => document.getElementById('xhsShareDrawer').style.display = 'none', 300);
-    alert('✨ 笔记已成功转发给TA！');
+    
+    alert('✨ 笔记已成功转发给TA！快去聊天框看看TA的反应吧！');
     if (window.currentId === chatId && typeof window.renderChat === 'function') window.renderChat();
     
+    // 静默唤醒 AI 神经元，对这篇笔记发表看法
     const hiddenPrompt = `【系统指令】：玩家刚刚向你转发了一篇小红书笔记，内容是：“${post.text}”。请你根据你的人设，自然地对这篇笔记发表看法。`;
     if(typeof window._sendToAI === 'function') window._sendToAI(chatId, hiddenPrompt, true);
   };
 
+  // 🌟 老婆专属的发布与造梦引擎
   window._openXhsPublishModal = function() { document.getElementById('xhsPublishModal').classList.add('active'); };
 
   let xhsDraftImg = '';
@@ -13070,11 +12742,12 @@ ${maleLeads}
     posts.unshift({
       id: newId,
       authorName: meData.name || '我',
-      authorAvatar: meData.avatar || 'https://via.placeholder.com/120',
+      authorAvatar: meData.avatar || getCuteAvatar(meData.name),
       text: text,
       img: xhsDraftImg || '',
       time: Date.now(),
       likes: [],
+      fakeLikeCount: Math.floor(Math.random() * 50 + 10),
       comments: []
     });
     
@@ -13082,10 +12755,12 @@ ${maleLeads}
     document.getElementById('xhsPublishModal').classList.remove('active');
     document.getElementById('xhsInputText').value = '';
     window._clearXhsImg();
+    if(window._renderXhsFeed) window._renderXhsFeed();
     
     setTimeout(() => { if(window._triggerXhsAI) window._triggerXhsAI(newId); }, 1500);
   };
 
+  // 生成 NPC 帖子
   window._generateNpcXhsPost = async function() {
     const contacts = window.getContacts() || [];
     if(contacts.length === 0) return alert('宝宝，你还没加联系人呢！');
@@ -13106,7 +12781,7 @@ ${maleLeads}
       dataArr.forEach(data => {
         const isMale = data.isMaleLead;
         const npc = isMale ? maleLeads.find(c => c.name === data.authorName) : null;
-        let avatar = 'https://api.dicebear.com/7.x/notionists/svg?seed=' + encodeURIComponent(data.authorName) + '&backgroundColor=eef4fa';
+        let avatar = getCuteAvatar(data.authorName);
         if(npc && npc.avatar) avatar = npc.avatar;
         
         let finalImg = data.img;
@@ -13114,16 +12789,21 @@ ${maleLeads}
           finalImg += (finalImg.includes('?') ? '&' : '?') + 'sig=' + Math.floor(Math.random() * 99999);
         }
         
+        const newId = 'x_' + Date.now() + Math.floor(Math.random()*1000);
         posts.unshift({
-          id: 'x_' + Date.now() + Math.floor(Math.random()*1000),
+          id: newId,
           authorName: data.authorName,
           authorAvatar: avatar,
           text: data.text,
           img: finalImg,
           time: Date.now() - Math.floor(Math.random() * 3600000), 
           likes: [],
+          fakeLikeCount: Math.floor(Math.random() * 200 + 20),
           comments: []
         });
+        
+        // 帖子发完后，立刻触发神经元，生成活人评论区！
+        setTimeout(() => { if(window._triggerXhsAI) window._triggerXhsAI(newId); }, 1500);
       });
       await setXhsPosts(posts);
     } catch(e) {
@@ -13132,7 +12812,83 @@ ${maleLeads}
       if(btn) { btn.textContent = '刷新'; btn.style.pointerEvents = 'auto'; }
     }
   };
+
+  // 🌟 绝美毛玻璃个人主页引擎
+  window._openXhsProfile = async function(authorName) {
+    if(!authorName) return;
+    const posts = await getXhsPosts();
+    const userPosts = posts.filter(p => p.authorName === authorName);
+    
+    // 找出头像
+    let avatarUrl = getCuteAvatar(authorName);
+    const contacts = window.getContacts() || [];
+    const npc = contacts.find(c => c.name === authorName && !c.isGroup);
+    if (npc && npc.avatar) avatarUrl = npc.avatar;
+    if (authorName === (window.getMe?.().name || '我')) avatarUrl = window.getMe?.().avatar || avatarUrl;
+
+    let profileModal = document.getElementById('xhsProfileModal');
+    if (!profileModal) {
+      const modalHtml = `
+      <div id="xhsProfileModal" class="modal" style="z-index: 10001; transform:translateX(100%); transition:transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); display:block; background:transparent;">
+        <div class="modal-card" style="background:#f4f6fb; width:100%; height:100dvh; max-width:430px; border-radius:0; padding:0; display:flex; flex-direction:column; overflow:hidden; border:none; box-shadow:-10px 0 30px rgba(92,112,148,0.15); float:right;">
+          <div style="position:relative; height:200px; background:linear-gradient(135deg, #eef4fa, #cdd7e8); flex-shrink:0;">
+            <div style="position:absolute; top:calc(10px + var(--safe-top)); left:16px; width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,0.4); backdrop-filter:blur(8px); display:grid; place-items:center; cursor:pointer; color:#3d4a6a; font-size:20px; z-index:10;" onclick="document.getElementById('xhsProfileModal').style.transform='translateX(100%)'">‹</div>
+            <!-- 背景墙视差 -->
+            <img id="xhsProfileBg" src="${avatarUrl}" style="width:100%; height:100%; object-fit:cover; opacity:0.3; filter:blur(20px) saturate(150%);">
+            <div style="position:absolute; bottom:-30px; left:20px; display:flex; align-items:flex-end; gap:16px;">
+              <img id="xhsProfileAvatar" src="${avatarUrl}" style="width:80px; height:80px; border-radius:50%; border:3px solid #f4f6fb; object-fit:cover; background:#fff; box-shadow:0 4px 12px rgba(92,112,148,0.1);">
+              <div style="margin-bottom:8px;">
+                <div id="xhsProfileName" style="font-size:20px; font-weight:900; color:#3d4a6a; text-shadow:0 1px 2px rgba(255,255,255,0.5);">${safeEsc(authorName)}</div>
+                <div style="font-size:11px; color:#7a86a8; margin-top:2px;">小红书号：ID_${Math.floor(Math.random()*1000000)}</div>
+              </div>
+            </div>
+          </div>
+          <div style="height:40px; flex-shrink:0;"></div> <!-- 占位 -->
+          <div style="padding:0 20px 10px; display:flex; gap:20px; border-bottom:1px solid #dce5f0; flex-shrink:0;">
+            <div style="font-size:14px; font-weight:bold; color:#3d4a6a; border-bottom:2px solid #5c7094; padding-bottom:6px;">笔记</div>
+            <div style="font-size:14px; font-weight:bold; color:#a0aaba; padding-bottom:6px;">收藏</div>
+            <div style="font-size:14px; font-weight:bold; color:#a0aaba; padding-bottom:6px;">赞过</div>
+          </div>
+          <div style="flex:1; overflow-y:auto; padding:12px; background:linear-gradient(180deg, #f4f6fb, #eef4fa);">
+            <div id="xhsProfileWaterfall" style="column-count:2; column-gap:10px;"></div>
+          </div>
+        </div>
+      </div>`;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+      profileModal = document.getElementById('xhsProfileModal');
+    } else {
+      document.getElementById('xhsProfileAvatar').src = avatarUrl;
+      document.getElementById('xhsProfileBg').src = avatarUrl;
+      document.getElementById('xhsProfileName').textContent = safeEsc(authorName);
+    }
+
+    const box = document.getElementById('xhsProfileWaterfall');
+    if(userPosts.length === 0) {
+      box.innerHTML = `<div style="text-align:center; padding:50px 0; color:#a0aaba; font-size:12px; column-span:all;">TA还没有发布过笔记哦</div>`;
+    } else {
+      box.innerHTML = userPosts.map(p => `
+        <div class="xhs-card" onclick="window._openXhsDetail('${p.id}')">
+          ${p.img ? `<img class="xhs-img" src="${p.img}">` : ''}
+          <div class="xhs-title">${safeEsc(p.text)}</div>
+          <div class="xhs-footer">
+            <div class="xhs-user">
+              <img class="xhs-avatar" src="${p.authorAvatar || avatarUrl}">
+              <div class="xhs-name">${safeEsc(p.authorName)}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:4px; font-size:11px; color:#5c7094;">
+              <svg class="xhs-like-svg" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+              ${p.fakeLikeCount || (p.likes?.length || 0)}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // 用 transform 丝滑滑入
+    setTimeout(() => { profileModal.style.transform = 'translateX(0)'; }, 10);
+  };
+
 })();
-  </script>
+</script>
 </body>
 </html>
