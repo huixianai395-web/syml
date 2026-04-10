@@ -3584,20 +3584,51 @@ window.changeReaderFontColor = function(colorHex){
       </div>
     </div>
   </div>
-<!-- 🌟 蓝色高定：漫记 (小红书) 3.0 终极生态版 -->
+<!-- 🌟 蓝色高定：漫记 (小红书) 4.0 满血完全体 -->
 <section id="manjiApp" class="screen">
-  <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0; z-index:10;">
-    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">‹ 桌面</button>
-    <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">漫记</b>
-    <div style="display:flex; gap:6px;">
-      <button class="btn p" onclick="document.getElementById('manjiPublishModal').style.display='flex'" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">+ 发布</button>
-      <button class="btn" onclick="window._generateManjiFeed()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px;">刷新</button>
+  <!-- 首页 Feed 视图 -->
+  <div id="manjiViewFeed" style="display:flex; flex-direction:column; height:100%;">
+    <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0; z-index:10; flex-shrink:0;">
+      <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">‹ 桌面</button>
+      <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">漫记</b>
+      <div style="display:flex; gap:6px;">
+        <button class="btn p" onclick="document.getElementById('manjiPublishModal').style.display='flex'" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">+ 发布</button>
+        <button class="btn" onclick="window._generateManjiFeed()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px;">刷新</button>
+      </div>
+    </div>
+    <div class="page" style="flex:1; background:#eef4fa; padding:12px; padding-bottom:0;">
+      <div id="manjiFeedBox" style="column-count: 2; column-gap: 10px;">
+        <div style="text-align:center; padding:40px 0; color:#7a86a8; font-size:12px; width:100%; column-span: all;">正在从外挂内存读取平行宇宙的信号...</div>
+      </div>
     </div>
   </div>
-  <div class="page" style="background:#eef4fa; padding:12px; padding-bottom:80px;">
-    <div id="manjiFeedBox" style="column-count: 2; column-gap: 10px;">
-      <div style="text-align:center; padding:40px 0; color:#7a86a8; font-size:12px; width:100%; column-span: all;">正在从外挂内存读取平行宇宙的信号...</div>
+
+  <!-- 个人主页视图 (真正的独立主页) -->
+  <div id="manjiViewProfile" class="hidden" style="flex-direction:column; height:100%; background:#eef4fa;">
+    <div style="padding:calc(12px + var(--safe-top)) 16px 20px; background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0; display:flex; flex-direction:column; align-items:center; position:relative; flex-shrink:0;">
+      <button class="btn" onclick="window._switchManjiTab('feed')" style="position:absolute; left:16px; top:calc(12px + var(--safe-top)); background:transparent; color:#5c7094; font-size:24px; padding:0 8px; line-height:1; border:none;">‹</button>
+      <img id="mpAvatarImg" src="" style="width:64px; height:64px; border-radius:50%; object-fit:cover; border:2px solid #dce5f0; margin-top:10px; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:none;">
+      <div id="mpAvatarTxt" style="width:64px; height:64px; border-radius:50%; background:#eef4fa; border:2px solid #dce5f0; display:grid; place-items:center; font-size:24px; color:#5c7094; font-weight:bold; margin-top:10px; box-shadow:0 4px 12px rgba(92,112,148,0.05);"></div>
+      <div id="mpName" style="font-size:18px; font-weight:800; color:#3d4a6a; margin-top:10px;"></div>
+      <div id="mpSign" style="font-size:12px; color:#7a86a8; margin-top:4px;">这个人很懒，什么都没写~</div>
+      
+      <!-- 笔记/赞过/收藏 Tab栏 -->
+      <div style="display:flex; gap:24px; margin-top:16px; width:100%; justify-content:center; border-top:1px dashed #dce5f0; padding-top:12px;">
+        <div class="mp-tab active" data-type="notes" onclick="window._switchProfileTab('notes')" style="font-size:14px; font-weight:bold; color:#3d4a6a; cursor:pointer; padding-bottom:4px; border-bottom:2px solid #5c7094;">笔记</div>
+        <div class="mp-tab" data-type="likes" onclick="window._switchProfileTab('likes')" style="font-size:14px; font-weight:bold; color:#7a86a8; cursor:pointer; padding-bottom:4px; border-bottom:2px solid transparent;">赞过</div>
+        <div class="mp-tab" data-type="favs" onclick="window._switchProfileTab('favs')" style="font-size:14px; font-weight:bold; color:#7a86a8; cursor:pointer; padding-bottom:4px; border-bottom:2px solid transparent;">收藏</div>
+      </div>
     </div>
+    <div style="flex:1; overflow-y:auto; padding:12px;">
+      <div id="mpFeedBox" style="column-count: 2; column-gap: 10px;"></div>
+    </div>
+  </div>
+
+  <!-- 🌟 漫记底栏 (小红书风) -->
+  <div style="height:56px; background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-top:1px solid #dce5f0; display:flex; justify-content:space-around; align-items:center; padding-bottom:env(safe-area-inset-bottom); flex-shrink:0; z-index:10;">
+    <div onclick="window._switchManjiTab('feed')" class="mj-nav-item active" id="mjNavFeed" style="font-size:14px; font-weight:bold; color:#3d4a6a; cursor:pointer; transition:all 0.2s;">首页</div>
+    <div onclick="document.getElementById('manjiPublishModal').style.display='flex'" style="width:40px; height:30px; background:#eef4fa; border:1px solid #5c7094; border-radius:10px; display:grid; place-items:center; color:#5c7094; font-size:20px; font-weight:300; cursor:pointer;">+</div>
+    <div onclick="window._switchManjiTab('me')" class="mj-nav-item" id="mjNavMe" style="font-size:14px; font-weight:bold; color:#7a86a8; cursor:pointer; transition:all 0.2s;">我</div>
   </div>
 
   <!-- 🌟 漫记：发布弹窗 -->
@@ -3637,41 +3668,92 @@ window.changeReaderFontColor = function(colorHex){
       <div id="mdActions" style="display:flex; gap:12px; margin-left:8px;"></div>
     </div>
   </div>
-
-  <!-- 🌟 漫记：个人主页弹窗 -->
-  <div id="manjiProfileModal" style="display:none; position:absolute; inset:0; z-index:95; background:#eef4fa; flex-direction:column;">
-    <div style="padding:calc(12px + var(--safe-top)) 16px 20px; background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0; display:flex; flex-direction:column; align-items:center; position:relative;">
-      <button class="btn" onclick="document.getElementById('manjiProfileModal').style.display='none'" style="position:absolute; left:16px; top:calc(12px + var(--safe-top)); background:transparent; color:#5c7094; font-size:24px; padding:0 8px; line-height:1; border:none;">‹</button>
-      <div id="mpAvatar" style="width:64px; height:64px; border-radius:50%; background:#eef4fa; border:2px solid #dce5f0; display:grid; place-items:center; font-size:24px; color:#5c7094; font-weight:bold; margin-top:10px; box-shadow:0 4px 12px rgba(92,112,148,0.05);"></div>
-      <div id="mpName" style="font-size:18px; font-weight:800; color:#3d4a6a; margin-top:10px;"></div>
-      <div id="mpSign" style="font-size:12px; color:#7a86a8; margin-top:4px;">这个人很懒，什么都没写~</div>
-    </div>
-    <div style="flex:1; overflow-y:auto; padding:12px;">
-      <div id="mpFeedBox" style="column-count: 2; column-gap: 10px;"></div>
-    </div>
-  </div>
 </section>
 
 <script>
-// 🌟 蓝色高定：漫记 3.0 核心引擎
+// 🌟 蓝色高定：漫记 4.0 核心引擎
 const _esc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 let _currentMjPostId = null;
+let _currentMjProfileName = null;
+let _currentMjProfileTab = 'notes';
 
 window._openManjiApp = async function() {
   show('manjiApp');
+  window._switchManjiTab('feed');
   let feed = await localforage.getItem('mp_fix_manji_feed');
   if (!feed || feed.length === 0) { window._generateManjiFeed(); } 
-  else { window._renderManjiFeed(feed); }
+  else { window._renderManjiFeed(feed, 'manjiFeedBox'); }
 };
 
-window._renderManjiFeed = function(feed, targetBoxId = 'manjiFeedBox', filterAuthor = null) {
+// 🌟 底部导航栏切换
+window._switchManjiTab = async function(tab) {
+  document.getElementById('manjiViewFeed').style.display = tab === 'feed' ? 'flex' : 'none';
+  document.getElementById('manjiViewProfile').style.display = tab === 'me' ? 'flex' : 'none';
+  document.getElementById('manjiViewProfile').classList.toggle('hidden', tab !== 'me');
+  
+  document.getElementById('mjNavFeed').style.color = tab === 'feed' ? '#3d4a6a' : '#7a86a8';
+  document.getElementById('mjNavMe').style.color = tab === 'me' ? '#3d4a6a' : '#7a86a8';
+
+  if(tab === 'me') {
+    let meData = { name: '我' };
+    try { meData = JSON.parse(localStorage.getItem('mp_fix_me')) || {name: '我'}; } catch(err){}
+    window._openManjiProfile(meData.name, meData.avatar);
+  } else {
+    let feed = await localforage.getItem('mp_fix_manji_feed');
+    window._renderManjiFeed(feed, 'manjiFeedBox');
+  }
+};
+
+// 🌟 个人主页 Tab 切换
+window._switchProfileTab = async function(type) {
+  _currentMjProfileTab = type;
+  document.querySelectorAll('.mp-tab').forEach(el => {
+    if(el.dataset.type === type) { el.style.color = '#3d4a6a'; el.style.borderBottomColor = '#5c7094'; }
+    else { el.style.color = '#7a86a8'; el.style.borderBottomColor = 'transparent'; }
+  });
+  
+  let feed = await localforage.getItem('mp_fix_manji_feed') || [];
+  let renderData = [];
+  
+  if(type === 'notes') {
+    renderData = feed.filter(p => p.author === _currentMjProfileName);
+  } else if(type === 'likes') {
+    renderData = feed.filter(p => p.isLiked); // 这里简化处理，真实情况应按用户区分
+  } else if(type === 'favs') {
+    renderData = feed.filter(p => p.isFaved);
+  }
+  
+  window._renderManjiFeed(renderData, 'mpFeedBox');
+};
+
+// 🌟 个人主页引擎
+window._openManjiProfile = async function(authorName, avatarUrl) {
+  _currentMjProfileName = authorName;
+  document.getElementById('mpName').textContent = authorName;
+  
+  if(avatarUrl && !avatarUrl.includes('placeholder')) {
+    document.getElementById('mpAvatarImg').src = avatarUrl;
+    document.getElementById('mpAvatarImg').style.display = 'block';
+    document.getElementById('mpAvatarTxt').style.display = 'none';
+  } else {
+    document.getElementById('mpAvatarTxt').textContent = authorName.slice(0,1);
+    document.getElementById('mpAvatarTxt').style.display = 'grid';
+    document.getElementById('mpAvatarImg').style.display = 'none';
+  }
+
+  document.getElementById('manjiViewFeed').style.display = 'none';
+  document.getElementById('manjiViewProfile').style.display = 'flex';
+  document.getElementById('manjiViewProfile').classList.remove('hidden');
+  
+  window._switchProfileTab('notes');
+};
+
+window._renderManjiFeed = function(renderData, targetBoxId) {
   const box = document.getElementById(targetBoxId);
   if(!box) return;
-  let renderData = feed;
-  if(filterAuthor) renderData = feed.filter(p => p.author === filterAuthor);
   
   if(!renderData || renderData.length === 0) {
-    box.innerHTML = '<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:12px; width:100%; column-span: all;">暂无动态哦~</div>';
+    box.innerHTML = '<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:12px; width:100%; column-span: all;">这里空空如也哦~</div>';
     return;
   }
   
@@ -3696,15 +3778,6 @@ window._renderManjiFeed = function(feed, targetBoxId = 'manjiFeedBox', filterAut
       </div>
     </div>
   `}).join('');
-};
-
-// 🌟 个人主页引擎
-window._openManjiProfile = async function(authorName) {
-  document.getElementById('mpName').textContent = authorName;
-  document.getElementById('mpAvatar').textContent = authorName.slice(0,1);
-  let feed = await localforage.getItem('mp_fix_manji_feed') || [];
-  window._renderManjiFeed(feed, 'mpFeedBox', authorName);
-  document.getElementById('manjiProfileModal').style.display = 'flex';
 };
 
 // 🌟 详情页引擎
@@ -3741,7 +3814,6 @@ window._openManjiDetail = async function(id) {
     </div>
   `).join('') || '<div style="font-size:12px; color:#a0aaba; text-align:center; padding:20px 0;">快来留下神仙评论吧~</div>';
 
-  // 渲染底部点赞与收藏按钮
   const likeColor = post.isLiked ? '#b57b7b' : '#5c7094';
   const likeFill = post.isLiked ? '#b57b7b' : 'none';
   const favColor = post.isFaved ? '#b57b7b' : '#5c7094';
@@ -3772,7 +3844,14 @@ window._toggleManjiAction = async function(id, type, e) {
       post.isFaved = !post.isFaved;
     }
     await localforage.setItem('mp_fix_manji_feed', feed);
-    window._renderManjiFeed(feed);
+    
+    // 如果在个人主页，刷新当前 Tab；否则刷新首页
+    if(document.getElementById('manjiViewProfile').style.display === 'flex') {
+      window._switchProfileTab(_currentMjProfileTab);
+    } else {
+      window._renderManjiFeed(feed, 'manjiFeedBox');
+    }
+    
     if(document.getElementById('manjiDetailModal').style.display === 'flex') window._openManjiDetail(id);
   }
 };
@@ -3783,7 +3862,6 @@ window._sendManjiComment = async function() {
   const text = input.value.trim();
   if(!text || !_currentMjPostId) return;
 
-  // 1. 写入外挂内存
   let feed = await localforage.getItem('mp_fix_manji_feed');
   let post = feed.find(p => p.id === _currentMjPostId);
   if(!post) return;
@@ -3798,7 +3876,6 @@ window._sendManjiComment = async function() {
   input.value = '';
   window._openManjiDetail(_currentMjPostId); // 刷新详情页
 
-  // 2. 触发 AI 男主和路人互动
   setTimeout(async () => {
     const contacts = window.getContacts ? window.getContacts() : [];
     const npc = contacts.find(c => !c.isGroup) || {name: '神秘人', persona: '高冷腹黑'};
@@ -3854,9 +3931,13 @@ window._publishManjiPost = async function() {
   document.getElementById('mjPubTitle').value = '';
   document.getElementById('mjPubContent').value = '';
   document.getElementById('manjiPublishModal').style.display = 'none';
-  window._renderManjiFeed(feed);
+  
+  if(document.getElementById('manjiViewProfile').style.display === 'flex') {
+    window._switchProfileTab(_currentMjProfileTab);
+  } else {
+    window._renderManjiFeed(feed, 'manjiFeedBox');
+  }
 
-  // 触发 AI 捧场
   setTimeout(async () => {
     const contacts = window.getContacts ? window.getContacts() : [];
     const npc = contacts.find(c => !c.isGroup) || {name: '神秘人', persona: '温柔'};
@@ -3876,19 +3957,21 @@ window._publishManjiPost = async function() {
           up.likes += data.likes || 12;
           data.comments.forEach(c => up.comments.push({ user: c.user, text: c.text }));
           await localforage.setItem('mp_fix_manji_feed', uf);
-          window._renderManjiFeed(uf);
+          if(document.getElementById('manjiViewProfile').style.display === 'flex') { window._switchProfileTab(_currentMjProfileTab); } 
+          else { window._renderManjiFeed(uf, 'manjiFeedBox'); }
         }
       }
     } catch(err) { console.log('捧场引擎失败', err); }
   }, 3000);
 };
 
-// 🌟 终极生成引擎：接入二次元 API 与活人氛围
+// 🌟 终极生成引擎：物理穿透直连二次元 API + 活人氛围拉满
 window._generateManjiFeed = async function() {
   const box = document.getElementById('manjiFeedBox');
-  box.innerHTML = '<div style="text-align:center; padding:40px 0; color:#7a86a8; font-size:12px; width:100%; column-span: all;">正在连接平行宇宙，抓取二次元美图与神仙评论...</div>';
+  box.innerHTML = '<div style="text-align:center; padding:40px 0; color:#7a86a8; font-size:12px; width:100%; column-span: all;">正在穿透次元壁，抓取绝美网图与神仙评论...</div>';
   
-  const sysPrompt = "你是一个温暖治愈的社区主理人。请随机生成6-8条路人甲乙丙丁的帖子。内容要极具生活气息、温暖、搞笑或治愈，戾气不要太重！包含：title, content, author, imageTag(必须从以下选一: food, landscape, girl, boy, none), likes(50-5000的随机数), comments(评论数组，包含user和text，评论要极具活人感，比如打call、吃瓜)。返回纯JSON数组格式！例：[{\"id\":\"mj_1\", \"title\":\"...\", \"content\":\"...\", \"author\":\"...\", \"imageTag\":\"food\", \"likes\":1250, \"comments\":[{\"user\":\"路人A\",\"text\":\"太好看了吧！\"}]}]";
+  // 强化 AI 提示词，强制生成大量活人感评论！
+  const sysPrompt = "你是一个温暖治愈的社区主理人。请随机生成8-10条路人甲乙丙丁的帖子。内容要极具生活气息、八卦、搞笑或治愈，戾气不要太重！包含：title, content, author, imageTag(必须从以下选一: food, landscape, girl, boy, none), likes(50-5000的随机数), comments(评论数组)。\n【重点警告】：每篇帖子的 comments 数组必须包含 8 到 15 条极其鲜活的评论！必须有互相回复、阴阳怪气、打call、吃瓜等真实互联网状态！不要全说好话！\n返回纯JSON数组格式！例：[{\"id\":\"mj_1\", \"title\":\"...\", \"content\":\"...\", \"author\":\"...\", \"imageTag\":\"food\", \"likes\":1250, \"comments\":[{\"user\":\"路人A\",\"text\":\"太好看了吧！\"}, {\"user\":\"路人B\",\"text\":\"这滤镜有点重啊姐姐\"}]}]";
   
   try {
     const out = await callApi([{role:'system', content:sysPrompt}, {role:'user', content:'立刻生成！'}]);
@@ -3896,18 +3979,18 @@ window._generateManjiFeed = async function() {
     if(!match) throw new Error("AI 脑电波异常，未返回有效数据");
     const data = JSON.parse(match[0]);
     
-    // 🌟 接入二次元图片 API
+    // 🌟 物理穿透：直连各大无 CORS 限制的二次元随机图库！
+    const animeApis = [
+      'https://t.alcy.cc/ycy',
+      'https://www.loliapi.com/acg/pe/',
+      'https://api.yimian.xyz/img?type=moe'
+    ];
+
     for(let post of data) {
       if(post.imageTag && post.imageTag !== 'none') {
-        try {
-          const res = await fetch(`https://api.lolicon.app/setu/v2?r18=0&tag=${post.imageTag === 'landscape' ? '风景' : ''}`);
-          const imgData = await res.json();
-          if(imgData && imgData.data && imgData.data.length > 0) {
-            post.imgUrl = imgData.data[0].urls.original;
-          } else {
-            post.imgUrl = `https://picsum.photos/seed/${post.id}/400/400`; // 兜底
-          }
-        } catch(e) { post.imgUrl = `https://picsum.photos/seed/${post.id}/400/400`; }
+        // 直接把链接塞进 src，浏览器自动请求图片，完美绕过安检！
+        const randomApi = animeApis[Math.floor(Math.random() * animeApis.length)];
+        post.imgUrl = `${randomApi}?seed=${post.id}&t=${Date.now()}`;
       }
       post.isLiked = false;
       post.isFaved = false;
@@ -3915,7 +3998,7 @@ window._generateManjiFeed = async function() {
     }
     
     await localforage.setItem('mp_fix_manji_feed', data); // ✨ 完美写入外挂内存
-    window._renderManjiFeed(data);
+    window._renderManjiFeed(data, 'manjiFeedBox');
   } catch(e) {
     box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#b57b7b; font-size:12px; width:100%; column-span: all;">抓取失败啦宝宝，请检查 API 密钥是否设置哦<br><br><span style="font-size:10px; opacity:0.8;">死因追踪：${e.message}</span></div>`;
   }
