@@ -2241,15 +2241,16 @@ body {
               <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2.5;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
               同频专注舱
             </div>
-            <!-- 🌟 蓝色高定：双轨选择器（时间与角色） -->
+            <!-- 🌟 蓝色高定：双轨选择器（自由时间胶囊与角色） -->
             <div style="display:flex; gap:6px; align-items:center;">
-              <select id="focusTimeSelect" class="select" style="background: rgba(238,244,250,0.8); border: 1px solid #dce5f0; color: #5c7094; border-radius: 8px; font-size: 11px; padding: 2px 4px 2px 8px; outline: none; width: auto; font-weight: bold; cursor: pointer; text-align: center;" onchange="if(document.getElementById('focusActionBtn').textContent==='开始') document.getElementById('focusTimeDisplay').textContent=String(this.value).padStart(2,'0')+':00'">
-                <option value="5">5分钟</option>
-                <option value="15">15分钟</option>
-                <option value="25" selected>25分钟</option>
-                <option value="45">45分钟</option>
-                <option value="60">60分钟</option>
-              </select>
+              
+              <!-- 自由输入时间胶囊 -->
+              <div style="display:flex; align-items:center; background: rgba(238,244,250,0.8); border: 1px solid #dce5f0; border-radius: 8px; padding: 2px 8px; cursor: text;" onclick="document.getElementById('focusTimeSelect').focus()">
+                <input type="number" id="focusTimeSelect" value="25" min="1" max="999" style="background:transparent; border:none; color:#5c7094; font-size:12px; font-weight:bold; outline:none; width:36px; text-align:center; font-family:ui-monospace, monospace; padding:0;" oninput="if(document.getElementById('focusActionBtn').textContent==='开始') document.getElementById('focusTimeDisplay').textContent=String(this.value || 0).padStart(2,'0')+':00'">
+                <span style="font-size:11px; color:#7a86a8; font-weight:bold; margin-left:2px;">分钟</span>
+              </div>
+
+              <!-- 陪伴角色选择器 -->
               <select id="focusRoleSelect" class="select" style="background: rgba(238,244,250,0.8); border: 1px solid #dce5f0; color: #5c7094; border-radius: 8px; font-size: 11px; padding: 2px 4px 2px 8px; outline: none; max-width: 90px; font-weight: bold; cursor: pointer; text-align: center;"></select>
             </div>
           </div>
