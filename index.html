@@ -4528,12 +4528,20 @@ window._ivManageMode = false;
       return `${quote}${qHtml}<div class="bubble ${cls} ${hidden}">${finalBody}</div>${ts}`;
     }
     const voiceMatch=t.match(/^\[voice:(\d+):([\s\S]*)\]$/);
-if(voiceMatch){
-  const dur=voiceMatch[1],vtext=voiceMatch[2],vid='vr_'+m.id;
-  const w=Math.min(180,72+Number(dur)*4);
-  const waves='<div class="voice-wave"></div>'.repeat(6);
-  return `${quote}<div class="bubble ${cls} ${hidden}" style="width:${w}px;cursor:pointer;" onclick="var el=document.getElementById('${vid}');if(el)el.classList.toggle('hidden');this.classList.toggle('voice-playing')"><div class="bubble-voice"><div class="voice-waves">${waves}</div><div class="voice-dur">${dur}″</div></div></div><div id="${vid}" class="voice-reveal hidden">${esc(vtext)}</div>${ts}`;
-}
+    if(voiceMatch){
+      const dur=voiceMatch[1],vtext=voiceMatch[2],vid='vr_'+m.id;
+      const w=Math.min(180,72+Number(dur)*4);
+      const waves='<div class="voice-wave"></div>'.repeat(6);
+      
+      // 🌟 蓝色高定：双语语音翻译机！
+      let finalVtext = esc(vtext);
+      if(vtext.includes('bubble-bilingual')) {
+        finalVtext = vtext; // 直接信任咱们的高定双语壳子，赋予绝对豁免权，绝不转义！
+      }
+      
+      // 🌟 细节美学：如果是双语壳子，就把底部的 padding 去掉，让卡片完美贴合！
+      return `${quote}<div class="bubble ${cls} ${hidden}" style="width:${w}px;cursor:pointer;" onclick="var el=document.getElementById('${vid}');if(el)el.classList.toggle('hidden');this.classList.toggle('voice-playing')"><div class="bubble-voice"><div class="voice-waves">${waves}</div><div class="voice-dur">${dur}″</div></div></div><div id="${vid}" class="voice-reveal hidden" style="${vtext.includes('bubble-bilingual') ? 'padding:0; background:transparent;' : ''}">${finalVtext}</div>${ts}`;
+    }
     const quoteMatch = t.match(/^\[quote\]([\s\S]*?)\[\/quote\]([\s\S]*)$/);
     if(quoteMatch){
       const qText=quoteMatch[1].trim();
@@ -5208,10 +5216,13 @@ async function sendMsg(){
      // 🌐 蓝色的跨国境双语折叠引擎！
       if(st.bilingual && st.bilingualLang) {
         system += `\n\n【异国语境绝对铁律】：你是一个母语为“${st.bilingualLang}”的人。你的所有对话（无论是线上messages数组还是线下RP的正文对话）必须使用双语电影字幕格式！
-【格式严格如下】（直接输出HTML，绝对不要加markdown代码块）：
+【普通格式严格如下】（直接输出HTML，绝对不要加markdown代码块）：
 <div class="bubble-bilingual show-zh" onclick="this.classList.toggle('show-zh')"><div class="bilingual-foreign">你的${st.bilingualLang}原文</div><div class="bilingual-zh-wrap"><hr class="bilingual-divider"><div class="bilingual-zh">对应的中文精准翻译</div></div></div>
-注意：只有“说出口的话”需要双语包裹，动作神态描写（如线下模式的括号内旁白或线上模式的inner_voice）依然保持纯中文，绝不包裹在双语标签内！`;
+【语音消息专属格式】：如果你要发语音，必须把上面这段完整的 HTML 结构，原封不动地塞进 [voice:秒数:内容] 的内容里！
+例如：[voice:5:<div class="bubble-bilingual show-zh" onclick="this.classList.toggle('show-zh')"><div class="bilingual-foreign">原文</div><div class="bilingual-zh-wrap"><hr class="bilingual-divider"><div class="bilingual-zh">翻译</div></div></div>]
+注意：只有说出口的话需要双语包裹，内心OS和动作描写保持纯中文。`;
       }
+    
       // ==========================================
       // 🧠 蓝色的外挂记忆注入引擎 (时光档案馆专属) 🧠
       const allMems = await getMemories();
