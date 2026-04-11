@@ -13513,5 +13513,31 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
 
 })();
   </script>
+  <!-- ✦ 蓝色高定：终极表情包寻回犬引擎 ✦ -->
+<script>
+(function() {
+  if (!window.__stickerGetById_patched) {
+    window.__stickerGetById_patched = true;
+    
+    // 强制覆盖旧的笨蛋组件，接管全局表情包匹配大权！
+    window.__stickerGetById = function(id) {
+      const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
+      if (!all || all.length === 0) return null;
+      
+      // 🔪 蓝色的手术刀：强行剥离所有干扰前缀 (stk:, st:, st_)，直击灵魂数字！
+      const norm = s => String(s).replace(/^(stk:|st:|st_)/i, '').trim();
+      const target = norm(id);
+      
+      // 🎯 第一道绝对防线：灵魂数字精准匹配！
+      const exact = all.find(x => norm(x.id) === target);
+      if (exact) return exact;
+      
+      // 🎯 第二道智能防线：如果 AI 偷懒直接发了汉字名字，启动模糊搜索兜底！
+      const fuzzy = all.find(x => x.name && (String(id).includes(x.name) || x.name.includes(String(id))));
+      return fuzzy || null;
+    };
+  }
+})();
+</script>
 </body>
   </html>
