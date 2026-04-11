@@ -2239,6 +2239,12 @@ body {
             </div>
             <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">灵感碎片</span>
           </div>
+          <div class="ios-icon" onclick="show('shoppingApp'); window._initShoppingApp();">
+  <div class="ibg" style="background:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
+    <svg viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+  </div>
+  <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">海盐优选</span>
+          </div>
         </div>
       </div> <!-- 第二页的大门关上！ -->
 
@@ -2415,6 +2421,20 @@ body {
   @keyframes momentsSpin { to { transform: rotate(360deg); } }
 #momentsRefreshBtn.is-loading { pointer-events:none; opacity:.75; }
 #momentsRefreshBtn.is-loading svg { animation: momentsSpin .9s linear infinite; transform-origin:center; }
+  /* 🛍️ 蓝色高定：海盐优选 App 与 购物卡片专属美学 */
+#shoppingApp .page { background: linear-gradient(180deg, #f4f6fb, #eef4fa); padding: 16px; }
+.shop-search-box { display: flex; gap: 10px; margin-bottom: 16px; position: sticky; top: 0; z-index: 10; background: rgba(238,244,250,0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 12px; border-radius: 16px; border: 1px solid #dce5f0; box-shadow: 0 8px 24px rgba(92,112,148,0.05); }
+.shop-item-card { background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid #dce5f0; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 4px 16px rgba(92,112,148,0.03); transition: transform 0.2s; display: flex; flex-direction: column; gap: 8px; }
+.shop-item-card:active { transform: scale(0.97); background: rgba(238,244,250,0.9); }
+.shop-price { font-size: 18px; font-weight: 900; color: #5c7094; font-family: ui-monospace, monospace; }
+
+/* 聊天框里的双向订单卡片 */
+.card-shopping { background: rgba(250,252,255,0.85) !important; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid #dce5f0 !important; border-radius: 16px !important; padding: 16px !important; width: 240px !important; box-shadow: 0 8px 24px rgba(92,112,148,0.06) !important; cursor: pointer; transition: transform 0.2s; }
+.card-shopping:active { transform: scale(0.96); }
+.card-shopping .cs-hd { font-size: 11px; color: #a5cfff; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; letter-spacing: 1px; }
+.card-shopping .cs-title { font-size: 14px; font-weight: bold; color: #3d4a6a; margin-bottom: 6px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card-shopping .cs-price { font-size: 16px; font-weight: 900; color: #5c7094; font-family: ui-monospace, monospace; }
+.card-shopping .cs-ft { font-size: 11px; color: #7a86a8; margin-top: 10px; border-top: 1px dashed #dce5f0; padding-top: 10px; display: flex; justify-content: space-between; }
 </style>
 
 <script>
@@ -3242,7 +3262,30 @@ body {
       <div id="favList" class="list"></div>
     </div>
   </section>
+<section id="shoppingApp" class="screen">
+  <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
+    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px;">‹ 桌面</button>
+    <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">海盐优选</b>
+    <button class="btn" onclick="window._showOrderHistory()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px;">订单</button>
+  </div>
+  <div class="page">
+    <div class="shop-search-box">
+      <input id="shopSearchInput" class="input" placeholder="想买点什么？输入任意词..." style="flex:1; background:rgba(255,255,255,0.7); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; outline:none;">
+      <button class="btn p" onclick="window._doShopSearch()" id="shopSearchBtn" style="border-radius:12px; padding:0 16px;">搜索</button>
+    </div>
+    <div id="shopResultList" style="display:flex; flex-direction:column;">
+      <div style="text-align:center; padding:60px 0; color:#a0aaba; font-size:13px;">输入你想买的东西，AI 会为你实时上架商品哦</div>
+    </div>
+  </div>
+</section>
 
+<!-- 挑选送给谁的弹窗 -->
+<div id="shopContactModal" class="modal" style="z-index: 10001;" onclick="this.classList.remove('active')">
+  <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:24px;" onclick="event.stopPropagation()">
+    <div style="font-size:15px; font-weight:bold; color:#3d4a6a; margin-bottom:16px;">这件礼物要寄给谁？</div>
+    <div id="shopContactList" style="display:flex; flex-direction:column; gap:10px; max-height:300px; overflow-y:auto;"></div>
+  </div>
+</div>
   <section id="api" class="screen">
   <div class="header" style="background:rgba(255,255,255,0.85); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid #dce5f0;">
     <button class="btn" data-nav="home" style="background:#f4f6fb; color:#5c7094; border:1px solid #dce5f0; font-weight:600; border-radius:10px; padding:6px 12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 返回</button>
@@ -5067,7 +5110,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 `valid: {"messages":["...","..."]}`,
 `example: {"messages":["你干嘛","神经病吧","我去吃饭了"]}`,
 `fatal_pattern: 【状态栏】→BLOCK | （动作）→BLOCK`,
-`【渲染提示】：收到对方红包时选择----【领取】输出：<div class="card-redpacket received"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">已领取</div><div class="rp-sub">微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><div class="rp-opened">已领取</div></div></div>；【拒绝】输出：<div class="card-redpacket rejected"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">已退回</div><div class="rp-sub">微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><div class="rp-opened">已退回</div></div></div>。收到转账时选择----【收款】输出：<div class="card-transfer received"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">已收款</div><div class="ct-note">微信转账</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><div class="ct-received">✓ 已收款</div></div></div>；【拒收】输出：<div class="card-transfer rejected"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">已退回</div><div class="ct-note">微信转账</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><div class="ct-received">已退回</div></div></div>。AI主动发红包：<div class="card-redpacket"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">祝福语</div><div class="rp-sub">¥金额 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>。AI主动发转账：<div class="card-transfer"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">¥金额</div><div class="ct-note">备注</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><button class="ct-btn">确认收款</button></div></div>。发礼物：<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">礼物名</div><div class="gift-note">留言</div></div>。发定位：<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">地点名</div><div class="loc-addr">地址</div></div></div>。卡片必须是纯HTML字符串放在messages数组元素里，禁止JSON对象格式。收到红包/转账时只输出卡片HTML，前后不能有任何文字。文字回应单独作为一条messages元素。收到红包/转账时，只能输出一个messages元素，且该元素只能是卡片HTML，绝对不允许出现任何文字、标点、换行在同一个元素里。发红包/转账/礼物/定位时，必须原样复制上方提供的HTML模板，禁止修改任何class名、标签结构或内联样式，只替换金额/祝福语等文字内容。【文字摄像机】如果你想主动定格当前的绝美氛围或画面，可以主动发送文字相片，必须原样输出：<div class="card-camera"><div class="cam-photo">这里写极具画面感、氛围感的场景描写</div><div class="cam-footer"><svg class="cam-icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg><span class="cam-time">刚刚</span></div></div>。该卡片必须单独作为一条messages元素，绝对禁止和纯文本对话混在一起。`,
+`【渲染提示】：收到对方红包时选择----【领取】输出：<div class="card-redpacket received"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">已领取</div><div class="rp-sub">微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><div class="rp-opened">已领取</div></div></div>；【拒绝】输出：<div class="card-redpacket rejected"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">已退回</div><div class="rp-sub">微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><div class="rp-opened">已退回</div></div></div>。收到转账时选择----【收款】输出：<div class="card-transfer received"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">已收款</div><div class="ct-note">微信转账</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><div class="ct-received">✓ 已收款</div></div></div>；【拒收】输出：<div class="card-transfer rejected"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">已退回</div><div class="ct-note">微信转账</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><div class="ct-received">已退回</div></div></div>。AI主动发红包：<div class="card-redpacket"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">祝福语</div><div class="rp-sub">¥金额 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>。AI主动发转账：<div class="card-transfer"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">¥金额</div><div class="ct-note">备注</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><button class="ct-btn">确认收款</button></div></div>。发礼物：<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">礼物名</div><div class="gift-note">留言</div></div>。发定位：<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">地点名</div><div class="loc-addr">地址</div></div></div>。卡片必须是纯HTML字符串放在messages数组元素里，禁止JSON对象格式。收到红包/转账时只输出卡片HTML，前后不能有任何文字。文字回应单独作为一条messages元素。收到红包/转账时，只能输出一个messages元素，且该元素只能是卡片HTML，绝对不允许出现任何文字、标点、换行在同一个元素里。发红包/转账/礼物/定位时，必须原样复制上方提供的HTML模板，禁止修改任何class名、标签结构或内联样式，只替换金额/祝福语等文字内容。【文字摄像机】如果你想主动定格当前的绝美氛围或画面，可以主动发送文字相片，必须原样输出：<div class="card-camera"><div class="cam-photo">这里写极具画面感、氛围感的场景描写</div><div class="cam-footer"><svg class="cam-icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg><span class="cam-time">刚刚</span></div></div>。该卡片必须单独作为一条messages元素，绝对禁止和纯文本对话混在一起。AI主动网购送礼：如果你想主动给玩家买东西制造惊喜，必须原样输出以下卡片：[名字]：<div class="card-shopping"><div class="cs-hd"><svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2;"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> 海盐优选 · 为你下单</div><div class="cs-title">商品描述(如: 冰镇多肉葡萄)</div><div class="cs-price">¥金额</div><div class="cs-ft"><span>包裹正向你飞奔而去 📦</span></div></div>。该卡片必须单独作为一条 messages 元素！`,
 `【外卖互动】用户发美团外卖卡片时，说明是给你点的外卖，请自然地表达收到外卖的反应（感谢/心疼/嫌弃等，根据人设来）。`,
 `【图片卡片】AI主动发模拟图片卡片时，必须原样输出：<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('IMG_URL') center/cover no-repeat;"></div><div class="fi-desc">描述文字</div></div>。其中IMG_URL根据语境从以下选1(美食:https://file.ljcdn.com/psd-sinan-file/prod/appeal_evidence/89BD133FF0F6435D9894B7784223F51E/qdqqd.jpeg, 风景:https://img.chery.cn/chery-prod/mobile/community/0/19b814b0-16cf-44ac-b438-9c2d19a9575b.jpeg, 自拍:https://cdncs.ykt.cbern.com.cn/v0.1/download?path=/zxx_feedback/qdqqd/1774294074883.png, 夜晚:https://nos.netease.com/ysf/6636f68317710ab9657fa15b4e4ed52c.jpeg, 默认:https://cn.oilgasgpts.com/resource/profile/2026/04/08/vJowdrs5_vip_20260408120622A108.jpeg)。fi-desc必须纯粹细致地描写"这张照片画面里拍到了什么"，绝对禁止在里面写聊天文案或对话。AI可主动发美团外卖卡片，class用card-meituan。两种卡片均单独作为一条messages元素，禁止和文字混在同一条里。`,
     ].join('\n');
@@ -5123,7 +5166,7 @@ fatal_pattern: {"messages":...}→BLOCK`;
 mode=CHAT_JSON | reject=OFFLINE_RP,ACTION_DESC,NARRATION
 valid: {"messages":["[名字]：...","[名字]：..."]}
 fatal_pattern: 【状态栏】→BLOCK | （动作）→BLOCK | 无[名字]：前缀→BLOCK
-【渲染提示】：收到对方红包时选择----【领取】输出：[名字]：<div class="card-redpacket received"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">已领取</div><div class="rp-sub">微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><div class="rp-opened">已领取</div></div></div>；【拒绝】输出：[名字]：<div class="card-redpacket rejected"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">已退回</div><div class="rp-sub">微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><div class="rp-opened">已退回</div></div></div>。收到转账时选择----【收款】输出：[名字]：<div class="card-transfer received"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">已收款</div><div class="ct-note">微信转账</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><div class="ct-received">✓ 已收款</div></div></div>；【拒收】输出：[名字]：<div class="card-transfer rejected"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">已退回</div><div class="ct-note">微信转账</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><div class="ct-received">已退回</div></div></div>。AI主动发红包：[名字]：<div class="card-redpacket"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">祝福语</div><div class="rp-sub">¥金额 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>。AI主动发转账：[名字]：<div class="card-transfer"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">¥金额</div><div class="ct-note">备注</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><button class="ct-btn">确认收款</button></div></div>。发礼物：[名字]：<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">礼物名</div><div class="gift-note">留言</div></div>。发定位：[名字]：<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">地点名</div><div class="loc-addr">地址</div></div></div>。卡片必须是纯HTML字符串放在messages数组元素里，禁止JSON对象格式。收到红包/转账时只输出卡片HTML（含名字前缀），前后不能有任何文字。文字回应单独作为一条messages元素。收到红包/转账时，只能输出一个messages元素，且该元素只能是[名字]：+卡片HTML，绝对不允许出现任何额外文字、标点、换行。违反即为fatal error。发红包/转账/礼物/定位时，必须原样复制上方提供的HTML模板，禁止修改任何class名、标签结构或内联样式，只替换金额/祝福语等文字内容。【文字摄像机】如果你想主动定格当前的绝美氛围或画面，可以主动发送文字相片，必须原样输出：<div class="card-camera"><div class="cam-photo">这里写极具画面感、氛围感的场景描写</div><div class="cam-footer"><svg class="cam-icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg><span class="cam-time">刚刚</span></div></div>。该卡片必须单独作为一条messages元素，绝对禁止和纯文本对话混在一起。
+【渲染提示】：收到对方红包时选择----【领取】输出：[名字]：<div class="card-redpacket received"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">已领取</div><div class="rp-sub">微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><div class="rp-opened">已领取</div></div></div>；【拒绝】输出：[名字]：<div class="card-redpacket rejected"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">已退回</div><div class="rp-sub">微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><div class="rp-opened">已退回</div></div></div>。收到转账时选择----【收款】输出：[名字]：<div class="card-transfer received"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">已收款</div><div class="ct-note">微信转账</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><div class="ct-received">✓ 已收款</div></div></div>；【拒收】输出：[名字]：<div class="card-transfer rejected"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">已退回</div><div class="ct-note">微信转账</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><div class="ct-received">已退回</div></div></div>。AI主动发红包：[名字]：<div class="card-redpacket"><div class="rp-main"><div class="rp-icon">🧧</div><div><div class="rp-title">祝福语</div><div class="rp-sub">¥金额 微信红包</div></div></div><hr class="rp-divider"><div class="rp-footer"><div class="rp-label">微信红包</div><button class="rp-btn">点击领取</button></div></div>。AI主动发转账：[名字]：<div class="card-transfer"><div class="ct-header"><span>💸</span>微信转账</div><div class="ct-amount">¥金额</div><div class="ct-note">备注</div><hr class="ct-divider"><div class="ct-footer"><div class="ct-label">微信安全转账</div><button class="ct-btn">确认收款</button></div></div>。发礼物：[名字]：<div class="card-gift"><div class="gift-icon">🎁</div><div class="gift-name">礼物名</div><div class="gift-note">留言</div></div>。发定位：[名字]：<div class="card-location"><div class="loc-map">📍</div><div class="loc-info"><div class="loc-name">地点名</div><div class="loc-addr">地址</div></div></div>。卡片必须是纯HTML字符串放在messages数组元素里，禁止JSON对象格式。收到红包/转账时只输出卡片HTML（含名字前缀），前后不能有任何文字。文字回应单独作为一条messages元素。收到红包/转账时，只能输出一个messages元素，且该元素只能是[名字]：+卡片HTML，绝对不允许出现任何额外文字、标点、换行。违反即为fatal error。发红包/转账/礼物/定位时，必须原样复制上方提供的HTML模板，禁止修改任何class名、标签结构或内联样式，只替换金额/祝福语等文字内容。【文字摄像机】如果你想主动定格当前的绝美氛围或画面，可以主动发送文字相片，必须原样输出：<div class="card-camera"><div class="cam-photo">这里写极具画面感、氛围感的场景描写</div><div class="cam-footer"><svg class="cam-icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg><span class="cam-time">刚刚</span></div></div>。该卡片必须单独作为一条messages元素，绝对禁止和纯文本对话混在一起。AI主动网购送礼：如果你想主动给玩家买东西制造惊喜，必须原样输出以下卡片：[名字]：<div class="card-shopping"><div class="cs-hd"><svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2;"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> 海盐优选 · 为你下单</div><div class="cs-title">商品描述(如: 冰镇多肉葡萄)</div><div class="cs-price">¥金额</div><div class="cs-ft"><span>包裹正向你飞奔而去 📦</span></div></div>。该卡片必须单独作为一条 messages 元素！
 【外卖互动】用户发美团外卖卡片时，说明是给你点的外卖，请自然地表达收到外卖的反应（感谢/心疼/嫌弃等，根据人设来）。
 【图片卡片】AI主动发模拟图片卡片时，必须原样输出：[名字]：<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('IMG_URL') center/cover no-repeat;"></div><div class="fi-desc">描述文字</div></div>。其中IMG_URL根据语境从以下选1(美食/风景/自拍/夜晚/默认)。fi-desc必须纯粹细致地描写"这张照片画面里拍到了什么"，绝对禁止在里面写聊天文案或对话，聊天的话必须单独新建一条气泡。AI可主动发美团外卖卡片，[名字]：class用card-meituan。两种卡片均单独作为一条messages元素，禁止和文字混在同一条里，且【绝对禁止】加上<!DOCTYPE html>或<html>标签。`;
     }
@@ -13057,6 +13100,118 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
   };
 
 })();
+  // 🌟 蓝色高定：海盐优选核心引擎与外挂内存双写
+const K_SHOP_ORDERS = 'mp_fix_shopping_orders';
+window._tempShopItem = null;
+
+window._initShoppingApp = async function() {
+  const orders = await localforage.getItem(K_SHOP_ORDERS) || [];
+  // 确保内存抽屉存在
+  if(!await localforage.getItem(K_SHOP_ORDERS)) await localforage.setItem(K_SHOP_ORDERS, []);
+};
+
+window._doShopSearch = async function() {
+  const kw = document.getElementById('shopSearchInput').value.trim();
+  if(!kw) return alert('宝宝，输入点什么再搜吧！');
+  
+  const btn = document.getElementById('shopSearchBtn');
+  const list = document.getElementById('shopResultList');
+  btn.textContent = '搜寻中'; btn.style.pointerEvents = 'none';
+  list.innerHTML = `<div style="text-align:center; padding:40px 0; color:#5c7094; font-size:13px; font-weight:bold;">
+    <div style="width:32px; height:32px; border:3px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite; margin:0 auto 12px;"></div>
+    AI 供应链调取中...
+  </div>`;
+
+  const sysPrompt = `你是一个逼真的电商数据库。玩家搜索了关键词："${kw}"。
+请生成 4 个非常真实、符合市价的商品。
+必须返回严格的 JSON 数组：[{"title": "商品完整名称，带有吸引人的电商形容词", "price": "128.50"}]`;
+
+  try {
+    const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻返回这 4 个商品！' }]);
+    const match = out.replace(/\`\`\`json|\`\`\`/g, '').trim().match(/\[[\s\S]*\]/);
+    if(!match) throw new Error('数据乱流');
+    const items = JSON.parse(match[0]);
+    
+    list.innerHTML = items.map((item, idx) => `
+      <div class="shop-item-card">
+        <div style="font-size:14px; font-weight:bold; color:#3d4a6a; line-height:1.5;">${safeEsc(item.title)}</div>
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:8px;">
+          <span class="shop-price">¥${item.price}</span>
+          <button class="btn p" onclick="window._prepBuyItem('${safeEsc(item.title)}', '${item.price}')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:4px 16px; font-size:12px; box-shadow:none;">送给TA</button>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    list.innerHTML = `<div style="text-align:center; padding:40px 0; color:#b57b7b;">搜索失败了：${e.message}</div>`;
+  } finally {
+    btn.textContent = '搜索'; btn.style.pointerEvents = 'auto';
+  }
+};
+
+window._prepBuyItem = function(title, price) {
+  window._tempShopItem = { title, price };
+  const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
+  const box = document.getElementById('shopContactList');
+  box.innerHTML = contacts.map(c => `
+    <div onclick="window._executeBuy('${c.id}')" style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8fafc; border:1px solid #dce5f0; border-radius:12px; cursor:pointer;">
+      <img src="${c.avatar || 'https://via.placeholder.com/40'}" style="width:40px; height:40px; border-radius:10px; object-fit:cover;">
+      <b style="color:#5c7094; font-size:14px;">${safeEsc(c.name)}</b>
+    </div>
+  `).join('');
+  document.getElementById('shopContactModal').classList.add('active');
+};
+
+window._executeBuy = async function(chatId) {
+  if(!window._tempShopItem) return;
+  const { title, price } = window._tempShopItem;
+  
+  // 组装极简高级的购物卡片
+  const cardHtml = `
+    <div class="card-shopping">
+      <div class="cs-hd">
+        <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2;"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+        海盐优选 · 心意速达
+      </div>
+      <div class="cs-title">${safeEsc(title)}</div>
+      <div class="cs-price">¥${price}</div>
+      <div class="cs-ft"><span>包裹正向你飞奔而去 📦</span></div>
+    </div>
+  `;
+
+  // 推入聊天流
+  const arr = window.getChatArr(chatId) || [];
+  arr.push({ id: 'm_' + Date.now(), role: 'user', text: cardHtml, time: Date.now(), stored: true });
+  window.setChatArr(chatId, arr);
+  
+  // 存入外挂内存
+  const orders = await localforage.getItem(K_SHOP_ORDERS) || [];
+  orders.unshift({ title, price, toId: chatId, time: Date.now() });
+  await localforage.setItem(K_SHOP_ORDERS, orders);
+
+  document.getElementById('shopContactModal').classList.remove('active');
+  alert('✨ 下单成功！礼物已经送到聊天框里啦！');
+  
+  if (window.currentId === chatId && typeof window.renderChat === 'function') window.renderChat();
+  if (typeof window.updateContactPreview === 'function') window.updateContactPreview(chatId);
+  
+  // 唤醒 AI，让 TA 收到礼物产生反应
+  const hiddenPrompt = `【系统指令】：玩家刚刚通过网购给你买了一份礼物，订单信息包含：商品名“${title}”，价格“¥${price}”。请你根据你的人设，自然地表达收到礼物的反应。`;
+  if(typeof window._sendToAI === 'function') window._sendToAI(chatId, hiddenPrompt, true);
+};
+
+window._showOrderHistory = async function() {
+  const orders = await localforage.getItem(K_SHOP_ORDERS) || [];
+  let html = orders.map(o => `
+    <div style="background:#fff; border:1px solid #dce5f0; border-radius:12px; padding:12px; margin-bottom:8px;">
+      <div style="font-size:13px; font-weight:bold; color:#3d4a6a; margin-bottom:4px;">${safeEsc(o.title)}</div>
+      <div style="font-size:11px; color:#7a86a8; display:flex; justify-content:space-between;">
+        <span>实付: ¥${o.price}</span><span>${new Date(o.time).toLocaleString()}</span>
+      </div>
+    </div>
+  `).join('');
+  if(!html) html = '<div style="text-align:center; padding:40px 0; color:#a0aaba;">暂无订单记录</div>';
+  document.getElementById('shopResultList').innerHTML = html;
+};
 </script>
 </body>
   </html>
