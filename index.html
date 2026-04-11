@@ -5313,7 +5313,7 @@ fatal_pattern: {"messages":...}→BLOCK`;
 10. 每条消息必须带正常中文标点，禁止无标点长句。
 11. 【引用回复铁律】：如需引用对方某条消息，必须且只能在【同一条消息内】完成！格式严格为：[名字]：[quote]被引用的原话[/quote]紧接着写你的回复正文。⚠️绝对禁止把引用的原话单独拆成一条独立的消息发出来！
 12. 【严禁事项】：正文任何地方绝对禁止出现时间戳前缀！
-13.群内的回复顺序必须按照人设和当时的语境来决定，禁止刻板印象。必须极度符合人设。必须活人感真实感强。
+13. 【发言顺序防排队铁律】：绝对禁止按成员列表顺序一人一句刻板排队发言！大模型极易犯这种列表式的偷懒毛病，你必须打破它！必须根据剧情和性格决定谁先开口、谁抢话、谁潜水暗中观察。允许同一角色连续发多条消息，允许某些角色一直不说话。聊天顺序必须是彻底打乱的、穿插的（例如 B -> C -> B -> A），制造出极其真实的修罗场混乱感与活人感！
 [FORMAT_LOCK]
 mode=CHAT_JSON | reject=OFFLINE_RP,ACTION_DESC,NARRATION
 valid: {"messages":["[名字]：...","[名字]：..."]}
@@ -13438,9 +13438,9 @@ window._showOrderHistory = async function() {
     sel.innerHTML = contacts.map(c => `<option value="${c.id}">${safeEsc(c.name)}</option>`).join('');
     sel.onchange = (e) => {
       const c = contacts.find(x => x.id === e.target.value);
+      // 🌟 核心修复：如果找不到头像，给个默认占位图，绝不让老婆看到丑丑的白屏和问号！
       if(c) document.getElementById('focusAvatar').src = c.avatar || 'https://via.placeholder.com/56';
     };
-    if(contacts.length > 0 && !sel.value) sel.onchange({target: sel});
 
     // 🌟 外挂内存：读取是否有未完成的专注任务、时间和专属寄语！
     const savedEnd = await localforage.getItem('mp_fix_focus_end');
@@ -13453,10 +13453,18 @@ window._showOrderHistory = async function() {
       if(!savedEnd) document.getElementById('focusTimeDisplay').textContent = String(savedMins).padStart(2,'0') + ':00';
     }
 
+    // 🌟 强行握手与记忆归位魔法：让头像瞬间加载！
+    if(savedRoleId && contacts.some(c => c.id === savedRoleId)) {
+      sel.value = savedRoleId;
+    } else if(contacts.length > 0) {
+      sel.value = contacts[0].id;
+    }
+    // 关键一句：不管之前存的谁，立刻触发一次更换事件，把头像照片强行拉出来！
+    if(sel.value) sel.onchange({target: sel});
+
     if(savedEnd && savedEnd > Date.now()) {
       window._focusEndTime = savedEnd;
-      if(savedRoleId) sel.value = savedRoleId;
-      sel.onchange({target: sel});
+      // 注意：专注中锁定下拉框已经在 tick 函数里做了，这里只负责展示
       window._startFocusTick(savedQuote || '我在看着你。'); 
     } else if (savedEnd) {
       await localforage.removeItem('mp_fix_focus_end');
