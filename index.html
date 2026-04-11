@@ -13103,7 +13103,7 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
   // 🌟 蓝色高定：海盐优选核心引擎与外挂内存双写
 const K_SHOP_ORDERS = 'mp_fix_shopping_orders';
 window._tempShopItem = null;
-
+const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 window._initShoppingApp = async function() {
   const orders = await localforage.getItem(K_SHOP_ORDERS) || [];
   // 确保内存抽屉存在
