@@ -13320,7 +13320,7 @@ window._showOrderHistory = async function() {
   if(!html) html = '<div style="text-align:center; padding:40px 0; color:#a0aaba;">暂无订单记录</div>';
   document.getElementById('shopResultList').innerHTML = html;
 };
-  // ================= 🌟 蓝色高定：同频专注舱核心引擎 =================
+ // ================= 🌟 蓝色高定：同频专注舱核心引擎 (AI灵魂版) =================
   window._focusTimer = null;
   window._focusEndTime = 0;
   
@@ -13329,7 +13329,6 @@ window._showOrderHistory = async function() {
     const sel = document.getElementById('focusRoleSelect');
     if(!sel) return;
 
-    // 填充男主列表
     sel.innerHTML = contacts.map(c => `<option value="${c.id}">${safeEsc(c.name)}</option>`).join('');
     sel.onchange = (e) => {
       const c = contacts.find(x => x.id === e.target.value);
@@ -13337,24 +13336,25 @@ window._showOrderHistory = async function() {
     };
     if(contacts.length > 0 && !sel.value) sel.onchange({target: sel});
 
-    // 🌟 外挂内存：读取是否有未完成的专注任务！
+    // 🌟 外挂内存：读取是否有未完成的专注任务和专属寄语！
     const savedEnd = await localforage.getItem('mp_fix_focus_end');
     const savedRoleId = await localforage.getItem('mp_fix_focus_role');
+    const savedQuote = await localforage.getItem('mp_fix_focus_quote');
     
     if(savedEnd && savedEnd > Date.now()) {
       window._focusEndTime = savedEnd;
       if(savedRoleId) sel.value = savedRoleId;
       sel.onchange({target: sel});
-      window._startFocusTick(); // 恢复齿轮运转
+      window._startFocusTick(savedQuote || '我在看着你。'); 
     } else if (savedEnd) {
-      // 已经过期了，说明已经专注完成了！
       await localforage.removeItem('mp_fix_focus_end');
+      await localforage.removeItem('mp_fix_focus_quote');
       document.getElementById('focusQuote').textContent = '刚才的专注完成啦，真棒！';
       document.getElementById('focusTimeDisplay').textContent = '25:00';
     }
   };
 
-  window._startFocusTick = function() {
+  window._startFocusTick = function(customQuote) {
     const btn = document.getElementById('focusActionBtn');
     const display = document.getElementById('focusTimeDisplay');
     const ring = document.getElementById('focusAvatarRing');
@@ -13368,14 +13368,13 @@ window._showOrderHistory = async function() {
     ring.style.display = 'block';
     sel.disabled = true;
     
-    const contactName = sel.options[sel.selectedIndex]?.text || '我';
-    quote.textContent = `乖，专心点，${contactName}看着你呢。`;
+    // 渲染 AI 专属语录
+    quote.textContent = customQuote || `乖，专心点。`;
 
     if(window._focusTimer) clearInterval(window._focusTimer);
     window._focusTimer = setInterval(async () => {
       const left = Math.round((window._focusEndTime - Date.now()) / 1000);
       if(left <= 0) {
-        // 🌟 专注完成！
         clearInterval(window._focusTimer);
         display.textContent = '00:00';
         btn.textContent = '开始';
@@ -13386,6 +13385,7 @@ window._showOrderHistory = async function() {
         sel.disabled = false;
         quote.textContent = '时间到啦！去休息一下吧 🤍';
         await localforage.removeItem('mp_fix_focus_end');
+        await localforage.removeItem('mp_fix_focus_quote');
         if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
       } else {
         const m = String(Math.floor(left / 60)).padStart(2, '0');
@@ -13397,30 +13397,82 @@ window._showOrderHistory = async function() {
 
   window._toggleFocusTimer = async function() {
     const btn = document.getElementById('focusActionBtn');
+    const sel = document.getElementById('focusRoleSelect');
+    const quoteEl = document.getElementById('focusQuote');
+    const c = (window.getContacts ? window.getContacts() : []).find(x => x.id === sel.value);
+    if(!c) return alert('宝宝，请先在通讯录里建一个角色哦！');
+
     if(btn.textContent === '放弃') {
-      if(!confirm('真的要提前放弃专注吗？TA还在默默陪着你哦...')) return;
-      clearInterval(window._focusTimer);
-      await localforage.removeItem('mp_fix_focus_end');
-      document.getElementById('focusTimeDisplay').textContent = '25:00';
-      btn.textContent = '开始';
-      btn.style.background = 'linear-gradient(135deg, #eef4fa, #dce5f0)';
-      btn.style.color = '#5c7094';
-      btn.style.borderColor = '#cdd7e8';
-      document.getElementById('focusAvatarRing').style.display = 'none';
-      document.getElementById('focusRoleSelect').disabled = false;
-      document.getElementById('focusQuote').textContent = '选个时间，我陪你。';
+      // 🌟 唤起海盐蓝定制挽留弹窗
+      document.getElementById('focusQuitAvatar').src = c.avatar || 'https://via.placeholder.com/64';
+      document.getElementById('focusQuitText').textContent = '正在连接 TA 的脑电波...';
+      document.getElementById('focusQuitModal').classList.add('active');
+      
+      // 异步请求 AI 挽留文案
+      try {
+        const sysPrompt = `你现在是：${c.name}。人设：${c.persona}。玩家正在进行专注任务（如学习/工作），但在中途想要放弃。请以【第一人称视角】说一句符合你人设的话来挽留她、嘲讽她或心疼她。要求：极具活人感，符合性格，【字数必须在20字以内】，不要任何动作描写，不要带名字前缀，直接输出对话内容即可。`;
+        const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '我不想努力了，我想放弃专注...' }]);
+        // 强力净化多余的符号
+        const finalQuote = out.replace(/```json|```/g, '').replace(/^{.*"messages"\s*:\s*\["|"\].*}$/g, '').replace(/^["'「”]+|["'」”]+$/g, '').trim();
+        document.getElementById('focusQuitText').textContent = `"${finalQuote}"`;
+      } catch(e) {
+        document.getElementById('focusQuitText').textContent = '"真的要半途而废吗？我还在陪着你呢..."';
+      }
     } else {
-      // 🌟 默认 25 分钟（可改）
+      // 🌟 开启专注与请求开场白
       window._focusEndTime = Date.now() + 25 * 60 * 1000; 
-      const sel = document.getElementById('focusRoleSelect');
       await localforage.setItem('mp_fix_focus_end', window._focusEndTime);
       await localforage.setItem('mp_fix_focus_role', sel.value);
-      window._startFocusTick();
+      
+      quoteEl.textContent = '正在获取 TA 的专注寄语...';
+      btn.textContent = '准备中';
+      btn.style.pointerEvents = 'none';
+
+      try {
+        const sysPrompt = `你现在是：${c.name}。人设：${c.persona}。玩家即将开始一个为期25分钟的专注任务（学习或工作），并选择你来陪伴。请以【第一人称视角】说一句鼓励、监督或傲娇的话。要求：极具活人感，符合性格，【字数必须在20字以内】，不要任何动作描写，不要带名字前缀，直接输出对话内容。`;
+        const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '我准备开始专注啦，陪着我！' }]);
+        const finalQuote = out.replace(/```json|```/g, '').replace(/^{.*"messages"\s*:\s*\["|"\].*}$/g, '').replace(/^["'「”]+|["'」”]+$/g, '').trim();
+        await localforage.setItem('mp_fix_focus_quote', finalQuote);
+        window._startFocusTick(finalQuote);
+      } catch(e) {
+        const fallback = `乖，专心点，我看着你呢。`;
+        await localforage.setItem('mp_fix_focus_quote', fallback);
+        window._startFocusTick(fallback);
+      } finally {
+        btn.style.pointerEvents = 'auto';
+      }
     }
+  };
+
+  window._confirmFocusQuit = async function() {
+    clearInterval(window._focusTimer);
+    await localforage.removeItem('mp_fix_focus_end');
+    await localforage.removeItem('mp_fix_focus_quote');
+    document.getElementById('focusTimeDisplay').textContent = '25:00';
+    const btn = document.getElementById('focusActionBtn');
+    btn.textContent = '开始';
+    btn.style.background = 'linear-gradient(135deg, #eef4fa, #dce5f0)';
+    btn.style.color = '#5c7094';
+    btn.style.borderColor = '#cdd7e8';
+    document.getElementById('focusAvatarRing').style.display = 'none';
+    document.getElementById('focusRoleSelect').disabled = false;
+    document.getElementById('focusQuote').textContent = '选个时间，我陪你。';
+    document.getElementById('focusQuitModal').classList.remove('active');
   };
 
   // 保证每次开机或刷新时，初始化舱体
   setTimeout(() => { window._initFocusCabin(); }, 1000);
 </script>
+  <!-- 🌟 蓝色高定：沉浸式专注挽留弹窗 -->
+<div id="focusQuitModal" class="modal" style="z-index: 10002;">
+  <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:24px; padding:24px; text-align:center;">
+    <img id="focusQuitAvatar" src="" style="width:64px; height:64px; border-radius:50%; object-fit:cover; border:2px solid #fff; box-shadow:0 4px 12px rgba(92,112,148,0.15); margin:0 auto 16px;">
+    <div id="focusQuitText" style="font-size:15px; color:#3d4a6a; font-weight:bold; line-height:1.6; margin-bottom:24px; font-style:italic;">"正在感知 TA 的脑电波..."</div>
+    <div style="display:flex; gap:12px; justify-content:center;">
+      <button class="btn" onclick="document.getElementById('focusQuitModal').classList.remove('active')" style="flex:1; background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:12px; padding:10px 0; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">继续专注</button>
+      <button class="btn d" onclick="window._confirmFocusQuit()" style="flex:1; background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid #f2dcdc; border-radius:12px; padding:10px 0; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">狠心放弃</button>
+    </div>
+  </div>
+</div>
 </body>
   </html>
