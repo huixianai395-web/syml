@@ -2201,14 +2201,19 @@ body {
             <div style="font-size: 11px; color: #7a86a8; font-weight: 600; margin-bottom: 6px;">备忘录</div>
             <textarea id="homeMemoText" style="flex: 1; width: 100%; background: transparent; border: none; resize: none; font-size: 12px; color: #4a5c82; line-height: 1.5; outline: none; font-family: inherit;" placeholder="写点什么吧..."></textarea>
           </div>
-          <div class="ios-widget" style="flex: 1; padding: 12px 14px; display: flex; flex-direction: column;">
+          <div class="ios-widget" style="flex: 1; padding: 12px 14px; display: flex; flex-direction: column; position: relative;">
             <div style="font-size: 11px; color: #7a86a8; font-weight: 600; margin-bottom: 6px;"> 小目标</div>
             <input id="homeGoalTitle" style="width: 100%; background: transparent; border: none; font-size: 13px; color: #3d4a6a; font-weight: 600; outline: none; margin-bottom: 2px;" placeholder="例如：考研/发薪">
-            <div style="display: flex; align-items: baseline; gap: 4px;">
+            
+            <!-- 🌟 蓝色高定：点击触发隐形日历的倒计时引擎 -->
+            <div style="display: flex; align-items: baseline; gap: 4px; cursor: pointer;" onclick="document.getElementById('homeGoalDate').showPicker ? document.getElementById('homeGoalDate').showPicker() : document.getElementById('homeGoalDate').click()">
               <span style="font-size: 11px; color: #7a86a8;">剩</span>
-              <input id="homeGoalDays" type="number" style="width: 40px; background: transparent; border: none; font-size: 24px; font-weight: 600; color: #4a5c82; outline: none; text-align: center;" placeholder="0">
+              <div id="homeGoalDaysDisplay" style="width: 40px; font-size: 24px; font-weight: 600; color: #4a5c82; text-align: center;">0</div>
               <span style="font-size: 11px; color: #7a86a8;">天</span>
             </div>
+            
+            <!-- 隐形的时光锚点 -->
+            <input type="date" id="homeGoalDate" style="position: absolute; opacity: 0; pointer-events: none; top: 0; left: 0;">
           </div>
         </div>
 
@@ -10843,14 +10848,41 @@ document.addEventListener('DOMContentLoaded', async () => {
       memoEl.addEventListener('input', async (e) => { await localforage.setItem('mp_home_memo', e.target.value); });
     }
 
+    // 🌟 蓝色高定：真实时间倒计时引擎
     const goalTitle = document.getElementById('homeGoalTitle');
-    const goalDays = document.getElementById('homeGoalDays');
-    if(goalTitle && goalDays) {
+    const goalDateInput = document.getElementById('homeGoalDate');
+    const goalDaysDisplay = document.getElementById('homeGoalDaysDisplay');
+
+    if(goalTitle && goalDateInput && goalDaysDisplay) {
+      // 1. 读取并绑定标题
       localforage.getItem('mp_home_goal_title').then(v => { if(v) goalTitle.value = v; });
-      localforage.getItem('mp_home_goal_days').then(v => { if(v) goalDays.value = v; });
-      
       goalTitle.addEventListener('input', async (e) => await localforage.setItem('mp_home_goal_title', e.target.value));
-      goalDays.addEventListener('input', async (e) => await localforage.setItem('mp_home_goal_days', e.target.value));
+
+      // 2. 核心计算器：精准算出现实时间差
+      const calcDays = (targetDateStr) => {
+        if(!targetDateStr) return '0';
+        const target = new Date(targetDateStr).getTime();
+        const now = new Date().setHours(0,0,0,0);
+        const diff = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
+        return diff > 0 ? diff : '0';
+      };
+
+      // 3. 读取时光锚点并初始化数字
+      localforage.getItem('mp_home_goal_target_date').then(v => {
+        if(v) {
+          goalDateInput.value = v;
+          goalDaysDisplay.textContent = calcDays(v);
+        }
+      });
+
+      // 4. 当老婆选好新日期时，瞬间存档并刷新倒计时
+      goalDateInput.addEventListener('change', async (e) => {
+        const val = e.target.value;
+        if(val) {
+          await localforage.setItem('mp_home_goal_target_date', val);
+          goalDaysDisplay.textContent = calcDays(val);
+        }
+      });
     }
 
     const readImageSafe = (file) => {
