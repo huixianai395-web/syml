@@ -13058,5 +13058,229 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
 
 })();
 </script>
+  <script>
+(function() {
+  // 🌟 蓝色极简美学：禁止任何花里胡哨的 Emoji，纯手工打造高级 SVG 图标！
+  const svgGift = `<svg viewBox="0 0 24 24" style="width:20px; height:20px; fill:none; stroke:#5c7094; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;"><rect x="3" y="8" width="18" height="4" rx="1"></rect><path d="M12 8v13"></path><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"></path><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"></path></svg>`;
+  const svgSearch = `<svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:none; stroke:#5c7094; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`;
+
+  function safeEsc(s) { return String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m])); }
+
+  // 🌟 在页面右下角或全局注入【海盐甄选】入口按钮
+  setTimeout(() => {
+    if (!document.getElementById('blueMallBtn')) {
+      const btn = document.createElement('div');
+      btn.id = 'blueMallBtn';
+      btn.innerHTML = svgGift;
+      btn.style.cssText = `
+        position: fixed; bottom: 100px; right: 20px; width: 44px; height: 44px; 
+        background: rgba(238, 244, 250, 0.85); backdrop-filter: blur(12px);
+        border: 1px solid #dce5f0; border-radius: 50%; display: grid; place-items: center;
+        box-shadow: 0 4px 16px rgba(92, 112, 148, 0.15); cursor: pointer; z-index: 9999;
+        transition: transform 0.2s;
+      `;
+      btn.onmousedown = () => btn.style.transform = 'scale(0.9)';
+      btn.onmouseup = () => btn.style.transform = 'scale(1)';
+      btn.onclick = window._openBlueMall;
+      document.body.appendChild(btn);
+    }
+  }, 1000);
+
+  // 🌟 哈希炼金术：任何文字都能计算出永不改变的高级随机价格！
+  function getPriceByName(name) {
+    if (!name) return 99;
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) { hash = (hash << 5) - hash + name.charCodeAt(i); hash |= 0; }
+    hash = Math.abs(hash);
+    const prices = [19.9, 52.0, 99.0, 199.0, 299.0, 520.0, 999.0, 1314.0, 2999.0, 9999.0];
+    return prices[hash % prices.length];
+  }
+
+  window._openBlueMall = function() {
+    let modal = document.getElementById('blueMallModal');
+    if (!modal) {
+      const modalHtml = `
+      <div id="blueMallModal" class="modal" style="z-index: 10005; padding:0;" onclick="this.classList.remove('active')">
+        <div class="modal-card" style="margin-top:auto; margin-bottom:0; height:85dvh; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border-radius:24px 24px 0 0; padding:0; display:flex; flex-direction:column; border-top:1px solid #dce5f0; box-shadow:0 -10px 40px rgba(92,112,148,0.15);" onclick="event.stopPropagation()">
+          
+          <!-- 头部 -->
+          <div style="padding:20px 20px 10px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #dce5f0; flex-shrink:0;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              ${svgGift}
+              <span style="font-size:18px; font-weight:900; color:#3d4a6a; letter-spacing:1px;">海盐甄选</span>
+            </div>
+            <div style="display:flex; gap:12px; align-items:center;">
+              <button onclick="window._triggerNPCGift()" style="background:transparent; border:none; color:#b57b7b; font-size:12px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:4px;">✨许愿池</button>
+              <div onclick="document.getElementById('blueMallModal').classList.remove('active')" style="color:#7a86a8; font-size:24px; cursor:pointer; line-height:1;">×</div>
+            </div>
+          </div>
+
+          <!-- 造物搜索框 -->
+          <div style="padding:16px 20px; background:linear-gradient(180deg, rgba(238,244,250,0.5), transparent); flex-shrink:0;">
+            <div style="display:flex; background:rgba(255,255,255,0.8); border:1px solid #dce5f0; border-radius:16px; padding:4px; align-items:center; box-shadow:0 2px 8px rgba(92,112,148,0.05);">
+              <div style="padding:0 12px;">${svgSearch}</div>
+              <input id="mallSearchInput" type="text" placeholder="输入任何想送的东西，万物皆可生成..." style="flex:1; border:none; background:transparent; outline:none; font-size:14px; color:#5c7094; padding:10px 0;">
+              <button onclick="window._renderMallResult()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; padding:8px 16px; border-radius:12px; font-weight:bold; cursor:pointer;">生成</button>
+            </div>
+          </div>
+
+          <!-- 商品展示区 -->
+          <div id="mallResultBox" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:16px; align-items:center;">
+            <div style="color:#a0aaba; font-size:13px; text-align:center; margin-top:40px;">在上方输入你想要寻找的礼物<br>海盐合成引擎将为你瞬间具象化...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 赠送联系人抽屉 -->
+      <div id="mallSendDrawer" class="modal" style="z-index: 10006;" onclick="this.classList.remove('active')">
+        <div class="modal-card" style="margin-top:auto; margin-bottom:0; border-radius:24px 24px 0 0; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border-top:1px solid #dce5f0; padding:20px 16px 40px; box-shadow:0 -10px 40px rgba(92,112,148,0.15);" onclick="event.stopPropagation()">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <b style="color:#3d4a6a; font-size:15px;">将这份心意送给...</b>
+            <span onclick="document.getElementById('mallSendDrawer').classList.remove('active');" style="color:#7a86a8; font-size:22px; cursor:pointer; line-height:1;">×</span>
+          </div>
+          <div id="mallContactsBox" style="display:flex; overflow-x:auto; gap:16px; padding-bottom:10px; scrollbar-width:none;"></div>
+        </div>
+      </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+      modal = document.getElementById('blueMallModal');
+      
+      // 支持回车生成
+      document.getElementById('mallSearchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') window._renderMallResult();
+      });
+    }
+    
+    document.getElementById('mallSearchInput').value = '';
+    document.getElementById('mallResultBox').innerHTML = `<div style="color:#a0aaba; font-size:13px; text-align:center; margin-top:40px;">输入任何你想送出的物品名称<br>点击生成，即刻装裱成高定礼物卡片</div>`;
+    modal.classList.add('active');
+  };
+
+  window._renderMallResult = function() {
+    const query = document.getElementById('mallSearchInput').value.trim();
+    const box = document.getElementById('mallResultBox');
+    if (!query) return box.innerHTML = `<div style="color:#b57b7b; font-size:13px; text-align:center; margin-top:40px;">老婆，你什么都没输入呀！</div>`;
+    
+    const price = getPriceByName(query);
+    
+    // 🌟 纯代码渲染的极简主义高定商品卡片！拒绝裂图！
+    const cardHtml = `
+      <div style="width:100%; max-width:320px; background:#fff; border:1px solid #dce5f0; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(92,112,148,0.06); transition:transform 0.2s;">
+        <!-- 卡片上半部分：抽象艺术色块背景 + 图标 -->
+        <div style="height:160px; background:linear-gradient(135deg, #eef4fa, #dce5f0); display:grid; place-items:center; position:relative;">
+          <div style="width:64px; height:64px; background:rgba(255,255,255,0.6); backdrop-filter:blur(10px); border-radius:50%; display:grid; place-items:center; box-shadow:0 4px 12px rgba(92,112,148,0.1);">
+            ${svgGift}
+          </div>
+          <div style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.8); color:#5c7094; font-size:10px; font-weight:800; padding:4px 8px; border-radius:10px; letter-spacing:1px;">海盐甄选 · 典藏</div>
+        </div>
+        <!-- 卡片下半部分：信息与按钮 -->
+        <div style="padding:20px;">
+          <div style="font-size:16px; font-weight:900; color:#3d4a6a; margin-bottom:8px; line-height:1.4;">${safeEsc(query)}</div>
+          <div style="font-size:18px; font-weight:bold; color:#b57b7b; margin-bottom:20px;">￥${price.toFixed(2)}</div>
+          <button onclick="window._prepareSendGift('${safeEsc(query)}', ${price})" style="width:100%; background:#5c7094; color:#fff; border:none; padding:12px 0; border-radius:12px; font-size:14px; font-weight:bold; cursor:pointer; box-shadow:0 4px 12px rgba(92,112,148,0.2);">赠送给 TA</button>
+        </div>
+      </div>
+    `;
+    box.innerHTML = cardHtml;
+  };
+
+  // 🌟 打开联系人选择器
+  window._prepareSendGift = function(itemName, price) {
+    window._pendingGift = { name: itemName, price: price };
+    const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
+    const box = document.getElementById('mallContactsBox');
+    
+    if(contacts.length === 0) {
+      box.innerHTML = `<div style="font-size:12px; color:#a0aaba; text-align:center; width:100%;">还没有添加联系人呢~</div>`;
+    } else {
+      box.innerHTML = contacts.map(c => {
+        let avatar = c.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(c.name)}&backgroundColor=eef4fa&textColor=5c7094`;
+        let safeAv = avatar.replace(/"/g, '&quot;');
+        return `
+        <div onclick="window._executeSendGift('${c.id}', '${safeEsc(c.name)}')" style="display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer; min-width:60px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
+          <img src="${safeAv}" style="width:54px; height:54px; border-radius:18px; object-fit:cover; border:1px solid #dce5f0; background:#eef4fa;">
+          <span style="font-size:11px; color:#5c7094; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">${safeEsc(c.name)}</span>
+        </div>
+      `}).join('');
+    }
+    document.getElementById('mallSendDrawer').classList.add('active');
+  };
+
+  // 🌟 执行赠送：把绝美卡片砸进聊天框，并通知 AI！
+  window._executeSendGift = function(chatId, npcName) {
+    if (!window._pendingGift || typeof window.getChatArr !== 'function') return;
+    const { name, price } = window._pendingGift;
+
+    // 构建发在聊天框里的高级卡片！
+    const chatCardHtml = `
+      <div style="background:rgba(250,252,255,0.9); border:1px solid #dce5f0; border-radius:16px; padding:14px; width:220px; box-shadow:0 4px 12px rgba(92,112,148,0.05);">
+        <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:#b57b7b; font-weight:800; margin-bottom:10px;">
+          ${svgGift} 收到了一份心意
+        </div>
+        <div style="font-size:14px; color:#3d4a6a; font-weight:bold; margin-bottom:6px; line-height:1.4;">${safeEsc(name)}</div>
+        <div style="font-size:11px; color:#a0aaba;">来自 海盐甄选</div>
+      </div>
+    `;
+
+    // 存入聊天记录 (作为用户发送的消息)
+    const arr = window.getChatArr(chatId) || [];
+    arr.push({ id: 'm_' + Date.now(), role: 'user', text: chatCardHtml, time: Date.now(), stored: true });
+    window.setChatArr(chatId, arr);
+    
+    // 关闭所有弹窗
+    document.getElementById('mallSendDrawer').classList.remove('active');
+    document.getElementById('blueMallModal').classList.remove('active');
+    
+    // 渲染聊天界面
+    if (window.currentId === chatId && typeof window.renderChat === 'function') window.renderChat();
+    if (typeof window.updateContactPreview === 'function') window.updateContactPreview(chatId);
+    
+    // 🌟 终极隐形脑电波：强制告诉 AI 你送了什么，逼它做出反应！
+    const hiddenPrompt = `【系统最高指令】：玩家刚刚在“海盐甄选”虚拟商城中，自掏腰包花了 ${price.toFixed(2)} 元，为你精心挑选并送出了一份礼物：“${name}”。你现在收到了这个礼物卡片。请你立刻根据你的人设，对玩家的这份心意做出最真实的反应（惊喜、感动、傲娇或调侃），直接回复玩家！`;
+    
+    if(typeof window._sendToAI === 'function') window._sendToAI(chatId, hiddenPrompt, true);
+    
+    alert(`✨ 购买成功！${name} 已成功送给 ${npcName}，快去聊天界面看看TA的反应吧！`);
+  };
+
+  // 🌟 双向互动：祈愿池！强行抓一个男主给你送礼！
+  window._triggerNPCGift = async function() {
+    const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
+    if(contacts.length === 0) return alert('还没有联系人可以给你送礼物哦~');
+    
+    // 随机抓一个男主
+    const npc = contacts[Math.floor(Math.random() * contacts.length)];
+    
+    // 随机一个符合海盐甄选调性的礼物
+    const giftPool = [
+      "高定木质调香水", "一束碎冰蓝玫瑰", "冰岛极光双人机票", "落日氛围灯", "海盐焦糖半熟芝士",
+      "全息沉浸式游戏舱", "深空灰限量版机械键盘", "手工编织情侣手绳", "一张无限额度黑卡", "猫咪毛绒暖手宝"
+    ];
+    const giftName = giftPool[Math.floor(Math.random() * giftPool.length)];
+    const price = getPriceByName(giftName);
+
+    const chatCardHtml = `
+      <div style="background:rgba(250,252,255,0.9); border:1px solid #dce5f0; border-radius:16px; padding:14px; width:220px; box-shadow:0 4px 12px rgba(92,112,148,0.05);">
+        <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:#5c7094; font-weight:800; margin-bottom:10px;">
+          ${svgGift} 送给你一份心意
+        </div>
+        <div style="font-size:14px; color:#3d4a6a; font-weight:bold; margin-bottom:6px; line-height:1.4;">${safeEsc(giftName)}</div>
+        <div style="font-size:11px; color:#a0aaba;">来自 海盐甄选</div>
+      </div>
+    `;
+
+    const arr = window.getChatArr(npc.id) || [];
+    // NPC 给你发礼物
+    arr.push({ id: 'm_' + Date.now(), role: 'assistant', text: `给你挑了个东西，看看喜不喜欢。\n${chatCardHtml}`, time: Date.now(), stored: true });
+    window.setChatArr(npc.id, arr);
+    
+    if(typeof window.updateContactPreview === 'function') window.updateContactPreview(npc.id);
+    
+    alert(`✨ 许愿成功！${npc.name} 刚才悄悄在商城买了一份礼物，已经发到你的聊天框啦！`);
+    document.getElementById('blueMallModal').classList.remove('active');
+  };
+
+})();
+  </script>
 </body>
   </html>
