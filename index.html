@@ -4548,14 +4548,17 @@ if(voiceMatch){
       const src = t.slice(5, -6);
       return `${quote}<div class="bubble ${cls} ${hidden} bubble-card" style="padding:0;background:transparent;border:none;box-shadow:none;"><img class="bubble-img" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
     }
-    // 🌟 蓝色高定：极度宽容的贴纸雷达！专治沈砚这种乱改前缀的傲娇 AI！
+   // 🌟 蓝色高定：表情包隐形修复盾！
     const stkMatch = t.match(/^\[(stk:|st:|st_)([^\]]+)\]$/i);
     if(stkMatch){
       const id = stkMatch[2].trim();
       const src = window.__stickerGetSrcById ? window.__stickerGetSrcById(id) : '';
-      if(!src) return `${quote}${ts}`;
+      
+      // 🌟 兜底：如果连模糊匹配都找不到，绝不发空白，给个高级的占位提示！
+      if(!src) return `${quote}<div class="bubble ${cls} ${hidden}" style="color:#a0aaba; font-style:italic; font-size:13px;">(发出了一个表情)</div>${ts}`;
+      
       return `${quote}<div class="bubble ${cls} ${hidden} bubble-card" style="padding:0;background:transparent;border:none;box-shadow:none;"><img class="bubble-sticker" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
-  }
+    }
 if(!isMe && isHtmlDoc(t)){
   const src=toHtmlDataUrl(t);
   return `${quote}<div class="bubble ${cls} has-html${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts allow-modals" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
@@ -7350,13 +7353,14 @@ function stAllStickersFlat(){
   return out;
 }
 
-window.__stickerGetById = (id)=> stAllStickersFlat().find(x=>String(x.id)===String(id))||null;
-window.__stickerGetSrcById = (id)=> (window.__stickerGetById(id)?.src)||'';
-window.__stickerGetNameById = (id)=> (window.__stickerGetById(id)?.name)||'';
-window.__stickerPromptText = (limit=200)=>{
-  const all=stAllStickersFlat().slice(0, Math.max(1,Number(limit||200)));
-  if(!all.length) return '（暂无表情包）';
-  return all.map((x,i)=>`${i+1}. ID=${x.id} 名称=${x.name||'未命名'}`).join('\n');
+// 🌟 蓝色高定：AI 幻觉兜底雷达！既认 ID 也认名字！
+window.__stickerGetById = (id) => {
+  const all = stAllStickersFlat();
+  const exact = all.find(x => String(x.id) === String(id));
+  if (exact) return exact;
+  // 如果 AI 偷懒发了中文名字，强制把它揪出来！
+  const fuzzy = all.find(x => x.name && (String(id).includes(x.name) || x.name.includes(String(id))));
+  return fuzzy || null;
 };
 
 // 压缩：省空间（你要多上传）
