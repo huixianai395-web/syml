@@ -13816,32 +13816,41 @@ window._showOrderHistory = async function() {
       window._renderPostInbox();
     }
   };
-  // ================= 🌟 蓝色高定：回忆放映机核心引擎 =================
+   // ================= 🌟 蓝色高定：回忆放映机核心引擎 (终极深海雷达版) =================
   window._initMemoryProjector = async function() {
     const wall = document.getElementById('projectorWall');
     if(!wall) return;
     
-    wall.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:13px; margin-top:40px; column-span:all;">正在满宇宙打捞相片...</div>`;
+    wall.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:13px; margin-top:40px; column-span:all;">正在潜入深海打捞相片...</div>`;
     
-    // 遍历所有聊天记录，找出所有 [img] 标签！
+    // 🌟 获取全宇宙的聊天记录，包括单聊和群聊！
     const chats = window.getChats ? window.getChats() : {};
     const contacts = window.getContacts ? window.getContacts() : [];
+    const groups = window.getGroups ? window.getGroups() : [];
+    const allEntities = [...contacts, ...groups]; 
+    
     let allPhotos = [];
 
     Object.keys(chats).forEach(chatId => {
       const arr = chats[chatId] || [];
-      const c = contacts.find(x => x.id === chatId);
+      const c = allEntities.find(x => x.id === chatId);
       const chatName = c ? c.name : '未知羁绊';
 
       arr.forEach(msg => {
-        if(msg.text && msg.text.includes('[img]') && msg.text.includes('[/img]')) {
-          const match = msg.text.match(/\[img\](.*?)\[\/img\]/i);
-          if(match && match[1]) {
-            allPhotos.push({
-              url: match[1],
-              time: msg.time,
-              chatName: chatName
-            });
+        if(!msg.text) return;
+        
+        // 📡 雷达 1 号：精准捕捉你手动发送的 [img] 照片 (防断行、防大小写)
+        const imgRegex = /\[img\]([\s\S]*?)\[\/img\]/gi;
+        let match;
+        while ((match = imgRegex.exec(msg.text)) !== null) {
+          if(match[1]) allPhotos.push({ url: match[1].trim(), time: msg.time, chatName: chatName });
+        }
+        
+        // 📡 雷达 2 号：捕捉 AI 主动发给你的“模拟相片”(card-fakeimg)！
+        if(msg.text.includes('card-fakeimg')) {
+          const fakeMatch = msg.text.match(/url\(['"]?(https?:\/\/[^'"\)]+|data:image\/[^'"\)]+)['"]?\)/i);
+          if(fakeMatch && fakeMatch[1]) {
+            allPhotos.push({ url: fakeMatch[1], time: msg.time, chatName: chatName });
           }
         }
       });
@@ -13858,6 +13867,8 @@ window._showOrderHistory = async function() {
     wall.innerHTML = allPhotos.map(p => {
       const d = new Date(p.time);
       const dateStr = d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
+      // 兼容某些环境下 safeEsc 找不到的问题
+      const safeName = String(p.chatName || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
       
       return `
         <div style="background:#fff; border:1px solid #dce5f0; border-radius:4px 4px 12px 12px; padding:8px 8px 16px 8px; margin-bottom:12px; box-shadow:0 6px 16px rgba(92,112,148,0.04); break-inside:avoid; transition:transform 0.2s; cursor:pointer;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'" onclick="document.getElementById('previewModalImg').src='${p.url}'; document.getElementById('modalPreview').classList.add('active')">
@@ -13866,7 +13877,7 @@ window._showOrderHistory = async function() {
           </div>
           <div style="text-align:center;">
             <div style="font-family:ui-monospace, 'Times New Roman', serif; font-size:12px; font-weight:800; color:#3d4a6a; letter-spacing:1px;">${dateStr}</div>
-            <div style="font-size:10px; color:#7a86a8; margin-top:4px; font-weight:bold;">与 ${safeEsc(p.chatName)} 的回忆</div>
+            <div style="font-size:10px; color:#7a86a8; margin-top:4px; font-weight:bold;">与 ${safeName} 的回忆</div>
           </div>
         </div>
       `;
