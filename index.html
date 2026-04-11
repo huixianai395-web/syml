@@ -4547,7 +4547,7 @@ if(voiceMatch){
       return `${quote}<div class="bubble ${cls} ${hidden} bubble-card" style="padding:0;background:transparent;border:none;box-shadow:none;"><img class="bubble-img" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
     }
    // 🌟 蓝色高定：表情包隐形修复盾（真正的完美拼写版！）
-    const stkMatch = t.match(/^\[(stk:|st:|st_)([^\]]+)\]$/i);
+    const stkMatch = t.trim().match(/^\[(stk:|st:|st_)([^\]]+)\]$/i);
     if(stkMatch){
       const id = stkMatch[2].trim();
       // 🔪 致命错误修复：调用正确的雷达函数，并把图片链接解包出来！
@@ -6016,10 +6016,18 @@ document.addEventListener('click',e=>{
     refreshPresetUI();
     refreshFontUI();
     refreshBubblePresetUI();
+    
+    // 🌟 蓝色高定：开机强制清洗全宇宙的聊天摘要记忆！专治旧乱码！
+    const allC = getContacts();
+    allC.forEach(c => { if(window.updateContactPreview) window.updateContactPreview(c.id); });
+    const allG = window.getGroups ? window.getGroups() : [];
+    allG.forEach(g => { if(window.updateContactPreview) window.updateContactPreview(g.id); });
+
     renderContacts();
     bindChatMsgEvents();
     updateQuoteBar();
     applyFontSize();
+    // ================= 蓝色特制：群聊外挂内存引擎 =================
     // ================= 蓝色特制：群聊外挂内存引擎 =================
   const K_GROUP = 'mp_fix_groups';
   function getGroups() { return getJ(K_GROUP, []); }
@@ -7352,7 +7360,24 @@ function stAllStickersFlat(){
   s.groups.forEach(g=> (g.stickers||[]).forEach(x=> out.push(x)));
   return out;
 }
+function stAllStickersFlat(){
+  const s=getStickerState();
+  const out=[];
+  s.groups.forEach(g=> (g.stickers||[]).forEach(x=> out.push(x)));
+  return out;
+}
 
+// 🌟 蓝色高定：AI 潜意识表情包导盲犬！告诉它到底有哪些表情包！
+window.__stickerPromptText = function(maxLen = 300) {
+  const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
+  if(!all || all.length === 0) return '（暂无，请绝对不要发表情包！）';
+  let txt = all.map(x => `${x.id}(代表含义:${x.name || '表情'})`).join(', ');
+  if(txt.length > maxLen) return txt.substring(0, maxLen) + '...';
+  return txt;
+};
+
+// 🌟 蓝色高定：AI 幻觉兜底雷达！既认 ID 也认名字！
+window.__stickerGetById = (id) => {
 // 🌟 蓝色高定：AI 幻觉兜底雷达！既认 ID 也认名字！
 window.__stickerGetById = (id) => {
   const all = stAllStickersFlat();
