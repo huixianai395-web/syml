@@ -9526,7 +9526,7 @@ window.renderNotesList = function(){
       return;
     }
 
-    const chatText = msgs.map(m => `${m.role==='user' ? meName : c.name}: ${m.text}`).join('\\n');
+    const chatText = msgs.map(m => `${m.role==='user' ? meName : c.name}: ${m.text}`).join('\n');
     
     // 🌟 蓝色魔法：获取真实的今天日期和星期几！
     const d = new Date();
@@ -9535,18 +9535,18 @@ window.renderNotesList = function(){
     const todayFull = dateStr + ' ' + weekStr;
     const shortDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 
-    // 🌟 核心魔法：强行注入真实时间，并规范日记开头！
-    const sysPrompt = \`你现在是\${c.name}。请以你的【第一人称视角】，写下一篇关于你和\${meName}最近互动的【私密日记】作为记忆存档。
-当前真实时间是：\${todayFull}。
+    // 🌟 核心魔法：强行注入真实时间，并规范日记开头！(已拔除所有毒药反斜杠)
+    const sysPrompt = `你现在是${c.name}。请以你的【第一人称视角】，写下一篇关于你和${meName}最近互动的【私密日记】作为记忆存档。
+当前真实时间是：${todayFull}。
 要求：
 1. 极度沉浸，带有强烈的个人情感偏向和心理活动（心动、吃醋、无奈、宠溺等，必须符合你的人设）。
 2. 提炼核心剧情推进和关键细节，但绝不能写成冷冰冰的流水账。
 3. 语气要像真人在写日记，绝对不要带任何前缀或多余的解释。
-4. 【格式铁律】：正文的第一行必须严格以“\${dateStr}”开头，并自己根据刚才的剧情脑补加上天气和心情。例如：“\${dateStr} 晴转多云 我今天真的快被她气笑了……”\`;
+4. 【格式铁律】：正文的第一行必须严格以“${dateStr}”开头，并自己根据刚才的剧情脑补加上天气和心情。例如：“${dateStr} 晴转多云 我今天真的快被她气笑了……”`;
 
     const summary = await callApi([
       {role: 'system', content: sysPrompt},
-      {role: 'user', content: "请根据以下聊天记录，立刻写下你的专属日记：\\n" + chatText}
+      {role: 'user', content: "请根据以下聊天记录，立刻写下你的专属日记：\n" + chatText}
     ]);
 
     const allMems = await getMemories();
