@@ -13068,7 +13068,7 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
 
   function safeEsc(s) { return String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m])); }
 
-  // 🌟 1. 自动在主屏幕第二页注入 App 图标
+  // 🌟 1. 自动注入图标
   setTimeout(() => {
     const pages = document.querySelectorAll('.home-page');
     if (pages.length > 1) {
@@ -13086,7 +13086,7 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
     }
   }, 800);
 
-  // 🌟 2. 注入独立的大别墅 Screen
+  // 🌟 2. 注入独立大别墅 Screen
   if (!document.getElementById('blueMall')) {
     const mallHtml = `
     <section id="blueMall" class="screen">
@@ -13100,8 +13100,8 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
         <div style="padding:16px 20px; background:rgba(250,252,255,0.6); border-bottom:1px solid rgba(220,229,240,0.5); flex-shrink:0;">
           <div style="display:flex; background:rgba(255,255,255,0.8); border:1px solid #dce5f0; border-radius:16px; padding:4px; align-items:center; box-shadow:0 2px 8px rgba(92,112,148,0.05);">
             <div style="padding:0 12px; color:#5c7094;">${svgSearch}</div>
-            <input id="mallSearchInput" type="text" placeholder="输入任何想要的礼物..." style="flex:1; border:none; background:transparent; outline:none; font-size:14px; color:#5c7094; padding:10px 0;">
-            <button class="btn p" onclick="window._searchMallItem()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; padding:8px 16px; border-radius:12px; font-weight:bold; box-shadow:none;">检索</button>
+            <input id="mallSearchInput" type="text" placeholder="输入礼物，云端深度物价评估..." style="flex:1; border:none; background:transparent; outline:none; font-size:14px; color:#5c7094; padding:10px 0;">
+            <button class="btn p" onclick="window._searchMallItem()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; padding:8px 16px; border-radius:12px; font-weight:bold; box-shadow:none;">探索</button>
           </div>
         </div>
 
@@ -13112,13 +13112,12 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
 
         <div id="mallResultBox" style="flex:1; overflow-y:auto; padding:16px; display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; align-content:start; -webkit-overflow-scrolling:touch;">
           <div style="color:#a0aaba; font-size:12px; text-align:center; margin-top:60px; line-height:1.6; grid-column:1 / -1;">
-            高定文字概念引擎已启动<br>在上方输入物品，敲击回车瞬间生成
+            深度语义物价引擎已启动<br>在上方输入物品，系统将自动连接云端评估价值
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 赠送 / 索要 抽屉 -->
     <div id="mallActionDrawer" class="modal" style="z-index: 10006;" onclick="this.classList.remove('active')">
       <div class="modal-card" style="margin-top:auto; margin-bottom:0; border-radius:24px 24px 0 0; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-top:1px solid #dce5f0; padding:20px 16px 40px; box-shadow:0 -10px 40px rgba(92,112,148,0.15);" onclick="event.stopPropagation()">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -13136,7 +13135,7 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
     });
   }
 
-  // 🌟 3. 全局表情包防粘连拦截器！绝对护盾！
+  // 🌟 3. 全局表情包防粘连拦截器
   if (!window._mallStickerPatchApplied) {
     window._mallStickerPatchApplied = true;
     const originalSetChatArr = window.setChatArr;
@@ -13144,11 +13143,8 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
       if (arr && arr.length > 0) {
         let newArr = [];
         arr.forEach(msg => {
-          // 如果 AI 发了消息，且里面包含了 [stk: 或者 [st: 的字眼
           if (msg.role === 'assistant' && typeof msg.text === 'string' && msg.text.match(/\[(?:stk:|st:|st_)[^\]]+\]/i)) {
-            // 检查是不是只有纯纯的一个表情包
             if (!/^\[(?:stk:|st:|st_)[^\]]+\]$/i.test(msg.text.trim())) {
-              // 混在一起了！强行劈开！
               let parts = msg.text.split(/(\[(?:stk:|st:|st_)[^\]]+\])/i);
               parts.forEach(p => {
                 if (p.trim()) {
@@ -13156,10 +13152,10 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
                 }
               });
             } else {
-              newArr.push(msg); // 纯的放行
+              newArr.push(msg);
             }
           } else {
-            newArr.push(msg); // 没表情包的放行
+            newArr.push(msg);
           }
         });
         arr = newArr;
@@ -13168,63 +13164,74 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
     };
   }
 
-  const K_MALL_FAV = 'mp_fix_mall_fav_v5';
+  const K_MALL_FAV = 'mp_fix_mall_fav_v6';
   async function getMallFavs() { return (await localforage.getItem(K_MALL_FAV)) || []; }
   async function setMallFavs(data) { await localforage.setItem(K_MALL_FAV, data); }
 
-  // 🌟 高级调色盘
   const PALETTES = [
-    { bg: 'linear-gradient(135deg, #eef4fa, #dce5f0)', text: '#5c7094' }, // 初雪海盐蓝
-    { bg: 'linear-gradient(135deg, #fcf2f2, #f2dcdc)', text: '#b57b7b' }, // 干枯玫瑰粉
-    { bg: 'linear-gradient(135deg, #f4f6fb, #e4e8f5)', text: '#4a5c82' }, // 冷夜雾霾灰
-    { bg: 'linear-gradient(135deg, #fffdf9, #efe4d5)', text: '#8a7051' }, // 复古燕麦奶茶
-    { bg: 'linear-gradient(135deg, #f5f3fa, #e6e3f2)', text: '#7b6c94' }  // 暮霭紫
+    { bg: 'linear-gradient(135deg, #eef4fa, #dce5f0)', text: '#5c7094' },
+    { bg: 'linear-gradient(135deg, #fcf2f2, #f2dcdc)', text: '#b57b7b' },
+    { bg: 'linear-gradient(135deg, #f4f6fb, #e4e8f5)', text: '#4a5c82' },
+    { bg: 'linear-gradient(135deg, #fffdf9, #efe4d5)', text: '#8a7051' },
+    { bg: 'linear-gradient(135deg, #f5f3fa, #e6e3f2)', text: '#7b6c94' }
   ];
 
- // 🌟 核心重构：防天价面包与精细化常识物价引擎！
-  function generateMallItems(query) {
-    if (!query) return [];
+  // 🌟 核心重构：超级异步物价神经元网络！
+  function evaluateRealPrice(q) {
+    // 【1. 绝对隔离区】科技产品与高危重名区 (放在最前面阻断)
+    if (/苹果手机|iphone|macbook|ipad|apple watch|外星人电脑|大疆|折叠屏|ps5|switch/.test(q)) return 6999;
     
-    let basePrice = 0;
-    let q = query.toLowerCase();
+    // 【2. 顶级资产区】
+    if (/房|别墅|四合院|大平层|海景|庄园|岛屿|地皮/.test(q)) return 5000000;
+    if (/跑车|游艇|私人飞机|直升机|法拉利|保时捷|迈凯伦|劳斯莱斯|玛莎拉蒂|阿斯顿马丁/.test(q)) return 2000000;
+    if (/车|轿车|suv|越野车|奔驰|宝马|奥迪|特斯拉|蔚来|小鹏/.test(q)) return 300000;
+    
+    // 【3. 顶级珠宝名表区】彻底解决“钻石”问题！
+    if (/钻|翡翠|和田玉|宝石|玛瑙|名表|劳力士|百达翡丽|理查德|江诗丹顿|绿水鬼|古董|高定/.test(q)) return 50000;
+    if (/金|银|铂金|项链|手镯|戒指|爱马仕|香奈儿|lv|古驰|迪奥|路易威登|普拉达|名牌包/.test(q)) return 10000;
+    
+    // 【4. 数码家电】
+    if (/电脑|笔记本|单反|微单|镜头|主机|显卡|电视|冰箱|空调|洗衣机/.test(q)) return 4500;
+    if (/平板|投影仪|音响|智能|无人机|吉他|钢琴|黄金/.test(q)) return 2500;
+    
+    // 【5. 美妆与轻奢服饰】
+    if (/香水|神仙水|海蓝之谜|sk2|精华|眼霜|粉底|大衣|西装|皮鞋|靴子|真丝|羊绒|名牌/.test(q)) return 800;
+    if (/口红|眼影|散粉|护肤|化妆|外套|毛衣|卫衣|裙子|裤子|球鞋|运动鞋|背包|行李箱|手表|眼镜/.test(q)) return 300;
+    
+    // 【6. 潮玩与生活周边】
+    if (/手办|盲盒|周边|乐高|键盘|鼠标|耳机|台灯|帽子|围巾|门票|演唱会/.test(q)) return 150;
+    
+    // 【7. 精品饮食区】
+    if (/螺蛳粉|自热锅|坚果|巧克力|咖啡豆|茶叶|红酒|零食包|特产|车厘子|榴莲|海鲜|牛肉|排骨|火锅底料/.test(q)) return 60;
+    
+    // 【8. 日常果蔬餐饮区】(解决“苹果”和“梨”问题)
+    if (/奶茶|快餐|外卖|汉堡|火锅|烧烤|烤肉|苹果|香蕉|草莓|葡萄|西瓜|梨|桃子|水果|蔬菜|猪肉|鸡肉|蛋糕|甜点|饼干|面包|吐司|法棍/.test(q)) return 25;
+    
+    // 【9. 极低廉日用品】
+    if (/笔|本子|纸|橡皮|文具|袜子|内裤|口罩|垃圾袋|塑料袋|矿泉水|饮料|冰棍|雪糕/.test(q)) return 10;
+    
+    // 【10. 深度语义哈希兜底】(生僻词)
+    let hash = 0;
+    for (let i = 0; i < q.length; i++) hash = (hash << 5) - hash + q.charCodeAt(i);
+    hash = Math.abs(hash);
+    if (q.length >= 5) return (hash % 200) + 50; // 名字长的东西往往贵一点
+    return (hash % 80) + 20; 
+  }
 
-    // 🚨 蓝色顶级防误伤拦截器！必须放在最前面！
-    if (/面包|包子|豆包|小笼包|烤包|脏脏包|麦片|糕点|蛋糕|甜点|饼干|吐司|法棍/.test(q)) basePrice = 28;
-    else if (/房|别墅|四合院|大平层|海景|庄园|岛屿/.test(q)) basePrice = 5000000;
-    else if (/跑车|法拉利|保时捷|迈凯伦|兰博基尼|劳斯莱斯|玛莎拉蒂|奔驰|宝马|奥迪/.test(q)) basePrice = 500000;
-    else if (/劳力士|百达翡丽|理查德|江诗丹顿|绿水鬼|名表/.test(q)) basePrice = 150000;
-    // 修复奢侈品包的判定，使用更严谨的词汇
-    else if (/钻戒|项链|戒指|珠宝|高定|铂金|爱马仕|香奈儿|古驰|迪奥|路易威登|名牌包|手提包|单肩包|名牌/.test(q)) basePrice = 15000;
-    else if (/苹果手机|华为手机|iphone|折叠屏|单反|微单|大疆|外星人|游戏本|摩托车|黄金|黄金首饰/.test(q)) basePrice = 6999;
-    else if (/手机|电脑|相机|显卡|ps5|switch|平板|ipad|空调|电视|冰箱|洗衣机|电动车/.test(q)) basePrice = 2999;
-    else if (/香水|口红|神仙水|粉底|眼影|化妆品|护肤|sk2|海蓝之谜|大衣|西装|皮鞋|手表|首饰/.test(q)) basePrice = 399;
-    else if (/手办|盲盒|键盘|鼠标|耳机|周边|音响|游戏|乐高|门票|外套|球鞋|裙子|裤子|毛衣|卫衣/.test(q)) basePrice = 159;
-    // 🌟 老婆钦定的物价：螺蛳粉提价！
-    else if (/螺蛳粉|自热锅|零食大礼包|坚果|巧克力|咖啡豆|茶叶|酒|红酒|车厘子|榴莲/.test(q)) basePrice = 59; 
-    // 🌟 水果生鲜区，修正梨子等单字水果的物价！
-    else if (/苹果|香蕉|草莓|葡萄|西瓜|梨|桃子|水果|蔬菜|白菜|肉|排骨|牛肉|海鲜|生鲜/.test(q)) basePrice = 35; 
-    else if (/奶茶|辣条|外卖|咖啡|面条|米粉|快餐|汉堡|火锅|烤肉|烧烤|肯德基|麦当劳|薯片|可乐|雪糕/.test(q)) basePrice = 25;
-    else if (/笔|本子|纸巾|矿泉水|橡皮|文具|口罩|垃圾袋|塑料袋/.test(q)) basePrice = 9;
-    else {
-      // 🌟 终极常识兜底：找不到分类的东西，大概率是小物件，死死压在 30~150 元！
-      let hash = 0;
-      for (let i = 0; i < query.length; i++) hash = (hash << 5) - hash + query.charCodeAt(i);
-      basePrice = (Math.abs(hash) % 120) + 30; 
-    }
-
-    // 调整温和的裂变系数，告别动辄翻三五倍的天价！
+  function generateMallItems(query) {
+    let basePrice = evaluateRealPrice(query.toLowerCase());
+    
     const prefixes = ["【百亿补贴】", "【官方正品】", "【顺丰包邮】", "【2026新款】", "【旗舰店直发】", "【假一赔十】", ""];
     const suffixes = ["全新包装", "极速发货", "超值特惠", "限量抢购", "送礼首选", "高级定制"];
     
     const results = [];
-    const count = 4; // 固定四档
+    const count = 4; 
 
     for(let i=0; i<count; i++) {
-      let wave = (Math.random() * 0.4) + 0.8; // 0.8 ~ 1.2 的轻微波动
+      let wave = (Math.random() * 0.3) + 0.85; // 进一步收紧价格波动范围
       let p1 = basePrice * wave;
       if (p1 < 1) p1 = 1;
 
-      // 阶梯温和涨价：基础款 -> 精装款 -> 高定款 -> 典藏款
       let p;
       let tag;
       if (i === 0) { p = p1; tag = '日常优选'; }
@@ -13279,7 +13286,6 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
     }
   };
 
-  // 🌟 4. 纯血高定 Typography 艺术卡片渲染！
   function buildMallCardHtml(item, isFavPage = false, isFav = false) {
     const starIcon = isFav ? svgStarFill : svgStar;
     const starColor = isFav ? '#a5cfff' : '#a0aaba';
@@ -13287,25 +13293,19 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
 
     return `
       <div style="background:rgba(255,255,255,0.85); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:16px; overflow:hidden; box-shadow:0 4px 16px rgba(92,112,148,0.04); display:flex; flex-direction:column; position:relative;">
-        
         <div onclick="window._toggleMallFav('${safeEsc(item.id)}', '${safeEsc(item.name)}', ${item.price}, '${item.initial}', '${item.gradient}', '${item.iconColor}')" style="position:absolute; top:8px; right:8px; z-index:10; background:rgba(255,255,255,0.95); border:1px solid #dce5f0; border-radius:50%; width:28px; height:28px; display:grid; place-items:center; color:${starColor}; cursor:pointer; box-shadow:0 2px 8px rgba(92,112,148,0.08); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'">
           ${starIcon}
         </div>
-
         <div style="height:120px; background:${item.gradient}; position:relative; overflow:hidden; display:grid; place-items:center;">
            <div style="position:absolute; right:-10px; bottom:-15px; font-size:90px; font-weight:900; color:rgba(255,255,255,0.45); user-select:none; line-height:1; font-family:'STZhongsong', 'KaiTi', serif;">${item.initial}</div>
-           
            <div style="width:48px; height:48px; background:rgba(255,255,255,0.65); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border-radius:14px; display:grid; place-items:center; box-shadow:0 4px 16px rgba(92,112,148,0.06); color:${item.iconColor}; z-index:2;">
              ${svgGift}
            </div>
-           
            <div style="position:absolute; top:8px; left:8px; background:rgba(255,255,255,0.85); color:${item.iconColor}; font-size:9px; font-weight:800; padding:3px 8px; border-radius:6px; letter-spacing:0.5px; z-index:2; box-shadow:0 2px 6px rgba(92,112,148,0.05);">甄选典藏</div>
         </div>
-
         <div style="padding:12px;">
           <div style="font-size:13px; font-weight:800; color:#3d4a6a; margin-bottom:8px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:36px;">${safeTitle}</div>
           <div style="font-size:16px; font-weight:bold; color:#b57b7b; margin-bottom:12px; font-family:ui-monospace, monospace; letter-spacing:0.5px;">￥${item.price.toFixed(2)}</div>
-          
           <div style="display:flex; gap:6px;">
             <button onclick="window._openMallDrawer('gift', '${safeEsc(item.name)}', ${item.price})" style="flex:1; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; padding:8px 0; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow:0 2px 6px rgba(92,112,148,0.05); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">赠送</button>
             <button onclick="window._openMallDrawer('wish', '${safeEsc(item.name)}', ${item.price})" style="flex:1; background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid #f2dcdc; padding:8px 0; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow:0 2px 6px rgba(181,123,123,0.04); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">许愿</button>
@@ -13315,6 +13315,7 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
     `;
   }
 
+  // 🌟 终极异步搜索：不再秒出！模拟云端真实检索！
   window._searchMallItem = async function() {
     const query = document.getElementById('mallSearchInput').value.trim();
     if (!query) return;
@@ -13323,21 +13324,39 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
       window._switchMallTab('search');
     }
 
-    const items = generateMallItems(query);
-    window._mallCurrentSearchItems = items;
-    
-    const favs = await getMallFavs();
-    const html = items.map(item => {
-      const isFav = favs.some(x => x.id === item.id);
-      return buildMallCardHtml(item, false, isFav);
-    }).join('');
-    
-    document.getElementById('mallResultBox').innerHTML = html;
+    // 🌟 加载状态：极简绝美 Loading 动画
+    document.getElementById('mallResultBox').innerHTML = `
+      <div style="grid-column:1/-1; display:flex; flex-direction:column; align-items:center; justify-content:center; margin-top:60px; color:#a5cfff;">
+        <svg class="spinner" viewBox="0 0 50 50" style="width:36px; height:36px; animation: rotate 2s linear infinite;">
+          <circle cx="25" cy="25" r="20" fill="none" stroke-width="4" stroke="currentColor" stroke-dasharray="90, 150" stroke-dashoffset="0" style="animation: dash 1.5s ease-in-out infinite;"></circle>
+        </svg>
+        <style>
+          @keyframes rotate { 100% { transform: rotate(360deg); } }
+          @keyframes dash { 0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; } 50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; } 100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; } }
+        </style>
+        <div style="color:#5c7094; font-size:13px; font-weight:bold; margin-top:16px; letter-spacing:1px;">连接云端物价节点...</div>
+        <div style="color:#a0aaba; font-size:11px; margin-top:6px;">深度语义拆解中</div>
+      </div>
+    `;
+
+    // 🌟 强行让子弹飞一会儿：延迟 1.2 秒出结果！
+    setTimeout(async () => {
+      const items = generateMallItems(query);
+      window._mallCurrentSearchItems = items;
+      
+      const favs = await getMallFavs();
+      const html = items.map(item => {
+        const isFav = favs.some(x => x.id === item.id);
+        return buildMallCardHtml(item, false, isFav);
+      }).join('');
+      
+      document.getElementById('mallResultBox').innerHTML = html;
+    }, 1200); // 1.2秒极度拟真的思考时间
   };
 
   window._renderMallResult = async function() {
     if (!window._mallCurrentSearchItems || window._mallCurrentSearchItems.length === 0) {
-      document.getElementById('mallResultBox').innerHTML = `<div style="color:#a0aaba; font-size:12px; text-align:center; margin-top:60px; line-height:1.6; grid-column:1 / -1;">高定文字概念引擎已启动<br>在上方输入物品，敲击回车瞬间生成</div>`;
+      document.getElementById('mallResultBox').innerHTML = `<div style="color:#a0aaba; font-size:12px; text-align:center; margin-top:60px; line-height:1.6; grid-column:1 / -1;">深度语义物价引擎已启动<br>在上方输入物品，系统将自动连接云端评估价值</div>`;
       return;
     }
     const favs = await getMallFavs();
@@ -13372,7 +13391,6 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
     else window._renderMallFavs();
   };
 
-  // 🌟 5. 跨次元投递引擎 (白屏绝杀)
   window._pendingMallAction = null; 
 
   window._openMallDrawer = function(type, name, price) {
@@ -13446,7 +13464,7 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
     document.getElementById('mallActionDrawer').classList.remove('active');
     document.getElementById('blueMall').classList.remove('active');
     
-    window.openChat(targetId); // 致命一击！瞬间跳转到微信聊天页面！
+    window.openChat(targetId); 
     
     if (type === 'gift') {
       const hiddenPrompt = `【系统最高指令】：玩家刚刚在“海盐甄选”虚拟商城中，自掏腰包花了 ${price.toFixed(2)} 元，为你精心挑选并送出了一份礼物：“${name}”。你现在收到了这个礼物卡片。请你立刻根据你的人设，对玩家的这份心意做出最真实的反应（惊喜、感动、傲娇或调侃），直接回复玩家！`;
