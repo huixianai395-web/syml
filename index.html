@@ -13643,12 +13643,12 @@ window._showOrderHistory = async function() {
     }
   };
 
-  window._renderPostInbox = async function() {
+    window._renderPostInbox = async function() {
     const letters = await localforage.getItem(K_POSTOFFICE) || [];
     const box = document.getElementById('postInboxPanel');
     
     if(letters.length === 0) {
-      box.innerHTML = `<div style="text-align:center; padding:60px 0; color:#a0aaba; font-size:13px; font-weight:bold;">信箱里空空如也<br>去写下第一封信吧</div>`;
+      box.innerHTML = `<div style="text-align:center; padding:60px 0; color:#a0aaba; font-size:13px; font-weight:bold; letter-spacing:1px;">信箱里空空如也<br>去写下第一封信吧</div>`;
       return;
     }
 
@@ -13656,7 +13656,6 @@ window._showOrderHistory = async function() {
       const isDelivered = Date.now() >= L.deliverTime;
       const isReplied = L.status === 'replied';
       
-      // 绝美的干枯玫瑰色未读红点
       const dotHtml = (isDelivered && !isReplied) 
         ? `<div style="position:absolute; top:-4px; right:-4px; width:12px; height:12px; background:#b57b7b; border:2px solid #fff; border-radius:50%; box-shadow:0 2px 4px rgba(181,123,123,0.3);"></div>` 
         : '';
@@ -13666,13 +13665,19 @@ window._showOrderHistory = async function() {
                        
       const bg = isReplied ? 'rgba(255,255,255,0.8)' : 'rgba(238,244,250,0.6)';
       const border = isReplied ? '#dce5f0' : '#a5cfff';
+      
+      // 🌟 蓝色美学：如果被收藏了，就在日期旁边亮起一颗海盐蓝的四芒星！
+      const starHtml = L.favorite ? `<span style="color:#a5cfff; margin-left:6px; font-size:14px; line-height:1;">✦</span>` : '';
 
       return `
         <div style="position:relative; background:${bg}; border:1px solid ${border}; border-radius:16px; padding:16px; box-shadow:0 4px 12px rgba(92,112,148,0.03); cursor:pointer; transition:transform 0.2s;" onclick="window._openPostLetter('${L.id}')" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
           ${dotHtml}
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
             <b style="color:#3d4a6a; font-size:14px;">寄给：${safeEsc(L.toName)}</b>
-            <span style="font-size:10px; color:#7a86a8;">${new Date(L.sendTime).toLocaleDateString()}</span>
+            <div style="display:flex; align-items:center;">
+              <span style="font-size:10px; color:#7a86a8; font-family:ui-monospace, monospace;">${new Date(L.sendTime).toLocaleDateString()}</span>
+              ${starHtml}
+            </div>
           </div>
           <div style="font-size:13px; color:#7a86a8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:12px;">"${safeEsc(L.content)}"</div>
           <div style="font-size:11px; color:${!isDelivered ? '#a0aaba' : '#5c7094'}; font-weight:bold; background:rgba(255,255,255,0.5); display:inline-block; padding:4px 10px; border-radius:8px;">${statusText}</div>
@@ -13681,64 +13686,73 @@ window._showOrderHistory = async function() {
     }).join('');
   };
 
-  // 核心灵魂：默默检测时间戳，时间到了就去骚扰 AI 写信！
-  window._checkPostDelivery = async function() {
-    const letters = await localforage.getItem(K_POSTOFFICE) || [];
-    let updated = false;
-
-    for (let i = 0; i < letters.length; i++) {
-      let L = letters[i];
-      if (L.status === 'sending' && Date.now() >= L.deliverTime) {
-        L.status = 'delivered';
-        updated = true;
-        
-        // 瞬间触发 AI 脑电波索要回信！
-        const c = (window.getContacts ? window.getContacts() : []).find(x => x.id === L.toId);
-        if(c) {
-          const sysPrompt = `你现在是：${c.name}。人设：${c.persona}。
-这是一项特殊的【时光邮局】任务！
-玩家在过去给你寄了一封手写长信，经历了漫长的时间，今天终于送达到了你的手里。
-玩家信件内容：“${L.content}”。
-【你的任务】：请仔细阅读信件，体会这种跨越时间的延迟浪漫。然后，请以你的第一人称视角，用【复古书信】的格式（比如以对方名字开头，以落款结尾），给玩家写一封深情、细腻、或是傲娇的长篇回信。
-字数 100-300字左右。只需返回纯文本回信内容，绝对不要带任何前缀！`;
-          
-          try {
-            const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '信件已送达，请提笔回信。' }]);
-            L.replyContent = (out || '').replace(/```json|```/g, '').trim();
-            L.status = 'replied';
-          } catch(e) {
-            console.log('时光邮局回信失败：', e);
-          }
-        }
-      }
-    }
-    if(updated) {
-      await localforage.setItem(K_POSTOFFICE, letters);
-      window._renderPostInbox();
-    }
-  };
-
   window._openPostLetter = async function(id) {
     const letters = await localforage.getItem(K_POSTOFFICE) || [];
     const L = letters.find(x => x.id === id);
     if(!L) return;
 
+    const modal = document.getElementById('postReadModal');
     const myTextEl = document.getElementById('postReadMyText');
     const aiReplyEl = document.getElementById('postReadAiReply');
     
-    myTextEl.innerHTML = `<b>我写给 ${safeEsc(L.toName)}：</b><br>${safeEsc(L.content).replace(/\\n/g, '<br>').replace(/\\n/g, '<br>')}`;
+    myTextEl.innerHTML = `<b>我写给 ${safeEsc(L.toName)}：</b><br>${safeEsc(L.content).replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}`;
     
     if (Date.now() < L.deliverTime) {
       aiReplyEl.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:13px; margin-top:20px;">信件还在时光隧道中穿梭...<br>请等到 ${new Date(L.deliverTime).toLocaleString()} 再来吧 🤍</div>`;
     } else if (L.status !== 'replied' || !L.replyContent) {
       aiReplyEl.innerHTML = `<div style="text-align:center; color:#5c7094; font-size:13px; margin-top:20px;">信已送达，TA 正在认真读信，准备提笔...<br>稍后再来看看吧。</div>`;
-      // 顺手再催一次 AI
-      window._checkPostDelivery();
+      window._checkPostDelivery(); // 偷偷催一下 AI
     } else {
       aiReplyEl.innerHTML = `<b>${safeEsc(L.toName)} 的回信：</b><br>${safeEsc(L.replyContent).replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}`;
     }
 
-    document.getElementById('postReadModal').classList.add('active');
+    // 🌟 核心：在阅读面板底部，动态注入“删除”和“收藏”按钮！
+    let actionBox = document.getElementById('postReadActions');
+    if(!actionBox) {
+      actionBox = document.createElement('div');
+      actionBox.id = 'postReadActions';
+      // 用高级灰蓝色的虚线和正文隔开
+      actionBox.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-top:24px; border-top:1px dashed #dce5f0; padding-top:16px;';
+      aiReplyEl.parentNode.appendChild(actionBox);
+    }
+
+    // 根据当前的收藏状态，动态改变按钮的文字和高亮颜色
+    const starText = L.favorite ? '✦ 取消珍藏' : '✦ 收入珍藏';
+    const starBg = L.favorite ? 'linear-gradient(135deg, #eef4fa, #dce5f0)' : 'transparent';
+    const starBorder = L.favorite ? '#cdd7e8' : '#dce5f0';
+    const starColor = L.favorite ? '#3d4a6a' : '#7a86a8';
+
+    actionBox.innerHTML = `
+      <button class="btn d" onclick="window._delPostLetter('${id}')" style="background:rgba(252,242,242,0.6); color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; padding:6px 14px; font-weight:bold; font-size:12px; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">抹除痕迹</button>
+      
+      <button class="btn" onclick="window._starPostLetter('${id}')" style="background:${starBg}; color:${starColor}; border:1px solid ${starBorder}; border-radius:10px; padding:6px 14px; font-weight:bold; font-size:12px; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">${starText}</button>
+    `;
+
+    modal.classList.add('active');
+  };
+
+  // 🌟 抹除魔法：彻底从硬盘深处删掉这封信
+  window._delPostLetter = async function(id) {
+    if(!confirm('宝宝，确定要彻底抹除这封信的痕迹吗？删了就再也找不回来了哦！')) return;
+    let letters = await localforage.getItem(K_POSTOFFICE) || [];
+    letters = letters.filter(x => x.id !== id);
+    await localforage.setItem(K_POSTOFFICE, letters);
+    
+    document.getElementById('postReadModal').classList.remove('active');
+    window._renderPostInbox();
+  };
+
+  // 🌟 珍藏魔法：在硬盘里给它打上四芒星烙印
+  window._starPostLetter = async function(id) {
+    const letters = await localforage.getItem(K_POSTOFFICE) || [];
+    const L = letters.find(x => x.id === id);
+    if(L) {
+      L.favorite = !L.favorite;
+      await localforage.setItem(K_POSTOFFICE, letters);
+      // 瞬间重绘面板，让星星亮起来！
+      window._openPostLetter(id);
+      window._renderPostInbox();
+    }
   };
 </script>
   <!-- 🌟 蓝色高定：沉浸式专注挽留弹窗 -->
