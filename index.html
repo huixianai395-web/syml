@@ -4548,11 +4548,13 @@ if(voiceMatch){
       const src = t.slice(5, -6);
       return `${quote}<div class="bubble ${cls} ${hidden} bubble-card" style="padding:0;background:transparent;border:none;box-shadow:none;"><img class="bubble-img" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
     }
-   // 🌟 蓝色高定：表情包隐形修复盾！
+   // 🌟 蓝色高定：表情包隐形修复盾（真正的完美拼写版！）
     const stkMatch = t.match(/^\[(stk:|st:|st_)([^\]]+)\]$/i);
     if(stkMatch){
       const id = stkMatch[2].trim();
-      const src = window.__stickerGetSrcById ? window.__stickerGetSrcById(id) : '';
+      // 🔪 致命错误修复：调用正确的雷达函数，并把图片链接解包出来！
+      const sticker = window.__stickerGetById ? window.__stickerGetById(id) : null;
+      const src = sticker ? sticker.src : '';
       
       // 🌟 兜底：如果连模糊匹配都找不到，绝不发空白，给个高级的占位提示！
       if(!src) return `${quote}<div class="bubble ${cls} ${hidden}" style="color:#a0aaba; font-style:italic; font-size:13px;">(发出了一个表情)</div>${ts}`;
