@@ -13065,12 +13065,13 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
           if (senderNpc && typeof window.getChatArr === 'function') {
             let cleanText = (randomPost.text||'').replace(/\[img\](.*?)\[\/img\]/gi, '').trim();
             const cardHtml = `
-              <div class="card-xhs-share" style="background:rgba(250,252,255,0.85); border:1px solid #dce5f0; border-radius:12px; padding:12px; width:220px; box-shadow:0 4px 12px rgba(92,112,148,0.04); cursor:pointer;">
+              <div class="card-xhs-share" style="background:rgba(250,252,255,0.85); border:1px solid #dce5f0; border-radius:12px; padding:12px; width:220px; box-shadow:0 4px 12px rgba(92,112,148,0.04); cursor:pointer; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" onclick="const t=this.querySelector('.xhs-share-text'); if(t.style.display==='block'){t.style.display='-webkit-box'; this.querySelector('.xhs-expand-hint').textContent='点击展开 ▾';}else{t.style.display='block'; this.querySelector('.xhs-expand-hint').textContent='收起 ▴';} event.stopPropagation();">
                 <div style="font-size:10px; color:#a5cfff; font-weight:800; margin-bottom:6px; display:flex; align-items:center; gap:4px;">
                   <svg viewBox="0 0 24 24" style="width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>日常碎片
                 </div>
-                <div style="font-size:13px; color:#3d4a6a; font-weight:bold; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.5;">${safeEsc(cleanText)}</div>
-                <div style="font-size:10px; color:#7a86a8; margin-top:8px;">By: ${safeEsc(randomPost.authorName)}</div>
+                <div class="xhs-share-text" style="font-size:13px; color:#3d4a6a; font-weight:bold; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.5; transition:all 0.3s ease;">${safeEsc(cleanText)}</div>
+                <div class="xhs-expand-hint" style="font-size:10px; color:#a5cfff; text-align:center; margin-top:6px; font-weight:bold; letter-spacing:1px; transition:color 0.2s;">点击展开 ▾</div>
+                <div style="font-size:10px; color:#7a86a8; margin-top:8px; border-top:1px dashed #dce5f0; padding-top:6px;">By: ${safeEsc(randomPost.authorName)}</div>
               </div>
             `;
             const arr = window.getChatArr(senderNpc.id) || [];
@@ -13222,13 +13223,14 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
 
     let cleanText = (post.text||'').replace(/\[img\](.*?)\[\/img\]/gi, '').trim();
 
-    const cardHtml = `
-      <div class="card-xhs-share" style="background:rgba(250,252,255,0.85); border:1px solid #dce5f0; border-radius:12px; padding:12px; width:220px; box-shadow:0 4px 12px rgba(92,112,148,0.04); cursor:pointer;">
+   const cardHtml = `
+      <div class="card-xhs-share" style="background:rgba(250,252,255,0.85); border:1px solid #dce5f0; border-radius:12px; padding:12px; width:220px; box-shadow:0 4px 12px rgba(92,112,148,0.04); cursor:pointer; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" onclick="const t=this.querySelector('.xhs-share-text'); if(t.style.display==='block'){t.style.display='-webkit-box'; this.querySelector('.xhs-expand-hint').textContent='点击展开 ▾';}else{t.style.display='block'; this.querySelector('.xhs-expand-hint').textContent='收起 ▴';} event.stopPropagation();">
         <div style="font-size:10px; color:#a5cfff; font-weight:800; margin-bottom:6px; display:flex; align-items:center; gap:4px;">
           <svg viewBox="0 0 24 24" style="width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>日常碎片
         </div>
-        <div style="font-size:13px; color:#3d4a6a; font-weight:bold; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.5;">${safeEsc(cleanText)}</div>
-        <div style="font-size:10px; color:#7a86a8; margin-top:8px;">By: ${safeEsc(post.authorName)}</div>
+        <div class="xhs-share-text" style="font-size:13px; color:#3d4a6a; font-weight:bold; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.5; transition:all 0.3s ease;">${safeEsc(cleanText)}</div>
+        <div class="xhs-expand-hint" style="font-size:10px; color:#a5cfff; text-align:center; margin-top:6px; font-weight:bold; letter-spacing:1px; transition:color 0.2s;">点击展开 ▾</div>
+        <div style="font-size:10px; color:#7a86a8; margin-top:8px; border-top:1px dashed #dce5f0; padding-top:6px;">By: ${safeEsc(post.authorName)}</div>
       </div>
     `;
 
