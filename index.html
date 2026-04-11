@@ -13685,7 +13685,46 @@ window._showOrderHistory = async function() {
       `;
     }).join('');
   };
+// 🌟 核心灵魂：默默检测时间戳，时间到了就去骚扰 AI 写信！
+  window._checkPostDelivery = async function() {
+    const letters = await localforage.getItem(K_POSTOFFICE) || [];
+    let updated = false;
 
+    for (let i = 0; i < letters.length; i++) {
+      let L = letters[i];
+      // 只有状态是 sending 且时间已经到了未来的那一刻，才会触发！
+      if (L.status === 'sending' && Date.now() >= L.deliverTime) {
+        L.status = 'delivered';
+        updated = true;
+        
+        // 瞬间触发 AI 脑电波索要回信！
+        const c = (window.getContacts ? window.getContacts() : []).find(x => x.id === L.toId);
+        if(c) {
+          const sysPrompt = `你现在是：${c.name}。人设：${c.persona}。
+这是一项特殊的【时光邮局】任务！
+玩家在过去给你寄了一封手写长信，经历了漫长的时间，今天终于送达到了你的手里。
+玩家信件内容：“${L.content}”。
+【你的任务】：请仔细阅读信件，体会这种跨越时间的延迟浪漫。然后，请以你的第一人称视角，用【复古书信】的格式（比如以对方名字开头，以落款结尾），给玩家写一封深情、细腻、或是傲娇的长篇回信，必须深入人设。
+字数不少于300字，具体多少看人设来决定，必须是高质量回信，禁止油腻，必须真情实感，必须符合人设。只需返回纯文本回信内容，绝对不要带任何前缀！`;
+          
+          try {
+            // 带着信件去敲门！
+            const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '信件已送达，请提笔回信。' }]);
+            L.replyContent = (out || '').replace(/```json|```/g, '').trim();
+            L.status = 'replied'; // 标记为已回复！
+          } catch(e) {
+            console.log('时光邮局回信失败：', e);
+          }
+        }
+      }
+    }
+    
+    // 如果有信件状态更新，就静默写回外挂硬盘，并刷新信箱面板！
+    if(updated) {
+      await localforage.setItem(K_POSTOFFICE, letters);
+      if(typeof window._renderPostInbox === 'function') window._renderPostInbox();
+    }
+  };
   window._openPostLetter = async function(id) {
     const letters = await localforage.getItem(K_POSTOFFICE) || [];
     const L = letters.find(x => x.id === id);
