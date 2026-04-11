@@ -2397,19 +2397,7 @@ body {
     </div>
   </section>
 
-  <!-- 🌟 转发抽屉 -->
-  <div id="projShareDrawer" class="modal" style="z-index: 10001;" onclick="this.classList.remove('active')">
-    <div class="modal-card" style="margin-top:auto; margin-bottom:0; border-radius:24px 24px 0 0; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border-top:1px solid #dce5f0; padding:20px 16px calc(20px + var(--safe-bottom)); box-shadow:0 -10px 40px rgba(92,112,148,0.15);" onclick="event.stopPropagation()">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-        <b style="color:#3d4a6a; font-size:15px; display:flex; align-items:center; gap:6px;">
-          <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
-          唤醒谁的回忆？
-        </b>
-        <span onclick="document.getElementById('projShareDrawer').classList.remove('active');" style="color:#7a86a8; font-size:22px; cursor:pointer; line-height:1;">×</span>
-      </div>
-      <div id="projShareContacts" style="display:flex; overflow-x:auto; gap:16px; padding-bottom:10px; scrollbar-width:none;"></div>
-    </div>
-  </div>
+  
   <!-- 阅读信件的专属弹窗 -->
   <div id="postReadModal" class="modal" style="z-index: 10001;" onclick="this.classList.remove('active')">
     <div class="modal-card" style="width:90%; max-width:380px; max-height:85dvh; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:20px; padding:0; display:flex; flex-direction:column; overflow:hidden;" onclick="event.stopPropagation()">
@@ -13838,10 +13826,9 @@ window._showOrderHistory = async function() {
       window._renderPostInbox();
     }
   };
-  // ================= 🌟 蓝色高定：回忆放映机核心引擎 (时空档案馆·全能终极版) =================
+  // ================= 🌟 蓝色高定：回忆放映机核心引擎 (纯净珍藏版) =================
   window._projAllData = [];
   window._projCurrentFilter = 'all';
-  window._projSharingData = null; // 当前正在转发的照片缓存
 
   window._initMemoryProjector = async function() {
     const wall = document.getElementById('projectorWall');
@@ -13866,7 +13853,7 @@ window._showOrderHistory = async function() {
       const chatName = c ? c.name : '未知羁绊';
 
       arr.forEach(msg => {
-        if(!msg.text || msg.proj_deleted) return; // 🌟 如果被标记删除，彻底无视！
+        if(!msg.text || msg.proj_deleted) return; 
         
         let added = false;
         const baseInfo = { msgId: msg.id, chatId: chatId, time: msg.time, chatName: chatName, favorite: !!msg.proj_fav };
@@ -13919,7 +13906,6 @@ window._showOrderHistory = async function() {
     window._renderProjectorWall();
   };
 
-  // 🌟 动态获取 Tab 的高级样式
   function _getTabStyle(filter) {
     const isSel = window._projCurrentFilter === filter;
     if(isSel) return 'background:#5c7094; color:#fff; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; box-shadow:0 2px 8px rgba(92,112,148,0.2); transition:all 0.2s; flex-shrink:0;';
@@ -13951,11 +13937,9 @@ window._showOrderHistory = async function() {
       return;
     }
 
-    // 🌟 准备极简的高级 SVG 小图标
     const svgStar = `<svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
     const svgStarOutline = `<svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
     const svgDel = `<svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
-    const svgShare = `<svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>`;
 
     wall.innerHTML = list.map((p, i) => {
       const d = new Date(p.time);
@@ -13970,30 +13954,28 @@ window._showOrderHistory = async function() {
         aspectRatio = '3/4';
         contentHtml = `<div style="width:100%; height:100%; background:#eef4fa; display:flex; align-items:center; justify-content:center; padding:16px; font-size:12px; color:#5c7094; line-height:1.7; text-align:justify; overflow:hidden; box-sizing:border-box;"><div style="display:-webkit-box; -webkit-line-clamp:7; -webkit-box-orient:vertical; overflow:hidden;">${p.content}</div></div>`;
         clickAction = `onclick="alert('📝 摄像机定格的瞬间：\\n\\n' + this.dataset.text)" data-text="${p.content.replace(/"/g, '&quot;').replace(/<[^>]*>/g, '')}"`;
+      
       } else if (p.type === 'fakeimg') {
         aspectRatio = '3/4';
-        // 🌟 防腐化魔法：如果图片破损，自动转化为高级提示
+        // 🌟 核心修复：彻底砍掉触发风化的 onerror！直接用最完美的背景图片渲染！就算加载慢，也会留着绝美的渐变底色！
         contentHtml = `<div class="card-fakeimg" style="width:100%; height:100%; box-shadow:none; border-radius:0; margin:0;" onclick="this.classList.toggle('open'); event.stopPropagation();">
-            <div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%);">
-              <img src="${p.url}" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:-1;" onerror="this.outerHTML='<div style=\\'position:absolute;inset:0;background:#f4f6fb;display:flex;align-items:center;justify-content:center;color:#a0aaba;font-size:11px;font-style:italic;\\'>胶片已风化</div>'">
-            </div>
+            <div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('${p.url}') center/cover no-repeat;"></div>
             <div class="fi-desc" style="font-size:12px; padding:12px; color:#eee; background:#242426; text-align:justify; line-height:1.6; overflow-y:auto; box-sizing:border-box;">${p.desc}</div>
           </div>`;
         clickAction = ''; 
+      
       } else {
-        contentHtml = `<img src="${p.url}" style="width:100%; display:block; object-fit:cover;" onerror="this.outerHTML='<div style=\\'width:100%;aspect-ratio:1;background:#f4f6fb;display:flex;align-items:center;justify-content:center;color:#a0aaba;font-size:11px;font-style:italic;\\'>胶片已风化</div>'">`;
+        // 普通图片，去掉 onerror
+        contentHtml = `<img src="${p.url}" style="width:100%; display:block; object-fit:cover;">`;
         clickAction = `onclick="document.getElementById('previewModalImg').src='${p.url}'; document.getElementById('modalPreview').classList.add('active')"`;
       }
 
-      // 🌟 绝美的底部操作盘
+      // 🌟 纯净底部操作栏：只有收藏和删除，完美对称居中！
       const starColor = p.favorite ? '#a5cfff' : '#cdd7e8';
       const actionHtml = `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; margin-top:10px; border-top:1px dashed #eef4fa;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; margin-top:10px; border-top:1px dashed #eef4fa; padding-left:12px; padding-right:12px;">
           <div onclick="window._projFav('${p.chatId}', '${p.msgId}')" style="color:${starColor}; cursor:pointer; padding:4px; display:flex; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'">${p.favorite ? svgStar : svgStarOutline}</div>
-          <div style="display:flex; gap:8px;">
-            <div onclick="window._projShare(${i})" style="color:#7a86a8; cursor:pointer; padding:4px; display:flex; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'">${svgShare}</div>
-            <div onclick="window._projDel('${p.chatId}', '${p.msgId}')" style="color:#b57b7b; opacity:0.6; cursor:pointer; padding:4px; display:flex; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'">${svgDel}</div>
-          </div>
+          <div onclick="window._projDel('${p.chatId}', '${p.msgId}')" style="color:#b57b7b; opacity:0.6; cursor:pointer; padding:4px; display:flex; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'">${svgDel}</div>
         </div>
       `;
 
@@ -14012,21 +13994,21 @@ window._showOrderHistory = async function() {
     }).join('');
   };
 
-  // 🌟 原生抹除引擎：直接在聊天记录里打上死亡烙印！
+  // 🌟 原生抹除引擎
   window._projDel = async function(chatId, msgId) {
     if(!confirm('宝宝，确定要彻底烧毁这张照片吗？它也会从聊天记录中被抹除哦！')) return;
     const chats = await localforage.getItem('mp_fix_chats') || {};
     const arr = chats[chatId] || [];
     const msg = arr.find(m => m.id === msgId);
     if(msg) {
-      msg.proj_deleted = true; // 死亡烙印
+      msg.proj_deleted = true;
       chats[chatId] = arr;
       await localforage.setItem('mp_fix_chats', chats);
-      window._initMemoryProjector(); // 瞬间重载，尸骨无存！
+      window._initMemoryProjector(); 
     }
   };
 
-  // 🌟 星光珍藏引擎：在聊天记录里打上星芒烙印！
+  // 🌟 星光珍藏引擎
   window._projFav = async function(chatId, msgId) {
     const chats = await localforage.getItem('mp_fix_chats') || {};
     const arr = chats[chatId] || [];
@@ -14035,73 +14017,10 @@ window._showOrderHistory = async function() {
       msg.proj_fav = !msg.proj_fav; 
       chats[chatId] = arr;
       await localforage.setItem('mp_fix_chats', chats);
-      
-      // 同步更新内存中的状态并重绘
       const p = window._projAllData.find(x => x.msgId === msgId && x.chatId === chatId);
       if(p) p.favorite = msg.proj_fav;
       window._renderProjectorWall();
     }
-  };
-
-  // 🌟 时空流转引擎：把旧回忆封装成明信片发给男主！
-  window._projShare = function(idx) {
-    const data = window._projAllData[idx];
-    if(!data) return;
-    window._projSharingData = data;
-    
-    // 获取联系人准备抽屉
-    const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
-    const box = document.getElementById('projShareContacts');
-    
-    box.innerHTML = contacts.map(c => `
-      <div onclick="window._executeProjShare('${c.id}')" style="display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; min-width:56px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
-        <img src="${c.avatar || 'https://via.placeholder.com/50'}" style="width:50px; height:50px; border-radius:16px; object-fit:cover; border:1px solid #dce5f0; background:#eef4fa;">
-        <span style="font-size:11px; color:#5c7094; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">${safeEsc(c.name)}</span>
-      </div>
-    `).join('');
-    
-    document.getElementById('projShareDrawer').classList.add('active');
-  };
-
-  window._executeProjShare = async function(targetChatId) {
-    const p = window._projSharingData;
-    if(!p) return;
-    if(typeof window.getChatArr !== 'function') return alert('缺少底层引源，请确保核心代码已更新！');
-    
-    // 构建极其浪漫的“时光明信片”卡片发送至聊天
-    const d = new Date(p.time);
-    const dateStr = d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
-    
-    let contentDesc = '一张旧照片';
-    if(p.type === 'text') contentDesc = '一段文字胶片';
-    if(p.type === 'fakeimg') contentDesc = '一张模拟相纸';
-
-    const cardHtml = `
-      <div style="background:rgba(250,252,255,0.85); border:1px solid #dce5f0; border-radius:12px; padding:12px; width:220px; box-shadow:0 4px 12px rgba(92,112,148,0.04); cursor:pointer;">
-        <div style="font-size:10px; color:#a5cfff; font-weight:800; margin-bottom:8px; display:flex; align-items:center; gap:4px; letter-spacing:1px;">
-          <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
-          时光明信片
-        </div>
-        <div style="font-size:13px; color:#3d4a6a; font-weight:bold; line-height:1.5;">${contentDesc}</div>
-        <div style="font-size:10px; color:#7a86a8; margin-top:8px; border-top:1px dashed #dce5f0; padding-top:6px; font-family:ui-monospace, monospace;">拍摄于: ${dateStr}</div>
-      </div>
-    `;
-
-    const arr = window.getChatArr(targetChatId) || [];
-    arr.push({ id: 'm_' + Date.now(), role: 'user', text: cardHtml, time: Date.now(), stored: true });
-    window.setChatArr(targetChatId, arr);
-    
-    document.getElementById('projShareDrawer').classList.remove('active');
-    
-    alert('✨ 明信片已成功投递！快去聊天界面等TA的回忆杀吧！');
-    if (window.currentId === targetChatId && typeof window.renderChat === 'function') window.renderChat();
-    if (typeof window.updateContactPreview === 'function') window.updateContactPreview(targetChatId);
-    
-    // 🌟 核心魔法：召唤 AI 的潜意识回忆
-    let promptContent = p.type === 'text' ? p.content : (p.desc || '一张没有文字的老照片');
-    const hiddenPrompt = `【系统指令】：玩家刚刚从“回忆放映机”里翻出了一张你们曾经的旧照片（时光明信片）发给了你。照片的内容/描述是：“${promptContent}”，拍摄于 ${dateStr}。请你根据你的人设，自然地回忆当时的情景，表达你看到这张老照片时的惊喜、感慨或傲娇吐槽。`;
-    
-    if(typeof window._sendToAI === 'function') window._sendToAI(targetChatId, hiddenPrompt, true);
   };
 </script>
   <!-- 🌟 蓝色高定：沉浸式专注挽留弹窗 -->
