@@ -4497,14 +4497,16 @@ window._ivManageMode = false;
   function isHtmlFrag(s){s=String(s||'');return /<([a-z][\w-]*)(\s|>)/i.test(s)&&!isHtmlDoc(s);}
   function toHtmlDataUrl(s){return 'data:text/html;charset=utf-8,'+encodeURIComponent(String(s||''));}
 
-  // 修改后的渲染：助手支持HTML
+  
+   // 修改后的渲染：助手支持HTML
   function renderBubbleContent(m,isMe,pref){
     const cls=isMe?'me':'ai';
     const ts=pref.showTs?`<div class="msg-time">${fmtTs(m.time)}</div>`:'';
     const quote=renderQuote(m.quote);
     const hidden=m.hiddenForAi?'ai-hidden':'';
     const t=String(m.text||'');
-   // 🌟 蓝色高定：第一道绝对防御闸门！文件必须最先拦截，防止代码文件引起 DOM 爆炸！
+
+    // 🌟 蓝色高定：第一道绝对防御闸门！文件必须最先拦截，防止代码文件引起 DOM 爆炸！
     const fileMatch = t.match(/\[file:(.+?)\]([\s\S]*?)\[\/file\]/i);
     if(fileMatch){
       const fname = fileMatch[1];
@@ -4516,17 +4518,7 @@ window._ivManageMode = false;
       return `${quote}<div class="bubble ${cls} ${hidden} bubble-card" style="background:transparent !important; border:none !important; box-shadow:none !important; padding:0 !important;">${fileCard}</div>${ts}`;
     }
 
-    // 🌟 蓝色高定：第二道闸门，双语字幕专属拦截器（带引用兼容版）
-    if(t.includes('bubble-bilingual')){
-      let finalBody = t;
-      let qHtml = '';
-      const quoteMatch = t.match(/^\[quote\]([\s\S]*?)\[\/quote\]([\s\S]*)$/);
-      if(quoteMatch){
-        qHtml = `<div class="msg-quote"><div class="q-content">${esc(quoteMatch[1].trim())}</div></div>`;
-        finalBody = quoteMatch[2].trim();
-      }
-      return `${quote}${qHtml}<div class="bubble ${cls} ${hidden}">${finalBody}</div>${ts}`;
-    }
+    // 🌟 蓝色高定：第二道闸门，必须先把【语音】拦截下来！(修复语音框变文字的Bug)
     const voiceMatch=t.match(/^\[voice:(\d+):([\s\S]*)\]$/);
     if(voiceMatch){
       const dur=voiceMatch[1],vtext=voiceMatch[2],vid='vr_'+m.id;
@@ -4542,6 +4534,18 @@ window._ivManageMode = false;
       // 🌟 细节美学：如果是双语壳子，就把底部的 padding 去掉，让卡片完美贴合！
       return `${quote}<div class="bubble ${cls} ${hidden}" style="width:${w}px;cursor:pointer;" onclick="var el=document.getElementById('${vid}');if(el)el.classList.toggle('hidden');this.classList.toggle('voice-playing')"><div class="bubble-voice"><div class="voice-waves">${waves}</div><div class="voice-dur">${dur}″</div></div></div><div id="${vid}" class="voice-reveal hidden" style="${vtext.includes('bubble-bilingual') ? 'padding:0; background:transparent;' : ''}">${finalVtext}</div>${ts}`;
     }
+
+    // 🌟 蓝色高定：第三道闸门，纯文字的双语字幕拦截器（带引用兼容版）
+    if(t.includes('bubble-bilingual')){
+      let finalBody = t;
+      let qHtml = '';
+      const quoteMatch = t.match(/^\[quote\]([\s\S]*?)\[\/quote\]([\s\S]*)$/);
+      if(quoteMatch){
+        qHtml = `<div class="msg-quote"><div class="q-content">${esc(quoteMatch[1].trim())}</div></div>`;
+        finalBody = quoteMatch[2].trim();
+      }
+      return `${quote}${qHtml}<div class="bubble ${cls} ${hidden}">${finalBody}</div>${ts}`;
+  }
     const quoteMatch = t.match(/^\[quote\]([\s\S]*?)\[\/quote\]([\s\S]*)$/);
     if(quoteMatch){
       const qText=quoteMatch[1].trim();
