@@ -13086,7 +13086,7 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
     }
   }, 800);
 
-  // 🌟 2. 注入独立的大别墅 Screen (绝对隔离，绝不影响聊天 Z-index)
+  // 🌟 2. 注入独立的大别墅 Screen
   if (!document.getElementById('blueMall')) {
     const mallHtml = `
     <section id="blueMall" class="screen">
@@ -13097,32 +13097,28 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
       </div>
       
       <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:0; display:flex; flex-direction:column;">
-        
-        <!-- 搜索与发现栏 -->
         <div style="padding:16px 20px; background:rgba(250,252,255,0.6); border-bottom:1px solid rgba(220,229,240,0.5); flex-shrink:0;">
           <div style="display:flex; background:rgba(255,255,255,0.8); border:1px solid #dce5f0; border-radius:16px; padding:4px; align-items:center; box-shadow:0 2px 8px rgba(92,112,148,0.05);">
             <div style="padding:0 12px; color:#5c7094;">${svgSearch}</div>
-            <input id="mallSearchInput" type="text" placeholder="输入任何想要的礼物..." style="flex:1; border:none; background:transparent; outline:none; font-size:14px; color:#5c7094; padding:10px 0;">
+            <input id="mallSearchInput" type="text" placeholder="搜点好东西，支持AI生成实物图..." style="flex:1; border:none; background:transparent; outline:none; font-size:14px; color:#5c7094; padding:10px 0;">
             <button class="btn p" onclick="window._searchMallItem()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; padding:8px 16px; border-radius:12px; font-weight:bold; box-shadow:none;">检索</button>
           </div>
         </div>
 
-        <!-- 双导航 Tab -->
         <div style="display:flex; gap:20px; padding:12px 20px 0; border-bottom:1px solid #dce5f0; flex-shrink:0;">
           <div id="mallTabSearch" onclick="window._switchMallTab('search')" style="font-size:14px; font-weight:bold; color:#3d4a6a; border-bottom:2px solid #5c7094; padding-bottom:8px; cursor:pointer;">全息检索</div>
           <div id="mallTabFav" onclick="window._switchMallTab('fav')" style="font-size:14px; font-weight:bold; color:#a0aaba; border-bottom:2px solid transparent; padding-bottom:8px; cursor:pointer;">心愿单</div>
         </div>
 
-        <!-- 🌟 双列瀑布流容器！ -->
         <div id="mallResultBox" style="flex:1; overflow-y:auto; padding:16px; display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; align-content:start; -webkit-overflow-scrolling:touch;">
           <div style="color:#a0aaba; font-size:12px; text-align:center; margin-top:60px; line-height:1.6; grid-column:1 / -1;">
-            连接万物的全息合成引擎已启动<br>在上方输入物品，敲击回车即可裂变具象化
+            连接万物的全息合成引擎已启动<br>在上方输入物品，AI将为您实时渲染实物图
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 赠送 / 索要 抽屉（安全挂载在 body 底部，与小手机原有 Modal 并列） -->
+    <!-- 赠送 / 索要 抽屉 -->
     <div id="mallActionDrawer" class="modal" style="z-index: 10006;" onclick="this.classList.remove('active')">
       <div class="modal-card" style="margin-top:auto; margin-bottom:0; border-radius:24px 24px 0 0; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-top:1px solid #dce5f0; padding:20px 16px 40px; box-shadow:0 -10px 40px rgba(92,112,148,0.15);" onclick="event.stopPropagation()">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -13133,27 +13129,25 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
       </div>
     </div>
     `;
-    document.getElementById('app').insertAdjacentHTML('beforeend', mallHtml);
+    document.body.insertAdjacentHTML('beforeend', mallHtml);
     
-    // 绑定回车事件
     document.getElementById('mallSearchInput').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') window._searchMallItem();
     });
   }
 
-  // 🌟 3. 外挂内存与基础功能
-  const K_MALL_FAV = 'mp_fix_mall_fav_v2';
+  const K_MALL_FAV = 'mp_fix_mall_fav_v3';
   async function getMallFavs() { return (await localforage.getItem(K_MALL_FAV)) || []; }
   async function setMallFavs(data) { await localforage.setItem(K_MALL_FAV, data); }
 
-  // 🌟 核心重构：防两万螺蛳粉与四十块苹果手机的【语义感知物价引擎】！
+  // 🌟 核心重构：彻底抛弃死板四档，拥抱真实电商网感！
   function generateMallItems(query) {
     if (!query) return [];
     
     let basePrice = 0;
     let q = query.toLowerCase();
 
-    // 🌟 蓝色高定：现实物价感知神经元！给 AI 强行注入金钱观念！
+    // 智能物价感知引擎
     if (/房|别墅|四合院|大平层|海景|庄园|岛/.test(q)) basePrice = 5000000;
     else if (/车|跑车|法拉利|保时捷|迈凯伦|兰博基尼|劳斯莱斯/.test(q)) basePrice = 2000000;
     else if (/表|劳力士|百达翡丽|理查德|江诗丹顿/.test(q)) basePrice = 150000;
@@ -13163,31 +13157,44 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
     else if (/手办|盲盒|键盘|鼠标|耳机|周边|音响|游戏|乐高/.test(q)) basePrice = 150;
     else if (/螺蛳粉|奶茶|辣条|零食|外卖|咖啡|面|粉|饭|汉堡|火锅|烤肉|烧烤|肯德基|麦当劳/.test(q)) basePrice = 15;
     else {
-      // 兜底哈希算法：遇到没见过的词，算个几十到几百的随机数
       let hash = 0;
       for (let i = 0; i < query.length; i++) hash = (hash << 5) - hash + query.charCodeAt(i);
-      hash = Math.abs(hash);
-      basePrice = (hash % 300) + 20; 
+      basePrice = (Math.abs(hash) % 300) + 20; 
     }
 
-    // 增加哈希随机波动，让同类的不同商品价格有差异 (1.0 到 1.3 倍)
-    let hash2 = 0;
-    for (let i = 0; i < query.length; i++) hash2 = (hash2 << 5) - hash2 + query.charCodeAt(i);
-    hash2 = Math.abs(hash2);
-    let wave = (hash2 % 30) / 100 + 1; 
+    // 电商网感词库
+    const prefixes = ["【百亿补贴】", "【官方正品】", "【顺丰包邮】", "【2026新款】", "【旗舰店发货】", "【假一赔十】", ""];
+    const suffixes = ["全新国行", "极速发货", "超值特惠", "限量抢购", "同城速送", "送女友首选"];
     
-    // 裂变算法：基础款 -> 精致款 -> 高定款 -> 典藏款
-    let p1 = basePrice * wave;
-    let p2 = p1 * (1.3 + (hash2 % 10) / 10);
-    let p3 = p1 * (2.0 + (hash2 % 20) / 10);
-    let p4 = p1 * (3.5 + (hash2 % 30) / 10);
+    const results = [];
+    const count = Math.floor(Math.random() * 3) + 4; // 随机生成 4-6 个商品
 
-    return [
-      { id: query + '_1', name: query, tag: '日常优选', price: p1 },
-      { id: query + '_2', name: query + ' 精致礼盒', tag: '热销', price: p2 },
-      { id: query + '_3', name: query + ' 甄选高定版', tag: '高定', price: p3 },
-      { id: query + '_4', name: query + ' 至尊典藏纪念', tag: '典藏', price: p4 }
-    ];
+    for(let i=0; i<count; i++) {
+      let wave = (Math.random() * 0.8) + 0.6; // 0.6倍到1.4倍价格波动
+      let p = basePrice * wave;
+      if (p < 1) p = 1;
+
+      let title = query;
+      if (i > 0) { // 第一个保持纯净搜索词，其他的加电商词缀
+        let pre = prefixes[Math.floor(Math.random() * prefixes.length)];
+        let suf = suffixes[Math.floor(Math.random() * suffixes.length)];
+        title = `${pre} ${query} ${suf}`.trim();
+      }
+
+      // 🌟 AI 实物图具象化引擎：使用公共的大模型绘图 API
+      // 加入 prompt 关键词让它更像纯白背景的商品摄影
+      const prompt = encodeURIComponent(query + ' high quality product photography, minimalist white background');
+      const seed = Math.floor(Math.random() * 100000);
+      const imgUrl = `https://image.pollinations.ai/prompt/${prompt}?width=400&height=400&nologo=true&seed=${seed}`;
+
+      results.push({ 
+        id: 'mall_' + Date.now() + '_' + i, 
+        name: title, 
+        price: p, 
+        img: imgUrl 
+      });
+    }
+    return results;
   }
 
   window._mallCurrentTab = 'search';
@@ -13212,36 +13219,36 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
     }
   };
 
-  // 🌟 4. 专为双列优化的精美卡片渲染引擎
+  // 🌟 4. 极致视觉体验：支持真实图片的商品卡片
   function buildMallCardHtml(item, isFavPage = false, isFav = false) {
     const starIcon = isFav ? svgStarFill : svgStar;
     const starColor = isFav ? '#a5cfff' : '#a0aaba';
-    
+    const safeTitle = safeEsc(item.name).replace(/【/g, '<span style="color:#b57b7b;">【').replace(/】/g, '】</span>');
+
     return `
       <div style="background:rgba(255,255,255,0.85); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:16px; overflow:hidden; box-shadow:0 4px 16px rgba(92,112,148,0.04); display:flex; flex-direction:column; position:relative;">
         
-        <!-- 收藏星星 -->
-        <div onclick="window._toggleMallFav('${safeEsc(item.id)}', '${safeEsc(item.name)}', '${safeEsc(item.tag)}', ${item.price})" style="position:absolute; top:8px; right:8px; z-index:10; background:rgba(255,255,255,0.95); border:1px solid #dce5f0; border-radius:50%; width:26px; height:26px; display:grid; place-items:center; color:${starColor}; cursor:pointer; box-shadow:0 2px 6px rgba(92,112,148,0.05); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'">
+        <div onclick="window._toggleMallFav('${safeEsc(item.id)}', '${safeEsc(item.name)}', ${item.price}, '${item.img}')" style="position:absolute; top:8px; right:8px; z-index:10; background:rgba(255,255,255,0.95); border:1px solid #dce5f0; border-radius:50%; width:28px; height:28px; display:grid; place-items:center; color:${starColor}; cursor:pointer; box-shadow:0 2px 8px rgba(92,112,148,0.08); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'">
           ${starIcon}
         </div>
 
-        <!-- 艺术封面 (变矮变精致) -->
-        <div style="height:110px; background:linear-gradient(135deg, #eef4fa, #cdd7e8); display:grid; place-items:center; position:relative; overflow:hidden;">
-          <div style="width:42px; height:42px; background:rgba(255,255,255,0.6); backdrop-filter:blur(8px); border-radius:12px; display:grid; place-items:center; box-shadow:0 4px 12px rgba(92,112,148,0.08); color:#5c7094; z-index:2;">
-            ${svgGift}
+        <!-- 🌟 真实的商品实物图容器！带海盐蓝加载背景 -->
+        <div style="height:160px; background:#eef4fa; position:relative; overflow:hidden;">
+          <img src="${item.img}" style="width:100%; height:100%; object-fit:cover; position:absolute; inset:0; z-index:2;" onerror="this.style.display='none'">
+          <!-- 如果图片还没加载出来，显示这个优美的骨架屏 -->
+          <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#a5cfff; z-index:1;">
+             <svg viewBox="0 0 24 24" style="width:32px; height:32px; stroke:currentColor; fill:none; stroke-width:1.5;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+             <span style="font-size:10px; margin-top:4px; font-weight:bold;">AI 渲染中...</span>
           </div>
-          <!-- 标签 -->
-          <div style="position:absolute; bottom:6px; left:8px; background:rgba(255,255,255,0.8); color:#5c7094; font-size:9px; font-weight:800; padding:2px 6px; border-radius:6px; letter-spacing:0.5px;">${safeEsc(item.tag)}</div>
         </div>
 
-        <!-- 底部信息与操作区 -->
         <div style="padding:12px;">
-          <div style="font-size:13px; font-weight:900; color:#3d4a6a; margin-bottom:4px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:36px;">${safeEsc(item.name)}</div>
-          <div style="font-size:14px; font-weight:bold; color:#b57b7b; margin-bottom:12px; font-family:ui-monospace, monospace;">￥${item.price.toFixed(2)}</div>
+          <div style="font-size:13px; font-weight:800; color:#3d4a6a; margin-bottom:8px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:36px;">${safeTitle}</div>
+          <div style="font-size:16px; font-weight:bold; color:#b57b7b; margin-bottom:12px; font-family:ui-monospace, monospace; letter-spacing:0.5px;">￥${item.price.toFixed(2)}</div>
           
           <div style="display:flex; gap:6px;">
-            <button onclick="window._openMallDrawer('gift', '${safeEsc(item.name)}', ${item.price})" style="flex:1; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; padding:6px 0; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer; box-shadow:0 2px 6px rgba(92,112,148,0.05); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">赠送</button>
-            <button onclick="window._openMallDrawer('wish', '${safeEsc(item.name)}', ${item.price})" style="flex:1; background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid #f2dcdc; padding:6px 0; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer; box-shadow:0 2px 6px rgba(181,123,123,0.04); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">许愿</button>
+            <button onclick="window._openMallDrawer('gift', '${safeEsc(item.name)}', ${item.price})" style="flex:1; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; padding:8px 0; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow:0 2px 6px rgba(92,112,148,0.05); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">赠送</button>
+            <button onclick="window._openMallDrawer('wish', '${safeEsc(item.name)}', ${item.price})" style="flex:1; background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid #f2dcdc; padding:8px 0; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow:0 2px 6px rgba(181,123,123,0.04); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">许愿</button>
           </div>
         </div>
       </div>
@@ -13255,6 +13262,9 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
     if (window._mallCurrentTab !== 'search') {
       window._switchMallTab('search');
     }
+
+    // 显示加载中
+    document.getElementById('mallResultBox').innerHTML = `<div style="color:#a0aaba; font-size:12px; text-align:center; margin-top:60px; line-height:1.6; grid-column:1 / -1;">正在连线 AI 视觉大模型...<br>请稍候，实物渲染需要几秒钟时间</div>`;
 
     const items = generateMallItems(query);
     window._mallCurrentSearchItems = items;
@@ -13270,7 +13280,7 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
 
   window._renderMallResult = async function() {
     if (!window._mallCurrentSearchItems || window._mallCurrentSearchItems.length === 0) {
-      document.getElementById('mallResultBox').innerHTML = `<div style="color:#a0aaba; font-size:12px; text-align:center; margin-top:60px; line-height:1.6; grid-column:1 / -1;">连接万物的全息合成引擎已启动<br>在上方输入物品，敲击回车即可裂变具象化</div>`;
+      document.getElementById('mallResultBox').innerHTML = `<div style="color:#a0aaba; font-size:12px; text-align:center; margin-top:60px; line-height:1.6; grid-column:1 / -1;">全息视觉具象化引擎已就绪<br>输入物品，等待 AI 为您渲染实物画面</div>`;
       return;
     }
     const favs = await getMallFavs();
@@ -13291,13 +13301,13 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
     box.innerHTML = favs.slice().reverse().map(item => buildMallCardHtml(item, true, true)).join('');
   };
 
-  window._toggleMallFav = async function(id, name, tag, price) {
+  window._toggleMallFav = async function(id, name, price, imgUrl) {
     let favs = await getMallFavs();
     const idx = favs.findIndex(x => x.id === id);
     if (idx > -1) {
       favs.splice(idx, 1);
     } else {
-      favs.push({ id: id, name: name, tag: tag, price: Number(price) });
+      favs.push({ id: id, name: name, price: Number(price), img: imgUrl });
     }
     await setMallFavs(favs);
     
@@ -13305,7 +13315,7 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
     else window._renderMallFavs();
   };
 
-  // 🌟 5. 跨次元投递引擎 (白屏绝杀修复版！)
+  // 🌟 5. 跨次元投递引擎 (绝对白屏绝杀)
   window._pendingMallAction = null; 
 
   window._openMallDrawer = function(type, name, price) {
@@ -13343,7 +13353,6 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
     document.getElementById('mallActionDrawer').classList.add('active');
   };
 
-  // 🌟 白屏绝杀核心！绝对指引回到微信聊天框！
   window._executeMallAction = function(targetId, targetName) {
     if (!window._pendingMallAction || typeof window.getChatArr !== 'function') return;
     const { type, name, price } = window._pendingMallAction;
@@ -13377,11 +13386,10 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
     }
     window.setChatArr(targetId, arr);
     
-    // 🌟 消除白屏：关闭商城的同时，强制跳转到微信聊天页面！
     document.getElementById('mallActionDrawer').classList.remove('active');
     document.getElementById('blueMall').classList.remove('active');
     
-    window.openChat(targetId); // 致命一击！瞬间渲染目标角色的聊天框！
+    window.openChat(targetId); // 致命一击！瞬间跳转到微信聊天页面！
     
     if (type === 'gift') {
       const hiddenPrompt = `【系统最高指令】：玩家刚刚在“海盐甄选”虚拟商城中，自掏腰包花了 ${price.toFixed(2)} 元，为你精心挑选并送出了一份礼物：“${name}”。你现在收到了这个礼物卡片。请你立刻根据你的人设，对玩家的这份心意做出最真实的反应（惊喜、感动、傲娇或调侃），直接回复玩家！`;
