@@ -2300,6 +2300,15 @@ body {
             </div>
             <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">海盐优选</span>
           </div>
+          <!-- 时光邮局入口 -->
+          <div class="ios-icon" onclick="show('timePostOffice'); window._initPostOffice();">
+            <div class="ibg" id="icon_post" style="background-color:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
+              <svg class="default-svg" viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </div>
+            <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">时光邮局</span>
+          </div>
         </div>
       </div> <!-- 第二页的大门关上！ -->
 
@@ -2317,7 +2326,59 @@ body {
       <div class="ios-icon" onclick="show('study');renderStudyHome();"><div class="ibg" id="icon_study"><svg class="default-svg" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div><span>书房</span></div>
     </div>
   </section>
+<!-- ================= 🌟 蓝色高定：时光邮局 ================= -->
+  <section id="timePostOffice" class="screen">
+    <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
+      <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px;">‹ 桌面</button>
+      <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">时光邮局</b>
+      <div style="width:56px;"></div> <!-- 平衡排版占位 -->
+    </div>
+    
+    <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px; display:flex; flex-direction:column;">
+      
+      <!-- 极简双模拨片 -->
+      <div style="display:flex; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; border-radius:12px; padding:4px; margin-bottom:16px; box-shadow:inset 0 2px 4px rgba(92,112,148,0.02); flex-shrink:0;">
+        <div id="postTabWrite" onclick="window._switchPostTab('write')" style="flex:1; text-align:center; padding:10px 0; border-radius:10px; font-size:13px; font-weight:bold; color:#fff; background:#5c7094; box-shadow:0 2px 8px rgba(92,112,148,0.2); cursor:pointer; transition:all 0.3s;">落笔写信</div>
+        <div id="postTabInbox" onclick="window._switchPostTab('inbox')" style="flex:1; text-align:center; padding:10px 0; border-radius:10px; font-size:13px; font-weight:bold; color:#7a86a8; background:transparent; cursor:pointer; transition:all 0.3s;">时光信箱</div>
+      </div>
 
+      <!-- 写信面板 -->
+      <div id="postWritePanel" style="flex:1; display:flex; flex-direction:column; gap:12px; overflow-y:auto; padding-bottom:20px;">
+        <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:16px; padding:16px; box-shadow:0 4px 16px rgba(92,112,148,0.03);">
+          <div style="font-size:12px; color:#5c7094; font-weight:800; margin-bottom:8px;">收信人</div>
+          <select id="postRecipient" class="select" style="background:#f8fafc; border:1px solid #dce5f0; color:#3d4a6a; border-radius:10px; font-size:14px; padding:10px; font-weight:bold; outline:none; width:100%; margin-bottom:16px;"></select>
+          
+          <div style="font-size:12px; color:#5c7094; font-weight:800; margin-bottom:8px;">设定送达时间 (延迟满足的浪漫)</div>
+          <input type="datetime-local" id="postDeliverTime" class="input" style="background:#f8fafc; border:1px solid #dce5f0; color:#3d4a6a; border-radius:10px; font-size:14px; padding:10px; font-weight:bold; outline:none; width:100%; box-sizing:border-box;">
+        </div>
+        
+        <textarea id="postContent" class="ta" style="flex:1; min-height:260px; background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:16px; padding:16px; font-size:15px; color:#5c7094; line-height:1.8; resize:none; outline:none; box-shadow:inset 0 2px 6px rgba(92,112,148,0.02); font-family:'STZhongsong', 'KaiTi', serif; text-align:justify;" placeholder="展信佳。
+在这个安静的雨夜，突然想给你写一封长长的信..."></textarea>
+        
+        <button class="btn p" id="postSendBtn" onclick="window._sendPostLetter()" style="background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:16px; padding:14px 0; font-size:15px; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.1); letter-spacing:2px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+          <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vertical-align:-3px; margin-right:6px;"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>盖上火漆印章并寄出
+        </button>
+      </div>
+
+      <!-- 信箱面板 -->
+      <div id="postInboxPanel" style="display:none; flex:1; flex-direction:column; overflow-y:auto; padding-bottom:20px; gap:12px;"></div>
+    </div>
+  </section>
+
+  <!-- 阅读信件的专属弹窗 -->
+  <div id="postReadModal" class="modal" style="z-index: 10001;" onclick="this.classList.remove('active')">
+    <div class="modal-card" style="width:90%; max-width:380px; max-height:85dvh; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:20px; padding:0; display:flex; flex-direction:column; overflow:hidden;" onclick="event.stopPropagation()">
+      <div style="padding:16px 20px; border-bottom:1px dashed #dce5f0; display:flex; justify-content:space-between; align-items:center;">
+        <b style="color:#5c7094; font-size:15px; font-family:'STZhongsong', 'KaiTi', serif;">📜 见字如面</b>
+        <span onclick="document.getElementById('postReadModal').classList.remove('active')" style="color:#7a86a8; font-size:22px; cursor:pointer; line-height:1;">×</span>
+      </div>
+      <div style="flex:1; overflow-y:auto; padding:20px; font-family:'STZhongsong', 'KaiTi', serif; line-height:1.8; color:#3d4a6a; font-size:15px; text-align:justify; background:linear-gradient(180deg, rgba(255,255,255,0), rgba(238,244,250,0.3));">
+        <div id="postReadMyText" style="margin-bottom:20px; opacity:0.7;"></div>
+        <div style="width:40px; height:1px; background:#dce5f0; margin:0 auto 20px;"></div>
+        <div id="postReadAiReply" style="color:#2b3a60; font-weight:500;"></div>
+      </div>
+    </div>
+  </div>
 <!-- ================= 安全升级版：真·微信主界面 ================= -->
   <section id="wechat" class="screen">
     <!-- 这一层 wrapper 负责内部布局，绝不破坏你的桌面隐藏机制！ -->
@@ -13499,6 +13560,186 @@ window._showOrderHistory = async function() {
 
   // 保证每次开机或刷新时，初始化舱体
   setTimeout(() => { window._initFocusCabin(); }, 1000);
+  // ================= 🌟 蓝色高定：时光邮局核心引擎 =================
+  const K_POSTOFFICE = 'mp_fix_postoffice';
+  
+  window._switchPostTab = function(tab) {
+    const bW = document.getElementById('postTabWrite');
+    const bI = document.getElementById('postTabInbox');
+    const pW = document.getElementById('postWritePanel');
+    const pI = document.getElementById('postInboxPanel');
+    
+    if(tab === 'write') {
+      bW.style.background = '#5c7094'; bW.style.color = '#fff'; bW.style.boxShadow = '0 2px 8px rgba(92,112,148,0.2)';
+      bI.style.background = 'transparent'; bI.style.color = '#7a86a8'; bI.style.boxShadow = 'none';
+      pW.style.display = 'flex'; pI.style.display = 'none';
+    } else {
+      bI.style.background = '#5c7094'; bI.style.color = '#fff'; bI.style.boxShadow = '0 2px 8px rgba(92,112,148,0.2)';
+      bW.style.background = 'transparent'; bW.style.color = '#7a86a8'; bW.style.boxShadow = 'none';
+      pW.style.display = 'none'; pI.style.display = 'flex';
+      window._renderPostInbox();
+      window._checkPostDelivery(); // 切换到信箱时，偷偷扫描有没有到期的信件！
+    }
+  };
+
+  window._initPostOffice = async function() {
+    const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
+    const sel = document.getElementById('postRecipient');
+    if(sel) {
+      sel.innerHTML = contacts.map(c => `<option value="${c.id}">${safeEsc(c.name)}</option>`).join('');
+    }
+    // 默认送达时间设置为明早 8:00
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(8, 0, 0, 0);
+    // 格式化为 datetime-local 需要的 YYYY-MM-DDThh:mm
+    const tzOffset = tomorrow.getTimezoneOffset() * 60000;
+    const localISOTime = (new Date(tomorrow - tzOffset)).toISOString().slice(0, 16);
+    const dtInput = document.getElementById('postDeliverTime');
+    if(dtInput) dtInput.value = localISOTime;
+
+    window._switchPostTab('write');
+  };
+
+  window._sendPostLetter = async function() {
+    const toId = document.getElementById('postRecipient').value;
+    const content = document.getElementById('postContent').value.trim();
+    const deliverTimeStr = document.getElementById('postDeliverTime').value;
+    
+    if(!content) return alert('信纸还是空的呢，写点什么吧宝宝~');
+    if(!deliverTimeStr) return alert('请设定一个送达时间哦！');
+    
+    const deliverTs = new Date(deliverTimeStr).getTime();
+    if(deliverTs <= Date.now()) return alert('时间机器只能向未来寄信哦，选一个未来的时间吧！');
+
+    const btn = document.getElementById('postSendBtn');
+    btn.innerHTML = '寄送中...';
+    btn.style.pointerEvents = 'none';
+
+    try {
+      const letters = await localforage.getItem(K_POSTOFFICE) || [];
+      const c = (window.getContacts ? window.getContacts() : []).find(x => x.id === toId);
+      
+      letters.unshift({
+        id: 'letter_' + Date.now(),
+        toId: toId,
+        toName: c ? c.name : '未知',
+        content: content,
+        sendTime: Date.now(),
+        deliverTime: deliverTs,
+        status: 'sending', // sending, delivered, replied
+        replyContent: ''
+      });
+      
+      await localforage.setItem(K_POSTOFFICE, letters);
+      document.getElementById('postContent').value = '';
+      alert('✨ 盖上火漆印章！信件已投入时光隧道！');
+      window._switchPostTab('inbox');
+    } catch(e) {
+      alert('寄信失败啦：' + e.message);
+    } finally {
+      btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vertical-align:-3px; margin-right:6px;"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>盖上火漆印章并寄出';
+      btn.style.pointerEvents = 'auto';
+    }
+  };
+
+  window._renderPostInbox = async function() {
+    const letters = await localforage.getItem(K_POSTOFFICE) || [];
+    const box = document.getElementById('postInboxPanel');
+    
+    if(letters.length === 0) {
+      box.innerHTML = `<div style="text-align:center; padding:60px 0; color:#a0aaba; font-size:13px; font-weight:bold;">信箱里空空如也<br>去写下第一封信吧</div>`;
+      return;
+    }
+
+    box.innerHTML = letters.map(L => {
+      const isDelivered = Date.now() >= L.deliverTime;
+      const isReplied = L.status === 'replied';
+      
+      // 绝美的干枯玫瑰色未读红点
+      const dotHtml = (isDelivered && !isReplied) 
+        ? `<div style="position:absolute; top:-4px; right:-4px; width:12px; height:12px; background:#b57b7b; border:2px solid #fff; border-radius:50%; box-shadow:0 2px 4px rgba(181,123,123,0.3);"></div>` 
+        : '';
+        
+      const statusText = !isDelivered ? `⏳ 将于 ${new Date(L.deliverTime).toLocaleString()} 送达` 
+                       : (isReplied ? `💌 收到回信` : `✨ 已送达，TA正在提笔...`);
+                       
+      const bg = isReplied ? 'rgba(255,255,255,0.8)' : 'rgba(238,244,250,0.6)';
+      const border = isReplied ? '#dce5f0' : '#a5cfff';
+
+      return `
+        <div style="position:relative; background:${bg}; border:1px solid ${border}; border-radius:16px; padding:16px; box-shadow:0 4px 12px rgba(92,112,148,0.03); cursor:pointer; transition:transform 0.2s;" onclick="window._openPostLetter('${L.id}')" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
+          ${dotHtml}
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <b style="color:#3d4a6a; font-size:14px;">寄给：${safeEsc(L.toName)}</b>
+            <span style="font-size:10px; color:#7a86a8;">${new Date(L.sendTime).toLocaleDateString()}</span>
+          </div>
+          <div style="font-size:13px; color:#7a86a8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:12px;">"${safeEsc(L.content)}"</div>
+          <div style="font-size:11px; color:${!isDelivered ? '#a0aaba' : '#5c7094'}; font-weight:bold; background:rgba(255,255,255,0.5); display:inline-block; padding:4px 10px; border-radius:8px;">${statusText}</div>
+        </div>
+      `;
+    }).join('');
+  };
+
+  // 核心灵魂：默默检测时间戳，时间到了就去骚扰 AI 写信！
+  window._checkPostDelivery = async function() {
+    const letters = await localforage.getItem(K_POSTOFFICE) || [];
+    let updated = false;
+
+    for (let i = 0; i < letters.length; i++) {
+      let L = letters[i];
+      if (L.status === 'sending' && Date.now() >= L.deliverTime) {
+        L.status = 'delivered';
+        updated = true;
+        
+        // 瞬间触发 AI 脑电波索要回信！
+        const c = (window.getContacts ? window.getContacts() : []).find(x => x.id === L.toId);
+        if(c) {
+          const sysPrompt = `你现在是：${c.name}。人设：${c.persona}。
+这是一项特殊的【时光邮局】任务！
+玩家在过去给你寄了一封手写长信，经历了漫长的时间，今天终于送达到了你的手里。
+玩家信件内容：“${L.content}”。
+【你的任务】：请仔细阅读信件，体会这种跨越时间的延迟浪漫。然后，请以你的第一人称视角，用【复古书信】的格式（比如以对方名字开头，以落款结尾），给玩家写一封深情、细腻、或是傲娇的长篇回信。
+字数 100-300字左右。只需返回纯文本回信内容，绝对不要带任何前缀！`;
+          
+          try {
+            const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '信件已送达，请提笔回信。' }]);
+            L.replyContent = (out || '').replace(/```json|```/g, '').trim();
+            L.status = 'replied';
+          } catch(e) {
+            console.log('时光邮局回信失败：', e);
+          }
+        }
+      }
+    }
+    if(updated) {
+      await localforage.setItem(K_POSTOFFICE, letters);
+      window._renderPostInbox();
+    }
+  };
+
+  window._openPostLetter = async function(id) {
+    const letters = await localforage.getItem(K_POSTOFFICE) || [];
+    const L = letters.find(x => x.id === id);
+    if(!L) return;
+
+    const myTextEl = document.getElementById('postReadMyText');
+    const aiReplyEl = document.getElementById('postReadAiReply');
+    
+    myTextEl.innerHTML = `<b>我写给 ${safeEsc(L.toName)}：</b><br>${safeEsc(L.content).replace(/\\n/g, '<br>').replace(/\\n/g, '<br>')}`;
+    
+    if (Date.now() < L.deliverTime) {
+      aiReplyEl.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:13px; margin-top:20px;">信件还在时光隧道中穿梭...<br>请等到 ${new Date(L.deliverTime).toLocaleString()} 再来吧 🤍</div>`;
+    } else if (L.status !== 'replied' || !L.replyContent) {
+      aiReplyEl.innerHTML = `<div style="text-align:center; color:#5c7094; font-size:13px; margin-top:20px;">信已送达，TA 正在认真读信，准备提笔...<br>稍后再来看看吧。</div>`;
+      // 顺手再催一次 AI
+      window._checkPostDelivery();
+    } else {
+      aiReplyEl.innerHTML = `<b>${safeEsc(L.toName)} 的回信：</b><br>${safeEsc(L.replyContent).replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}`;
+    }
+
+    document.getElementById('postReadModal').classList.add('active');
+  };
 </script>
   <!-- 🌟 蓝色高定：沉浸式专注挽留弹窗 -->
 <div id="focusQuitModal" class="modal" style="z-index: 10002;">
