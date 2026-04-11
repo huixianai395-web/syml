@@ -13100,7 +13100,7 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
         <div style="padding:16px 20px; background:rgba(250,252,255,0.6); border-bottom:1px solid rgba(220,229,240,0.5); flex-shrink:0;">
           <div style="display:flex; background:rgba(255,255,255,0.8); border:1px solid #dce5f0; border-radius:16px; padding:4px; align-items:center; box-shadow:0 2px 8px rgba(92,112,148,0.05);">
             <div style="padding:0 12px; color:#5c7094;">${svgSearch}</div>
-            <input id="mallSearchInput" type="text" placeholder="搜点好东西，支持AI生成实物图..." style="flex:1; border:none; background:transparent; outline:none; font-size:14px; color:#5c7094; padding:10px 0;">
+            <input id="mallSearchInput" type="text" placeholder="输入想要的礼物，极速获取实物..." style="flex:1; border:none; background:transparent; outline:none; font-size:14px; color:#5c7094; padding:10px 0;">
             <button class="btn p" onclick="window._searchMallItem()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; padding:8px 16px; border-radius:12px; font-weight:bold; box-shadow:none;">检索</button>
           </div>
         </div>
@@ -13112,7 +13112,7 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
 
         <div id="mallResultBox" style="flex:1; overflow-y:auto; padding:16px; display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; align-content:start; -webkit-overflow-scrolling:touch;">
           <div style="color:#a0aaba; font-size:12px; text-align:center; margin-top:60px; line-height:1.6; grid-column:1 / -1;">
-            连接万物的全息合成引擎已启动<br>在上方输入物品，AI将为您实时渲染实物图
+            极速语义映射图床已准备就绪<br>在上方输入物品，即可瞬间获取高清实物
           </div>
         </div>
       </div>
@@ -13136,18 +13136,74 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
     });
   }
 
-  const K_MALL_FAV = 'mp_fix_mall_fav_v3';
+  const K_MALL_FAV = 'mp_fix_mall_fav_v4';
   async function getMallFavs() { return (await localforage.getItem(K_MALL_FAV)) || []; }
   async function setMallFavs(data) { await localforage.setItem(K_MALL_FAV, data); }
 
-  // 🌟 核心重构：彻底抛弃死板四档，拥抱真实电商网感！
+  // 🌟 核心引擎：本地超高清图床！0延迟！
+  function getAestheticImage(q, seed) {
+    let url = '';
+    // 数码电子
+    if (/手机|电脑|平板|数码|耳机|键盘|外星人|苹果|华为|单反/.test(q)) {
+      const imgs = [
+        'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=400&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1526406915894-7bcd65f60845?q=80&w=400&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1505156868547-9b49f4df4e04?q=80&w=400&auto=format&fit=crop'
+      ];
+      url = imgs[seed % imgs.length];
+    } 
+    // 美妆香水
+    else if (/香水|口红|神仙水|粉底|化妆品|护肤|海蓝之谜|sk2/.test(q)) {
+      const imgs = [
+        'https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=400&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1583141127468-24a224667184?q=80&w=400&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=400&auto=format&fit=crop'
+      ];
+      url = imgs[seed % imgs.length];
+    } 
+    // 奢侈箱包
+    else if (/包|女包|爱马仕|lv|古驰|香奈儿|高定/.test(q)) {
+      url = 'https://images.unsplash.com/photo-1584916201218-f4242ceb4809?q=80&w=400&auto=format&fit=crop';
+    } 
+    // 豪车
+    else if (/车|跑车|保时捷|法拉利|劳斯莱斯/.test(q)) {
+      url = 'https://images.unsplash.com/photo-1503376712351-404fdb8ed6b1?q=80&w=400&auto=format&fit=crop';
+    } 
+    // 浪漫鲜花
+    else if (/花|玫瑰|百合|郁金香|满天星/.test(q)) {
+      url = 'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?q=80&w=400&auto=format&fit=crop';
+    } 
+    // 美食小吃
+    else if (/吃|螺蛳粉|面|粉|火锅|奶茶|咖啡|零食|肉|饭|汉堡|烧烤/.test(q)) {
+      const imgs = [
+        'https://images.unsplash.com/photo-1565557623262-b51c2513a641?q=80&w=400&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1555507015-fa274e1d1386?q=80&w=400&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1551024709-8f23befc6f87?q=80&w=400&auto=format&fit=crop'
+      ];
+      url = imgs[seed % imgs.length];
+    } 
+    // 服饰鞋帽
+    else if (/衣服|裙|外套|鞋|球鞋|穿搭/.test(q)) {
+      url = 'https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=400&auto=format&fit=crop';
+    } 
+    // 兜底：极简高定礼盒与生活方式
+    else {
+      const imgs = [
+        'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=400&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1513201096356-02058b84318d?q=80&w=400&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?q=80&w=400&auto=format&fit=crop'
+      ];
+      url = imgs[seed % imgs.length];
+    }
+    return url;
+  }
+
   function generateMallItems(query) {
     if (!query) return [];
     
     let basePrice = 0;
     let q = query.toLowerCase();
 
-    // 智能物价感知引擎
     if (/房|别墅|四合院|大平层|海景|庄园|岛/.test(q)) basePrice = 5000000;
     else if (/车|跑车|法拉利|保时捷|迈凯伦|兰博基尼|劳斯莱斯/.test(q)) basePrice = 2000000;
     else if (/表|劳力士|百达翡丽|理查德|江诗丹顿/.test(q)) basePrice = 150000;
@@ -13162,30 +13218,26 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
       basePrice = (Math.abs(hash) % 300) + 20; 
     }
 
-    // 电商网感词库
     const prefixes = ["【百亿补贴】", "【官方正品】", "【顺丰包邮】", "【2026新款】", "【旗舰店发货】", "【假一赔十】", ""];
     const suffixes = ["全新国行", "极速发货", "超值特惠", "限量抢购", "同城速送", "送女友首选"];
     
     const results = [];
-    const count = Math.floor(Math.random() * 3) + 4; // 随机生成 4-6 个商品
+    const count = Math.floor(Math.random() * 3) + 4; 
 
     for(let i=0; i<count; i++) {
-      let wave = (Math.random() * 0.8) + 0.6; // 0.6倍到1.4倍价格波动
+      let wave = (Math.random() * 0.8) + 0.6; 
       let p = basePrice * wave;
       if (p < 1) p = 1;
 
       let title = query;
-      if (i > 0) { // 第一个保持纯净搜索词，其他的加电商词缀
+      if (i > 0) { 
         let pre = prefixes[Math.floor(Math.random() * prefixes.length)];
         let suf = suffixes[Math.floor(Math.random() * suffixes.length)];
         title = `${pre} ${query} ${suf}`.trim();
       }
 
-      // 🌟 AI 实物图具象化引擎：使用公共的大模型绘图 API
-      // 加入 prompt 关键词让它更像纯白背景的商品摄影
-      const prompt = encodeURIComponent(query + ' high quality product photography, minimalist white background');
-      const seed = Math.floor(Math.random() * 100000);
-      const imgUrl = `https://image.pollinations.ai/prompt/${prompt}?width=400&height=400&nologo=true&seed=${seed}`;
+      // 提取本地无损高清图片！
+      const imgUrl = getAestheticImage(q, i);
 
       results.push({ 
         id: 'mall_' + Date.now() + '_' + i, 
@@ -13219,7 +13271,6 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
     }
   };
 
-  // 🌟 4. 极致视觉体验：支持真实图片的商品卡片
   function buildMallCardHtml(item, isFavPage = false, isFav = false) {
     const starIcon = isFav ? svgStarFill : svgStar;
     const starColor = isFav ? '#a5cfff' : '#a0aaba';
@@ -13232,13 +13283,10 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
           ${starIcon}
         </div>
 
-        <!-- 🌟 真实的商品实物图容器！带海盐蓝加载背景 -->
         <div style="height:160px; background:#eef4fa; position:relative; overflow:hidden;">
-          <img src="${item.img}" style="width:100%; height:100%; object-fit:cover; position:absolute; inset:0; z-index:2;" onerror="this.style.display='none'">
-          <!-- 如果图片还没加载出来，显示这个优美的骨架屏 -->
+          <img src="${item.img}" style="width:100%; height:100%; object-fit:cover; position:absolute; inset:0; z-index:2; transition: opacity 0.3s;" onload="this.style.opacity=1" onerror="this.style.display='none'">
           <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#a5cfff; z-index:1;">
-             <svg viewBox="0 0 24 24" style="width:32px; height:32px; stroke:currentColor; fill:none; stroke-width:1.5;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-             <span style="font-size:10px; margin-top:4px; font-weight:bold;">AI 渲染中...</span>
+             <svg viewBox="0 0 24 24" style="width:24px; height:24px; stroke:currentColor; fill:none; stroke-width:1.5;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
           </div>
         </div>
 
@@ -13263,9 +13311,6 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
       window._switchMallTab('search');
     }
 
-    // 显示加载中
-    document.getElementById('mallResultBox').innerHTML = `<div style="color:#a0aaba; font-size:12px; text-align:center; margin-top:60px; line-height:1.6; grid-column:1 / -1;">正在连线 AI 视觉大模型...<br>请稍候，实物渲染需要几秒钟时间</div>`;
-
     const items = generateMallItems(query);
     window._mallCurrentSearchItems = items;
     
@@ -13275,12 +13320,13 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
       return buildMallCardHtml(item, false, isFav);
     }).join('');
     
+    // 0 延迟，直接渲染！
     document.getElementById('mallResultBox').innerHTML = html;
   };
 
   window._renderMallResult = async function() {
     if (!window._mallCurrentSearchItems || window._mallCurrentSearchItems.length === 0) {
-      document.getElementById('mallResultBox').innerHTML = `<div style="color:#a0aaba; font-size:12px; text-align:center; margin-top:60px; line-height:1.6; grid-column:1 / -1;">全息视觉具象化引擎已就绪<br>输入物品，等待 AI 为您渲染实物画面</div>`;
+      document.getElementById('mallResultBox').innerHTML = `<div style="color:#a0aaba; font-size:12px; text-align:center; margin-top:60px; line-height:1.6; grid-column:1 / -1;">极速语义映射图床已准备就绪<br>输入物品，瞬间获取高清实物</div>`;
       return;
     }
     const favs = await getMallFavs();
@@ -13389,7 +13435,7 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
     document.getElementById('mallActionDrawer').classList.remove('active');
     document.getElementById('blueMall').classList.remove('active');
     
-    window.openChat(targetId); // 致命一击！瞬间跳转到微信聊天页面！
+    window.openChat(targetId); // 致命一击！瞬间渲染目标角色的聊天框！
     
     if (type === 'gift') {
       const hiddenPrompt = `【系统最高指令】：玩家刚刚在“海盐甄选”虚拟商城中，自掏腰包花了 ${price.toFixed(2)} 元，为你精心挑选并送出了一份礼物：“${name}”。你现在收到了这个礼物卡片。请你立刻根据你的人设，对玩家的这份心意做出最真实的反应（惊喜、感动、傲娇或调侃），直接回复玩家！`;
