@@ -2228,9 +2228,42 @@ body {
         
       </div> <!-- ⚠️ 致命核心：在这里彻底关上第一页的大门！ -->
 
-      <!-- 🌟 第二页 (home-page) 正式开始！和第一页平起平坐！ -->
+     <!-- 🌟 第二页 (home-page) 正式开始！ -->
       <div class="home-page">
-        <div class="ios-grid" style="margin-top: 20px;">
+        
+        <!-- 🌟 蓝色高定：同频专注舱 (Focus Cabin) -->
+        <div class="ios-widget" style="margin-top: 10px; margin-bottom: 24px; padding: 18px; display: flex; flex-direction: column; position: relative; overflow: hidden; min-height: 110px;">
+          <!-- 绝对定位的清透光晕 -->
+          <div style="position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: radial-gradient(circle, rgba(165,207,255,0.45) 0%, transparent 70%); border-radius: 50%; filter: blur(12px); pointer-events: none;"></div>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; position: relative; z-index: 2;">
+            <div style="font-size: 13px; color: #5c7094; font-weight: 800; letter-spacing: 1px; display: flex; align-items: center; gap: 6px;">
+              <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2.5;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              同频专注舱
+            </div>
+            <!-- 陪伴角色选择器 -->
+            <select id="focusRoleSelect" class="select" style="background: rgba(238,244,250,0.8); border: 1px solid #dce5f0; color: #5c7094; border-radius: 8px; font-size: 11px; padding: 2px 8px; outline: none; max-width: 110px; font-weight: bold;"></select>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 16px; position: relative; z-index: 2;">
+            <div style="position: relative; width: 56px; height: 56px; flex-shrink: 0;">
+              <!-- 呼吸星轨 -->
+              <div id="focusAvatarRing" style="position: absolute; inset: -5px; border-radius: 50%; border: 2px dashed #a5cfff; animation: pcSpin 4s linear infinite; display: none;"></div>
+              <img id="focusAvatar" src="https://via.placeholder.com/56" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: 0 4px 12px rgba(92,112,148,0.15); position: relative; z-index: 2; background: #eef4fa;">
+            </div>
+            
+            <div style="flex: 1; min-width: 0;">
+              <div id="focusQuote" style="font-size: 13px; color: #3d4a6a; font-weight: bold; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.5px;">选个时间，我陪你。</div>
+              <div style="display: flex; align-items: baseline; gap: 12px;">
+                <div id="focusTimeDisplay" style="font-size: 28px; font-weight: 900; color: #5c7094; font-family: ui-monospace, 'Times New Roman', serif; letter-spacing: 1px; line-height: 1;">25:00</div>
+                <button id="focusActionBtn" class="btn p" onclick="window._toggleFocusTimer()" style="background: linear-gradient(135deg, #eef4fa, #dce5f0); color: #5c7094; border: 1px solid #cdd7e8; border-radius: 12px; padding: 4px 16px; font-size: 12px; font-weight: bold; box-shadow: 0 4px 12px rgba(92,112,148,0.06); transition: transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">开始</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🌟 下方的应用矩阵 (包含你原有的三个 App) -->
+        <div class="ios-grid">
           <!-- IF入口 -->
           <div class="ios-icon" onclick="show('realmIf'); if(window._renderIfLineup) window._renderIfLineup();">
             <div class="ibg" id="icon_if" style="background-color:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
@@ -2256,6 +2289,7 @@ body {
             </div>
             <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">海盐优选</span>
           </div>
+        </div>
       </div> <!-- 第二页的大门关上！ -->
 
     </div> <!-- ⚠️ 滑动总管 (home-slider) 的大门在这里关上！ -->
@@ -13286,6 +13320,107 @@ window._showOrderHistory = async function() {
   if(!html) html = '<div style="text-align:center; padding:40px 0; color:#a0aaba;">暂无订单记录</div>';
   document.getElementById('shopResultList').innerHTML = html;
 };
+  // ================= 🌟 蓝色高定：同频专注舱核心引擎 =================
+  window._focusTimer = null;
+  window._focusEndTime = 0;
+  
+  window._initFocusCabin = async function() {
+    const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
+    const sel = document.getElementById('focusRoleSelect');
+    if(!sel) return;
+
+    // 填充男主列表
+    sel.innerHTML = contacts.map(c => `<option value="${c.id}">${safeEsc(c.name)}</option>`).join('');
+    sel.onchange = (e) => {
+      const c = contacts.find(x => x.id === e.target.value);
+      if(c) document.getElementById('focusAvatar').src = c.avatar || 'https://via.placeholder.com/56';
+    };
+    if(contacts.length > 0 && !sel.value) sel.onchange({target: sel});
+
+    // 🌟 外挂内存：读取是否有未完成的专注任务！
+    const savedEnd = await localforage.getItem('mp_fix_focus_end');
+    const savedRoleId = await localforage.getItem('mp_fix_focus_role');
+    
+    if(savedEnd && savedEnd > Date.now()) {
+      window._focusEndTime = savedEnd;
+      if(savedRoleId) sel.value = savedRoleId;
+      sel.onchange({target: sel});
+      window._startFocusTick(); // 恢复齿轮运转
+    } else if (savedEnd) {
+      // 已经过期了，说明已经专注完成了！
+      await localforage.removeItem('mp_fix_focus_end');
+      document.getElementById('focusQuote').textContent = '刚才的专注完成啦，真棒！';
+      document.getElementById('focusTimeDisplay').textContent = '25:00';
+    }
+  };
+
+  window._startFocusTick = function() {
+    const btn = document.getElementById('focusActionBtn');
+    const display = document.getElementById('focusTimeDisplay');
+    const ring = document.getElementById('focusAvatarRing');
+    const quote = document.getElementById('focusQuote');
+    const sel = document.getElementById('focusRoleSelect');
+    
+    btn.textContent = '放弃';
+    btn.style.background = 'rgba(252,242,242,0.8)';
+    btn.style.color = '#b57b7b';
+    btn.style.borderColor = '#f2dcdc';
+    ring.style.display = 'block';
+    sel.disabled = true;
+    
+    const contactName = sel.options[sel.selectedIndex]?.text || '我';
+    quote.textContent = `乖，专心点，${contactName}看着你呢。`;
+
+    if(window._focusTimer) clearInterval(window._focusTimer);
+    window._focusTimer = setInterval(async () => {
+      const left = Math.round((window._focusEndTime - Date.now()) / 1000);
+      if(left <= 0) {
+        // 🌟 专注完成！
+        clearInterval(window._focusTimer);
+        display.textContent = '00:00';
+        btn.textContent = '开始';
+        btn.style.background = 'linear-gradient(135deg, #eef4fa, #dce5f0)';
+        btn.style.color = '#5c7094';
+        btn.style.borderColor = '#cdd7e8';
+        ring.style.display = 'none';
+        sel.disabled = false;
+        quote.textContent = '时间到啦！去休息一下吧 🤍';
+        await localforage.removeItem('mp_fix_focus_end');
+        if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      } else {
+        const m = String(Math.floor(left / 60)).padStart(2, '0');
+        const s = String(left % 60).padStart(2, '0');
+        display.textContent = `${m}:${s}`;
+      }
+    }, 1000);
+  };
+
+  window._toggleFocusTimer = async function() {
+    const btn = document.getElementById('focusActionBtn');
+    if(btn.textContent === '放弃') {
+      if(!confirm('真的要提前放弃专注吗？TA还在默默陪着你哦...')) return;
+      clearInterval(window._focusTimer);
+      await localforage.removeItem('mp_fix_focus_end');
+      document.getElementById('focusTimeDisplay').textContent = '25:00';
+      btn.textContent = '开始';
+      btn.style.background = 'linear-gradient(135deg, #eef4fa, #dce5f0)';
+      btn.style.color = '#5c7094';
+      btn.style.borderColor = '#cdd7e8';
+      document.getElementById('focusAvatarRing').style.display = 'none';
+      document.getElementById('focusRoleSelect').disabled = false;
+      document.getElementById('focusQuote').textContent = '选个时间，我陪你。';
+    } else {
+      // 🌟 默认 25 分钟（可改）
+      window._focusEndTime = Date.now() + 25 * 60 * 1000; 
+      const sel = document.getElementById('focusRoleSelect');
+      await localforage.setItem('mp_fix_focus_end', window._focusEndTime);
+      await localforage.setItem('mp_fix_focus_role', sel.value);
+      window._startFocusTick();
+    }
+  };
+
+  // 保证每次开机或刷新时，初始化舱体
+  setTimeout(() => { window._initFocusCabin(); }, 1000);
 </script>
 </body>
   </html>
