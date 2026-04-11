@@ -13816,17 +13816,20 @@ window._showOrderHistory = async function() {
       window._renderPostInbox();
     }
   };
-   // ================= 🌟 蓝色高定：回忆放映机核心引擎 (终极深海雷达版) =================
+  // ================= 🌟 蓝色高定：回忆放映机核心引擎 (穿透硬盘终极版) =================
   window._initMemoryProjector = async function() {
     const wall = document.getElementById('projectorWall');
     if(!wall) return;
     
-    wall.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:13px; margin-top:40px; column-span:all;">正在潜入深海打捞相片...</div>`;
+    wall.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:13px; margin-top:40px; column-span:all;">
+      <div style="width:24px; height:24px; border:3px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite; margin:0 auto 12px;"></div>
+      正在潜入硬盘深海打捞相片...
+    </div>`;
     
-    // 🌟 获取全宇宙的聊天记录，包括单聊和群聊！
-    const chats = window.getChats ? window.getChats() : {};
+    // 🌟 核心破壁魔法：绕过封闭的结界，直接用潜水艇去硬盘深处捞聊天记录！
+    const chats = await localforage.getItem('mp_fix_chats') || {};
     const contacts = window.getContacts ? window.getContacts() : [];
-    const groups = window.getGroups ? window.getGroups() : [];
+    const groups = await localforage.getItem('mp_fix_groups') || [];
     const allEntities = [...contacts, ...groups]; 
     
     let allPhotos = [];
@@ -13839,19 +13842,27 @@ window._showOrderHistory = async function() {
       arr.forEach(msg => {
         if(!msg.text) return;
         
-        // 📡 雷达 1 号：精准捕捉你手动发送的 [img] 照片 (防断行、防大小写)
+        // 📡 雷达 1 号：精准捕捉你手动发送的 [img] 照片
         const imgRegex = /\[img\]([\s\S]*?)\[\/img\]/gi;
         let match;
         while ((match = imgRegex.exec(msg.text)) !== null) {
-          if(match[1]) allPhotos.push({ url: match[1].trim(), time: msg.time, chatName: chatName });
+          if(match[1]) allPhotos.push({ type: 'img', url: match[1].trim(), time: msg.time, chatName: chatName });
         }
         
-        // 📡 雷达 2 号：捕捉 AI 主动发给你的“模拟相片”(card-fakeimg)！
+        // 📡 雷达 2 号：捕捉 AI 主动发给你的“模拟相片”(card-fakeimg)
         if(msg.text.includes('card-fakeimg')) {
           const fakeMatch = msg.text.match(/url\(['"]?(https?:\/\/[^'"\)]+|data:image\/[^'"\)]+)['"]?\)/i);
           if(fakeMatch && fakeMatch[1]) {
-            allPhotos.push({ url: fakeMatch[1], time: msg.time, chatName: chatName });
+            allPhotos.push({ type: 'img', url: fakeMatch[1], time: msg.time, chatName: chatName });
           }
+        }
+
+        // 📡 雷达 3 号：捕捉“文字摄像机”拍下的文字胶片 (card-camera)
+        if(msg.text.includes('card-camera')) {
+           const camMatch = msg.text.match(/<div class="cam-photo"[^>]*>([\s\S]*?)<\/div>/i);
+           if(camMatch && camMatch[1]) {
+              allPhotos.push({ type: 'text', content: camMatch[1].trim(), time: msg.time, chatName: chatName });
+           }
         }
       });
     });
@@ -13867,13 +13878,30 @@ window._showOrderHistory = async function() {
     wall.innerHTML = allPhotos.map(p => {
       const d = new Date(p.time);
       const dateStr = d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
-      // 兼容某些环境下 safeEsc 找不到的问题
       const safeName = String(p.chatName || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
       
+      let contentHtml = '';
+      if (p.type === 'text') {
+        // 🌟 蓝色高定：文字胶片的专属排版
+        contentHtml = `
+          <div style="width:100%; aspect-ratio:3/4; background:#eef4fa; display:flex; align-items:center; justify-content:center; padding:16px; font-size:12px; color:#5c7094; line-height:1.7; text-align:justify; overflow:hidden; box-sizing:border-box;">
+            <div style="display:-webkit-box; -webkit-line-clamp:7; -webkit-box-orient:vertical; overflow:hidden;">${p.content}</div>
+          </div>
+        `;
+      } else {
+        // 普通图片
+        contentHtml = `<img src="${p.url}" style="width:100%; display:block; object-fit:cover;">`;
+      }
+
+      // 区分点击事件：图片放大，文字弹窗
+      const clickAction = p.type === 'img' 
+        ? `onclick="document.getElementById('previewModalImg').src='${p.url}'; document.getElementById('modalPreview').classList.add('active')"`
+        : `onclick="alert('📝 摄像机定格的瞬间：\\n\\n' + this.dataset.text)" data-text="${p.content.replace(/"/g, '&quot;').replace(/<[^>]*>/g, '')}"`;
+
       return `
-        <div style="background:#fff; border:1px solid #dce5f0; border-radius:4px 4px 12px 12px; padding:8px 8px 16px 8px; margin-bottom:12px; box-shadow:0 6px 16px rgba(92,112,148,0.04); break-inside:avoid; transition:transform 0.2s; cursor:pointer;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'" onclick="document.getElementById('previewModalImg').src='${p.url}'; document.getElementById('modalPreview').classList.add('active')">
+        <div style="background:#fff; border:1px solid #dce5f0; border-radius:4px 4px 12px 12px; padding:8px 8px 16px 8px; margin-bottom:12px; box-shadow:0 6px 16px rgba(92,112,148,0.04); break-inside:avoid; transition:transform 0.2s; cursor:pointer;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'" ${clickAction}>
           <div style="background:#eef4fa; border:1px solid #cdd7e8; border-radius:2px; overflow:hidden; margin-bottom:10px;">
-            <img src="${p.url}" style="width:100%; display:block; object-fit:cover;">
+            ${contentHtml}
           </div>
           <div style="text-align:center;">
             <div style="font-family:ui-monospace, 'Times New Roman', serif; font-size:12px; font-weight:800; color:#3d4a6a; letter-spacing:1px;">${dateStr}</div>
