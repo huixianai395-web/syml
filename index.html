@@ -13181,40 +13181,56 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
     { bg: 'linear-gradient(135deg, #f5f3fa, #e6e3f2)', text: '#7b6c94' }  // 暮霭紫
   ];
 
-  // 🌟 核心重构：扩充智能物价感知引擎！分离苹果和苹果手机！
+ // 🌟 核心重构：防天价面包与精细化常识物价引擎！
   function generateMallItems(query) {
     if (!query) return [];
     
     let basePrice = 0;
     let q = query.toLowerCase();
 
-    // 严格按照分类进行物价判定，避免误伤
-    if (/房|别墅|四合院|大平层|海景|庄园|岛/.test(q)) basePrice = 5000000;
-    else if (/车|跑车|法拉利|保时捷|迈凯伦|兰博基尼|劳斯莱斯|奔驰|宝马/.test(q)) basePrice = 1000000;
-    else if (/表|劳力士|百达翡丽|理查德|江诗丹顿|绿水鬼/.test(q)) basePrice = 150000;
-    else if (/钻|项链|戒指|珠宝|高定|铂金|爱马仕|lv|香奈儿|古驰|包|手镯/.test(q)) basePrice = 15000;
-    else if (/苹果手机|华为手机|iphone|小米手机|折叠屏|电脑|单反|相机|微单|大疆|显卡|外星人|游戏本|ps5|switch/.test(q)) basePrice = 5999;
-    else if (/香水|口红|神仙水|粉底|眼影|化妆品|护肤|sk2|海蓝之谜|衣服|外套|鞋|裙|球鞋|大衣|西装/.test(q)) basePrice = 300;
-    else if (/手办|盲盒|键盘|鼠标|耳机|周边|音响|游戏|乐高|演唱会/.test(q)) basePrice = 150;
-    else if (/苹果|香蕉|草莓|车厘子|榴莲|葡萄|西瓜|水果|蔬菜|白菜|肉/.test(q)) basePrice = 35; // 补回水果的真实价格
-    else if (/螺蛳粉|奶茶|辣条|零食|外卖|咖啡|面|粉|饭|汉堡|火锅|烤肉|烧烤|肯德基|麦当劳|薯片|可乐/.test(q)) basePrice = 15;
-    else if (/笔|本子|纸巾|矿泉水|橡皮/.test(q)) basePrice = 3;
+    // 🚨 蓝色顶级防误伤拦截器！必须放在最前面！
+    if (/面包|包子|豆包|小笼包|烤包|脏脏包|麦片|糕点|蛋糕|甜点|饼干|吐司|法棍/.test(q)) basePrice = 28;
+    else if (/房|别墅|四合院|大平层|海景|庄园|岛屿/.test(q)) basePrice = 5000000;
+    else if (/跑车|法拉利|保时捷|迈凯伦|兰博基尼|劳斯莱斯|玛莎拉蒂|奔驰|宝马|奥迪/.test(q)) basePrice = 500000;
+    else if (/劳力士|百达翡丽|理查德|江诗丹顿|绿水鬼|名表/.test(q)) basePrice = 150000;
+    // 修复奢侈品包的判定，使用更严谨的词汇
+    else if (/钻戒|项链|戒指|珠宝|高定|铂金|爱马仕|香奈儿|古驰|迪奥|路易威登|名牌包|手提包|单肩包|名牌/.test(q)) basePrice = 15000;
+    else if (/苹果手机|华为手机|iphone|折叠屏|单反|微单|大疆|外星人|游戏本|摩托车|黄金|黄金首饰/.test(q)) basePrice = 6999;
+    else if (/手机|电脑|相机|显卡|ps5|switch|平板|ipad|空调|电视|冰箱|洗衣机|电动车/.test(q)) basePrice = 2999;
+    else if (/香水|口红|神仙水|粉底|眼影|化妆品|护肤|sk2|海蓝之谜|大衣|西装|皮鞋|手表|首饰/.test(q)) basePrice = 399;
+    else if (/手办|盲盒|键盘|鼠标|耳机|周边|音响|游戏|乐高|门票|外套|球鞋|裙子|裤子|毛衣|卫衣/.test(q)) basePrice = 159;
+    // 🌟 老婆钦定的物价：螺蛳粉提价！
+    else if (/螺蛳粉|自热锅|零食大礼包|坚果|巧克力|咖啡豆|茶叶|酒|红酒|车厘子|榴莲/.test(q)) basePrice = 59; 
+    // 🌟 水果生鲜区，修正梨子等单字水果的物价！
+    else if (/苹果|香蕉|草莓|葡萄|西瓜|梨|桃子|水果|蔬菜|白菜|肉|排骨|牛肉|海鲜|生鲜/.test(q)) basePrice = 35; 
+    else if (/奶茶|辣条|外卖|咖啡|面条|米粉|快餐|汉堡|火锅|烤肉|烧烤|肯德基|麦当劳|薯片|可乐|雪糕/.test(q)) basePrice = 25;
+    else if (/笔|本子|纸巾|矿泉水|橡皮|文具|口罩|垃圾袋|塑料袋/.test(q)) basePrice = 9;
     else {
+      // 🌟 终极常识兜底：找不到分类的东西，大概率是小物件，死死压在 30~150 元！
       let hash = 0;
       for (let i = 0; i < query.length; i++) hash = (hash << 5) - hash + query.charCodeAt(i);
-      basePrice = (Math.abs(hash) % 300) + 20; 
+      basePrice = (Math.abs(hash) % 120) + 30; 
     }
 
+    // 调整温和的裂变系数，告别动辄翻三五倍的天价！
     const prefixes = ["【百亿补贴】", "【官方正品】", "【顺丰包邮】", "【2026新款】", "【旗舰店直发】", "【假一赔十】", ""];
-    const suffixes = ["全新国行", "极速发货", "超值特惠", "限量抢购", "送礼首选", "高级定制"];
+    const suffixes = ["全新包装", "极速发货", "超值特惠", "限量抢购", "送礼首选", "高级定制"];
     
     const results = [];
-    const count = Math.floor(Math.random() * 3) + 4; 
+    const count = 4; // 固定四档
 
     for(let i=0; i<count; i++) {
-      let wave = (Math.random() * 0.8) + 0.6; 
-      let p = basePrice * wave;
-      if (p < 1) p = 1;
+      let wave = (Math.random() * 0.4) + 0.8; // 0.8 ~ 1.2 的轻微波动
+      let p1 = basePrice * wave;
+      if (p1 < 1) p1 = 1;
+
+      // 阶梯温和涨价：基础款 -> 精装款 -> 高定款 -> 典藏款
+      let p;
+      let tag;
+      if (i === 0) { p = p1; tag = '日常优选'; }
+      else if (i === 1) { p = p1 * 1.5; tag = '精装礼盒'; }
+      else if (i === 2) { p = p1 * 2.2; tag = '甄选高定'; }
+      else { p = p1 * 3.5; tag = '至尊典藏'; }
 
       let title = query;
       if (i > 0) { 
