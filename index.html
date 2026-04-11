@@ -2309,6 +2309,15 @@ body {
             </div>
             <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">时光邮局</span>
           </div>
+          <!-- 回忆放映机入口 -->
+          <div class="ios-icon" onclick="show('memoryProjector'); window._initMemoryProjector();">
+            <div class="ibg" id="icon_projector" style="background-color:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
+              <svg class="default-svg" viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+            </div>
+            <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">回忆放映机</span>
+          </div>
         </div>
       </div> <!-- 第二页的大门关上！ -->
 
@@ -2364,7 +2373,21 @@ body {
       <div id="postInboxPanel" style="display:none; flex:1; flex-direction:column; overflow-y:auto; padding-bottom:20px; gap:12px;"></div>
     </div>
   </section>
-
+<!-- ================= 🌟 蓝色高定：回忆放映机 ================= -->
+  <section id="memoryProjector" class="screen">
+    <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
+      <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px;">‹ 桌面</button>
+      <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">回忆放映机</b>
+      <div style="width:56px;"></div> 
+    </div>
+    <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px; overflow-y:auto;">
+      <div style="font-size:11px; color:#7a86a8; text-align:center; margin-bottom:20px; font-weight:600; letter-spacing:2px;">
+        — 散落在时光里的相片碎片 —
+      </div>
+      <!-- 拍立得瀑布流墙 -->
+      <div id="projectorWall" style="column-count:2; column-gap:12px;"></div>
+    </div>
+  </section>
   <!-- 阅读信件的专属弹窗 -->
   <div id="postReadModal" class="modal" style="z-index: 10001;" onclick="this.classList.remove('active')">
     <div class="modal-card" style="width:90%; max-width:380px; max-height:85dvh; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:20px; padding:0; display:flex; flex-direction:column; overflow:hidden;" onclick="event.stopPropagation()">
@@ -13792,6 +13815,62 @@ window._showOrderHistory = async function() {
       window._openPostLetter(id);
       window._renderPostInbox();
     }
+  };
+  // ================= 🌟 蓝色高定：回忆放映机核心引擎 =================
+  window._initMemoryProjector = async function() {
+    const wall = document.getElementById('projectorWall');
+    if(!wall) return;
+    
+    wall.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:13px; margin-top:40px; column-span:all;">正在满宇宙打捞相片...</div>`;
+    
+    // 遍历所有聊天记录，找出所有 [img] 标签！
+    const chats = window.getChats ? window.getChats() : {};
+    const contacts = window.getContacts ? window.getContacts() : [];
+    let allPhotos = [];
+
+    Object.keys(chats).forEach(chatId => {
+      const arr = chats[chatId] || [];
+      const c = contacts.find(x => x.id === chatId);
+      const chatName = c ? c.name : '未知羁绊';
+
+      arr.forEach(msg => {
+        if(msg.text && msg.text.includes('[img]') && msg.text.includes('[/img]')) {
+          const match = msg.text.match(/\[img\](.*?)\[\/img\]/i);
+          if(match && match[1]) {
+            allPhotos.push({
+              url: match[1],
+              time: msg.time,
+              chatName: chatName
+            });
+          }
+        }
+      });
+    });
+
+    // 按时间倒序（最新的在最上面）
+    allPhotos.sort((a, b) => b.time - a.time);
+
+    if(allPhotos.length === 0) {
+      wall.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:13px; margin-top:40px; column-span:all; line-height:1.6; letter-spacing:1px;">墙上空空如也<br><br>快去聊天框里发几张照片吧 🤍</div>`;
+      return;
+    }
+
+    wall.innerHTML = allPhotos.map(p => {
+      const d = new Date(p.time);
+      const dateStr = d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
+      
+      return `
+        <div style="background:#fff; border:1px solid #dce5f0; border-radius:4px 4px 12px 12px; padding:8px 8px 16px 8px; margin-bottom:12px; box-shadow:0 6px 16px rgba(92,112,148,0.04); break-inside:avoid; transition:transform 0.2s; cursor:pointer;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'" onclick="document.getElementById('previewModalImg').src='${p.url}'; document.getElementById('modalPreview').classList.add('active')">
+          <div style="background:#eef4fa; border:1px solid #cdd7e8; border-radius:2px; overflow:hidden; margin-bottom:10px;">
+            <img src="${p.url}" style="width:100%; display:block; object-fit:cover;">
+          </div>
+          <div style="text-align:center;">
+            <div style="font-family:ui-monospace, 'Times New Roman', serif; font-size:12px; font-weight:800; color:#3d4a6a; letter-spacing:1px;">${dateStr}</div>
+            <div style="font-size:10px; color:#7a86a8; margin-top:4px; font-weight:bold;">与 ${safeEsc(p.chatName)} 的回忆</div>
+          </div>
+        </div>
+      `;
+    }).join('');
   };
 </script>
   <!-- 🌟 蓝色高定：沉浸式专注挽留弹窗 -->
