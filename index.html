@@ -13146,19 +13146,41 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
   async function getMallFavs() { return (await localforage.getItem(K_MALL_FAV)) || []; }
   async function setMallFavs(data) { await localforage.setItem(K_MALL_FAV, data); }
 
-  // 🌟 核心重构：防两万螺蛳粉的阶梯裂变引擎！
+  // 🌟 核心重构：防两万螺蛳粉与四十块苹果手机的【语义感知物价引擎】！
   function generateMallItems(query) {
     if (!query) return [];
     
-    let hash = 0;
-    for (let i = 0; i < query.length; i++) hash = (hash << 5) - hash + query.charCodeAt(i);
-    hash = Math.abs(hash);
+    let basePrice = 0;
+    let q = query.toLowerCase();
 
-    // 合理的价格区间！
-    const p1 = ((hash % 50) + 15) + 0.9;
-    const p2 = ((hash % 100) + 80) + 0.0;
-    const p3 = ((hash % 500) + 300) + 0.0;
-    const p4 = ((hash % 1000) + 800) + 0.0;
+    // 🌟 蓝色高定：现实物价感知神经元！给 AI 强行注入金钱观念！
+    if (/房|别墅|四合院|大平层|海景|庄园|岛/.test(q)) basePrice = 5000000;
+    else if (/车|跑车|法拉利|保时捷|迈凯伦|兰博基尼|劳斯莱斯/.test(q)) basePrice = 2000000;
+    else if (/表|劳力士|百达翡丽|理查德|江诗丹顿/.test(q)) basePrice = 150000;
+    else if (/钻|项链|戒指|珠宝|高定|铂金|爱马仕|lv|香奈儿|古驰|包/.test(q)) basePrice = 15000;
+    else if (/手机|苹果|iphone|华为|电脑|单反|相机|微单|大疆|显卡|外星人|游戏本/.test(q)) basePrice = 5999;
+    else if (/香水|口红|神仙水|粉底|眼影|护肤|神仙水|sk2|海蓝之谜|衣服|外套|鞋|裙|球鞋/.test(q)) basePrice = 300;
+    else if (/手办|盲盒|键盘|鼠标|耳机|周边|音响|游戏|乐高/.test(q)) basePrice = 150;
+    else if (/螺蛳粉|奶茶|辣条|零食|外卖|咖啡|面|粉|饭|汉堡|火锅|烤肉|烧烤|肯德基|麦当劳/.test(q)) basePrice = 15;
+    else {
+      // 兜底哈希算法：遇到没见过的词，算个几十到几百的随机数
+      let hash = 0;
+      for (let i = 0; i < query.length; i++) hash = (hash << 5) - hash + query.charCodeAt(i);
+      hash = Math.abs(hash);
+      basePrice = (hash % 300) + 20; 
+    }
+
+    // 增加哈希随机波动，让同类的不同商品价格有差异 (1.0 到 1.3 倍)
+    let hash2 = 0;
+    for (let i = 0; i < query.length; i++) hash2 = (hash2 << 5) - hash2 + query.charCodeAt(i);
+    hash2 = Math.abs(hash2);
+    let wave = (hash2 % 30) / 100 + 1; 
+    
+    // 裂变算法：基础款 -> 精致款 -> 高定款 -> 典藏款
+    let p1 = basePrice * wave;
+    let p2 = p1 * (1.3 + (hash2 % 10) / 10);
+    let p3 = p1 * (2.0 + (hash2 % 20) / 10);
+    let p4 = p1 * (3.5 + (hash2 % 30) / 10);
 
     return [
       { id: query + '_1', name: query, tag: '日常优选', price: p1 },
