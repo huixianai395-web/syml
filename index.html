@@ -13816,17 +13816,16 @@ window._showOrderHistory = async function() {
       window._renderPostInbox();
     }
   };
-  // ================= 🌟 蓝色高定：回忆放映机核心引擎 (穿透硬盘终极版) =================
+  // ================= 🌟 蓝色高定：回忆放映机核心引擎 (图文双全翻转版) =================
   window._initMemoryProjector = async function() {
     const wall = document.getElementById('projectorWall');
     if(!wall) return;
     
     wall.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:13px; margin-top:40px; column-span:all;">
       <div style="width:24px; height:24px; border:3px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite; margin:0 auto 12px;"></div>
-      正在潜入硬盘深海打捞相片...
+      正在潜入硬盘深海打捞相片与回忆...
     </div>`;
     
-    // 🌟 核心破壁魔法：绕过封闭的结界，直接用潜水艇去硬盘深处捞聊天记录！
     const chats = await localforage.getItem('mp_fix_chats') || {};
     const contacts = window.getContacts ? window.getContacts() : [];
     const groups = await localforage.getItem('mp_fix_groups') || [];
@@ -13842,18 +13841,25 @@ window._showOrderHistory = async function() {
       arr.forEach(msg => {
         if(!msg.text) return;
         
-        // 📡 雷达 1 号：精准捕捉你手动发送的 [img] 照片
+        // 📡 雷达 1 号：捕捉手动发送的 [img] 照片
         const imgRegex = /\[img\]([\s\S]*?)\[\/img\]/gi;
         let match;
         while ((match = imgRegex.exec(msg.text)) !== null) {
           if(match[1]) allPhotos.push({ type: 'img', url: match[1].trim(), time: msg.time, chatName: chatName });
         }
         
-        // 📡 雷达 2 号：捕捉 AI 主动发给你的“模拟相片”(card-fakeimg)
+        // 📡 雷达 2 号：捕捉 AI 模拟相片(card-fakeimg) 【🌟 核心升级：同时抓取文字！】
         if(msg.text.includes('card-fakeimg')) {
           const fakeMatch = msg.text.match(/url\(['"]?(https?:\/\/[^'"\)]+|data:image\/[^'"\)]+)['"]?\)/i);
+          const descMatch = msg.text.match(/<div class="fi-desc">([\s\S]*?)<\/div>/i);
           if(fakeMatch && fakeMatch[1]) {
-            allPhotos.push({ type: 'img', url: fakeMatch[1], time: msg.time, chatName: chatName });
+            allPhotos.push({ 
+              type: 'fakeimg', 
+              url: fakeMatch[1], 
+              desc: descMatch ? descMatch[1].trim() : '（相片背面没有写字哦）',
+              time: msg.time, 
+              chatName: chatName 
+            });
           }
         }
 
@@ -13867,7 +13873,6 @@ window._showOrderHistory = async function() {
       });
     });
 
-    // 按时间倒序（最新的在最上面）
     allPhotos.sort((a, b) => b.time - a.time);
 
     if(allPhotos.length === 0) {
@@ -13881,26 +13886,37 @@ window._showOrderHistory = async function() {
       const safeName = String(p.chatName || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
       
       let contentHtml = '';
+      let clickAction = '';
+      let aspectRatio = 'auto'; // 根据不同类型自适应比例
+
       if (p.type === 'text') {
-        // 🌟 蓝色高定：文字胶片的专属排版
+        aspectRatio = '3/4';
         contentHtml = `
-          <div style="width:100%; aspect-ratio:3/4; background:#eef4fa; display:flex; align-items:center; justify-content:center; padding:16px; font-size:12px; color:#5c7094; line-height:1.7; text-align:justify; overflow:hidden; box-sizing:border-box;">
+          <div style="width:100%; height:100%; background:#eef4fa; display:flex; align-items:center; justify-content:center; padding:16px; font-size:12px; color:#5c7094; line-height:1.7; text-align:justify; overflow:hidden; box-sizing:border-box;">
             <div style="display:-webkit-box; -webkit-line-clamp:7; -webkit-box-orient:vertical; overflow:hidden;">${p.content}</div>
           </div>
         `;
+        clickAction = `onclick="alert('📝 摄像机定格的瞬间：\\n\\n' + this.dataset.text)" data-text="${p.content.replace(/"/g, '&quot;').replace(/<[^>]*>/g, '')}"`;
+      
+      } else if (p.type === 'fakeimg') {
+        // 🌟 蓝色高定：原生卡片潜入瀑布流，点击直接原地翻转相纸！
+        aspectRatio = '3/4';
+        contentHtml = `
+          <div class="card-fakeimg" style="width:100%; height:100%; box-shadow:none; border-radius:0; margin:0;" onclick="this.classList.toggle('open'); event.stopPropagation();">
+            <div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('${p.url}') center/cover no-repeat;"></div>
+            <div class="fi-desc" style="font-size:12px; padding:12px; color:#eee; background:#242426; text-align:justify; line-height:1.6; overflow-y:auto; box-sizing:border-box;">${p.desc}</div>
+          </div>
+        `;
+        clickAction = ''; // 内部处理翻转了，最外层不需要弹窗
+      
       } else {
-        // 普通图片
         contentHtml = `<img src="${p.url}" style="width:100%; display:block; object-fit:cover;">`;
+        clickAction = `onclick="document.getElementById('previewModalImg').src='${p.url}'; document.getElementById('modalPreview').classList.add('active')"`;
       }
-
-      // 区分点击事件：图片放大，文字弹窗
-      const clickAction = p.type === 'img' 
-        ? `onclick="document.getElementById('previewModalImg').src='${p.url}'; document.getElementById('modalPreview').classList.add('active')"`
-        : `onclick="alert('📝 摄像机定格的瞬间：\\n\\n' + this.dataset.text)" data-text="${p.content.replace(/"/g, '&quot;').replace(/<[^>]*>/g, '')}"`;
 
       return `
         <div style="background:#fff; border:1px solid #dce5f0; border-radius:4px 4px 12px 12px; padding:8px 8px 16px 8px; margin-bottom:12px; box-shadow:0 6px 16px rgba(92,112,148,0.04); break-inside:avoid; transition:transform 0.2s; cursor:pointer;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'" ${clickAction}>
-          <div style="background:#eef4fa; border:1px solid #cdd7e8; border-radius:2px; overflow:hidden; margin-bottom:10px;">
+          <div style="background:#eef4fa; border:1px solid #cdd7e8; border-radius:2px; overflow:hidden; margin-bottom:10px; aspect-ratio:${aspectRatio};">
             ${contentHtml}
           </div>
           <div style="text-align:center;">
