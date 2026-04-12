@@ -15151,7 +15151,7 @@ ${chatCtx}
     setTimeout(()=> { if(document.getElementById('fishStatus')) document.getElementById('fishStatus').textContent = '当前状态：待命'; }, 2000);
   };
 
- // ================= 🌟 蓝色高定：MiniMax 云端唤魂直连引擎 =================
+// ================= 🌟 蓝色高定：MiniMax 云端唤魂直连引擎 (优雅降级修复版) =================
   window._activeVoiceAudio = null;
 
   // 初始化基建
@@ -15180,7 +15180,7 @@ ${chatCtx}
     setTimeout(()=> { if(document.getElementById('mmStatus')) document.getElementById('mmStatus').textContent = '当前状态：待命'; }, 2000);
   };
 
-  // 云端呼叫！
+  // 云端呼叫与优雅降级！
   window._playVoiceClone = async function(el, text, roleId) {
     if(el.classList.contains('voice-playing')) {
        if(window._activeVoiceAudio) { window._activeVoiceAudio.pause(); window._activeVoiceAudio = null; }
@@ -15196,14 +15196,15 @@ ${chatCtx}
     const ids = await localforage.getItem('mp_fix_mm_voice_ids') || {};
     const voiceId = ids[roleId];
 
+    // 🌟 终极修复：优雅降级！绝对不弹窗！
     if(!groupId || !apiKey || !voiceId) {
-       alert('请先填写 MiniMax 配置信息。');
+       // 默默把波浪动画扯下来，绝对不拦着你看文字翻译！
        el.classList.remove('voice-playing');
+       console.log('未配置密钥，已静默降级为纯文字语音模式 🤍');
        return;
     }
 
     try {
-      // 直通 MiniMax 核心服务器！
       const res = await fetch('https://api.minimax.chat/v1/t2a_v2?GroupId=' + groupId, {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
@@ -15217,7 +15218,6 @@ ${chatCtx}
           throw new Error('MiniMax 报错啦：' + data.base_resp.status_msg);
       }
       
-      // 解析资本家发回来的音频十六进制流
       const audioUrl = 'data:audio/mp3;hex,' + data.data.audio;
       const audio = new Audio(audioUrl);
       window._activeVoiceAudio = audio;
