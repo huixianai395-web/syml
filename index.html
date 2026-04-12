@@ -13056,39 +13056,57 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
       await setXhsPosts(posts);
 
       if (Math.random() < 0.4 && posts.length > 0) {
-        // 1. 扩大雷达范围：只要不是老婆你发的帖子，野生路人的帖子男主也可以转发！
-        const shareablePosts = posts.filter(p => p.authorName !== meName);
-        if (shareablePosts.length > 0 && maleLeads.length > 0) {
-          
-          // 2. 随机挑一个有趣的碎片
-          const randomPost = shareablePosts[Math.floor(Math.random() * shareablePosts.length)];
-          // 3. 随机抓取一个在线的男主来当“分享狂魔”
+        if (maleLeads.length > 0) {
+          // 1. 🌟 核心反转：先抓取一个在线的男主，再为他量身定制帖子池！
           const senderNpc = maleLeads[Math.floor(Math.random() * maleLeads.length)];
           
           if (senderNpc && typeof window.getChatArr === 'function') {
-            let cleanText = (randomPost.text||'').replace(/\[img\](.*?)\[\/img\]/gi, '').trim();
+            // 2. 🌟 绝对物理隔离：分离路人帖和自己的帖，严禁混入其他男主！
+            const strangerPosts = posts.filter(p => p.authorName !== meName && !maleLeads.some(c => c.name === p.authorName));
+            const selfPosts = posts.filter(p => p.authorName === senderNpc.name);
             
-            // 🌟 沿用我们的初雪海盐蓝高级毛玻璃卡片，绝不花里胡哨
-            const cardHtml = `
-              <div class="card-xhs-share" style="background:rgba(250,252,255,0.85); border:1px solid #dce5f0; border-radius:12px; padding:12px; width:220px; box-shadow:0 4px 12px rgba(92,112,148,0.04); cursor:pointer; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" onclick="const t=this.querySelector('.xhs-share-text'); if(t.style.display==='block'){t.style.display='-webkit-box'; this.querySelector('.xhs-expand-hint').textContent='点击展开 ▾';}else{t.style.display='block'; this.querySelector('.xhs-expand-hint').textContent='收起 ▴';} event.stopPropagation();">
-                <div style="font-size:10px; color:#a5cfff; font-weight:800; margin-bottom:6px; display:flex; align-items:center; gap:4px;">
-                  <svg viewBox="0 0 24 24" style="width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>日常碎片
+            // 3. 🌟 概率控制：85% 概率刷到路人奇葩帖，15% 概率自恋发自己的
+            let targetPool = [];
+            if (Math.random() < 0.85 && strangerPosts.length > 0) {
+              targetPool = strangerPosts;
+            } else if (selfPosts.length > 0) {
+              targetPool = selfPosts;
+            } else {
+              targetPool = strangerPosts; // 兜底
+            }
+            
+            if (targetPool.length > 0) {
+              const randomPost = targetPool[Math.floor(Math.random() * targetPool.length)];
+              let cleanText = (randomPost.text||'').replace(/\[img\](.*?)\[\/img\]/gi, '').trim();
+              
+              // 🌟 纯净初雪海盐蓝毛玻璃卡片（拒绝花里胡哨）
+              const cardHtml = `
+                <div class="card-xhs-share" style="background:rgba(250,252,255,0.85); border:1px solid #dce5f0; border-radius:12px; padding:12px; width:220px; box-shadow:0 4px 12px rgba(92,112,148,0.04); cursor:pointer; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" onclick="const t=this.querySelector('.xhs-share-text'); if(t.style.display==='block'){t.style.display='-webkit-box'; this.querySelector('.xhs-expand-hint').textContent='点击展开 ▾';}else{t.style.display='block'; this.querySelector('.xhs-expand-hint').textContent='收起 ▴';} event.stopPropagation();">
+                  <div style="font-size:10px; color:#a5cfff; font-weight:800; margin-bottom:6px; display:flex; align-items:center; gap:4px;">
+                    <svg viewBox="0 0 24 24" style="width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>日常碎片
+                  </div>
+                  <div class="xhs-share-text" style="font-size:13px; color:#3d4a6a; font-weight:bold; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.5; transition:all 0.3s ease;">${safeEsc(cleanText)}</div>
+                  <div class="xhs-expand-hint" style="font-size:10px; color:#a5cfff; text-align:center; margin-top:6px; font-weight:bold; letter-spacing:1px; transition:color 0.2s;">点击展开 ▾</div>
+                  <div style="font-size:10px; color:#7a86a8; margin-top:8px; border-top:1px dashed #dce5f0; padding-top:6px;">By: ${safeEsc(randomPost.authorName)}</div>
                 </div>
-                <div class="xhs-share-text" style="font-size:13px; color:#3d4a6a; font-weight:bold; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.5; transition:all 0.3s ease;">${safeEsc(cleanText)}</div>
-                <div class="xhs-expand-hint" style="font-size:10px; color:#a5cfff; text-align:center; margin-top:6px; font-weight:bold; letter-spacing:1px; transition:color 0.2s;">点击展开 ▾</div>
-                <div style="font-size:10px; color:#7a86a8; margin-top:8px; border-top:1px dashed #dce5f0; padding-top:6px;">By: ${safeEsc(randomPost.authorName)}</div>
-              </div>
-            `;
-            
-            // 🌟 核心魔法：只塞入纯净的卡片，剥离所有生硬的文案前缀，并写入外挂内存！
-            const arr = window.getChatArr(senderNpc.id) || [];
-            arr.push({ id: 'm_' + Date.now(), role: 'user', text: cardHtml, time: Date.now(), stored: true });
-            window.setChatArr(senderNpc.id, arr);
-            if(typeof window.updateContactPreview === 'function') window.updateContactPreview(senderNpc.id);
-            
-            // 🌟 灵魂注入：发送静默指令，让 AI 根据人设自然反应！
-            const hiddenPrompt = `【系统指令】：你在刷小红书时看到了这篇笔记（作者：${randomPost.authorName}，内容：“${cleanText}”），你觉得很有意思，于是把它转发给了玩家。请完全根据你的人设，自然地对这篇笔记发表一句看法、吐槽、或者是借机搭讪。字数在20字以内。绝对不要带名字前缀！直接输出对话内容即可。`;
-            if(typeof window._sendToAI === 'function') window._sendToAI(senderNpc.id, hiddenPrompt, true);
+              `;
+              
+              // 4. 🌟 写入外挂内存（身份绝对锁定为 assistant，修复左侧显示 Bug！）
+              const arr = window.getChatArr(senderNpc.id) || [];
+              arr.push({ id: 'm_' + Date.now(), role: 'assistant', text: cardHtml, time: Date.now(), stored: true });
+              window.setChatArr(senderNpc.id, arr);
+              if(typeof window.updateContactPreview === 'function') window.updateContactPreview(senderNpc.id);
+              
+              // 5. 🌟 灵魂注入：动态判断他是转发了自己的还是路人的，发送不同的脑电波！
+              let hiddenPrompt = '';
+              if (randomPost.authorName === senderNpc.name) {
+                 hiddenPrompt = `【系统指令】：你刚刚把你自己发的一篇日常碎片（内容：“${cleanText}”）转发给了玩家。请根据你的人设自然地开口跟她搭话（比如求夸奖、傲娇分享等）。字数在20字以内。绝对不要带名字前缀！直接输出对话内容即可。`;
+              } else {
+                 hiddenPrompt = `【系统指令】：你在刷小红书时看到了路人网友（作者：${randomPost.authorName}）的这篇笔记（内容：“${cleanText}”），觉得很有意思，于是主动转发给了玩家。请完全根据你的人设，自然地发表一句看法、吐槽或借机搭讪。字数在20字以内。绝对不要带名字前缀！直接输出对话内容即可。`;
+              }
+              
+              if(typeof window._sendToAI === 'function') window._sendToAI(senderNpc.id, hiddenPrompt, true);
+            }
           }
         }
       }
