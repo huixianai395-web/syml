@@ -14787,7 +14787,7 @@ ${chatCtx}
   };
 })();
 </script>  
-  <!-- ================= 🌟 蓝色高定：幽灵图库劫持与相纸上传引擎 ================= -->
+  <!-- ================= 🌟 蓝色高定：幽灵图库劫持与相纸上传引擎 (带专属高定压缩机) ================= -->
 <script>
 (function() {
   const K_FAKEIMG_POOL = 'mp_fix_fakeimg_pool';
@@ -14806,6 +14806,34 @@ ${chatCtx}
   });
 
   const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+
+  // 🌟 核心救命补丁：专属于相纸舱的高清压缩引擎！无视全局结界！
+  window._fiCompressImage = function(file) {
+    return new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const maxSide = 960; // 专属高清大图标准
+          let w = img.width, h = img.height;
+          if (w > h) { if (w > maxSide) { h *= maxSide / w; w = maxSide; } }
+          else { if (h > maxSide) { w *= maxSide / h; h = maxSide; } }
+          
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          const ctx = c.getContext('2d');
+          ctx.fillStyle = '#fff'; // 防止透明PNG变黑
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(c.toDataURL('image/jpeg', 0.85)); // 输出绝美质感相片
+        };
+        img.onerror = reject;
+        img.src = fr.result;
+      };
+      fr.onerror = reject;
+      fr.readAsDataURL(file);
+    });
+  };
 
   // 2. 拦截主界面的“模拟发图”按钮，注入初雪海盐蓝的高定弹窗！
   setTimeout(() => {
@@ -14866,13 +14894,13 @@ ${chatCtx}
     };
   }, 800);
 
-  // 3. 处理图片上传压缩
+  // 3. 处理图片上传压缩 (调用全新手搓压缩机)
   window._handleFiUpload = async function(e) {
     const f = e.target.files?.[0];
     if(!f) return;
     try {
-      document.getElementById('fiUploadHint').textContent = '魔法压缩中...';
-      const imgData = await compressImage(f, true); // 存高清大图！
+      document.getElementById('fiUploadHint').textContent = '魔法冲洗中...';
+      const imgData = await window._fiCompressImage(f); // 调用刚才新建的高清压缩引擎！
       window._tempFiBase64 = imgData;
       
       const preview = document.getElementById('fiPreviewBg');
