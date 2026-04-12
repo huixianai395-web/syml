@@ -14154,7 +14154,7 @@ window._showOrderHistory = async function() {
       window._renderProjectorWall();
     }
   };
-  // ================= 🌟 蓝色高定：时光星轨 (羁绊手账核心引擎) =================
+ // ================= 🌟 蓝色高定：时光星轨 (羁绊手账核心引擎 - 终极抢救版) =================
   window._bondCurrentRoleId = null;
 
   window._initBondJournal = async function() {
@@ -14177,7 +14177,10 @@ window._showOrderHistory = async function() {
       const style = isSel 
         ? 'background:#5c7094; color:#fff; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; box-shadow:0 2px 8px rgba(92,112,148,0.2); transition:all 0.2s; flex-shrink:0;'
         : 'background:rgba(255,255,255,0.6); color:#7a86a8; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; border:1px solid #dce5f0; transition:all 0.2s; flex-shrink:0;';
-      return `<div onclick="window._switchBondRole('${c.id}')" style="${style}">${safeEsc(c.name)}</div>`;
+      
+      // 🛡️ 绝对防断裂小剪刀
+      const safeName = String(c.name || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+      return `<div onclick="window._switchBondRole('${c.id}')" style="${style}">${safeName}</div>`;
     }).join('');
 
     await window._renderBondData();
@@ -14192,7 +14195,9 @@ window._showOrderHistory = async function() {
     const roleId = window._bondCurrentRoleId;
     if(!roleId) return;
 
-    const c = getContactById(roleId);
+    // 🌟 核心修复：绕开系统结界，直接用全局通行证获取角色数据！
+    const contacts = window.getContacts ? window.getContacts() : [];
+    const c = contacts.find(x => x.id === roleId);
     if(!c) return;
 
     document.getElementById('bondAvatar').src = c.avatar || 'https://via.placeholder.com/64';
@@ -14224,38 +14229,19 @@ window._showOrderHistory = async function() {
     let hasPhoto = false;
 
     arr.forEach(m => {
-      // 检查是否有深夜发言 (0点到凌晨4点)
       const hour = new Date(m.time).getHours();
       if(hour >= 0 && hour < 4) hasNightMsg = true;
-      // 检查是否发过照片
       if(m.text.includes('[img]') || m.text.includes('card-fakeimg')) hasPhoto = true;
     });
 
     const badges = [
-      { 
-        id: 'b1', title: '初次邂逅', desc: '星轨交汇的第一句话', 
-        unlocked: totalMsgs > 0, 
-        icon: `<svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>`
-      },
-      { 
-        id: 'b2', title: '百句情长', desc: '时空回音突破 100 条', 
-        unlocked: totalMsgs >= 100, 
-        icon: `<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><line x1="9" y1="10" x2="15" y2="10"></line></svg>`
-      },
-      { 
-        id: 'b3', title: '深夜私语', desc: '在凌晨0点-4点间交流', 
-        unlocked: hasNightMsg, 
-        icon: `<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`
-      },
-      { 
-        id: 'b4', title: '岁月定格', desc: '彼此分享了一张相片', 
-        unlocked: hasPhoto, 
-        icon: `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>`
-      }
+      { id: 'b1', title: '初次邂逅', desc: '星轨交汇的第一句话', unlocked: totalMsgs > 0, icon: `<svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>` },
+      { id: 'b2', title: '百句情长', desc: '时空回音突破 100 条', unlocked: totalMsgs >= 100, icon: `<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><line x1="9" y1="10" x2="15" y2="10"></line></svg>` },
+      { id: 'b3', title: '深夜私语', desc: '在凌晨0点-4点间交流', unlocked: hasNightMsg, icon: `<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>` },
+      { id: 'b4', title: '岁月定格', desc: '彼此分享了一张相片', unlocked: hasPhoto, icon: `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>` }
     ];
 
     document.getElementById('bondBadgesGrid').innerHTML = badges.map(b => {
-      // 绝美的解锁与未解锁状态 UI 分离
       const bg = b.unlocked ? 'rgba(250,252,255,0.95)' : 'rgba(244,246,251,0.4)';
       const border = b.unlocked ? '#a5cfff' : '#eef4fa';
       const iconColor = b.unlocked ? '#5c7094' : '#cdd7e8';
