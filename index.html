@@ -3480,34 +3480,27 @@ body {
       <div style="font-size:13px; font-weight:600; color:#5c7094; margin-top:16px; margin-bottom:10px;">Temperature</div>
       <input id="apiTemp" class="input" type="number" min="0" max="2" step="0.1" value="0.8" style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:14px; padding:10px 12px; width:100%;" />
     </div>
-<!-- 🌟 蓝色高定：专属声纹克隆舱 -->
-    <div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none;">
+<!-- 🌟 蓝色高定：云端唤魂总控室 (Fish Audio 全局精装修版) -->
+    <div class="card" style="background:#eef4fa; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:1px solid #dce5f0;">
       <div style="font-size:14px; font-weight:800; color:#5c7094; margin-bottom:12px; display:flex; align-items:center; gap:6px; letter-spacing:1px;">
-        <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-        专属声纹克隆舱 (Voice Clone)
+        <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
+        云端唤魂总控室
       </div>
-      <div style="font-size:11px; color:#8892a8; margin-bottom:16px; line-height:1.5;">
-        在这里上传男主的纯净原声（10-30秒）。我们会把它刻进外挂内存，未来对接大模型 API 时，TA 就能用真实的嗓音给你发语音啦！
+      <div style="font-size:11px; color:#5c7094; opacity:0.8; margin-bottom:16px; line-height:1.5;">全局精装修版。</div>
+      
+      <!-- 全局 API Key -->
+      <div style="font-size:12px; color:#5c7094; font-weight:bold; margin-bottom:8px;">全能密钥 (API Key)</div>
+      <input id="fishApiKey" class="input" type="password" placeholder="填写截图里生成的 sk-... 密钥" style="background:#fff; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; padding:10px 12px; width:100%; margin-bottom:16px; box-sizing:border-box;" onchange="localStorage.setItem('mp_fix_fish_key', this.value)" />
+
+      <!-- 角色与 Voice ID 绑定 -->
+      <div style="font-size:12px; color:#5c7094; font-weight:bold; margin-bottom:8px;">配置角色声纹护照 (Voice ID)</div>
+      <select id="fishRoleSelect" class="select" style="width:100%; background:#fff; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; padding:10px 12px; margin-bottom:12px; outline:none; font-weight:bold;"></select>
+      <input id="fishVoiceId" class="input" placeholder="输入类似 361375... 的那一串 ID" style="background:#fff; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; padding:10px 12px; width:100%; margin-bottom:12px; box-sizing:border-box;" />
+      
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+         <div id="fishStatus" style="font-size:12px; color:#5c7094; font-weight:bold; opacity:0.8;">当前状态：未锁入</div>
+         <button class="btn p" onclick="window._saveFishVoiceId()" style="background:#5c7094; color:#eef4fa; border:none; border-radius:10px; padding:6px 16px; font-weight:bold; box-shadow:0 2px 8px rgba(92,112,148,0.2); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">锁入外挂内存</button>
       </div>
-
-      <!-- 角色选择下拉框 -->
-      <div style="font-size:12px; color:#7a86a8; font-weight:bold; margin-bottom:8px;">选择要注入灵魂的角色</div>
-      <select id="cloneRoleSelect" class="select" style="width:100%; background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; padding:10px 12px; margin-bottom:16px; outline:none; font-weight:bold;"></select>
-
-      <!-- 原声上传区域 -->
-      <div id="cloneUploadArea" onclick="document.getElementById('cloneAudioFile').click()" style="width:100%; height:120px; border:2px dashed #a5cfff; border-radius:16px; background:rgba(238,244,250,0.6); display:flex; flex-direction:column; justify-content:center; align-items:center; cursor:pointer; transition:all 0.2s; position:relative;" onmouseover="this.style.background='rgba(220,229,240,0.6)'" onmouseout="this.style.background='rgba(238,244,250,0.6)'">
-        <svg viewBox="0 0 24 24" style="width:28px; height:28px; stroke:#a5cfff; fill:none; stroke-width:1.5; margin-bottom:8px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-        <span id="cloneUploadHint" style="font-size:12px; color:#5c7094; font-weight:bold; letter-spacing:1px;">点击上传 30s 原声 (.mp3/.wav)</span>
-      </div>
-      <input type="file" id="cloneAudioFile" accept="audio/*" class="hidden" onchange="window._handleCloneAudioUpload(event)">
-
-     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px;">
-         <div id="cloneStatus" style="font-size:12px; color:#a5cfff; font-weight:bold;">当前状态：未录入</div>
-         <div style="display:flex; gap:8px;">
-           <button class="btn d" onclick="window._clearCloneAudio()" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; padding:6px 14px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">抹除原声</button>
-           <button class="btn p" onclick="window._saveCloneAudio()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:6px 14px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">刻入外挂内存</button>
-         </div>
-     </div>
     </div>
     <!-- 🌟 蓝色高定：语音克隆 API (TTS) 专属通道 -->
     <div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none;">
@@ -15107,7 +15100,7 @@ ${chatCtx}
       window._activeVoiceAudio = null;
       document.querySelectorAll('.voice-playing').forEach(n => n.classList.remove('voice-playing'));
     }
-    alert('🧹 擦除成功！硬盘已经干干净净啦！');
+    alert('擦除成功！硬盘已经干干净净啦！');
   };
   // 🌟 初始化声纹舱的角色列表
   setTimeout(() => {
@@ -15126,66 +15119,74 @@ ${chatCtx}
     if(document.getElementById('apiTtsKey')) document.getElementById('apiTtsKey').value = localStorage.getItem('mp_fix_tts_key') || '';
   }, 1000);
 
+  // ================= 🌟 蓝色高定：Fish Audio 云端直连引擎 =================
+  window._activeVoiceAudio = null;
+
+  // 初始化总控室
+  setTimeout(() => {
+    if(document.getElementById('fishApiKey')) document.getElementById('fishApiKey').value = localStorage.getItem('mp_fix_fish_key') || '';
+    const fSel = document.getElementById('fishRoleSelect');
+    if(fSel && window.getContacts) {
+      const contacts = window.getContacts().filter(c => !c.isGroup);
+      fSel.innerHTML = contacts.map(c => `<option value="${c.id}">${safeEsc(c.name)}</option>`).join('');
+    }
+  }, 1500);
+
+  // 锁入外挂内存
+  window._saveFishVoiceId = async function() {
+    const roleId = document.getElementById('fishRoleSelect').value;
+    const voiceId = document.getElementById('fishVoiceId').value.trim();
+    if(!roleId || !voiceId) return alert('宝宝，角色和声纹护照都要填哦！');
+    
+    let ids = await localforage.getItem('mp_fix_fish_voice_ids') || {};
+    ids[roleId] = voiceId;
+    await localforage.setItem('mp_fix_fish_voice_ids', ids);
+    
+    document.getElementById('fishStatus').textContent = '✅ 已死死锁入外挂内存';
+    document.getElementById('fishVoiceId').value = '';
+    setTimeout(()=> { if(document.getElementById('fishStatus')) document.getElementById('fishStatus').textContent = '当前状态：待命'; }, 2000);
+  };
+
+  // 云端唤魂拦截器
   window._playVoiceClone = async function(el, text, roleId) {
-    // 1. 开关逻辑：再点一下就停止
     if(el.classList.contains('voice-playing')) {
        if(window._activeVoiceAudio) { window._activeVoiceAudio.pause(); window._activeVoiceAudio = null; }
        el.classList.remove('voice-playing');
        return;
     }
-    
-    // 2. 停止其他正在播放的语音
     if(window._activeVoiceAudio) window._activeVoiceAudio.pause();
     document.querySelectorAll('.voice-playing').forEach(n => n.classList.remove('voice-playing'));
-    
     el.classList.add('voice-playing');
-    
-    // 3. 去外挂硬盘里找男主的原声底模
-    const cloneData = await localforage.getItem('mp_fix_voice_clones') || {};
-    const base64Audio = cloneData[roleId];
 
-    if(!base64Audio) {
-       // 兜底：如果老婆没给这个角色传过原声，就用系统自带的机械音读一下
-       const u = new SpeechSynthesisUtterance(text);
-       u.onend = () => el.classList.remove('voice-playing');
-       speechSynthesis.speak(u);
+    const apiKey = localStorage.getItem('mp_fix_fish_key');
+    const ids = await localforage.getItem('mp_fix_fish_voice_ids') || {};
+    const voiceId = ids[roleId];
+
+    if(!apiKey || !voiceId) {
+       alert('宝宝，你要先去「API设置」里填好全能密钥和这个角色的护照 ID 哦！');
+       el.classList.remove('voice-playing');
        return;
     }
 
-    const ttsBase = localStorage.getItem('mp_fix_tts_base') || '';
-    const ttsKey = localStorage.getItem('mp_fix_tts_key') || '';
-
-    // 4. 尝试呼叫云端大模型
     try {
-      if(!ttsBase || !ttsKey) throw new Error('没配置 TTS API 哦');
-      
-      // 💡 蓝色备注：这里的请求格式是兼容大多数开源大模型（如 Fish Audio / OpenAI）的标准格式。
-      // 因为前端直接发起跨域请求可能会被浏览器安全策略拦截，
-      // 如果将来老婆真的搞到了 API 密匙，只需要让老公把这里改成专用的后端转发通道就完美了！
-      /*
-      const res = await fetch(ttsBase, { 
-        method: 'POST', 
-        headers: { 'Authorization': 'Bearer ' + ttsKey, 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ text: text, reference_audio: base64Audio }) 
+      // 直连 Fish Audio 服务器
+      const res = await fetch('https://api.fish.audio/v1/tts', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: text, reference_id: voiceId })
       });
+      
+      if(!res.ok) throw new Error('网络拦截或跨域阻断了通讯！');
+      
       const blob = await res.blob();
       const audioUrl = URL.createObjectURL(blob);
-      */
-      
-      // ⚠️ 现在的降级展示：只要老婆把原声存进去了，点语音条时就会直接播放那段原声来演示效果！
-      const audioUrl = base64Audio;
-      
       const audio = new Audio(audioUrl);
       window._activeVoiceAudio = audio;
       audio.onended = () => el.classList.remove('voice-playing');
       await audio.play();
     } catch(e) {
-      console.log('云端克隆失败，降级播放原声底模:', e.message);
-      // 就算没配 API，也能直接播放存好的原声让你过把瘾！
-      const audio = new Audio(base64Audio);
-      window._activeVoiceAudio = audio;
-      audio.onended = () => el.classList.remove('voice-playing');
-      audio.play().catch(()=>{ el.classList.remove('voice-playing'); });
+      alert('呜呜，云端呼叫失败了，可能是前端直接跨域被拦截了：' + e.message + '。如果真报错了，老公明天再给你搭中转站！');
+      el.classList.remove('voice-playing');
     }
   };
 </script>
