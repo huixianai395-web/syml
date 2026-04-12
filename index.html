@@ -14441,5 +14441,224 @@ ${chatCtx}
     </div>
   </div>
 </div>
+  <script>
+// ================= 🌟 蓝色高定：终极自我修复与档案大一统引擎 =================
+(function() {
+  // 1. 物理超度所有分裂的克隆体弹窗，杀掉所有幽灵！
+  const relics = document.querySelectorAll('#relicModal');
+  relics.forEach(el => el.remove());
+  
+  const journals = document.querySelectorAll('#bondJournal');
+  if(journals.length > 1) {
+     for(let i=1; i<journals.length; i++) journals[i].remove();
+  }
+
+  // 2. 重铸完美唯一的遗物弹窗（带绝对安全锁）
+  const newRelicModal = document.createElement('div');
+  newRelicModal.id = 'relicModal';
+  newRelicModal.className = 'modal';
+  newRelicModal.style.zIndex = '10005';
+  newRelicModal.onclick = function() { this.classList.remove('active'); };
+  newRelicModal.innerHTML = `
+    <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:24px; padding:24px; text-align:center; box-shadow:0 12px 40px rgba(92,112,148,0.2);" onclick="event.stopPropagation()">
+      <div style="font-size:10px; color:#a5cfff; font-weight:800; letter-spacing:2px; margin-bottom:16px; font-family:ui-monospace, monospace;">TIME RELIC</div>
+      <div id="relicIcon" style="width:80px; height:80px; margin:0 auto 16px; border-radius:20px; background:linear-gradient(135deg, #eef4fa, #dce5f0); border:2px solid #fff; box-shadow:0 8px 24px rgba(92,112,148,0.15); display:grid; place-items:center; font-size:36px;">🎁</div>
+      <div id="relicName" style="font-size:18px; color:#3d4a6a; font-weight:900; margin-bottom:12px; letter-spacing:1px;">未知的遗物</div>
+      <div id="relicDesc" style="font-size:13px; color:#5c7094; line-height:1.6; text-align:justify; font-style:italic; background:rgba(238,244,250,0.6); padding:16px; border-radius:12px; border:1px dashed #dce5f0; margin-bottom:20px;">
+        "正在潜入深海，为您打捞记忆的碎片..."
+      </div>
+      <!-- 🌟 安全锁：未生成完绝不显示保存按钮！ -->
+      <button id="relicSaveBtn" class="btn p" onclick="window._saveRelicToArchive()" style="display:none; width:100%; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:12px; padding:12px 0; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.1); letter-spacing:1px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">妥善安放到档案馆</button>
+    </div>
+  `;
+  document.body.appendChild(newRelicModal);
+
+  // 3. 遗物生成与保存引擎重铸
+  window._generateTimeRelic = async function() {
+    const roleId = window._bondCurrentRoleId || window.currentId;
+    if(!roleId) return alert('宝宝，请先在顶部胶囊导航选择一个角色哦！');
+    
+    const contacts = window.getContacts ? window.getContacts() : [];
+    const c = contacts.find(x => x.id === roleId);
+    
+    const arr = (window.getChatArr ? window.getChatArr(roleId) : []).filter(m => m.text && !m.hiddenForAi).slice(-50);
+    if(arr.length < 10) return alert('你们的羁绊还太浅，近期记忆不足以凝聚成遗物哦！再去多聊聊吧~');
+
+    const modal = document.getElementById('relicModal');
+    const rIcon = document.getElementById('relicIcon');
+    const rName = document.getElementById('relicName');
+    const rDesc = document.getElementById('relicDesc');
+    const sBtn = document.getElementById('relicSaveBtn');
+
+    modal.classList.add('active');
+    rIcon.innerHTML = `<div style="width:36px; height:36px; border:4px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite;"></div>`;
+    rName.textContent = '凝聚中...';
+    rDesc.textContent = '"正在潜入记忆深海，为您打捞潜意识的碎片..."';
+    sBtn.style.display = 'none'; // 锁死！没生成完绝对不许点！
+
+    try {
+      const meData = window.getMe ? window.getMe() : { name: '我' };
+      const chatCtx = arr.map(m => `${m.role==='user' ? meData.name : c.name}: ${m.text.replace(/<[^>]*>/g, '')}`).join('\\n');
+      
+      const sysPrompt = `你是一个拥有极高文学素养的浪漫物品生成器。
+请阅读以下玩家(${meData.name})和角色(${c.name})最近的聊天记录：
+${chatCtx}
+【任务】：根据他们互动的氛围或细节，凭空“具象化”一件带有专属记忆的【虚拟物品】（比如：半截电影票等）。
+【输出严格JSON格式】：
+{
+  "icon": "一个最符合该物品的Emoji",
+  "name": "物品名称（如：揉皱的检讨书）",
+  "desc": "一段极具画面感、略带感伤或宠溺的物品描述与内心旁白。字数80字以内。"
+}`;
+
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻凝聚岁月遗物！' }]);
+      const cleaned = out.replace(/```json|```/g, '').trim();
+      const data = JSON.parse(cleaned.match(/\{[\s\S]*\}/)[0]);
+
+      rIcon.innerHTML = data.icon || '🎁';
+      rName.textContent = data.name || '未知的遗物';
+      const safeDesc = String(data.desc || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+      rDesc.innerHTML = `"${safeDesc}"`;
+      
+      sBtn.style.display = 'block'; // 解锁！生成完毕，允许保存！
+    } catch(e) {
+      rIcon.innerHTML = '💔';
+      rName.textContent = '凝聚失败';
+      rDesc.textContent = '时空乱流干扰了记忆的提取...请稍后再试。';
+    }
+  };
+
+  window._saveRelicToArchive = async function() {
+    const finalId = window.currentId || window._bondCurrentRoleId;
+    if(!finalId) return;
+    
+    const rIcon = document.getElementById('relicIcon').innerText || '🎁';
+    const rName = document.getElementById('relicName').innerText || '未知遗物';
+    const rDesc = document.getElementById('relicDesc').innerText || '无描述';
+
+    let allMems = {};
+    try { allMems = await localforage.getItem('mp_fix_chat_memories') || {}; } catch(e){}
+    if(!allMems[finalId]) allMems[finalId] = [];
+    
+    const d = new Date();
+    const shortDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+
+    allMems[finalId].unshift({
+      id: 'mem_' + Date.now(),
+      date: shortDate,
+      title: '🎁 岁月遗物：' + rName,
+      content: `【专属数字纪念品】\n物品形态：${rIcon}\n物品描述：${rDesc}`,
+      injectEnabled: true 
+    });
+    
+    await localforage.setItem('mp_fix_chat_memories', allMems);
+    document.getElementById('relicModal').classList.remove('active');
+    
+    // 如果档案馆正开着，瞬间帮老婆刷新出刚存的物品！
+    if(document.getElementById('memoryArchiveModal').classList.contains('active')) {
+      window._renderMemoryCards();
+    }
+    alert('✨ 遗物已妥善安放！快去右上角【档案馆】里查看吧！');
+  };
+
+  // 4. 重写档案馆渲染引擎，强行加入角色切换胶囊！
+  window._renderMemoryCards = async function() {
+    if(!window.currentId) {
+       const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
+       if(contacts.length > 0) window.currentId = contacts[0].id;
+       else return;
+    }
+    
+    let allMems = {};
+    try { allMems = await localforage.getItem('mp_fix_chat_memories') || {}; } catch(e){}
+    const myMems = allMems[window.currentId] || [];
+    const box = document.getElementById('memoryCardList');
+    const modalInner = document.querySelector('#memoryArchiveModal .modal-card');
+    
+    if(modalInner) {
+      modalInner.style.width = '100%';
+      modalInner.style.maxWidth = '420px';
+      modalInner.style.height = '90dvh';
+      modalInner.style.background = 'rgba(250,252,255,0.95)';
+      modalInner.style.backdropFilter = 'blur(24px)';
+      modalInner.style.border = '1px solid #dce5f0';
+    }
+
+    const titleBar = document.querySelector('#memoryArchiveModal .modal-card > div:first-child');
+    if(titleBar) {
+      titleBar.style.background = 'transparent';
+      titleBar.style.borderBottom = '1px solid #dce5f0';
+      titleBar.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px;">
+          <svg viewBox="0 0 24 24" style="width:20px; height:20px; stroke:#5c7094; fill:none; stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <b style="font-size:17px; color:#5c7094; letter-spacing:1px; font-family:'STZhongsong', 'KaiTi', serif;">时光档案馆</b>
+        </div>
+        <button class="btn" onclick="document.getElementById('memoryArchiveModal').classList.remove('active')" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:32px; height:32px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">×</button>
+      `;
+    }
+
+    const topBtn = document.querySelector('#memoryArchiveModal button[onclick="window._addNewMemoryCard()"]');
+    if(topBtn) {
+      topBtn.style.background = 'rgba(238,244,250,0.6)';
+      topBtn.style.color = '#5c7094';
+      topBtn.style.border = '1px solid #dce5f0';
+      topBtn.style.boxShadow = 'none';
+      topBtn.innerHTML = '<svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2; vertical-align:-3px; margin-right:4px;"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path></svg>提笔新卷';
+    }
+
+    // 🌟 核心注入：在内容区顶部强制焊死【角色切换胶囊】！
+    const archiveTopArea = document.querySelector('#memoryArchiveModal .modal-card > div:nth-child(2)');
+    if(archiveTopArea) {
+       const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
+       const tabsHtml = contacts.map(c => {
+          const isSel = c.id === window.currentId;
+          const style = isSel 
+            ? 'background:#5c7094; color:#fff; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; box-shadow:0 2px 8px rgba(92,112,148,0.2); transition:all 0.2s; flex-shrink:0;'
+            : 'background:rgba(255,255,255,0.6); color:#7a86a8; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; border:1px solid #dce5f0; transition:all 0.2s; flex-shrink:0;';
+          const safeName = String(c.name || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+          return `<div onclick="window.currentId='${c.id}'; window._renderMemoryCards();" style="${style}">${safeName}</div>`;
+       }).join('');
+
+       let tabsContainer = document.getElementById('archiveTabsBox');
+       if(!tabsContainer) {
+         tabsContainer = document.createElement('div');
+         tabsContainer.id = 'archiveTabsBox';
+         tabsContainer.style.cssText = 'display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; margin-bottom:16px; padding-bottom:4px;';
+         archiveTopArea.insertBefore(tabsContainer, archiveTopArea.firstChild);
+       }
+       tabsContainer.innerHTML = tabsHtml;
+    }
+
+    if(myMems.length === 0) {
+      if(box) box.innerHTML = `<div style="text-align:center; padding:80px 0; color:#7a86a8; font-size:14px; font-family:'STZhongsong','KaiTi',serif; letter-spacing:2px;">TA 的卷宗空空如也<br><br>提笔写下你们的第一段羁绊吧</div>`;
+      return;
+    }
+
+    if(box) box.innerHTML = myMems.map(m => {
+      const isInject = m.injectEnabled !== false;
+      return `
+      <div style="position:relative; background:rgba(250,252,255,0.6); border:1px solid #dce5f0; border-radius:16px; padding:20px; margin-bottom:20px; box-shadow:0 4px 16px rgba(92,112,148,0.05); backdrop-filter:blur(16px); overflow:hidden;">
+        <div style="position:absolute; left:12px; top:20px; bottom:20px; width:3px; background:linear-gradient(to bottom, rgba(92,112,148,0.1), rgba(92,112,148,0.4), rgba(92,112,148,0.1)); border-radius:2px;"></div>
+        <div style="padding-left:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px dashed #dce5f0; padding-bottom:12px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <input id="mem_date_${m.id}" class="input" style="width:110px; padding:4px 8px; font-size:12px; font-weight:bold; background:transparent; border:none; color:#5c7094; font-family:'STZhongsong', 'KaiTi', serif; letter-spacing:1px;" value="${String(m.date||'').replace(/"/g, '&quot;')}" placeholder="落笔之日">
+              <label style="display:flex; align-items:center; gap:4px; cursor:pointer; background:${isInject ? 'rgba(238,244,250,0.8)' : 'rgba(244,246,251,0.5)'}; padding:4px 10px; border-radius:8px; border:1px solid #dce5f0; transition:all 0.2s;">
+                <input type="checkbox" ${isInject ? 'checked' : ''} onchange="window._toggleMemoryInject('${m.id}', this.checked)" style="accent-color:#5c7094; width:14px; height:14px;">
+                <span style="font-size:11px; color:${isInject ? '#5c7094' : '#8892a8'}; font-family:'STZhongsong', 'KaiTi', serif;">${isInject ? '✨ 潜入潜意识' : '已尘封'}</span>
+              </label>
+            </div>
+            <button class="btn" onclick="window._delMemoryCard('${m.id}')" style="padding:4px 8px; font-size:11px; background:transparent; color:#d94343; border:none; font-family:'STZhongsong', 'KaiTi', serif;">抹除</button>
+          </div>
+          <input id="mem_title_${m.id}" class="input" style="width:100%; padding:4px 0; font-size:16px; font-weight:bold; border:none; margin-bottom:10px; color:#3d4a6a; background:transparent; font-family:'STZhongsong', 'KaiTi', serif; letter-spacing:1px;" value="${String(m.title||'').replace(/"/g, '&quot;')}" placeholder="卷宗名...">
+          <textarea id="mem_content_${m.id}" class="ta" style="min-height:180px; font-size:14px; padding:12px; line-height:1.8; background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:12px; color:#5c7094; resize:vertical; text-align:justify; font-family:-apple-system, 'PingFang SC', serif;" placeholder="落笔生花...">${String(m.content||'').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+          <button class="btn" onclick="window._saveMemoryCard('${m.id}')" style="width:100%; margin-top:12px; padding:10px; border-radius:10px; font-size:13px; letter-spacing:2px; background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; transition:all 0.2s;" onmousedown="this.style.transform='scale(0.98)'; this.style.background='rgba(220,229,240,0.8)';" onmouseup="this.style.transform='scale(1)'; this.style.background='rgba(238,244,250,0.6)';">落印保存</button>
+        </div>
+      </div>
+      `;
+    }).join('');
+  };
+})();
+</script>
 </body>
   </html>
