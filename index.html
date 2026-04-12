@@ -5893,7 +5893,7 @@ $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';
       
       const now=getContactById(currentId); $('chatTitle').textContent=now?.name||'聊天';
       applyModeUI(); renderChat(); renderContacts($('searchInput').value||''); show('chatRoom');
-    }catch{alert('保存失败：存储空间不足');}
+   }catch(e){alert('保存失败：'+(e.message||'未知错误'));console.error('详细报错:',e);}
   };
 
   // 🚪 退出并删除群聊的专属按钮逻辑
@@ -5972,7 +5972,7 @@ document.getElementById('globalImportFile').onchange = async function(e) {
     if(j.moments) localStorage.setItem('mp_fix_moments', JSON.stringify(j.moments));
     
     alert('时空恢复成功！即将刷新页面以唤醒所有数据！');
-    location.reload();
+    setTimeout(() => location.reload(), 150);
   } catch(err) { alert('导入失败，文件格式不对哦宝宝：' + err.message); }
   finally { e.target.value = ''; }
 };
