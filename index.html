@@ -14193,6 +14193,7 @@ window._showOrderHistory = async function() {
   }
 </style>
 
+<!-- ================= 🌟 蓝色高定 V16：时光星轨 (情感温度+防卡底版) ================= -->
 <section id="bondJournal" class="screen">
   <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
     <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px;">‹ 桌面</button>
@@ -14201,32 +14202,54 @@ window._showOrderHistory = async function() {
   </div>
   
   <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px; overflow-y:auto; overflow-x:hidden;">
-    <div id="bondTabsBox" style="display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; margin-bottom:16px; min-height:42px;"></div>
+    <div id="bondTabsBox" style="display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; margin-bottom:16px; min-height:42px; flex-shrink:0;"></div>
 
-    <!-- 基础数据面板 -->
-    <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:20px; padding:20px; margin-bottom:16px; box-shadow:0 8px 24px rgba(92,112,148,0.04);">
-      <div style="display:flex; align-items:center; gap:16px; border-bottom:1px dashed #dce5f0; padding-bottom:16px; margin-bottom:16px;">
+    <!-- 🌟 进阶版：带羁绊进度条的基础数据面板 -->
+    <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:20px; padding:20px; margin-bottom:16px; box-shadow:0 8px 24px rgba(92,112,148,0.04); position:relative; overflow:hidden; flex-shrink:0;">
+      <!-- 极简光晕 -->
+      <div style="position:absolute; top:-30px; right:-30px; width:120px; height:120px; background:radial-gradient(circle, rgba(165,207,255,0.2) 0%, transparent 70%); filter:blur(10px); pointer-events:none;"></div>
+      
+      <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px; position:relative; z-index:2;">
         <img id="bondAvatar" src="https://via.placeholder.com/64" style="width:64px; height:64px; border-radius:16px; object-fit:cover; border:2px solid #fff; box-shadow:0 4px 12px rgba(92,112,148,0.1);">
         <div style="flex:1;">
           <div id="bondName" style="font-size:18px; font-weight:900; color:#3d4a6a; margin-bottom:4px;">未选择</div>
           <div style="font-size:11px; color:#7a86a8; letter-spacing:1px;">相识于 <span id="bondStartDate" style="font-family:ui-monospace, monospace; color:#5c7094; font-weight:bold;">----.--.--</span></div>
         </div>
       </div>
-      <div style="display:flex; justify-content:space-between; align-items:center; text-align:center;">
+
+      <!-- 新增：羁绊共振等级系统 -->
+      <div style="margin-bottom:16px; position:relative; z-index:2; border-bottom:1px dashed #dce5f0; padding-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; font-size:11px; color:#7a86a8; font-weight:800; margin-bottom:6px; letter-spacing:0.5px;">
+          <span>羁绊阶段：<span id="bondLevelName" style="color:#5c7094; margin-left:4px;">读取中...</span></span>
+          <span id="bondLevelText" style="color:#a5cfff; font-family:ui-monospace, monospace;">LV.0</span>
+        </div>
+        <div style="height:6px; background:rgba(220,229,240,0.5); border-radius:3px; overflow:hidden;">
+          <div id="bondLevelBar" style="height:100%; width:0%; background:linear-gradient(90deg, #a5cfff, #8ca8d8); border-radius:3px; transition:width 1s cubic-bezier(0.34, 1.56, 0.64, 1);"></div>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; text-align:center; position:relative; z-index:2;">
         <div style="flex:1;"><div style="font-size:11px; color:#a0aaba; font-weight:600; margin-bottom:6px;">相伴天数</div><div style="font-size:22px; font-weight:900; color:#5c7094; font-family:ui-monospace, monospace;"><span id="bondDays">0</span><span style="font-size:12px; margin-left:2px;">天</span></div></div>
         <div style="width:1px; height:30px; background:#dce5f0;"></div>
         <div style="flex:1;"><div style="font-size:11px; color:#a0aaba; font-weight:600; margin-bottom:6px;">时空回音</div><div style="font-size:22px; font-weight:900; color:#5c7094; font-family:ui-monospace, monospace;"><span id="bondMsgs">0</span><span style="font-size:12px; margin-left:2px;">条</span></div></div>
       </div>
     </div>
 
+    <!-- 🌟 新增：岁月回响 (随机抽取回忆) -->
+    <div style="background:linear-gradient(135deg, rgba(250,252,255,0.8), rgba(238,244,250,0.6)); border-left:3px solid #a5cfff; border-radius:12px; padding:16px; margin-bottom:16px; position:relative; box-shadow:0 4px 12px rgba(92,112,148,0.03); flex-shrink:0;">
+      <div style="font-size:28px; color:rgba(165,207,255,0.4); position:absolute; top:4px; left:8px; font-family:serif; line-height:1; font-weight:bold;">"</div>
+      <div id="bondRandomQuote" style="position:relative; z-index:2; text-align:justify; padding-left:16px; padding-right:8px; font-size:13px; color:#5c7094; font-style:italic; line-height:1.6; font-weight:600;">正在打捞沉入深海的回声...</div>
+      <div id="bondRandomDate" style="text-align:right; font-size:10px; color:#a0aaba; margin-top:10px; font-family:ui-monospace, monospace; font-weight:bold;">----.--.--</div>
+    </div>
+
     <!-- 热力图 -->
-    <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:20px; padding:16px; margin-bottom:16px; box-shadow:0 8px 24px rgba(92,112,148,0.04);">
+    <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:20px; padding:16px; margin-bottom:16px; box-shadow:0 8px 24px rgba(92,112,148,0.04); flex-shrink:0;">
       <div style="font-size:11px; color:#7a86a8; font-weight:800; margin-bottom:12px; display:flex; align-items:center; gap:6px; letter-spacing:1px;"><svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:#5c7094; fill:none; stroke-width:2;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>心跳频率矩阵</div>
       <div id="bondHeatMap" style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; justify-items:center;"></div>
     </div>
 
-    <!-- 🌟 新增：灵魂共振雷达面板 -->
-    <div style="background:linear-gradient(145deg, rgba(255,255,255,0.9), rgba(244,246,251,0.6)); border:1px solid #dce5f0; border-radius:20px; padding:16px; margin-bottom:20px; box-shadow:0 8px 24px rgba(92,112,148,0.04);">
+    <!-- 情感深度雷达面板 -->
+    <div style="background:linear-gradient(145deg, rgba(255,255,255,0.9), rgba(244,246,251,0.6)); border:1px solid #dce5f0; border-radius:20px; padding:16px; margin-bottom:20px; box-shadow:0 8px 24px rgba(92,112,148,0.04); flex-shrink:0;">
       <div style="font-size:12px; color:#5c7094; font-weight:800; margin-bottom:14px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
         <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
         情感深度雷达
@@ -14236,9 +14259,8 @@ window._showOrderHistory = async function() {
       </div>
     </div>
 
-    <!-- 🌟 重制：金库入口（不再暴露在外面） -->
-    <div onclick="window._openRelicVault()" style="position:relative; overflow:hidden; background:linear-gradient(135deg, #2b3240, #161b27); border-radius:20px; padding:24px 20px; box-shadow:0 12px 32px rgba(22,27,39,0.3); cursor:pointer; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
-      <!-- 背景光晕 -->
+    <!-- 深海金库入口 -->
+    <div onclick="window._openRelicVault()" style="position:relative; overflow:hidden; background:linear-gradient(135deg, #2b3240, #161b27); border-radius:20px; padding:24px 20px; box-shadow:0 12px 32px rgba(22,27,39,0.3); cursor:pointer; transition:transform 0.2s; flex-shrink:0;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
       <div style="position:absolute; top:-50px; right:-20px; width:120px; height:120px; background:radial-gradient(circle, rgba(165,207,255,0.2) 0%, transparent 70%); filter:blur(20px);"></div>
       <div style="position:absolute; bottom:-30px; left:-20px; width:100px; height:100px; background:radial-gradient(circle, rgba(209,196,233,0.15) 0%, transparent 70%); filter:blur(15px);"></div>
       
@@ -14254,7 +14276,8 @@ window._showOrderHistory = async function() {
       </div>
     </div>
     
-    <div style="height:30px;"></div>
+    <!-- 🌟 究极防卡底法宝：透明呼吸空间，保证底部绝对能滑上去！ -->
+    <div style="height:120px; width:100%; flex-shrink:0; pointer-events:none;"></div>
   </div>
 </section>
 
@@ -14364,6 +14387,40 @@ window._showOrderHistory = async function() {
     document.getElementById('bondStartDate').textContent = startDateStr;
     document.getElementById('bondDays').textContent = days;
 
+    // 🌟 新增：羁绊阶级算法引擎
+    const score = totalMsgs + (days * 5); // 每发一条消息+1分，陪伴一天+5分
+    let level = 1; let levelName = '初雪微融'; let pct = 0;
+    if(score < 100) { level = 1; levelName = '初雪微融'; pct = (score / 100) * 100; }
+    else if(score < 500) { level = 2; levelName = '暗流涌动'; pct = ((score - 100) / 400) * 100; }
+    else if(score < 2000) { level = 3; levelName = '潮汐相引'; pct = ((score - 500) / 1500) * 100; }
+    else if(score < 5000) { level = 4; levelName = '不可触碰的羁绊'; pct = ((score - 2000) / 3000) * 100; }
+    else { level = 5; levelName = '灵魂共振'; pct = 100; }
+
+    document.getElementById('bondLevelText').textContent = `LV.${level}`;
+    document.getElementById('bondLevelName').textContent = levelName;
+    setTimeout(() => {
+      const bar = document.getElementById('bondLevelBar');
+      if(bar) bar.style.width = `${Math.min(100, Math.max(2, pct))}%`; // 给点保底宽度
+    }, 100);
+
+    // 🌟 新增：岁月回响 (打捞 TA 说过的话)
+    const quoteBox = document.getElementById('bondRandomQuote');
+    const quoteDate = document.getElementById('bondRandomDate');
+    if(quoteBox && quoteDate) {
+      // 过滤出对方发的、纯文字（不含括号指令）、长度大于4的走心句子
+      const taMsgs = arr.filter(m => m.role === 'assistant' && m.text && m.text.length > 4 && !m.text.includes('[') && !m.text.includes('<div'));
+      if(taMsgs.length > 0) {
+        const randomMsg = taMsgs[Math.floor(Math.random() * taMsgs.length)];
+        const cleanText = safeEsc(randomMsg.text).replace(/\\n/g, '<br>').replace(/\n/g, '<br>');
+        quoteBox.innerHTML = `"${cleanText}"`;
+        const rd = new Date(randomMsg.time);
+        quoteDate.textContent = rd.getFullYear() + '.' + String(rd.getMonth()+1).padStart(2,'0') + '.' + String(rd.getDate()).padStart(2,'0');
+      } else {
+        quoteBox.textContent = "记忆的海面微波荡漾，等待你与 TA 创造更多羁绊...";
+        quoteDate.textContent = "----.--.--";
+      }
+    }
+
     // 热力图与情感雷达计算
     const dayCounts = {};
     const nowTime = new Date().setHours(0,0,0,0);
@@ -14377,9 +14434,8 @@ window._showOrderHistory = async function() {
       if(diffDays >= 0 && diffDays < 35) dayCounts[diffDays] = (dayCounts[diffDays] || 0) + 1;
       
       const hr = d.getHours();
-      if(hr >= 0 && hr <= 4) nightCount++; // 深夜聊天判断
+      if(hr >= 0 && hr <= 4) nightCount++; 
 
-      // 连击判断（间隔小于5分钟算一次连击）
       if(idx > 0 && (m.time - arr[idx-1].time) < 300000) {
         currentStreak++;
         if(currentStreak > maxStreak) maxStreak = currentStreak;
@@ -14400,8 +14456,8 @@ window._showOrderHistory = async function() {
     }
     document.getElementById('bondHeatMap').innerHTML = heatHtml;
 
-    // 🌟 渲染情感雷达
-    const isNightOwl = nightCount > (totalMsgs * 0.2); // 超过20%是半夜聊的
+    // 渲染情感雷达
+    const isNightOwl = nightCount > (totalMsgs * 0.2); 
     const radarBox = document.getElementById('bondRadarBox');
     
     let radarHtml = `
@@ -14420,7 +14476,6 @@ window._showOrderHistory = async function() {
     `;
     if(radarBox) radarBox.innerHTML = radarHtml;
 
-    // 预加载金库数量
     let allRelics = {};
     try { allRelics = await localforage.getItem('mp_fix_time_relics') || {}; } catch(e){}
     const myRelics = allRelics[roleId] || [];
