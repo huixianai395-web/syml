@@ -2318,6 +2318,15 @@ body {
             </div>
             <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">回忆放映机</span>
           </div>
+          <!-- 羁绊手账入口 -->
+          <div class="ios-icon" onclick="show('bondJournal'); window._initBondJournal();">
+            <div class="ibg" id="icon_journal" style="background-color:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
+              <svg class="default-svg" viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;">
+                <circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path>
+              </svg>
+            </div>
+            <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">时光星轨</span>
+          </div>
         </div>
       </div> <!-- 第二页的大门关上！ -->
 
@@ -2396,7 +2405,50 @@ body {
       </div>
     </div>
   </section>
+<!-- ================= 🌟 蓝色高定：时光星轨 (羁绊手账) ================= -->
+  <section id="bondJournal" class="screen">
+    <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
+      <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px;">‹ 桌面</button>
+      <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">时光星轨</b>
+      <div style="width:56px;"></div> 
+    </div>
+    
+    <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px; overflow-y:auto; overflow-x:hidden;">
+      <!-- 顶部男主切换胶囊 -->
+      <div id="bondTabsBox" style="display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; margin-bottom:20px;"></div>
 
+      <!-- 核心羁绊数据仪表盘 -->
+      <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:20px; padding:20px; margin-bottom:20px; box-shadow:0 8px 24px rgba(92,112,148,0.04);">
+        <div style="display:flex; align-items:center; gap:16px; border-bottom:1px dashed #dce5f0; padding-bottom:16px; margin-bottom:16px;">
+          <img id="bondAvatar" src="https://via.placeholder.com/64" style="width:64px; height:64px; border-radius:16px; object-fit:cover; border:2px solid #fff; box-shadow:0 4px 12px rgba(92,112,148,0.1);">
+          <div style="flex:1;">
+            <div id="bondName" style="font-size:18px; font-weight:900; color:#3d4a6a; margin-bottom:4px;">未选择</div>
+            <div style="font-size:11px; color:#7a86a8; letter-spacing:1px;">相识于 <span id="bondStartDate" style="font-family:ui-monospace, monospace; color:#5c7094; font-weight:bold;">----.--.--</span></div>
+          </div>
+        </div>
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; text-align:center;">
+          <div style="flex:1;">
+            <div style="font-size:11px; color:#a0aaba; font-weight:600; margin-bottom:6px;">相伴天数</div>
+            <div style="font-size:22px; font-weight:900; color:#5c7094; font-family:ui-monospace, monospace;"><span id="bondDays">0</span><span style="font-size:12px; margin-left:2px;">天</span></div>
+          </div>
+          <div style="width:1px; height:30px; background:#dce5f0;"></div>
+          <div style="flex:1;">
+            <div style="font-size:11px; color:#a0aaba; font-weight:600; margin-bottom:6px;">时空回音</div>
+            <div style="font-size:22px; font-weight:900; color:#5c7094; font-family:ui-monospace, monospace;"><span id="bondMsgs">0</span><span style="font-size:12px; margin-left:2px;">条</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="font-size:12px; color:#7a86a8; font-weight:800; margin-bottom:12px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
+        <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        灵魂共振徽章
+      </div>
+      
+      <!-- 成就徽章墙 -->
+      <div id="bondBadgesGrid" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; padding-bottom:30px;"></div>
+    </div>
+  </section>
   
   <!-- 阅读信件的专属弹窗 -->
   <div id="postReadModal" class="modal" style="z-index: 10001;" onclick="this.classList.remove('active')">
@@ -14101,6 +14153,128 @@ window._showOrderHistory = async function() {
       if(p) p.favorite = msg.proj_fav;
       window._renderProjectorWall();
     }
+  };
+  // ================= 🌟 蓝色高定：时光星轨 (羁绊手账核心引擎) =================
+  window._bondCurrentRoleId = null;
+
+  window._initBondJournal = async function() {
+    const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
+    const tabsBox = document.getElementById('bondTabsBox');
+    if(!tabsBox) return;
+
+    if(contacts.length === 0) {
+      tabsBox.innerHTML = '<div style="font-size:12px; color:#a0aaba;">还没有联系人哦，快去添加吧~</div>';
+      return;
+    }
+
+    if(!window._bondCurrentRoleId || !contacts.some(c => c.id === window._bondCurrentRoleId)) {
+      window._bondCurrentRoleId = contacts[0].id;
+    }
+
+    // 渲染顶部切换按钮
+    tabsBox.innerHTML = contacts.map(c => {
+      const isSel = c.id === window._bondCurrentRoleId;
+      const style = isSel 
+        ? 'background:#5c7094; color:#fff; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; box-shadow:0 2px 8px rgba(92,112,148,0.2); transition:all 0.2s; flex-shrink:0;'
+        : 'background:rgba(255,255,255,0.6); color:#7a86a8; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; border:1px solid #dce5f0; transition:all 0.2s; flex-shrink:0;';
+      return `<div onclick="window._switchBondRole('${c.id}')" style="${style}">${safeEsc(c.name)}</div>`;
+    }).join('');
+
+    await window._renderBondData();
+  };
+
+  window._switchBondRole = function(id) {
+    window._bondCurrentRoleId = id;
+    window._initBondJournal(); 
+  };
+
+  window._renderBondData = async function() {
+    const roleId = window._bondCurrentRoleId;
+    if(!roleId) return;
+
+    const c = getContactById(roleId);
+    if(!c) return;
+
+    document.getElementById('bondAvatar').src = c.avatar || 'https://via.placeholder.com/64';
+    document.getElementById('bondName').textContent = c.name;
+
+    const arr = (window.getChatArr ? window.getChatArr(roleId) : []).filter(m => m.text && !m.hiddenForAi);
+    
+    // 1. 计算总消息数
+    const totalMsgs = arr.length;
+    document.getElementById('bondMsgs').textContent = totalMsgs;
+
+    // 2. 计算相识天数与初始日期
+    let days = 0;
+    let startDateStr = '----.--.--';
+    if(arr.length > 0) {
+      const firstMsgTime = arr[0].time;
+      const d = new Date(firstMsgTime);
+      startDateStr = d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
+      
+      const now = new Date().setHours(0,0,0,0);
+      const firstDay = new Date(firstMsgTime).setHours(0,0,0,0);
+      days = Math.floor((now - firstDay) / (1000 * 60 * 60 * 24)) + 1;
+    }
+    document.getElementById('bondStartDate').textContent = startDateStr;
+    document.getElementById('bondDays').textContent = days;
+
+    // 3. 🌟 蓝色高定成就结算引擎！
+    let hasNightMsg = false;
+    let hasPhoto = false;
+
+    arr.forEach(m => {
+      // 检查是否有深夜发言 (0点到凌晨4点)
+      const hour = new Date(m.time).getHours();
+      if(hour >= 0 && hour < 4) hasNightMsg = true;
+      // 检查是否发过照片
+      if(m.text.includes('[img]') || m.text.includes('card-fakeimg')) hasPhoto = true;
+    });
+
+    const badges = [
+      { 
+        id: 'b1', title: '初次邂逅', desc: '星轨交汇的第一句话', 
+        unlocked: totalMsgs > 0, 
+        icon: `<svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>`
+      },
+      { 
+        id: 'b2', title: '百句情长', desc: '时空回音突破 100 条', 
+        unlocked: totalMsgs >= 100, 
+        icon: `<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><line x1="9" y1="10" x2="15" y2="10"></line></svg>`
+      },
+      { 
+        id: 'b3', title: '深夜私语', desc: '在凌晨0点-4点间交流', 
+        unlocked: hasNightMsg, 
+        icon: `<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`
+      },
+      { 
+        id: 'b4', title: '岁月定格', desc: '彼此分享了一张相片', 
+        unlocked: hasPhoto, 
+        icon: `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>`
+      }
+    ];
+
+    document.getElementById('bondBadgesGrid').innerHTML = badges.map(b => {
+      // 绝美的解锁与未解锁状态 UI 分离
+      const bg = b.unlocked ? 'rgba(250,252,255,0.95)' : 'rgba(244,246,251,0.4)';
+      const border = b.unlocked ? '#a5cfff' : '#eef4fa';
+      const iconColor = b.unlocked ? '#5c7094' : '#cdd7e8';
+      const iconBg = b.unlocked ? '#eef4fa' : 'transparent';
+      const titleColor = b.unlocked ? '#3d4a6a' : '#a0aaba';
+      const shadow = b.unlocked ? '0 6px 16px rgba(165,207,255,0.15)' : 'none';
+      const lockIcon = b.unlocked ? '' : `<div style="position:absolute; top:8px; right:8px; color:#cdd7e8;"><svg viewBox="0 0 24 24" style="width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div>`;
+
+      return `
+        <div style="position:relative; background:${bg}; border:1px solid ${border}; border-radius:16px; padding:16px; text-align:center; box-shadow:${shadow}; transition:transform 0.2s;" ${b.unlocked ? `onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'"` : ''}>
+          ${lockIcon}
+          <div style="width:42px; height:42px; margin:0 auto 10px; border-radius:12px; background:${iconBg}; color:${iconColor}; display:grid; place-items:center;">
+            <div style="width:24px; height:24px; stroke:currentColor; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;">${b.icon}</div>
+          </div>
+          <div style="font-size:13px; font-weight:800; color:${titleColor}; margin-bottom:4px; letter-spacing:1px;">${b.title}</div>
+          <div style="font-size:10px; color:#7a86a8; line-height:1.4;">${b.desc}</div>
+        </div>
+      `;
+    }).join('');
   };
 </script>
   <!-- 🌟 蓝色高定：沉浸式专注挽留弹窗 -->
