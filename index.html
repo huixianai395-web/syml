@@ -12997,7 +12997,8 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
 2. 🌟【神仙彩蛋法则】：在这几篇路人帖子中，强烈要求安排 1~2 篇是【关于候选男主们的八卦、吐槽或偶遇】！
    - 如果男主是大明星/公众人物，路人可以是代拍、粉丝、吃瓜群众。
    - 如果男主是普通人/总裁/医生/学生等，路人【必须】是他的前同事、下属、学弟、或者是多嘴的亲戚朋友、只要是不会违反人设的都可以，越好玩越好。
-   - 帖子内容可以是偷拍描述、吐槽、八卦、或者分享关于该男主的日常小事（例如：“今天在公司看到XX总居然在笑…”或“我表哥最近好像谈恋爱了…”）。绝对要符合该男主的身份人设，极具真实的窥探感！
+   - 帖子内容可以是偷拍描述、吐槽、八卦、或者分享关于该男主的日常小事。绝对要符合该男主的身份人设，极具真实的窥探感！
+   - ⚠️⚠️⚠️【防串戏系统级红线】：只要路人帖子里提到了某个男主，【正文必须、一定要包含该男主的完整真名】！！绝对、严禁使用“H姓顶流”、“X总”、“我表哥”、“那个人”等隐晦代称！只要提到了他，就必须写全名！系统依靠全名来精准分发帖子，隐晦代称会导致底层逻辑彻底崩溃！
 3. 其余帖子从以下男主里挑选：\n${maleInfo}\n (警告：必须严格原封不动地使用这里的全名，绝对禁止篡改！)
 4. 绝对禁止同一个名字作为作者出现两次！
 
@@ -13069,13 +13070,23 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
             const strangerPosts = posts.filter(p => p.authorName !== meName && !maleLeads.some(c => c.name === p.authorName));
             const selfPosts = posts.filter(p => p.authorName === senderNpc.name);
             
+            // 🌟 蓝色专属双重防爆盾：掐断一切越界吃瓜和隐晦代称！
+            const safeStrangerPosts = strangerPosts.filter(p => {
+               const text = p.text || '';
+               // 1. 严禁出现其他男主的真名
+               const hasOtherName = maleLeads.some(c => c.name !== senderNpc.name && text.includes(c.name));
+               // 2. 严防死守 AI 用首字母钻空子（如：H姓顶流、某总、某少）
+               const hasSneakyAlias = /[A-Za-z]姓|某总|某少|某明星/.test(text);
+               return !hasOtherName && !hasSneakyAlias;
+            });
+            
             let targetPool = [];
-            if (Math.random() < 0.85 && strangerPosts.length > 0) {
-              targetPool = strangerPosts;
+            if (Math.random() < 0.85 && safeStrangerPosts.length > 0) {
+              targetPool = safeStrangerPosts;
             } else if (selfPosts.length > 0) {
               targetPool = selfPosts;
             } else {
-              targetPool = strangerPosts; 
+              targetPool = safeStrangerPosts; 
             }
             
             if (targetPool.length > 0) {
