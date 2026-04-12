@@ -14114,5 +14114,393 @@ window._showOrderHistory = async function() {
     </div>
   </div>
 </div>
+<!-- ================= 🌟 蓝色高定终极版：时光星轨 & 3D琉璃遗物陈列室 ================= -->
+<style>
+  /* 遗物悬浮与呼吸特效 */
+  @keyframes relicFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+  }
+  @keyframes ssrSweep {
+    0% { background-position: 200% center; }
+    100% { background-position: -200% center; }
+  }
+  .relic-box {
+    background: rgba(250, 252, 255, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid #dce5f0;
+    border-radius: 16px;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(92,112,148,0.04);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: relicFloat 4s ease-in-out infinite;
+  }
+  .relic-box:active { transform: scale(0.92) !important; }
+  
+  /* 不同稀有度的边框与光晕 */
+  .relic-N { border-color: #cdd7e8; box-shadow: inset 0 2px 10px rgba(255,255,255,0.8), 0 6px 16px rgba(165,207,255,0.1); }
+  .relic-SR { border-color: #d1c4e9; box-shadow: inset 0 2px 10px rgba(255,255,255,0.9), 0 6px 20px rgba(155,89,182,0.15); background: linear-gradient(135deg, rgba(250,252,255,0.8), rgba(244,235,255,0.4)); }
+  .relic-SSR { 
+    border: 1px solid transparent;
+    background: linear-gradient(rgba(250,252,255,0.9), rgba(250,252,255,0.9)) padding-box, 
+                linear-gradient(120deg, #a5cfff, #ffd1dc, #d1c4e9, #a5cfff) border-box;
+    background-size: 200% auto;
+    animation: relicFloat 4s ease-in-out infinite, ssrSweep 3s linear infinite;
+    box-shadow: 0 8px 24px rgba(165,207,255,0.3);
+  }
+</style>
+
+<section id="bondJournal" class="screen">
+  <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
+    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px;">‹ 桌面</button>
+    <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">时光星轨</b>
+    <div style="width:56px;"></div>
+  </div>
+  
+  <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px; overflow-y:auto; overflow-x:hidden;">
+    <div id="bondTabsBox" style="display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; margin-bottom:16px; min-height:42px;"></div>
+
+    <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:20px; padding:20px; margin-bottom:16px; box-shadow:0 8px 24px rgba(92,112,148,0.04);">
+      <div style="display:flex; align-items:center; gap:16px; border-bottom:1px dashed #dce5f0; padding-bottom:16px; margin-bottom:16px;">
+        <img id="bondAvatar" src="https://via.placeholder.com/64" style="width:64px; height:64px; border-radius:16px; object-fit:cover; border:2px solid #fff; box-shadow:0 4px 12px rgba(92,112,148,0.1);">
+        <div style="flex:1;">
+          <div id="bondName" style="font-size:18px; font-weight:900; color:#3d4a6a; margin-bottom:4px;">未选择</div>
+          <div style="font-size:11px; color:#7a86a8; letter-spacing:1px;">相识于 <span id="bondStartDate" style="font-family:ui-monospace, monospace; color:#5c7094; font-weight:bold;">----.--.--</span></div>
+        </div>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; text-align:center;">
+        <div style="flex:1;"><div style="font-size:11px; color:#a0aaba; font-weight:600; margin-bottom:6px;">相伴天数</div><div style="font-size:22px; font-weight:900; color:#5c7094; font-family:ui-monospace, monospace;"><span id="bondDays">0</span><span style="font-size:12px; margin-left:2px;">天</span></div></div>
+        <div style="width:1px; height:30px; background:#dce5f0;"></div>
+        <div style="flex:1;"><div style="font-size:11px; color:#a0aaba; font-weight:600; margin-bottom:6px;">时空回音</div><div style="font-size:22px; font-weight:900; color:#5c7094; font-family:ui-monospace, monospace;"><span id="bondMsgs">0</span><span style="font-size:12px; margin-left:2px;">条</span></div></div>
+      </div>
+    </div>
+
+    <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:20px; padding:16px; margin-bottom:16px; box-shadow:0 8px 24px rgba(92,112,148,0.04);">
+      <div style="font-size:11px; color:#7a86a8; font-weight:800; margin-bottom:12px; display:flex; align-items:center; gap:6px; letter-spacing:1px;"><svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:#5c7094; fill:none; stroke-width:2;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>心跳频率矩阵</div>
+      <div id="bondHeatMap" style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; justify-items:center;"></div>
+    </div>
+
+    <!-- 🌟 SSR 抽卡悬浮按钮 -->
+    <div style="background:linear-gradient(135deg, #eef4fa, #dce5f0); border:1px solid #cdd7e8; border-radius:16px; padding:16px; margin-bottom:24px; box-shadow:inset 0 2px 10px rgba(255,255,255,0.6), 0 4px 12px rgba(92,112,148,0.06); display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" onclick="window._generateSSRRelic()">
+      <div>
+        <div style="font-size:14px; font-weight:900; color:#3d4a6a; margin-bottom:4px; letter-spacing:1px;">✨ 凝聚岁月遗物</div>
+        <div style="font-size:10px; color:#5c7094;">抽取近期记忆，化作专属虚拟标本</div>
+      </div>
+      <div style="width:36px; height:36px; border-radius:50%; background:#fff; display:grid; place-items:center; color:#a5cfff; font-size:18px; font-weight:bold; box-shadow:0 2px 6px rgba(92,112,148,0.1);">›</div>
+    </div>
+
+    <!-- 🌟 深海琉璃陈列室 (专属外挂硬盘区) -->
+    <div style="font-size:12px; color:#7a86a8; font-weight:800; margin-bottom:12px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
+      <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+      深海琉璃陈列室
+    </div>
+    <div id="relicShowcaseGrid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; padding-bottom:40px;"></div>
+  </div>
+</section>
+
+<!-- 🌟 极致美学：SSR 级遗物详请弹窗 -->
+<div id="ssrRelicModal" class="modal" style="z-index: 10005;" onclick="this.classList.remove('active')">
+  <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:24px; padding:24px; text-align:center; box-shadow:0 12px 40px rgba(92,112,148,0.2);" onclick="event.stopPropagation()">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <div id="relicRarityTag" style="font-size:10px; color:#fff; font-weight:900; letter-spacing:1px; padding:4px 10px; border-radius:8px; background:#a5cfff; box-shadow:0 2px 8px rgba(165,207,255,0.4);">N 级标本</div>
+      <div style="font-size:10px; color:#7a86a8; font-family:ui-monospace, monospace; font-weight:bold;" id="relicDateTag">2026.04.12</div>
+    </div>
+    
+    <div id="relicIconDisplay" style="font-size:64px; filter:drop-shadow(0 10px 20px rgba(92,112,148,0.15)); margin:20px 0 24px; animation:relicFloat 4s ease-in-out infinite;">🎁</div>
+    
+    <div id="relicNameDisplay" style="font-size:20px; color:#3d4a6a; font-weight:900; margin-bottom:12px; letter-spacing:1px;">未知的遗物</div>
+    
+    <div id="relicDescDisplay" style="font-size:13px; color:#5c7094; line-height:1.7; text-align:justify; background:rgba(238,244,250,0.6); padding:16px; border-radius:12px; border:1px dashed #dce5f0; margin-bottom:16px;">
+      "正在潜入深海，为您打捞记忆的碎片..."
+    </div>
+
+    <div id="relicQuoteBox" style="font-size:11px; color:#a0aaba; font-style:italic; line-height:1.5; text-align:justify; border-left:2px solid #dce5f0; padding-left:10px; display:none;">
+      原话溯源
+    </div>
+    
+    <div id="relicActionArea" style="margin-top:24px;">
+      <!-- 生成时显示保存按钮，查看时显示关闭/删除按钮 -->
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  window._bondCurrentRoleId = null;
+
+  // ================= 1. 星轨大一统引擎 =================
+  window._initBondJournal = async function() {
+    const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
+    const tabsBox = document.getElementById('bondTabsBox');
+    if(!tabsBox) return;
+
+    if(contacts.length === 0) { tabsBox.innerHTML = '<div style="font-size:12px; color:#a0aaba;">还没有联系人哦，快去添加吧~</div>'; return; }
+    if(!window._bondCurrentRoleId || !contacts.some(c => c.id === window._bondCurrentRoleId)) { window._bondCurrentRoleId = contacts[0].id; }
+
+    tabsBox.innerHTML = contacts.map(c => {
+      const isSel = c.id === window._bondCurrentRoleId;
+      const style = isSel 
+        ? 'background:#5c7094; color:#fff; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; box-shadow:0 2px 8px rgba(92,112,148,0.2); transition:all 0.2s; flex-shrink:0;'
+        : 'background:rgba(255,255,255,0.6); color:#7a86a8; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; border:1px solid #dce5f0; transition:all 0.2s; flex-shrink:0;';
+      return `<div onclick="window._switchBondRole('${c.id}')" style="${style}">${safeEsc(c.name)}</div>`;
+    }).join('');
+
+    await window._renderBondData();
+  };
+
+  window._switchBondRole = function(id) { window._bondCurrentRoleId = id; window._initBondJournal(); };
+
+  window._renderBondData = async function() {
+    const roleId = window._bondCurrentRoleId;
+    if(!roleId) return;
+    const c = (window.getContacts ? window.getContacts() : []).find(x => x.id === roleId);
+    if(!c) return;
+
+    const arr = (window.getChatArr ? window.getChatArr(roleId) : []).filter(m => m.text && !m.hiddenForAi);
+    const totalMsgs = arr.length;
+
+    // 头像与天数
+    document.getElementById('bondAvatar').src = c.avatar || 'https://via.placeholder.com/64';
+    document.getElementById('bondName').textContent = c.name;
+    document.getElementById('bondMsgs').textContent = totalMsgs;
+
+    let days = 0; let startDateStr = '----.--.--';
+    if(arr.length > 0) {
+      const firstMsgTime = arr[0].time;
+      const d = new Date(firstMsgTime);
+      startDateStr = d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
+      days = Math.floor((new Date().setHours(0,0,0,0) - new Date(firstMsgTime).setHours(0,0,0,0)) / 86400000) + 1;
+    }
+    document.getElementById('bondStartDate').textContent = startDateStr;
+    document.getElementById('bondDays').textContent = days;
+
+    // 热力图
+    const dayCounts = {};
+    const nowTime = new Date().setHours(0,0,0,0);
+    arr.forEach(m => {
+      const diffDays = Math.floor((nowTime - new Date(m.time).setHours(0,0,0,0)) / 86400000);
+      if(diffDays >= 0 && diffDays < 35) dayCounts[diffDays] = (dayCounts[diffDays] || 0) + 1;
+    });
+    let heatHtml = '';
+    for(let i = 34; i >= 0; i--) {
+      const count = dayCounts[i] || 0;
+      let bg = 'rgba(238,244,250,0.4)', border = '#eef4fa';
+      if(count > 0 && count <= 10) { bg = '#dce5f0'; border = '#cdd7e8'; } 
+      else if(count > 10 && count <= 50) { bg = '#a5cfff'; border = '#8ca8d8'; } 
+      else if(count > 50) { bg = '#5c7094'; border = '#3d4a6a'; } 
+      const anim = (i === 0 && count > 0) ? 'animation: blueBlink 2s infinite;' : '';
+      heatHtml += `<div style="width:100%; aspect-ratio:1; border-radius:4px; background:${bg}; border:1px solid ${border}; ${anim}" title="${count} 条羁绊"></div>`;
+    }
+    document.getElementById('bondHeatMap').innerHTML = heatHtml;
+
+    // 渲染琉璃陈列室
+    await window._renderRelicShowcase(roleId);
+  };
+
+  // ================= 2. 琉璃陈列室独立外挂引擎 =================
+  const K_RELICS = 'mp_fix_time_relics';
+  window._tempGeneratedRelic = null;
+
+  window._renderRelicShowcase = async function(roleId) {
+    const grid = document.getElementById('relicShowcaseGrid');
+    if(!grid) return;
+    
+    let allRelics = {};
+    try { allRelics = await localforage.getItem(K_RELICS) || {}; } catch(e){}
+    const myRelics = allRelics[roleId] || [];
+
+    if(myRelics.length === 0) {
+      grid.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; padding:30px 0; color:#a0aaba; font-size:12px;">陈列室空空如也<br>快去抽取属于你们的岁月遗物吧</div>`;
+      return;
+    }
+
+    grid.innerHTML = myRelics.map(r => {
+      // 动态分配延迟动画，营造深海参差悬浮感
+      const delay = (Math.random() * 2).toFixed(1) + 's';
+      return `
+      <div class="relic-box relic-${r.rarity}" style="animation-delay: ${delay};" onclick="window._viewStoredRelic('${r.id}')">
+        <div style="font-size:32px; filter:drop-shadow(0 4px 8px rgba(92,112,148,0.1)); margin-bottom:8px;">${r.icon}</div>
+        <div style="width:100%; background:rgba(255,255,255,0.7); border:1px solid rgba(220,229,240,0.6); border-radius:6px; padding:4px 2px; text-align:center; box-shadow:0 2px 6px rgba(92,112,148,0.02);">
+          <div style="font-size:10px; font-weight:800; color:#5c7094; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transform:scale(0.9);">${safeEsc(r.name)}</div>
+        </div>
+      </div>
+      `;
+    }).join('');
+  };
+
+  // ================= 3. 抽卡大模型引擎 =================
+  window._generateSSRRelic = async function() {
+    const roleId = window._bondCurrentRoleId;
+    if(!roleId) return alert('宝宝，请先选择一个角色哦！');
+    
+    const contacts = window.getContacts ? window.getContacts() : [];
+    const c = contacts.find(x => x.id === roleId);
+    const arr = (window.getChatArr ? window.getChatArr(roleId) : []).filter(m => m.text && !m.hiddenForAi).slice(-40);
+    
+    if(arr.length < 8) return alert('你们的羁绊还太浅，记忆不足以凝聚成遗物哦！再去聊聊吧~');
+
+    const modal = document.getElementById('ssrRelicModal');
+    document.getElementById('relicRarityTag').style.background = '#a5cfff';
+    document.getElementById('relicRarityTag').textContent = '凝聚中...';
+    document.getElementById('relicDateTag').textContent = '----.--.--';
+    document.getElementById('relicIconDisplay').innerHTML = `<div style="width:36px; height:36px; border:4px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite;"></div>`;
+    document.getElementById('relicNameDisplay').textContent = '探寻记忆深海';
+    document.getElementById('relicDescDisplay').textContent = '"系统正在评估羁绊浓度，准备盲盒开箱..."';
+    document.getElementById('relicQuoteBox').style.display = 'none';
+    document.getElementById('relicActionArea').innerHTML = '';
+    
+    modal.classList.add('active');
+
+    try {
+      const meData = window.getMe ? window.getMe() : { name: '我' };
+      const chatCtx = arr.map(m => `${m.role==='user' ? meData.name : c.name}: ${m.text.replace(/<[^>]*>/g, '')}`).join('\\n');
+      
+      const sysPrompt = `你是一个极具浪漫情怀的“岁月遗物盲盒生成器”。
+请阅读玩家(${meData.name})和角色(${c.name})近期的聊天记录：
+${chatCtx}
+
+【核心任务】：
+1. 根据聊天内容，凭空具象化一件物品（如：半截电影票、融化的海盐糖、揉皱的检讨书）。
+2. 【必须评定稀有度】：
+   - "N"：普通日常或简单对话。
+   - "SR"：有情绪起伏、轻微暧昧、或争吵拉扯。
+   - "SSR"：极度深情的告白、深刻的灵魂共振、或极致的浪漫。
+3. 从聊天记录中摘抄一句最能代表这件物品的【原话】，格式为：“日期 - 说话人: 原话”。
+
+【严格输出JSON格式】：
+{
+  "icon": "一个最符合物品的Emoji",
+  "name": "物品名称(10字内)",
+  "desc": "一段极具画面感的绝美物品描述与内心旁白。80字内。",
+  "rarity": "N 或 SR 或 SSR",
+  "quote": "摘抄的原话（如果实在没有，可以凭空捏造一句符合语境的内心OS）"
+}`;
+
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻开启盲盒抽卡！' }]);
+      const cleaned = out.replace(/```json|```/g, '').trim();
+      const data = JSON.parse(cleaned.match(/\{[\s\S]*\}/)[0]);
+
+      // 暂存准备保存的数据
+      window._tempGeneratedRelic = {
+        id: 'rel_' + Date.now(),
+        roleId: roleId,
+        icon: data.icon || '🎁',
+        name: data.name || '未知的遗物',
+        desc: data.desc || '时空的馈赠',
+        rarity: data.rarity || 'N',
+        quote: data.quote || '岁月无声',
+        time: Date.now()
+      };
+
+      _renderModalUI(window._tempGeneratedRelic, true);
+
+    } catch(e) {
+      document.getElementById('relicIconDisplay').innerHTML = '💔';
+      document.getElementById('relicNameDisplay').textContent = '盲盒开启失败';
+      document.getElementById('relicDescDisplay').textContent = '时空乱流干扰了记忆的提取，请退出去重试一下吧。';
+    }
+  };
+
+  // 🌟 4. 弹窗 UI 渲染与上色引擎
+  function _renderModalUI(rData, isNew) {
+    const iconEl = document.getElementById('relicIconDisplay');
+    const nameEl = document.getElementById('relicNameDisplay');
+    const descEl = document.getElementById('relicDescDisplay');
+    const quoteEl = document.getElementById('relicQuoteBox');
+    const tagEl = document.getElementById('relicRarityTag');
+    const dateEl = document.getElementById('relicDateTag');
+    const actBox = document.getElementById('relicActionArea');
+
+    iconEl.innerHTML = rData.icon;
+    nameEl.textContent = rData.name;
+    descEl.innerHTML = `"${safeEsc(rData.desc)}"`;
+    
+    quoteEl.style.display = 'block';
+    quoteEl.textContent = rData.quote;
+
+    const d = new Date(rData.time);
+    dateEl.textContent = d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
+
+    // 稀有度上色
+    if(rData.rarity === 'SSR') {
+      tagEl.textContent = 'SSR 级 · 灵魂共振';
+      tagEl.style.background = 'linear-gradient(135deg, #a5cfff, #ffd1dc, #d1c4e9)';
+      tagEl.style.boxShadow = '0 4px 12px rgba(209,196,233,0.5)';
+      iconEl.style.filter = 'drop-shadow(0 0 24px rgba(255,209,220,0.8))';
+    } else if(rData.rarity === 'SR') {
+      tagEl.textContent = 'SR 级 · 悸动潮汐';
+      tagEl.style.background = '#d1c4e9';
+      tagEl.style.boxShadow = '0 4px 12px rgba(209,196,233,0.4)';
+      iconEl.style.filter = 'drop-shadow(0 4px 12px rgba(209,196,233,0.5))';
+    } else {
+      tagEl.textContent = 'N 级 · 寻常碎冰';
+      tagEl.style.background = '#a5cfff';
+      tagEl.style.boxShadow = '0 4px 12px rgba(165,207,255,0.4)';
+      iconEl.style.filter = 'drop-shadow(0 4px 12px rgba(165,207,255,0.3))';
+    }
+
+    if(isNew) {
+      actBox.innerHTML = `<button class="btn p" onclick="window._saveRelicToHdd()" style="width:100%; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:12px; padding:12px 0; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.1); letter-spacing:1px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">放入陈列室</button>`;
+    } else {
+      actBox.innerHTML = `
+        <div style="display:flex; gap:12px;">
+          <button class="btn" onclick="document.getElementById('ssrRelicModal').classList.remove('active')" style="flex:1; background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:12px; padding:10px 0; font-weight:bold; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">关上盒子</button>
+          <button class="btn d" onclick="window._deleteStoredRelic('${rData.roleId}', '${rData.id}')" style="flex:1; background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid #f2dcdc; border-radius:12px; padding:10px 0; font-weight:bold; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">销毁遗物</button>
+        </div>
+      `;
+    }
+  };
+
+  // 🌟 5. 绝对纯净：存入专属外挂硬盘，不污染档案馆！
+  window._saveRelicToHdd = async function() {
+    if(!window._tempGeneratedRelic) return;
+    const rData = window._tempGeneratedRelic;
+    
+    let allRelics = {};
+    try { allRelics = await localforage.getItem(K_RELICS) || {}; } catch(e){}
+    if(!allRelics[rData.roleId]) allRelics[rData.roleId] = [];
+    
+    allRelics[rData.roleId].unshift(rData);
+    await localforage.setItem(K_RELICS, allRelics);
+    
+    window._tempGeneratedRelic = null;
+    document.getElementById('ssrRelicModal').classList.remove('active');
+    
+    // 瞬间刷新底部画廊
+    window._renderRelicShowcase(rData.roleId);
+    alert('✨ 遗物已成功锁入深海琉璃陈列室！就在星轨的最下面哦！');
+  };
+
+  window._viewStoredRelic = async function(relicId) {
+    const roleId = window._bondCurrentRoleId;
+    if(!roleId) return;
+    
+    let allRelics = await localforage.getItem(K_RELICS) || {};
+    const myRelics = allRelics[roleId] || [];
+    const target = myRelics.find(x => x.id === relicId);
+    if(target) {
+      _renderModalUI(target, false);
+      document.getElementById('ssrRelicModal').classList.add('active');
+    }
+  };
+
+  window._deleteStoredRelic = async function(roleId, relicId) {
+    if(!confirm('宝宝，确定要彻底打碎这个标本盒吗？')) return;
+    let allRelics = await localforage.getItem(K_RELICS) || {};
+    if(allRelics[roleId]) {
+      allRelics[roleId] = allRelics[roleId].filter(x => x.id !== relicId);
+      await localforage.setItem(K_RELICS, allRelics);
+      document.getElementById('ssrRelicModal').classList.remove('active');
+      window._renderRelicShowcase(roleId);
+    }
+  };
+})();
+</script>  
 </body>
   </html>
