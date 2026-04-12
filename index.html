@@ -13345,7 +13345,7 @@ window._doShopSearch = async function() {
   </div>`;
 
   const sysPrompt = `你是一个逼真的电商数据库。玩家搜索了关键词："${kw}"。
-请生成 4 个非常真实、符合市价的商品。必须返回严格的 JSON 数组：[{"title": "商品完整名称，带有吸引人的电商形容词", "price": "128.50"}]`;
+请生成 4-7 个非常真实、符合市价的商品。必须返回严格的 JSON 数组：[{"title": "商品完整名称，带有吸引人的电商形容词", "price": "128.50"}]`;
 
   try {
     const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻返回这 4 个商品！' }]);
@@ -13878,6 +13878,11 @@ window._showOrderHistory = async function() {
     }
   };
   // ================= 🌟 蓝色高定：回忆放映机核心引擎 (纯净珍藏版) =================
+  // 🌟 蓝色高定防御机制：专属的文本防断裂小剪刀，绝对不会报错！
+  window._projSafeEsc = function(s) {
+    return String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  };
+
   window._projAllData = [];
   window._projCurrentFilter = 'all';
 
@@ -13935,7 +13940,7 @@ window._showOrderHistory = async function() {
            }
         }
 
-        // 📡 雷达 4 号：灵感碎片分享 (card-xhs-share) 🌟 新增！
+        // 📡 雷达 4 号：灵感碎片分享 (card-xhs-share)
         if(msg.text.includes('card-xhs-share')) {
            const xhsMatch = msg.text.match(/<div class="xhs-share-text"[^>]*>([\s\S]*?)<\/div>/i);
            const authorMatch = msg.text.match(/By:\s*([^<]+)<\/div>/i);
@@ -13960,10 +13965,10 @@ window._showOrderHistory = async function() {
     const tabsBox = document.getElementById('projTabsBox');
     if(tabsBox) {
       const names = Array.from(chatNamesSet);
-      let tabsHtml = `<div class="proj-tab" data-filter="all" onclick="window._setProjFilter('all')" style="${_getTabStyle('all')}">全部相片</div>`;
-      tabsHtml += `<div class="proj-tab" data-filter="fav" onclick="window._setProjFilter('fav')" style="${_getTabStyle('fav')}">🌟 拾光珍藏</div>`;
+      let tabsHtml = `<div class="proj-tab" data-filter="all" onclick="window._setProjFilter('all')" style="${window._getTabStyle('all')}">全部相片</div>`;
+      tabsHtml += `<div class="proj-tab" data-filter="fav" onclick="window._setProjFilter('fav')" style="${window._getTabStyle('fav')}">🌟 拾光珍藏</div>`;
       names.forEach(n => {
-        tabsHtml += `<div class="proj-tab" data-filter="${safeEsc(n)}" onclick="window._setProjFilter('${safeEsc(n)}')" style="${_getTabStyle(n)}">${safeEsc(n)}</div>`;
+        tabsHtml += `<div class="proj-tab" data-filter="${window._projSafeEsc(n)}" onclick="window._setProjFilter('${window._projSafeEsc(n)}')" style="${window._getTabStyle(n)}">${window._projSafeEsc(n)}</div>`;
       });
       tabsBox.innerHTML = tabsHtml;
     }
@@ -13971,7 +13976,21 @@ window._showOrderHistory = async function() {
     window._renderProjectorWall();
   };
 
-  // 🌟 渲染瀑布流 (加入灵感碎片的专属排版)
+  window._getTabStyle = function(filter) {
+    const isSel = window._projCurrentFilter === filter;
+    if(isSel) return 'background:#5c7094; color:#fff; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; box-shadow:0 2px 8px rgba(92,112,148,0.2); transition:all 0.2s; flex-shrink:0;';
+    return 'background:transparent; color:#7a86a8; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; transition:all 0.2s; flex-shrink:0;';
+  };
+
+  window._setProjFilter = function(filter) {
+    window._projCurrentFilter = filter;
+    document.querySelectorAll('.proj-tab').forEach(el => {
+      el.style.cssText = window._getTabStyle(el.dataset.filter);
+    });
+    window._renderProjectorWall();
+  };
+
+  // 🌟 渲染瀑布流
   window._renderProjectorWall = function() {
     const wall = document.getElementById('projectorWall');
     if(!wall) return;
@@ -13995,7 +14014,7 @@ window._showOrderHistory = async function() {
     wall.innerHTML = list.map((p, i) => {
       const d = new Date(p.time);
       const dateStr = d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
-      const safeName = safeEsc(p.chatName);
+      const safeName = window._projSafeEsc(p.chatName);
       
       let contentHtml = '';
       let clickAction = '';
@@ -14007,7 +14026,6 @@ window._showOrderHistory = async function() {
         clickAction = `onclick="alert('📝 摄像机定格的瞬间：\\n\\n' + this.dataset.text)" data-text="${p.content.replace(/"/g, '&quot;').replace(/<[^>]*>/g, '')}"`;
       
       } else if (p.type === 'xhs') {
-        // 🌟 蓝色高定：灵感碎片的专属排版，极其高级的半透色
         aspectRatio = '3/4';
         contentHtml = `
           <div style="width:100%; height:100%; background:linear-gradient(135deg, rgba(255,255,255,0.8), rgba(238,244,250,0.6)); display:flex; flex-direction:column; padding:16px; box-sizing:border-box;">
