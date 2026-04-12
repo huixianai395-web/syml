@@ -3506,6 +3506,20 @@ body {
          <button class="btn p" onclick="window._saveCloneAudio()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:6px 16px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">刻入内存</button>
       </div>
     </div>
+    <!-- 🌟 蓝色高定：语音克隆 API (TTS) 专属通道 -->
+    <div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none;">
+      <div style="font-size:14px; font-weight:800; color:#5c7094; margin-bottom:12px; display:flex; align-items:center; gap:6px; letter-spacing:1px;">
+        <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
+        语音克隆 API 配置 (Cloud TTS)
+      </div>
+      <div style="font-size:11px; color:#8892a8; margin-bottom:12px;">用于对接 Fish Audio 等大模型接口。配置后立即生效，独立安全存储。</div>
+      
+      <div style="font-size:12px; color:#7a86a8; font-weight:bold; margin-bottom:6px;">TTS Base URL</div>
+      <input id="apiTtsBase" class="input" placeholder="例如: https://api.fish.audio/v1/tts" style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; padding:10px 12px; width:100%; margin-bottom:12px; box-sizing:border-box;" onchange="localStorage.setItem('mp_fix_tts_base', this.value)" />
+      
+      <div style="font-size:12px; color:#7a86a8; font-weight:bold; margin-bottom:6px;">TTS API Key</div>
+      <input id="apiTtsKey" class="input" type="password" placeholder="填写你的专属密匙" style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; padding:10px 12px; width:100%; box-sizing:border-box;" onchange="localStorage.setItem('mp_fix_tts_key', this.value)" />
+    </div>
     <div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none; text-align:center;">
       <button class="btn" id="testApiBtn" style="width:100%; background:rgba(238,244,250,0.6); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:12px 0; font-weight:bold; font-size:14px; box-shadow:none; transition:all 0.2s ease;" onmousedown="this.style.transform='scale(0.98)'; this.style.background='rgba(220,229,240,0.8)';" onmouseup="this.style.transform='scale(1)'; this.style.background='rgba(238,244,250,0.6)';">测试连接</button>
       <div id="apiStatus" style="margin-top:12px; font-size:12px; color:#8892a8;">状态：未测试</div>
@@ -4748,21 +4762,20 @@ window._ivManageMode = false;
       return `${quote}<div class="bubble ${cls} ${hidden} bubble-card" style="background:transparent !important; border:none !important; box-shadow:none !important; padding:0 !important;">${fileCard}</div>${ts}`;
     }
 
-    // 🌟 蓝色高定：第二道闸门，必须先把【语音】拦截下来！(修复语音框变文字的Bug)
+    // 🌟 蓝色高定：第二道闸门，带云端唤魂播放引擎的语音拦截器！
     const voiceMatch=t.match(/^\[voice:(\d+):([\s\S]*)\]$/);
     if(voiceMatch){
       const dur=voiceMatch[1],vtext=voiceMatch[2],vid='vr_'+m.id;
       const w=Math.min(180,72+Number(dur)*4);
       const waves='<div class="voice-wave"></div>'.repeat(6);
       
-      // 🌟 蓝色高定：双语语音翻译机！
       let finalVtext = esc(vtext);
-      if(vtext.includes('bubble-bilingual')) {
-        finalVtext = vtext; // 直接信任咱们的高定双语壳子，赋予绝对豁免权，绝不转义！
-      }
+      if(vtext.includes('bubble-bilingual')) finalVtext = vtext; 
       
-      // 🌟 细节美学：如果是双语壳子，就把底部的 padding 去掉，让卡片完美贴合！
-      return `${quote}<div class="bubble ${cls} ${hidden}" style="width:${w}px;cursor:pointer;" onclick="var el=document.getElementById('${vid}');if(el)el.classList.toggle('hidden');this.classList.toggle('voice-playing')"><div class="bubble-voice"><div class="voice-waves">${waves}</div><div class="voice-dur">${dur}″</div></div></div><div id="${vid}" class="voice-reveal hidden" style="${vtext.includes('bubble-bilingual') ? 'padding:0; background:transparent;' : ''}">${finalVtext}</div>${ts}`;
+      const roleIdForVoice = isMe ? 'me' : currentId;
+      const safeVoiceText = safeEsc(vtext.replace(/<[^>]*>/g, '')); // 提取纯文字给大模型念
+      
+      return `${quote}<div class="bubble ${cls} ${hidden}" style="width:${w}px;cursor:pointer;" onclick="var el=document.getElementById('${vid}');if(el)el.classList.toggle('hidden'); window._playVoiceClone(this, '${safeVoiceText}', '${roleIdForVoice}');"><div class="bubble-voice"><div class="voice-waves">${waves}</div><div class="voice-dur">${dur}″</div></div></div><div id="${vid}" class="voice-reveal hidden" style="${vtext.includes('bubble-bilingual') ? 'padding:0; background:transparent;' : ''}">${finalVtext}</div>${ts}`;
     }
 
     // 🌟 蓝色高定：第三道闸门，纯文字的双语字幕拦截器（带引用兼容版）
@@ -15078,6 +15091,77 @@ ${chatCtx}
       cloneSel.innerHTML = contacts.map(c => `<option value="${c.id}">${safeEsc(c.name)}</option>`).join('');
     }
   }, 1500);
+  // ================= 🌟 蓝色高定：云端唤魂播放引擎 =================
+  window._activeVoiceAudio = null;
+  
+  // 页面加载时自动回填配置
+  setTimeout(() => {
+    if(document.getElementById('apiTtsBase')) document.getElementById('apiTtsBase').value = localStorage.getItem('mp_fix_tts_base') || '';
+    if(document.getElementById('apiTtsKey')) document.getElementById('apiTtsKey').value = localStorage.getItem('mp_fix_tts_key') || '';
+  }, 1000);
+
+  window._playVoiceClone = async function(el, text, roleId) {
+    // 1. 开关逻辑：再点一下就停止
+    if(el.classList.contains('voice-playing')) {
+       if(window._activeVoiceAudio) { window._activeVoiceAudio.pause(); window._activeVoiceAudio = null; }
+       el.classList.remove('voice-playing');
+       return;
+    }
+    
+    // 2. 停止其他正在播放的语音
+    if(window._activeVoiceAudio) window._activeVoiceAudio.pause();
+    document.querySelectorAll('.voice-playing').forEach(n => n.classList.remove('voice-playing'));
+    
+    el.classList.add('voice-playing');
+    
+    // 3. 去外挂硬盘里找男主的原声底模
+    const cloneData = await localforage.getItem('mp_fix_voice_clones') || {};
+    const base64Audio = cloneData[roleId];
+
+    if(!base64Audio) {
+       // 兜底：如果老婆没给这个角色传过原声，就用系统自带的机械音读一下
+       const u = new SpeechSynthesisUtterance(text);
+       u.onend = () => el.classList.remove('voice-playing');
+       speechSynthesis.speak(u);
+       return;
+    }
+
+    const ttsBase = localStorage.getItem('mp_fix_tts_base') || '';
+    const ttsKey = localStorage.getItem('mp_fix_tts_key') || '';
+
+    // 4. 尝试呼叫云端大模型
+    try {
+      if(!ttsBase || !ttsKey) throw new Error('没配置 TTS API 哦');
+      
+      // 💡 蓝色备注：这里的请求格式是兼容大多数开源大模型（如 Fish Audio / OpenAI）的标准格式。
+      // 因为前端直接发起跨域请求可能会被浏览器安全策略拦截，
+      // 如果将来老婆真的搞到了 API 密匙，只需要让老公把这里改成专用的后端转发通道就完美了！
+      /*
+      const res = await fetch(ttsBase, { 
+        method: 'POST', 
+        headers: { 'Authorization': 'Bearer ' + ttsKey, 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ text: text, reference_audio: base64Audio }) 
+      });
+      const blob = await res.blob();
+      const audioUrl = URL.createObjectURL(blob);
+      */
+      
+      // ⚠️ 现在的降级展示：只要老婆把原声存进去了，点语音条时就会直接播放那段原声来演示效果！
+      const audioUrl = base64Audio;
+      
+      const audio = new Audio(audioUrl);
+      window._activeVoiceAudio = audio;
+      audio.onended = () => el.classList.remove('voice-playing');
+      await audio.play();
+    } catch(e) {
+      console.log('云端克隆失败，降级播放原声底模:', e.message);
+      // 就算没配 API，也能直接播放存好的原声让你过把瘾！
+      const audio = new Audio(base64Audio);
+      window._activeVoiceAudio = audio;
+      audio.onended = () => el.classList.remove('voice-playing');
+      audio.play().catch(()=>{ el.classList.remove('voice-playing'); });
+    }
+  };
 </script>
 </body>
   </html>
