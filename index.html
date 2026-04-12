@@ -2405,7 +2405,7 @@ body {
       </div>
     </div>
   </section>
-<!-- ================= 🌟 蓝色高定：时光星轨 (羁绊手账) ================= -->
+<!-- ================= 🌟 蓝色高定：时光星轨 (全息动态星盘版) ================= -->
   <section id="bondJournal" class="screen">
     <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
       <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px;">‹ 桌面</button>
@@ -2415,40 +2415,50 @@ body {
     
     <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px; overflow-y:auto; overflow-x:hidden;">
       <!-- 顶部男主切换胶囊 -->
-      <div id="bondTabsBox" style="display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; margin-bottom:20px;"></div>
+      <div id="bondTabsBox" style="display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; margin-bottom:16px;"></div>
 
-      <!-- 核心羁绊数据仪表盘 -->
-      <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:20px; padding:20px; margin-bottom:20px; box-shadow:0 8px 24px rgba(92,112,148,0.04);">
-        <div style="display:flex; align-items:center; gap:16px; border-bottom:1px dashed #dce5f0; padding-bottom:16px; margin-bottom:16px;">
-          <img id="bondAvatar" src="https://via.placeholder.com/64" style="width:64px; height:64px; border-radius:16px; object-fit:cover; border:2px solid #fff; box-shadow:0 4px 12px rgba(92,112,148,0.1);">
-          <div style="flex:1;">
-            <div id="bondName" style="font-size:18px; font-weight:900; color:#3d4a6a; margin-bottom:4px;">未选择</div>
-            <div style="font-size:11px; color:#7a86a8; letter-spacing:1px;">相识于 <span id="bondStartDate" style="font-family:ui-monospace, monospace; color:#5c7094; font-weight:bold;">----.--.--</span></div>
-          </div>
+      <!-- 🌟 蓝色高定：羁绊热力图 (深海星象仪) -->
+      <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:20px; padding:16px; margin-bottom:16px; box-shadow:0 8px 24px rgba(92,112,148,0.04);">
+        <div style="font-size:11px; color:#7a86a8; font-weight:800; margin-bottom:12px; display:flex; align-items:center; gap:6px; letter-spacing:1px;">
+          <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:#5c7094; fill:none; stroke-width:2;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          心跳频率矩阵 (近35天)
         </div>
-        
-        <div style="display:flex; justify-content:space-between; align-items:center; text-align:center;">
-          <div style="flex:1;">
-            <div style="font-size:11px; color:#a0aaba; font-weight:600; margin-bottom:6px;">相伴天数</div>
-            <div style="font-size:22px; font-weight:900; color:#5c7094; font-family:ui-monospace, monospace;"><span id="bondDays">0</span><span style="font-size:12px; margin-left:2px;">天</span></div>
-          </div>
-          <div style="width:1px; height:30px; background:#dce5f0;"></div>
-          <div style="flex:1;">
-            <div style="font-size:11px; color:#a0aaba; font-weight:600; margin-bottom:6px;">时空回音</div>
-            <div style="font-size:22px; font-weight:900; color:#5c7094; font-family:ui-monospace, monospace;"><span id="bondMsgs">0</span><span style="font-size:12px; margin-left:2px;">条</span></div>
-          </div>
+        <div id="bondHeatMap" style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; justify-items:center;">
+          <!-- 热力方块由 JS 生成 -->
         </div>
+      </div>
+
+      <!-- 🌟 岁月遗物生成器入口 -->
+      <div style="background:linear-gradient(135deg, #eef4fa, #dce5f0); border:1px solid #cdd7e8; border-radius:16px; padding:16px; margin-bottom:20px; box-shadow:inset 0 2px 10px rgba(255,255,255,0.6), 0 4px 12px rgba(92,112,148,0.06); display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" onclick="window._generateTimeRelic()">
+        <div>
+          <div style="font-size:14px; font-weight:900; color:#3d4a6a; margin-bottom:4px; letter-spacing:1px;">✨ 凝聚岁月遗物</div>
+          <div style="font-size:10px; color:#5c7094;">抽取近期记忆，化作一件专属虚拟纪念品</div>
+        </div>
+        <div style="width:36px; height:36px; border-radius:50%; background:#fff; display:grid; place-items:center; color:#a5cfff; font-size:18px; font-weight:bold; box-shadow:0 2px 6px rgba(92,112,148,0.1);">›</div>
       </div>
 
       <div style="font-size:12px; color:#7a86a8; font-weight:800; margin-bottom:12px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
         <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-        灵魂共振徽章
+        高阶灵魂悬念徽章
       </div>
       
-      <!-- 成就徽章墙 -->
-      <div id="bondBadgesGrid" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; padding-bottom:30px;"></div>
+      <!-- 动态成就悬念墙 -->
+      <div id="bondBadgesGrid" style="display:flex; flex-direction:column; gap:12px; padding-bottom:30px;"></div>
     </div>
   </section>
+
+  <!-- 🌟 岁月遗物展示弹窗 -->
+  <div id="relicModal" class="modal" style="z-index: 10005;" onclick="this.classList.remove('active')">
+    <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:24px; padding:24px; text-align:center; box-shadow:0 12px 40px rgba(92,112,148,0.2);" onclick="event.stopPropagation()">
+      <div style="font-size:10px; color:#a5cfff; font-weight:800; letter-spacing:2px; margin-bottom:16px; font-family:ui-monospace, monospace;">TIME RELIC</div>
+      <div id="relicIcon" style="width:80px; height:80px; margin:0 auto 16px; border-radius:20px; background:linear-gradient(135deg, #eef4fa, #dce5f0); border:2px solid #fff; box-shadow:0 8px 24px rgba(92,112,148,0.15); display:grid; place-items:center; font-size:36px;">🎁</div>
+      <div id="relicName" style="font-size:18px; color:#3d4a6a; font-weight:900; margin-bottom:12px; letter-spacing:1px;">未知的遗物</div>
+      <div id="relicDesc" style="font-size:13px; color:#5c7094; line-height:1.6; text-align:justify; font-style:italic; background:rgba(238,244,250,0.6); padding:16px; border-radius:12px; border:1px dashed #dce5f0;">
+        "正在潜入深海，为您打捞记忆的碎片..."
+      </div>
+      <button class="btn" onclick="document.getElementById('relicModal').classList.remove('active')" style="width:100%; margin-top:20px; background:#fff; color:#7a86a8; border:1px solid #dce5f0; border-radius:12px; padding:10px 0; font-weight:bold;">妥善收藏</button>
+    </div>
+  </div>
   
   <!-- 阅读信件的专属弹窗 -->
   <div id="postReadModal" class="modal" style="z-index: 10001;" onclick="this.classList.remove('active')">
@@ -14157,6 +14167,9 @@ window._showOrderHistory = async function() {
  // ================= 🌟 蓝色高定：时光星轨 (羁绊手账核心引擎 - 终极抢救版) =================
   window._bondCurrentRoleId = null;
 
+  // ================= 🌟 蓝色高定：时光星轨 (全息动态引擎版) =================
+  window._bondCurrentRoleId = null;
+
   window._initBondJournal = async function() {
     const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
     const tabsBox = document.getElementById('bondTabsBox');
@@ -14171,14 +14184,11 @@ window._showOrderHistory = async function() {
       window._bondCurrentRoleId = contacts[0].id;
     }
 
-    // 渲染顶部切换按钮
     tabsBox.innerHTML = contacts.map(c => {
       const isSel = c.id === window._bondCurrentRoleId;
       const style = isSel 
         ? 'background:#5c7094; color:#fff; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; box-shadow:0 2px 8px rgba(92,112,148,0.2); transition:all 0.2s; flex-shrink:0;'
         : 'background:rgba(255,255,255,0.6); color:#7a86a8; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; border:1px solid #dce5f0; transition:all 0.2s; flex-shrink:0;';
-      
-      // 🛡️ 绝对防断裂小剪刀
       const safeName = String(c.name || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
       return `<div onclick="window._switchBondRole('${c.id}')" style="${style}">${safeName}</div>`;
     }).join('');
@@ -14195,72 +14205,153 @@ window._showOrderHistory = async function() {
     const roleId = window._bondCurrentRoleId;
     if(!roleId) return;
 
-    // 🌟 核心修复：绕开系统结界，直接用全局通行证获取角色数据！
     const contacts = window.getContacts ? window.getContacts() : [];
     const c = contacts.find(x => x.id === roleId);
     if(!c) return;
 
-    document.getElementById('bondAvatar').src = c.avatar || 'https://via.placeholder.com/64';
-    document.getElementById('bondName').textContent = c.name;
-
     const arr = (window.getChatArr ? window.getChatArr(roleId) : []).filter(m => m.text && !m.hiddenForAi);
-    
-    // 1. 计算总消息数
     const totalMsgs = arr.length;
-    document.getElementById('bondMsgs').textContent = totalMsgs;
 
-    // 2. 计算相识天数与初始日期
-    let days = 0;
-    let startDateStr = '----.--.--';
-    if(arr.length > 0) {
-      const firstMsgTime = arr[0].time;
-      const d = new Date(firstMsgTime);
-      startDateStr = d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
+    // 🌟 1. 深海热力图算法 (提取最近 35 天)
+    const heatMapBox = document.getElementById('bondHeatMap');
+    if(heatMapBox) {
+      const dayCounts = {};
+      const now = new Date();
+      now.setHours(0,0,0,0);
       
-      const now = new Date().setHours(0,0,0,0);
-      const firstDay = new Date(firstMsgTime).setHours(0,0,0,0);
-      days = Math.floor((now - firstDay) / (1000 * 60 * 60 * 24)) + 1;
+      // 统计每天的消息量
+      arr.forEach(m => {
+        const d = new Date(m.time);
+        d.setHours(0,0,0,0);
+        const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+        if(diffDays >= 0 && diffDays < 35) {
+          dayCounts[diffDays] = (dayCounts[diffDays] || 0) + 1;
+        }
+      });
+
+      let heatHtml = '';
+      // 倒序生成 35 个方块 (从 34 天前到今天)
+      for(let i = 34; i >= 0; i--) {
+        const count = dayCounts[i] || 0;
+        let bg = 'rgba(238,244,250,0.4)'; // 极淡底色 (0条)
+        let border = '#eef4fa';
+        if(count > 0 && count <= 10) { bg = '#dce5f0'; border = '#cdd7e8'; } // 浅蓝
+        else if(count > 10 && count <= 50) { bg = '#a5cfff'; border = '#8ca8d8'; } // 中蓝
+        else if(count > 50) { bg = '#5c7094'; border = '#3d4a6a'; } // 极夜深蓝
+
+        // 给最后一天（今天）加个呼吸跳动特效
+        const anim = (i === 0 && count > 0) ? 'animation: blueBlink 2s infinite;' : '';
+        heatHtml += `<div style="width:100%; aspect-ratio:1; border-radius:4px; background:${bg}; border:1px solid ${border}; ${anim}" title="${count} 条羁绊"></div>`;
+      }
+      heatMapBox.innerHTML = heatHtml;
     }
-    document.getElementById('bondStartDate').textContent = startDateStr;
-    document.getElementById('bondDays').textContent = days;
 
-    // 3. 🌟 蓝色高定成就结算引擎！
-    let hasNightMsg = false;
-    let hasPhoto = false;
+    // 🌟 2. 心电感应 (Telepathy) 扫描算法！
+    let telepathyCount = 0;
+    for(let i = 1; i < arr.length; i++) {
+      const m1 = arr[i-1];
+      const m2 = arr[i];
+      // 如果一前一后分别是玩家和AI，并且时间戳误差小于 60 秒 (60000ms)，判定为极其罕见的“心电感应”！
+      if(m1.role !== m2.role && Math.abs(m2.time - m1.time) <= 60000) {
+        telepathyCount++;
+      }
+    }
 
-    arr.forEach(m => {
-      const hour = new Date(m.time).getHours();
-      if(hour >= 0 && hour < 4) hasNightMsg = true;
-      if(m.text.includes('[img]') || m.text.includes('card-fakeimg')) hasPhoto = true;
-    });
+    // 🌟 3. 悬念进度条系统
+    let favCount = 0;
+    arr.forEach(m => { if(m.favorite) favCount++; });
 
     const badges = [
-      { id: 'b1', title: '初次邂逅', desc: '星轨交汇的第一句话', unlocked: totalMsgs > 0, icon: `<svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>` },
-      { id: 'b2', title: '百句情长', desc: '时空回音突破 100 条', unlocked: totalMsgs >= 100, icon: `<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><line x1="9" y1="10" x2="15" y2="10"></line></svg>` },
-      { id: 'b3', title: '深夜私语', desc: '在凌晨0点-4点间交流', unlocked: hasNightMsg, icon: `<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>` },
-      { id: 'b4', title: '岁月定格', desc: '彼此分享了一张相片', unlocked: hasPhoto, icon: `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>` }
+      { id: 'b1', title: '三千次心跳', desc: '时空回音累积 3000 条', current: totalMsgs, max: 3000, icon: '💬' },
+      { id: 'b2', title: '心电感应', desc: '在 60 秒内与 TA 默契同时发信 (极难)', current: telepathyCount, max: 1, icon: '✨' },
+      { id: 'b3', title: '秘密花园', desc: '在放映机为 TA 收藏 10 张照片/心声', current: favCount, max: 10, icon: '🌟' }
     ];
 
     document.getElementById('bondBadgesGrid').innerHTML = badges.map(b => {
-      const bg = b.unlocked ? 'rgba(250,252,255,0.95)' : 'rgba(244,246,251,0.4)';
-      const border = b.unlocked ? '#a5cfff' : '#eef4fa';
-      const iconColor = b.unlocked ? '#5c7094' : '#cdd7e8';
-      const iconBg = b.unlocked ? '#eef4fa' : 'transparent';
-      const titleColor = b.unlocked ? '#3d4a6a' : '#a0aaba';
-      const shadow = b.unlocked ? '0 6px 16px rgba(165,207,255,0.15)' : 'none';
-      const lockIcon = b.unlocked ? '' : `<div style="position:absolute; top:8px; right:8px; color:#cdd7e8;"><svg viewBox="0 0 24 24" style="width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div>`;
+      const isUn = b.current >= b.max;
+      const pct = Math.min(100, Math.floor((b.current / b.max) * 100));
+      
+      const bg = isUn ? 'linear-gradient(135deg, rgba(250,252,255,0.95), rgba(238,244,250,0.8))' : 'rgba(244,246,251,0.5)';
+      const border = isUn ? '#a5cfff' : '#eef4fa';
+      const shadow = isUn ? '0 8px 24px rgba(165,207,255,0.2)' : 'none';
+      const titleColor = isUn ? '#3d4a6a' : '#7a86a8';
+      const iconBg = isUn ? '#fff' : 'transparent';
+      
+      // 进度条渲染
+      const barHtml = `
+        <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
+          <div style="flex:1; height:6px; background:rgba(92,112,148,0.1); border-radius:3px; overflow:hidden;">
+            <div style="height:100%; width:${pct}%; background:${isUn ? '#5c7094' : '#a5cfff'}; border-radius:3px; transition:width 0.5s ease;"></div>
+          </div>
+          <div style="font-size:10px; color:#5c7094; font-family:ui-monospace, monospace; font-weight:bold;">${b.current}/${b.max}</div>
+        </div>
+      `;
 
       return `
-        <div style="position:relative; background:${bg}; border:1px solid ${border}; border-radius:16px; padding:16px; text-align:center; box-shadow:${shadow}; transition:transform 0.2s;" ${b.unlocked ? `onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'"` : ''}>
-          ${lockIcon}
-          <div style="width:42px; height:42px; margin:0 auto 10px; border-radius:12px; background:${iconBg}; color:${iconColor}; display:grid; place-items:center;">
-            <div style="width:24px; height:24px; stroke:currentColor; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;">${b.icon}</div>
+        <div style="background:${bg}; border:1px solid ${border}; border-radius:16px; padding:16px; box-shadow:${shadow}; transition:transform 0.2s; display:flex; align-items:center; gap:16px;" ${isUn ? `onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'"` : ''}>
+          <div style="width:48px; height:48px; border-radius:14px; background:${iconBg}; display:grid; place-items:center; font-size:20px; border:1px solid ${border}; flex-shrink:0;">
+            ${isUn ? b.icon : `<span style="opacity:0.3; filter:grayscale(100%);">${b.icon}</span>`}
           </div>
-          <div style="font-size:13px; font-weight:800; color:${titleColor}; margin-bottom:4px; letter-spacing:1px;">${b.title}</div>
-          <div style="font-size:10px; color:#7a86a8; line-height:1.4;">${b.desc}</div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:14px; font-weight:900; color:${titleColor}; margin-bottom:4px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
+              ${b.title} ${isUn ? '<span style="color:#a5cfff; font-size:12px;">已点亮</span>' : ''}
+            </div>
+            <div style="font-size:11px; color:#7a86a8;">${b.desc}</div>
+            ${barHtml}
+          </div>
         </div>
       `;
     }).join('');
+  };
+
+  // 🌟 4. 大模型驱动：岁月遗物生成器！
+  window._generateTimeRelic = async function() {
+    const roleId = window._bondCurrentRoleId;
+    if(!roleId) return alert('宝宝，请先选择一个角色哦！');
+    
+    const contacts = window.getContacts ? window.getContacts() : [];
+    const c = contacts.find(x => x.id === roleId);
+    
+    const arr = (window.getChatArr ? window.getChatArr(roleId) : []).filter(m => m.text && !m.hiddenForAi).slice(-50);
+    if(arr.length < 10) return alert('你们的羁绊还太浅，记忆不足以凝聚成遗物哦！再去聊聊吧~');
+
+    const modal = document.getElementById('relicModal');
+    const rIcon = document.getElementById('relicIcon');
+    const rName = document.getElementById('relicName');
+    const rDesc = document.getElementById('relicDesc');
+
+    modal.classList.add('active');
+    rIcon.innerHTML = `<div style="width:36px; height:36px; border:4px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite;"></div>`;
+    rName.textContent = '凝聚中...';
+    rDesc.textContent = '"正在潜入记忆深海，为您打捞潜意识的碎片..."';
+
+    try {
+      const meData = window.getMe ? window.getMe() : { name: '我' };
+      const chatCtx = arr.map(m => `${m.role==='user' ? meData.name : c.name}: ${m.text.replace(/<[^>]*>/g, '')}`).join('\\n');
+      
+      const sysPrompt = `你是一个拥有极高文学素养的浪漫物品生成器。
+请阅读以下玩家(${meData.name})和角色(${c.name})最近的聊天记录：
+${chatCtx}
+【任务】：根据他们最近互动的氛围、提到的事物或争吵/甜蜜的细节，凭空“具象化”一件带有他们专属记忆的【虚拟物品】（比如：半截电影票、洇湿的纸条、一颗海盐糖等）。
+【输出严格JSON格式】：
+{
+  "icon": "一个最符合该物品的Emoji",
+  "name": "物品名称（如：揉皱的检讨书）",
+  "desc": "一段极具画面感、略带感伤或极度宠溺的物品描述与内心旁白。字数80字以内。"
+}`;
+
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻凝聚岁月遗物！' }]);
+      const cleaned = out.replace(/```json|```/g, '').trim();
+      const data = JSON.parse(cleaned.match(/\{[\s\S]*\}/)[0]);
+
+      rIcon.innerHTML = data.icon || '🎁';
+      rName.textContent = data.name || '未知的遗物';
+      rDesc.innerHTML = `"${window._projSafeEsc(data.desc)}"`;
+    } catch(e) {
+      rIcon.innerHTML = '💔';
+      rName.textContent = '凝聚失败';
+      rDesc.textContent = '时空乱流干扰了记忆的提取...请稍后再试。';
+    }
   };
 </script>
   <!-- 🌟 蓝色高定：沉浸式专注挽留弹窗 -->
