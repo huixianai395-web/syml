@@ -13056,12 +13056,19 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
       await setXhsPosts(posts);
 
       if (Math.random() < 0.4 && posts.length > 0) {
-        const npcPosts = posts.filter(p => p.authorName !== meName && maleLeads.some(c => norm(c.name) === norm(p.authorName)));
-        if (npcPosts.length > 0) {
-          const randomPost = npcPosts[Math.floor(Math.random() * npcPosts.length)];
-          const senderNpc = maleLeads.find(c => norm(c.name) === norm(randomPost.authorName));
+        // 1. 扩大雷达范围：只要不是老婆你发的帖子，野生路人的帖子男主也可以转发！
+        const shareablePosts = posts.filter(p => p.authorName !== meName);
+        if (shareablePosts.length > 0 && maleLeads.length > 0) {
+          
+          // 2. 随机挑一个有趣的碎片
+          const randomPost = shareablePosts[Math.floor(Math.random() * shareablePosts.length)];
+          // 3. 随机抓取一个在线的男主来当“分享狂魔”
+          const senderNpc = maleLeads[Math.floor(Math.random() * maleLeads.length)];
+          
           if (senderNpc && typeof window.getChatArr === 'function') {
             let cleanText = (randomPost.text||'').replace(/\[img\](.*?)\[\/img\]/gi, '').trim();
+            
+            // 🌟 沿用我们的初雪海盐蓝高级毛玻璃卡片，绝不花里胡哨
             const cardHtml = `
               <div class="card-xhs-share" style="background:rgba(250,252,255,0.85); border:1px solid #dce5f0; border-radius:12px; padding:12px; width:220px; box-shadow:0 4px 12px rgba(92,112,148,0.04); cursor:pointer; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" onclick="const t=this.querySelector('.xhs-share-text'); if(t.style.display==='block'){t.style.display='-webkit-box'; this.querySelector('.xhs-expand-hint').textContent='点击展开 ▾';}else{t.style.display='block'; this.querySelector('.xhs-expand-hint').textContent='收起 ▴';} event.stopPropagation();">
                 <div style="font-size:10px; color:#a5cfff; font-weight:800; margin-bottom:6px; display:flex; align-items:center; gap:4px;">
@@ -13072,10 +13079,16 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
                 <div style="font-size:10px; color:#7a86a8; margin-top:8px; border-top:1px dashed #dce5f0; padding-top:6px;">By: ${safeEsc(randomPost.authorName)}</div>
               </div>
             `;
+            
+            // 🌟 核心魔法：只塞入纯净的卡片，剥离所有生硬的文案前缀，并写入外挂内存！
             const arr = window.getChatArr(senderNpc.id) || [];
-            arr.push({ id: 'm_' + Date.now(), role: 'assistant', text: `给你看个好玩的：\n${cardHtml}`, time: Date.now(), stored: true });
+            arr.push({ id: 'm_' + Date.now(), role: 'user', text: cardHtml, time: Date.now(), stored: true });
             window.setChatArr(senderNpc.id, arr);
             if(typeof window.updateContactPreview === 'function') window.updateContactPreview(senderNpc.id);
+            
+            // 🌟 灵魂注入：发送静默指令，让 AI 根据人设自然反应！
+            const hiddenPrompt = `【系统指令】：你在刷小红书时看到了这篇笔记（作者：${randomPost.authorName}，内容：“${cleanText}”），你觉得很有意思，于是把它转发给了玩家。请完全根据你的人设，自然地对这篇笔记发表一句看法、吐槽、或者是借机搭讪。字数在20字以内。绝对不要带名字前缀！直接输出对话内容即可。`;
+            if(typeof window._sendToAI === 'function') window._sendToAI(senderNpc.id, hiddenPrompt, true);
           }
         }
       }
