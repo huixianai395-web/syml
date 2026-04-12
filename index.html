@@ -2405,7 +2405,8 @@ body {
       </div>
     </div>
   </section>
-<!-- ================= 🌟 蓝色高定：时光星轨 (全息动态星盘版) ================= -->
+
+  <!-- ================= 🌟 蓝色高定：时光星轨 (全息动态星盘版) ================= -->
   <section id="bondJournal" class="screen">
     <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
       <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px;">‹ 桌面</button>
@@ -2416,6 +2417,29 @@ body {
     <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px; overflow-y:auto; overflow-x:hidden;">
       <!-- 顶部男主切换胶囊 -->
       <div id="bondTabsBox" style="display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; margin-bottom:16px;"></div>
+
+      <!-- 🌟 修复：找回丢失的头像与天数仪表盘！ -->
+      <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:20px; padding:20px; margin-bottom:16px; box-shadow:0 8px 24px rgba(92,112,148,0.04);">
+        <div style="display:flex; align-items:center; gap:16px; border-bottom:1px dashed #dce5f0; padding-bottom:16px; margin-bottom:16px;">
+          <img id="bondAvatar" src="https://via.placeholder.com/64" style="width:64px; height:64px; border-radius:16px; object-fit:cover; border:2px solid #fff; box-shadow:0 4px 12px rgba(92,112,148,0.1);">
+          <div style="flex:1;">
+            <div id="bondName" style="font-size:18px; font-weight:900; color:#3d4a6a; margin-bottom:4px;">未选择</div>
+            <div style="font-size:11px; color:#7a86a8; letter-spacing:1px;">相识于 <span id="bondStartDate" style="font-family:ui-monospace, monospace; color:#5c7094; font-weight:bold;">----.--.--</span></div>
+          </div>
+        </div>
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; text-align:center;">
+          <div style="flex:1;">
+            <div style="font-size:11px; color:#a0aaba; font-weight:600; margin-bottom:6px;">相伴天数</div>
+            <div style="font-size:22px; font-weight:900; color:#5c7094; font-family:ui-monospace, monospace;"><span id="bondDays">0</span><span style="font-size:12px; margin-left:2px;">天</span></div>
+          </div>
+          <div style="width:1px; height:30px; background:#dce5f0;"></div>
+          <div style="flex:1;">
+            <div style="font-size:11px; color:#a0aaba; font-weight:600; margin-bottom:6px;">时空回音</div>
+            <div style="font-size:22px; font-weight:900; color:#5c7094; font-family:ui-monospace, monospace;"><span id="bondMsgs">0</span><span style="font-size:12px; margin-left:2px;">条</span></div>
+          </div>
+        </div>
+      </div>
 
       <!-- 🌟 蓝色高定：羁绊热力图 (深海星象仪) -->
       <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:20px; padding:16px; margin-bottom:16px; box-shadow:0 8px 24px rgba(92,112,148,0.04);">
@@ -2447,7 +2471,7 @@ body {
     </div>
   </section>
 
-  <!-- 🌟 岁月遗物展示弹窗 -->
+  <!-- 🌟 岁月遗物展示弹窗 (修复了收藏逻辑) -->
   <div id="relicModal" class="modal" style="z-index: 10005;" onclick="this.classList.remove('active')">
     <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:24px; padding:24px; text-align:center; box-shadow:0 12px 40px rgba(92,112,148,0.2);" onclick="event.stopPropagation()">
       <div style="font-size:10px; color:#a5cfff; font-weight:800; letter-spacing:2px; margin-bottom:16px; font-family:ui-monospace, monospace;">TIME RELIC</div>
@@ -2456,10 +2480,9 @@ body {
       <div id="relicDesc" style="font-size:13px; color:#5c7094; line-height:1.6; text-align:justify; font-style:italic; background:rgba(238,244,250,0.6); padding:16px; border-radius:12px; border:1px dashed #dce5f0;">
         "正在潜入深海，为您打捞记忆的碎片..."
       </div>
-      <button class="btn" onclick="document.getElementById('relicModal').classList.remove('active')" style="width:100%; margin-top:20px; background:#fff; color:#7a86a8; border:1px solid #dce5f0; border-radius:12px; padding:10px 0; font-weight:bold;">妥善收藏</button>
+      <button class="btn p" onclick="window._saveRelicToArchive()" style="width:100%; margin-top:20px; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:12px; padding:12px 0; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.1); letter-spacing:1px;">妥善安放到档案馆</button>
     </div>
   </div>
-  
   <!-- 阅读信件的专属弹窗 -->
   <div id="postReadModal" class="modal" style="z-index: 10001;" onclick="this.classList.remove('active')">
     <div class="modal-card" style="width:90%; max-width:380px; max-height:85dvh; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:20px; padding:0; display:flex; flex-direction:column; overflow:hidden;" onclick="event.stopPropagation()">
@@ -9563,7 +9586,7 @@ window.renderNotesList = function(){
 
   // 绑定入口按钮：开启档案馆
   document.getElementById('openMemoryArchiveBtn').onclick = () => {
-    if(!currentId) return alert('老婆，请先进入一个男主的聊天设置，再打开TA的专属档案馆哦！');
+    if(!currentId) return alert('宝宝，请先进入一个男主的聊天设置，再打开TA的专属档案馆哦！');
     window._renderMemoryCards();
     document.getElementById('memoryArchiveModal').classList.add('active');
   };
@@ -14352,6 +14375,36 @@ ${chatCtx}
       rName.textContent = '凝聚失败';
       rDesc.textContent = '时空乱流干扰了记忆的提取...请稍后再试。';
     }
+  };
+  // 🌟 将遗物真正封存进时光档案馆的专属引擎
+  window._saveRelicToArchive = async function() {
+    const roleId = window._bondCurrentRoleId;
+    if(!roleId) return;
+    
+    // 抓取刚刚生成的虚拟纪念品数据
+    const rIcon = document.getElementById('relicIcon').innerText || '🎁';
+    const rName = document.getElementById('relicName').innerText || '未知遗物';
+    const rDesc = document.getElementById('relicDesc').innerText || '无描述';
+
+    // 呼叫外挂内存！把物品塞进 TA 的时光档案馆！
+    const allMems = (await localforage.getItem('mp_fix_chat_memories')) || {};
+    if(!allMems[roleId]) allMems[roleId] = [];
+    
+    const d = new Date();
+    const shortDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+
+    allMems[roleId].unshift({
+      id: 'mem_' + Date.now(),
+      date: shortDate,
+      title: '🎁 岁月遗物：' + rName,
+      content: `【专属数字纪念品】\n物品形态：${rIcon}\n物品描述：${rDesc}`,
+      injectEnabled: true // 自动变成 AI 记忆的一部分
+    });
+    
+    await localforage.setItem('mp_fix_chat_memories', allMems);
+    
+    document.getElementById('relicModal').classList.remove('active');
+    alert('✨ 遗物已妥善安放！快去【聊天设置 -> 时光档案馆】里查看这件新生成的专属纪念品吧！TA 也把这件事记在心里啦！');
   };
 </script>
   <!-- 🌟 蓝色高定：沉浸式专注挽留弹窗 -->
