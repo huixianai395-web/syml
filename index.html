@@ -14406,7 +14406,7 @@ window._showOrderHistory = async function() {
     document.getElementById('bondStartDate').textContent = startDateStr;
     document.getElementById('bondDays').textContent = days;
 
-    // 🌟 新增：羁绊阶级与特权算法引擎
+    // 羁绊阶级与特权算法引擎
     const score = totalMsgs + (days * 5); 
     let level = 1; let levelName = '初雪微融'; let pct = 0; let priv = '基础档案权限解锁';
     if(score < 100) { 
@@ -14434,7 +14434,7 @@ window._showOrderHistory = async function() {
       if(bar) bar.style.width = `${Math.min(100, Math.max(2, pct))}%`; 
     }, 100);
 
-    // 岁月回响 (随机抽取回忆)
+    // 岁月回响
     const quoteBox = document.getElementById('bondRandomQuote');
     const quoteDate = document.getElementById('bondRandomDate');
     if(quoteBox && quoteDate) {
@@ -14456,10 +14456,13 @@ window._showOrderHistory = async function() {
       }
     }
 
-    // 热力图与情感雷达计算
+    // 热力图与情感深度雷达核心运算
     const dayCounts = {};
     const nowTime = new Date().setHours(0,0,0,0);
     let nightCount = 0; let maxStreak = 0; let currentStreak = 0;
+    
+    // 🌟 新增：作息相切带统计变量
+    let tMorn=0, tAft=0, tEve=0, tNight=0;
 
     arr.forEach((m, idx) => {
       const d = new Date(m.time);
@@ -14468,6 +14471,12 @@ window._showOrderHistory = async function() {
       
       const hr = d.getHours();
       if(hr >= 0 && hr <= 4) nightCount++; 
+      
+      // 🌟 核心时间切片逻辑
+      if(hr >= 6 && hr < 12) tMorn++;
+      else if(hr >= 12 && hr < 18) tAft++;
+      else if(hr >= 18 && hr <= 23) tEve++;
+      else tNight++;
 
       if(idx > 0 && (m.time - arr[idx-1].time) < 300000) {
         currentStreak++;
@@ -14477,7 +14486,6 @@ window._showOrderHistory = async function() {
       }
     });
 
-    // 🌟 核心升级：带有精准日期追踪的互动矩阵
     let heatHtml = '';
     for(let i = 34; i >= 0; i--) {
       const count = dayCounts[i] || 0;
@@ -14487,29 +14495,62 @@ window._showOrderHistory = async function() {
       else if(count > 50) { bg = '#5c7094'; border = '#3d4a6a'; } 
       const anim = (i === 0 && count > 0) ? 'animation: blueBlink 2s infinite;' : '';
       
-      // 🌟 精准算出这个方块代表现实中的哪一天！
       const targetDate = new Date(nowTime - i * 86400000);
       const dateStr = targetDate.getFullYear() + '.' + String(targetDate.getMonth()+1).padStart(2,'0') + '.' + String(targetDate.getDate()).padStart(2,'0');
-
       heatHtml += `<div onclick="window._showHeatDetail('${dateStr}', ${count}, this)" style="width:100%; aspect-ratio:1; border-radius:4px; background:${bg}; border:1px solid ${border}; ${anim} cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'"></div>`;
     }
     document.getElementById('bondHeatMap').innerHTML = heatHtml;
 
-    // 情感雷达
-    const isNightOwl = nightCount > (totalMsgs * 0.2); 
+    // 🌟 终极大招：多维灵魂解析矩阵！
     const radarBox = document.getElementById('bondRadarBox');
+    
+    // 1. 计算作息带百分比
+    const totT = tMorn + tAft + tEve + tNight || 1;
+    const pMorn = ((tMorn/totT)*100).toFixed(1);
+    const pAft = ((tAft/totT)*100).toFixed(1);
+    const pEve = ((tEve/totT)*100).toFixed(1);
+    const pNight = ((tNight/totT)*100).toFixed(1);
+
+    // 2. 计算专属羁绊色谱
+    const hashHue = (totalMsgs * 17 + days * 11) % 360;
+    const bondColor = `hsl(${hashHue}, 45%, 82%)`;
+    let colorName = '暮光蔷薇';
+    if(hashHue < 40) colorName = '落霞柔粉';
+    else if(hashHue < 100) colorName = '初芽浅绿';
+    else if(hashHue < 170) colorName = '薄荷微光';
+    else if(hashHue < 230) colorName = '初雪海盐';
+    else if(hashHue < 300) colorName = '鸢尾浅紫';
+
     let radarHtml = `
       <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:rgba(255,255,255,0.6); border-radius:12px; border:1px solid #dce5f0;">
         <div style="font-size:13px; color:#3d4a6a; font-weight:bold; display:flex; align-items:center; gap:6px;">⚡ 最高连击波动</div>
         <div style="font-size:14px; color:#5c7094; font-family:ui-monospace, monospace; font-weight:900;">${maxStreak} 次</div>
       </div>
+      
+      <!-- ✨ 专属羁绊色谱 -->
       <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:rgba(255,255,255,0.6); border-radius:12px; border:1px solid #dce5f0;">
-        <div style="font-size:13px; color:#3d4a6a; font-weight:bold; display:flex; align-items:center; gap:6px;">🌙 深夜灵魂低语</div>
-        <div style="font-size:12px; color:${isNightOwl ? '#a5cfff' : '#a0aaba'}; font-weight:bold;">${isNightOwl ? '已点亮' : '未解锁'}</div>
+        <div style="font-size:13px; color:#3d4a6a; font-weight:bold; display:flex; align-items:center; gap:6px;">🎨 专属羁绊色谱</div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <div style="font-size:11px; color:#7a86a8; font-weight:bold;">${colorName}</div>
+          <div style="width:20px; height:20px; border-radius:6px; background:${bondColor}; border:1px solid rgba(255,255,255,0.9); box-shadow:0 2px 6px rgba(92,112,148,0.15);"></div>
+        </div>
       </div>
-      <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:rgba(255,255,255,0.6); border-radius:12px; border:1px solid #dce5f0;">
-        <div style="font-size:13px; color:#3d4a6a; font-weight:bold; display:flex; align-items:center; gap:6px;">🔥 极度沸腾羁绊</div>
-        <div style="font-size:12px; color:${(dayCounts[0]||0) > 50 ? '#e74c3c' : '#a0aaba'}; font-weight:bold;">${(dayCounts[0]||0) > 50 ? '今日达成' : '未达成'}</div>
+
+      <!-- ✨ 灵魂作息相切带 -->
+      <div style="padding:12px; background:rgba(255,255,255,0.6); border-radius:12px; border:1px solid #dce5f0;">
+        <div style="font-size:12px; color:#5c7094; font-weight:800; margin-bottom:10px; display:flex; justify-content:space-between;">
+          <span>⏳ 灵魂作息分布</span>
+          <span style="font-size:10px; color:#a0aaba;">频率分析</span>
+        </div>
+        <div style="display:flex; height:12px; border-radius:6px; overflow:hidden; box-shadow:inset 0 1px 3px rgba(92,112,148,0.1);">
+          <div style="width:${pMorn}%; background:#e8f0e4;" title="晨光: ${pMorn}%"></div>
+          <div style="width:${pAft}%; background:#fdfaf3;" title="午后: ${pAft}%"></div>
+          <div style="width:${pEve}%; background:#eef4fa;" title="暮色: ${pEve}%"></div>
+          <div style="width:${pNight}%; background:#d1c4e9;" title="沉夜: ${pNight}%"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:9px; color:#7a86a8; margin-top:6px; font-weight:bold; opacity:0.8;">
+          <span>晨光</span><span>午后</span><span>暮色</span><span>沉夜</span>
+        </div>
       </div>
     `;
     if(radarBox) radarBox.innerHTML = radarHtml;
