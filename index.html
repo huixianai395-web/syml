@@ -12990,31 +12990,36 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
       const meData = window.getMe ? window.getMe() : { name: '我' };
       const meName = meData.name || '我';
       
-      const sysPrompt = `你是小红书环境大一统生成引擎。\n当前时间：${getSysTimeStr()}。\n任务：一次性生成 7~10 篇高质量日常动态。\n
-【强制人员铁律 - 绝对不可违背】：
-1. 必须包含【至少 3 篇】来自完全虚构的【野生路人网友】。
-2. 其余帖子从以下男主里挑选：\n${maleInfo}\n (警告：必须严格原封不动地使用这里的全名，绝对禁止篡改！也不许把中国男主改成英文名！)
-3. 绝对禁止同一个名字出现两次！
+      // 🌟 蓝色高定：加入了“亲友路人视角”的终极神仙彩蛋引擎！
+      const sysPrompt = `你是小红书环境大一统生成引擎。\n当前时间：${getSysTimeStr()}。\n任务：一次性生成 8~12 篇高质量日常动态。\n
+【强制人员与彩蛋铁律 - 绝对不可违背】：
+1. 必须包含【至少 4~6 篇】来自完全虚构的【野生路人、亲戚朋友、同事等网友】。
+2. 🌟【神仙彩蛋法则】：在这几篇路人帖子中，强烈要求安排 1~2 篇是【关于候选男主们的八卦、吐槽或偶遇】！
+   - 如果男主是大明星/公众人物，路人可以是代拍、粉丝、吃瓜群众。
+   - 如果男主是普通人/总裁/医生/学生等，路人【必须】是他的前同事、下属、暗恋他的学妹、或者是多嘴的亲戚朋友！
+   - 帖子内容可以是偷拍描述、吐槽、八卦、或者分享关于该男主的日常小事（例如：“今天在公司看到XX总居然在笑…”或“我表哥最近好像谈恋爱了…”）。绝对要符合该男主的身份人设，极具真实的窥探感！
+3. 其余帖子从以下男主里挑选：\n${maleInfo}\n (警告：必须严格原封不动地使用这里的全名，绝对禁止篡改！)
+4. 绝对禁止同一个名字作为作者出现两次！
 
-【内容与点赞铁律】：
-1. 小红书特有的极度真实的日常碎碎念、吐槽、感悟。自带 1~6个相关的 #话题标签。
+【内容大爆发与活人感铁律 - 极其重要】：
+1. 【题材必须包罗万象】：彻底打破刻板印象！角色除了符合人设，必须自由延伸发任何不OOC的动态！例如：赛博发疯、沉迷打游戏翻车、深夜emo小作文、分享冷知识、做饭炸厨房、迷信星座、离谱梦境、吃瓜吐槽等！路人网友的帖子更是要五花八门、极度奇葩、真实搞笑，展现最鲜活的互联网人类多样性！
 2. 绝对禁止在正文中包含任何图片URL！(程序会自动使用角色的头像作为封面)。
 3. 每篇必须生成【点赞数】(likeCount)和【评论区】(comments，每篇至少生成 10 到 18 条极其热闹的评论)。
-4. 【星光点赞分层】：如果发布者是明星/偶像/顶流/影帝/有名气的人设等…，他的帖子的 likeCount 必须填 50000 到 1200000 之间！且他底下的热门神评 likeCount 必须在 100000 到 1200000 之间！如果是普通人，帖子点赞在 5000 到 50000 之间，评论点赞在 500 到 17000 之间。
+4. 【星光点赞分层】：如果发布者是明星/名人，帖子点赞必须在 50000 到 1200000 之间！如果是普通人或普通路人，帖子点赞在 50 到 50000 之间。
 5. 【网感大一统】：虚构的路人网友必须起网感昵称，所有评论者的 ip 必须是真实的国内外IP，绝对禁止填"未知"。
-6. 【防代充法则】：绝对、严禁、无论如何都不允许在评论区生成玩家（${meName}）或名为“user”、“我”、“玩家”的评论！谁敢代替玩家发言就直接判定为重大违规！
+6. 【防代充法则】：绝对、严禁在评论区生成玩家（${meName}）或名为“user”、“我”、“玩家”的评论！
 
 【严格返回纯 JSON 数组，格式】：
 [
   { 
-    "authorName": "唯一全名", 
+    "authorName": "唯一全名(或路人网名)", 
     "text": "正文内容 #标签1", 
-    "likeCount": 128000, 
-    "comments": [ { "name": "评论者", "ip": "广东", "text": "小红书风味评论", "likeCount": 1588 } ] 
+    "likeCount": 12800, 
+    "comments": [ { "name": "评论者", "ip": "广东", "text": "小红书风味神评", "likeCount": 1588 } ] 
   }
 ]`;
       
-      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻生成神仙碎片及评论区！名字绝对不能重复！必须写明国内真实的IP省份！绝对禁止代替玩家发言！注意星光点赞量法则！' }]);
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻生成8-12篇神仙碎片及评论区！务必触发男主的亲友路人视角彩蛋！题材包罗万象脑洞大开！注意星光点赞量法则！' }]);
       const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
       const dataArr = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
       const posts = await getXhsPosts();
@@ -13055,31 +13060,29 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
 
       await setXhsPosts(posts);
 
-      if (Math.random() < 0.4 && posts.length > 0) {
+      // 🌟 蓝色高定：维持 75% 的极高触发率！
+      if (Math.random() < 0.75 && posts.length > 0) {
         if (maleLeads.length > 0) {
-          // 1. 🌟 核心反转：先抓取一个在线的男主，再为他量身定制帖子池！
           const senderNpc = maleLeads[Math.floor(Math.random() * maleLeads.length)];
           
           if (senderNpc && typeof window.getChatArr === 'function') {
-            // 2. 🌟 绝对物理隔离：分离路人帖和自己的帖，严禁混入其他男主！
             const strangerPosts = posts.filter(p => p.authorName !== meName && !maleLeads.some(c => c.name === p.authorName));
             const selfPosts = posts.filter(p => p.authorName === senderNpc.name);
             
-            // 3. 🌟 概率控制：85% 概率刷到路人奇葩帖，15% 概率自恋发自己的
             let targetPool = [];
             if (Math.random() < 0.85 && strangerPosts.length > 0) {
               targetPool = strangerPosts;
             } else if (selfPosts.length > 0) {
               targetPool = selfPosts;
             } else {
-              targetPool = strangerPosts; // 兜底
+              targetPool = strangerPosts; 
             }
             
             if (targetPool.length > 0) {
               const randomPost = targetPool[Math.floor(Math.random() * targetPool.length)];
               let cleanText = (randomPost.text||'').replace(/\[img\](.*?)\[\/img\]/gi, '').trim();
               
-              // 🌟 纯净初雪海盐蓝毛玻璃卡片（拒绝花里胡哨）
+              // 🌟 纯净初雪海盐蓝毛玻璃卡片，使用极简线性SVG
               const cardHtml = `
                 <div class="card-xhs-share" style="background:rgba(250,252,255,0.85); border:1px solid #dce5f0; border-radius:12px; padding:12px; width:220px; box-shadow:0 4px 12px rgba(92,112,148,0.04); cursor:pointer; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" onclick="const t=this.querySelector('.xhs-share-text'); if(t.style.display==='block'){t.style.display='-webkit-box'; this.querySelector('.xhs-expand-hint').textContent='点击展开 ▾';}else{t.style.display='block'; this.querySelector('.xhs-expand-hint').textContent='收起 ▴';} event.stopPropagation();">
                   <div style="font-size:10px; color:#a5cfff; font-weight:800; margin-bottom:6px; display:flex; align-items:center; gap:4px;">
@@ -13091,18 +13094,16 @@ ${isPlayer ? `玩家(${meData.name})发了一篇笔记：“${post.text}”。\n
                 </div>
               `;
               
-              // 4. 🌟 写入外挂内存（身份绝对锁定为 assistant，修复左侧显示 Bug！）
               const arr = window.getChatArr(senderNpc.id) || [];
               arr.push({ id: 'm_' + Date.now(), role: 'assistant', text: cardHtml, time: Date.now(), stored: true });
               window.setChatArr(senderNpc.id, arr);
               if(typeof window.updateContactPreview === 'function') window.updateContactPreview(senderNpc.id);
               
-              // 5. 🌟 灵魂注入：动态判断他是转发了自己的还是路人的，发送不同的脑电波！
               let hiddenPrompt = '';
               if (randomPost.authorName === senderNpc.name) {
                  hiddenPrompt = `【系统指令】：你刚刚把你自己发的一篇日常碎片（内容：“${cleanText}”）转发给了玩家。请根据你的人设自然地开口跟她搭话（比如求夸奖、傲娇分享等）。字数在20字以内。绝对不要带名字前缀！直接输出对话内容即可。`;
               } else {
-                 hiddenPrompt = `【系统指令】：你在刷小红书时看到了路人网友（作者：${randomPost.authorName}）的这篇笔记（内容：“${cleanText}”），觉得很有意思，于是主动转发给了玩家。请完全根据你的人设，自然地发表一句看法、吐槽或借机搭讪。字数在20字以内。绝对不要带名字前缀！直接输出对话内容即可。`;
+                 hiddenPrompt = `【系统指令】：你在刷小红书时看到了路人网友（作者：${randomPost.authorName}）的这篇笔记（内容：“${cleanText}”），觉得很有意思，或者是看到了离谱的东西（甚至可能是跟你自己或者身边人有关的八卦），于是主动转发给了玩家。请完全根据你的人设，自然地发表一句看法、吐槽或借机搭讪。字数在20字以内。绝对不要带名字前缀！直接输出对话内容即可。`;
               }
               
               if(typeof window._sendToAI === 'function') window._sendToAI(senderNpc.id, hiddenPrompt, true);
