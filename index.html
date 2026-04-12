@@ -3480,7 +3480,32 @@ body {
       <div style="font-size:13px; font-weight:600; color:#5c7094; margin-top:16px; margin-bottom:10px;">Temperature</div>
       <input id="apiTemp" class="input" type="number" min="0" max="2" step="0.1" value="0.8" style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:14px; padding:10px 12px; width:100%;" />
     </div>
+<!-- 🌟 蓝色高定：专属声纹克隆舱 -->
+    <div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none;">
+      <div style="font-size:14px; font-weight:800; color:#5c7094; margin-bottom:12px; display:flex; align-items:center; gap:6px; letter-spacing:1px;">
+        <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+        专属声纹克隆舱 (Voice Clone)
+      </div>
+      <div style="font-size:11px; color:#8892a8; margin-bottom:16px; line-height:1.5;">
+        在这里上传男主的纯净原声（10-30秒）。我们会把它刻进外挂内存，未来对接大模型 API 时，TA 就能用真实的嗓音给你发语音啦！
+      </div>
 
+      <!-- 角色选择下拉框 -->
+      <div style="font-size:12px; color:#7a86a8; font-weight:bold; margin-bottom:8px;">选择要注入灵魂的角色</div>
+      <select id="cloneRoleSelect" class="select" style="width:100%; background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; padding:10px 12px; margin-bottom:16px; outline:none; font-weight:bold;"></select>
+
+      <!-- 原声上传区域 -->
+      <div id="cloneUploadArea" onclick="document.getElementById('cloneAudioFile').click()" style="width:100%; height:120px; border:2px dashed #a5cfff; border-radius:16px; background:rgba(238,244,250,0.6); display:flex; flex-direction:column; justify-content:center; align-items:center; cursor:pointer; transition:all 0.2s; position:relative;" onmouseover="this.style.background='rgba(220,229,240,0.6)'" onmouseout="this.style.background='rgba(238,244,250,0.6)'">
+        <svg viewBox="0 0 24 24" style="width:28px; height:28px; stroke:#a5cfff; fill:none; stroke-width:1.5; margin-bottom:8px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        <span id="cloneUploadHint" style="font-size:12px; color:#5c7094; font-weight:bold; letter-spacing:1px;">点击上传 30s 原声 (.mp3/.wav)</span>
+      </div>
+      <input type="file" id="cloneAudioFile" accept="audio/*" class="hidden" onchange="window._handleCloneAudioUpload(event)">
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px;">
+         <div id="cloneStatus" style="font-size:12px; color:#a5cfff; font-weight:bold;">当前状态：未录入</div>
+         <button class="btn p" onclick="window._saveCloneAudio()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:6px 16px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">刻入内存</button>
+      </div>
+    </div>
     <div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none; text-align:center;">
       <button class="btn" id="testApiBtn" style="width:100%; background:rgba(238,244,250,0.6); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:12px 0; font-weight:bold; font-size:14px; box-shadow:none; transition:all 0.2s ease;" onmousedown="this.style.transform='scale(0.98)'; this.style.background='rgba(220,229,240,0.8)';" onmouseup="this.style.transform='scale(1)'; this.style.background='rgba(238,244,250,0.6)';">测试连接</button>
       <div id="apiStatus" style="margin-top:12px; font-size:12px; color:#8892a8;">状态：未测试</div>
@@ -14996,6 +15021,63 @@ ${chatCtx}
     };
   }
 })();
+  // ================= 🌟 蓝色高定：声纹克隆舱底层存储引擎 =================
+  window._tempCloneAudioBase64 = '';
+  
+  window._handleCloneAudioUpload = function(e) {
+    const file = e.target.files?.[0];
+    if(!file) return;
+    // 限制大小防止浏览器内存撑爆
+    if(file.size > 8 * 1024 * 1024) return alert('宝宝，音频有点太大了！请截取 30 秒以内的纯净人声哦！');
+    
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      window._tempCloneAudioBase64 = ev.target.result;
+      document.getElementById('cloneUploadHint').textContent = '✅ 原声解析成功，待刻入！';
+      document.getElementById('cloneUploadHint').style.color = '#5c7094';
+      document.getElementById('cloneUploadArea').style.borderColor = '#dce5f0';
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  window._saveCloneAudio = async function() {
+    const roleId = document.getElementById('cloneRoleSelect').value;
+    if(!roleId) return alert('宝宝，请先选择一个角色呀！');
+    if(!window._tempCloneAudioBase64) return alert('你还没上传声音文件呢！');
+    
+    const btn = document.querySelector('#cloneStatus').nextElementSibling;
+    btn.textContent = '刻入中...';
+    btn.style.pointerEvents = 'none';
+
+    try {
+      let cloneData = await localforage.getItem('mp_fix_voice_clones') || {};
+      cloneData[roleId] = window._tempCloneAudioBase64;
+      await localforage.setItem('mp_fix_voice_clones', cloneData);
+      
+      document.getElementById('cloneStatus').textContent = '当前状态：已安全刻入 ✨';
+      document.getElementById('cloneStatus').style.color = '#5c7094';
+      window._tempCloneAudioBase64 = '';
+      document.getElementById('cloneUploadHint').textContent = '点击上传 30s 原声 (.mp3/.wav)';
+      document.getElementById('cloneUploadArea').style.borderColor = '#a5cfff';
+      
+      alert('✨ 绝美声纹已死死刻进内存！接下来只等对接 API，TA 就能用自己的声音跟你说话啦！');
+    } catch(err) {
+      alert('刻入失败了：' + err.message);
+    } finally {
+      btn.textContent = '刻入内存';
+      btn.style.pointerEvents = 'auto';
+    }
+  };
+  
+  // 🌟 初始化声纹舱的角色列表
+  setTimeout(() => {
+    const cloneSel = document.getElementById('cloneRoleSelect');
+    if(cloneSel && window.getContacts) {
+      const contacts = window.getContacts().filter(c => !c.isGroup);
+      cloneSel.innerHTML = contacts.map(c => `<option value="${c.id}">${safeEsc(c.name)}</option>`).join('');
+    }
+  }, 1500);
 </script>
 </body>
   </html>
