@@ -14660,16 +14660,16 @@ ${chatCtx}
   };
 })();
 </script>
-  <!-- ================= 🌟 蓝色最高封印：物理净化与大一统引擎 ================= -->
+  <!-- ================= 🌟 蓝色最高封印：物理净化与无重名大一统引擎 ================= -->
 <script>
 (function() {
-  // 🔪 1. 启动物理净化阵法：无情碾碎所有残影克隆体！
-  const isJournalActive = document.querySelector('#bondJournal.active') !== null;
-  document.querySelectorAll('#bondJournal').forEach(el => el.remove());
-  document.querySelectorAll('#relicModal').forEach(el => el.remove());
-  document.querySelectorAll('#memoryArchiveModal').forEach(el => el.remove());
+  // 🔪 1. 启动全域物理净化阵法：使用强制属性扫描，无视浏览器偷懒，彻底碾碎所有残影！
+  const isJournalActive = document.querySelector('[id="bondJournal"].active') !== null;
+  document.querySelectorAll('[id="bondJournal"]').forEach(el => el.remove());
+  document.querySelectorAll('[id="relicModal"]').forEach(el => el.remove());
+  document.querySelectorAll('[id="memoryArchiveModal"]').forEach(el => el.remove());
 
-  // ✨ 2. 重铸初雪海盐蓝的高定【时光星轨】
+  // ✨ 2. 重铸初雪海盐蓝的高定【时光星轨】(所有 ID 全部加上 unique 前缀，绝对防劫持！)
   const bondJournalHtml = `
   <section id="bondJournal" class="screen">
     <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
@@ -14677,32 +14677,38 @@ ${chatCtx}
       <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">时光星轨</b>
       <button class="btn" onclick="window._openArchiveFromJournal()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px; box-shadow:0 2px 8px rgba(92,112,148,0.05); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">档案馆</button>
     </div>
+    
     <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px; overflow-y:auto; overflow-x:hidden;">
-      <div id="bondTabsBox" style="display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; margin-bottom:16px;"></div>
+      <!-- 🌟 这里就是被幽灵抢走的胶囊导航，这次它叫 uniqueStarTrackTabs，绝不重名！ -->
+      <div id="uniqueStarTrackTabs" style="display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; margin-bottom:16px;"></div>
+      
       <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:20px; padding:20px; margin-bottom:16px; box-shadow:0 8px 24px rgba(92,112,148,0.04);">
         <div style="display:flex; align-items:center; gap:16px; border-bottom:1px dashed #dce5f0; padding-bottom:16px; margin-bottom:16px;">
-          <img id="bondAvatar" src="https://via.placeholder.com/64" style="width:64px; height:64px; border-radius:16px; object-fit:cover; border:2px solid #fff; box-shadow:0 4px 12px rgba(92,112,148,0.1);">
+          <img id="uniqueStarTrackAvatar" src="https://via.placeholder.com/64" style="width:64px; height:64px; border-radius:16px; object-fit:cover; border:2px solid #fff; box-shadow:0 4px 12px rgba(92,112,148,0.1);">
           <div style="flex:1;">
-            <div id="bondName" style="font-size:18px; font-weight:900; color:#3d4a6a; margin-bottom:4px;">未选择</div>
-            <div style="font-size:11px; color:#7a86a8; letter-spacing:1px;">相识于 <span id="bondStartDate" style="font-family:ui-monospace, monospace; color:#5c7094; font-weight:bold;">----.--.--</span></div>
+            <div id="uniqueStarTrackName" style="font-size:18px; font-weight:900; color:#3d4a6a; margin-bottom:4px;">未选择</div>
+            <div style="font-size:11px; color:#7a86a8; letter-spacing:1px;">相识于 <span id="uniqueStarTrackDate" style="font-family:ui-monospace, monospace; color:#5c7094; font-weight:bold;">----.--.--</span></div>
           </div>
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center; text-align:center;">
-          <div style="flex:1;"><div style="font-size:11px; color:#a0aaba; font-weight:600; margin-bottom:6px;">相伴天数</div><div style="font-size:22px; font-weight:900; color:#5c7094; font-family:ui-monospace, monospace;"><span id="bondDays">0</span><span style="font-size:12px; margin-left:2px;">天</span></div></div>
+          <div style="flex:1;"><div style="font-size:11px; color:#a0aaba; font-weight:600; margin-bottom:6px;">相伴天数</div><div style="font-size:22px; font-weight:900; color:#5c7094; font-family:ui-monospace, monospace;"><span id="uniqueStarTrackDays">0</span><span style="font-size:12px; margin-left:2px;">天</span></div></div>
           <div style="width:1px; height:30px; background:#dce5f0;"></div>
-          <div style="flex:1;"><div style="font-size:11px; color:#a0aaba; font-weight:600; margin-bottom:6px;">时空回音</div><div style="font-size:22px; font-weight:900; color:#5c7094; font-family:ui-monospace, monospace;"><span id="bondMsgs">0</span><span style="font-size:12px; margin-left:2px;">条</span></div></div>
+          <div style="flex:1;"><div style="font-size:11px; color:#a0aaba; font-weight:600; margin-bottom:6px;">时空回音</div><div style="font-size:22px; font-weight:900; color:#5c7094; font-family:ui-monospace, monospace;"><span id="uniqueStarTrackMsgs">0</span><span style="font-size:12px; margin-left:2px;">条</span></div></div>
         </div>
       </div>
+      
       <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:20px; padding:16px; margin-bottom:16px; box-shadow:0 8px 24px rgba(92,112,148,0.04);">
         <div style="font-size:11px; color:#7a86a8; font-weight:800; margin-bottom:12px; display:flex; align-items:center; gap:6px; letter-spacing:1px;"><svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:#5c7094; fill:none; stroke-width:2;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>心跳频率矩阵 (近35天)</div>
-        <div id="bondHeatMap" style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; justify-items:center;"></div>
+        <div id="uniqueStarTrackHeatMap" style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; justify-items:center;"></div>
       </div>
+      
       <div style="background:linear-gradient(135deg, #eef4fa, #dce5f0); border:1px solid #cdd7e8; border-radius:16px; padding:16px; margin-bottom:20px; box-shadow:inset 0 2px 10px rgba(255,255,255,0.6), 0 4px 12px rgba(92,112,148,0.06); display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" onclick="window._generateTimeRelic()">
         <div><div style="font-size:14px; font-weight:900; color:#3d4a6a; margin-bottom:4px; letter-spacing:1px;">✨ 凝聚岁月遗物</div><div style="font-size:10px; color:#5c7094;">抽取近期记忆，化作专属虚拟纪念品</div></div>
         <div style="width:36px; height:36px; border-radius:50%; background:#fff; display:grid; place-items:center; color:#a5cfff; font-size:18px; font-weight:bold; box-shadow:0 2px 6px rgba(92,112,148,0.1);">›</div>
       </div>
+      
       <div style="font-size:12px; color:#7a86a8; font-weight:800; margin-bottom:12px; letter-spacing:1px; display:flex; align-items:center; gap:6px;"><svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>高阶灵魂悬念徽章</div>
-      <div id="bondBadgesGrid" style="display:flex; flex-direction:column; gap:12px; padding-bottom:30px;"></div>
+      <div id="uniqueStarTrackBadges" style="display:flex; flex-direction:column; gap:12px; padding-bottom:30px;"></div>
     </div>
   </section>
   `;
@@ -14730,7 +14736,8 @@ ${chatCtx}
         <button class="btn" onclick="document.getElementById('memoryArchiveModal').classList.remove('active')" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:32px; height:32px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">×</button>
       </div>
       <div style="background:rgba(250,252,255,0.95); border-bottom:1px solid #dce5f0; padding:12px 16px;">
-        <div id="archiveTabsBox" style="display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;"></div>
+        <!-- 档案馆的胶囊用的也是全新的专属 ID -->
+        <div id="uniqueArchiveTabsBox" style="display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;"></div>
       </div>
       <div style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:14px; background:linear-gradient(180deg, #f4f6fb, #edf2ff);">
         <button class="btn p" onclick="window._addNewMemoryCard()" style="width:100%; background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; border-radius:14px; padding:14px; font-size:15px; font-weight:bold; box-shadow:none; font-family:'STZhongsong', 'KaiTi', serif; letter-spacing:2px; display:flex; align-items:center; justify-content:center; gap:4px;">
@@ -14743,13 +14750,13 @@ ${chatCtx}
   `;
   document.body.insertAdjacentHTML('beforeend', modalsHtml);
 
-  // 👑 4. 重置底层引擎指针，夺取最高控制权
+  // 👑 4. 重置底层引擎指针，挂接全新的绝对防御管道！
   window._bondCurrentRoleId = null;
   const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 
   window._initBondJournal = async function() {
     const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
-    const tabsBox = document.getElementById('bondTabsBox');
+    const tabsBox = document.getElementById('uniqueStarTrackTabs'); // <--- 关键防弹装甲
     if(!tabsBox) return;
 
     if(contacts.length === 0) { tabsBox.innerHTML = '<div style="font-size:12px; color:#a0aaba;">还没有联系人哦，快去添加吧~</div>'; return; }
@@ -14779,11 +14786,12 @@ ${chatCtx}
     const arr = (window.getChatArr ? window.getChatArr(roleId) : []).filter(m => m.text && !m.hiddenForAi);
     const totalMsgs = arr.length;
 
-    const avatarEl = document.getElementById('bondAvatar');
-    const nameEl = document.getElementById('bondName');
-    const msgsEl = document.getElementById('bondMsgs');
-    const daysEl = document.getElementById('bondDays');
-    const startDateEl = document.getElementById('bondStartDate');
+    // 连接新的防伪基站
+    const avatarEl = document.getElementById('uniqueStarTrackAvatar');
+    const nameEl = document.getElementById('uniqueStarTrackName');
+    const msgsEl = document.getElementById('uniqueStarTrackMsgs');
+    const daysEl = document.getElementById('uniqueStarTrackDays');
+    const startDateEl = document.getElementById('uniqueStarTrackDate');
 
     if(avatarEl) avatarEl.src = c.avatar || 'https://via.placeholder.com/64';
     if(nameEl) nameEl.textContent = c.name;
@@ -14801,7 +14809,7 @@ ${chatCtx}
     if(startDateEl) startDateEl.textContent = startDateStr;
     if(daysEl) daysEl.textContent = days;
 
-    const heatMapBox = document.getElementById('bondHeatMap');
+    const heatMapBox = document.getElementById('uniqueStarTrackHeatMap');
     if(heatMapBox) {
       const dayCounts = {};
       const now = new Date(); now.setHours(0,0,0,0);
@@ -14836,7 +14844,7 @@ ${chatCtx}
       { id: 'b3', title: '秘密花园', desc: '为 TA 收藏 10 张照片/心声', current: favCount, max: 10, icon: '🌟' }
     ];
 
-    const badgesGrid = document.getElementById('bondBadgesGrid');
+    const badgesGrid = document.getElementById('uniqueStarTrackBadges');
     if(badgesGrid) {
       badgesGrid.innerHTML = badges.map(b => {
         const isUn = b.current >= b.max;
@@ -14891,7 +14899,7 @@ ${chatCtx}
     rIcon.innerHTML = `<div style="width:36px; height:36px; border:4px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite;"></div>`;
     rName.textContent = '凝聚中...';
     rDesc.textContent = '"正在潜入记忆深海，为您打捞潜意识的碎片..."';
-    sBtn.style.display = 'none'; // 锁死！没生成完绝对不许点！
+    sBtn.style.display = 'none'; 
 
     try {
       const meData = window.getMe ? window.getMe() : { name: '我' };
@@ -14915,7 +14923,7 @@ ${chatCtx}
       rIcon.innerHTML = data.icon || '🎁';
       rName.textContent = data.name || '未知的遗物';
       rDesc.innerHTML = `"${safeEsc(data.desc)}"`;
-      sBtn.style.display = 'block'; // 解锁！生成完毕，允许保存！
+      sBtn.style.display = 'block'; 
     } catch(e) {
       rIcon.innerHTML = '💔';
       rName.textContent = '凝聚失败';
@@ -14963,7 +14971,7 @@ ${chatCtx}
     }
     
     const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
-    const tabsBox = document.getElementById('archiveTabsBox');
+    const tabsBox = document.getElementById('uniqueArchiveTabsBox'); // <--- 档案馆专用防伪基站
     if(tabsBox) {
        tabsBox.innerHTML = contacts.map(c => {
           const isSel = c.id === window.currentId;
@@ -15010,12 +15018,13 @@ ${chatCtx}
     }).join('');
   };
 
-  // 🚀 如果此时用户恰好卡在时光星轨页面，瞬间执行刷新命令！
+  // 🚀 防抖检查，确保瞬间刷新！
   if(isJournalActive) {
      document.getElementById('bondJournal').classList.add('active');
      window._initBondJournal();
   }
 })();
 </script>
+  
 </body>
   </html>
