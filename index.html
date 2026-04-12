@@ -15025,6 +15025,164 @@ ${chatCtx}
   }
 })();
 </script>
-  
+  <!-- ================= 🌟 蓝色创世神级：暴力重绘引擎 (专治一切不显示) ================= -->
+<script>
+(function() {
+  // 👑 重新接管全局指挥权，抛弃一切花里胡哨的 DOM 查找！
+  window._bondCurrentRoleId = null;
+  const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+
+  window._initBondJournal = async function() {
+    if(!window._bondCurrentRoleId) {
+       const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
+       if(contacts.length > 0) window._bondCurrentRoleId = contacts[0].id;
+    }
+    await window._renderBondData();
+  };
+
+  window._switchBondRole = function(id) {
+    window._bondCurrentRoleId = id;
+    window._renderBondData();
+  };
+
+  // ✨ 核心魔法：暴力推平整个页面，从零手搓所有元素！
+  window._renderBondData = async function() {
+    // 1. 强行锁定当前屏幕上的星轨页面画板
+    const journals = document.querySelectorAll('#bondJournal');
+    if(journals.length === 0) return;
+    const journal = journals[journals.length - 1]; // 永远使用最后附身的那一个
+    const pageBox = journal.querySelector('.page');
+    if(!pageBox) return;
+
+    // 2. 获取数据
+    const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
+    if(contacts.length === 0) {
+       pageBox.innerHTML = '<div style="text-align:center; padding:40px; color:#a0aaba; font-size:13px;">还没有联系人哦，快去添加吧~</div>';
+       return;
+    }
+
+    const roleId = window._bondCurrentRoleId || contacts[0].id;
+    const c = contacts.find(x => x.id === roleId) || contacts[0];
+    
+    // 3. 暴力手搓胶囊导航！(加入 flex-shrink:0 绝对防止被压扁)
+    const tabsHtml = contacts.map(ct => {
+       const isSel = ct.id === roleId;
+       const style = isSel 
+         ? 'background:#5c7094; color:#fff; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; box-shadow:0 2px 8px rgba(92,112,148,0.2); transition:all 0.2s; flex-shrink:0;'
+         : 'background:rgba(255,255,255,0.6); color:#7a86a8; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; border:1px solid #dce5f0; transition:all 0.2s; flex-shrink:0;';
+       return `<div onclick="window._switchBondRole('${ct.id}')" style="${style}">${safeEsc(ct.name)}</div>`;
+    }).join('');
+
+    // 4. 精准计算天数和热力图数据
+    const arr = (window.getChatArr ? window.getChatArr(roleId) : []).filter(m => m.text && !m.hiddenForAi);
+    const totalMsgs = arr.length;
+    
+    let days = 0; let startDateStr = '----.--.--';
+    if(arr.length > 0) {
+      const firstMsgTime = arr[0].time;
+      const d = new Date(firstMsgTime);
+      startDateStr = d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
+      const now = new Date().setHours(0,0,0,0);
+      const firstDay = new Date(firstMsgTime).setHours(0,0,0,0);
+      days = Math.floor((now - firstDay) / (1000 * 60 * 60 * 24)) + 1;
+    }
+
+    const dayCounts = {};
+    const nowTime = new Date(); nowTime.setHours(0,0,0,0);
+    arr.forEach(m => {
+      const d = new Date(m.time); d.setHours(0,0,0,0);
+      const diffDays = Math.floor((nowTime.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+      if(diffDays >= 0 && diffDays < 35) dayCounts[diffDays] = (dayCounts[diffDays] || 0) + 1;
+    });
+    let heatHtml = '';
+    for(let i = 34; i >= 0; i--) {
+      const count = dayCounts[i] || 0;
+      let bg = 'rgba(238,244,250,0.4)', border = '#eef4fa';
+      if(count > 0 && count <= 10) { bg = '#dce5f0'; border = '#cdd7e8'; } 
+      else if(count > 10 && count <= 50) { bg = '#a5cfff'; border = '#8ca8d8'; } 
+      else if(count > 50) { bg = '#5c7094'; border = '#3d4a6a'; } 
+      const anim = (i === 0 && count > 0) ? 'animation: blueBlink 2s infinite;' : '';
+      heatHtml += `<div style="width:100%; aspect-ratio:1; border-radius:4px; background:${bg}; border:1px solid ${border}; ${anim}" title="${count} 条羁绊"></div>`;
+    }
+
+    let telepathyCount = 0; let favCount = 0;
+    for(let i = 1; i < arr.length; i++) {
+      const m1 = arr[i-1], m2 = arr[i];
+      if(m1.role !== m2.role && Math.abs(m2.time - m1.time) <= 60000) telepathyCount++;
+    }
+    arr.forEach(m => { if(m.favorite) favCount++; });
+
+    // 5. 渲染徽章
+    const badges = [
+      { id: 'b1', title: '三千次心跳', desc: '时空回音累积 3000 条', current: totalMsgs, max: 3000, icon: '💬' },
+      { id: 'b2', title: '心电感应', desc: '在 60 秒内与 TA 同时发信', current: telepathyCount, max: 1, icon: '✨' },
+      { id: 'b3', title: '秘密花园', desc: '为 TA 收藏 10 张照片/心声', current: favCount, max: 10, icon: '🌟' }
+    ];
+    const badgesHtml = badges.map(b => {
+      const isUn = b.current >= b.max;
+      const pct = Math.min(100, Math.floor((b.current / b.max) * 100));
+      const bg = isUn ? 'linear-gradient(135deg, rgba(250,252,255,0.95), rgba(238,244,250,0.8))' : 'rgba(244,246,251,0.5)';
+      const border = isUn ? '#a5cfff' : '#eef4fa';
+      const shadow = isUn ? '0 8px 24px rgba(165,207,255,0.2)' : 'none';
+      const titleColor = isUn ? '#3d4a6a' : '#7a86a8';
+      const iconBg = isUn ? '#fff' : 'transparent';
+      return `
+        <div style="background:${bg}; border:1px solid ${border}; border-radius:16px; padding:16px; box-shadow:${shadow}; transition:transform 0.2s; display:flex; align-items:center; gap:16px;" ${isUn ? `onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'"` : ''}>
+          <div style="width:48px; height:48px; border-radius:14px; background:${iconBg}; display:grid; place-items:center; font-size:20px; border:1px solid ${border}; flex-shrink:0;">${isUn ? b.icon : `<span style="opacity:0.3; filter:grayscale(100%);">${b.icon}</span>`}</div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:14px; font-weight:900; color:${titleColor}; margin-bottom:4px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">${b.title} ${isUn ? '<span style="color:#a5cfff; font-size:12px;">已点亮</span>' : ''}</div>
+            <div style="font-size:11px; color:#7a86a8;">${b.desc}</div>
+            <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
+              <div style="flex:1; height:6px; background:rgba(92,112,148,0.1); border-radius:3px; overflow:hidden;"><div style="height:100%; width:${pct}%; background:${isUn ? '#5c7094' : '#a5cfff'}; border-radius:3px; transition:width 0.5s ease;"></div></div>
+              <div style="font-size:10px; color:#5c7094; font-family:ui-monospace, monospace; font-weight:bold;">${b.current}/${b.max}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // 💣 终极暴力渲染：用最纯粹的 HTML 直接将内容全部灌入画板，绝对不会消失！
+    pageBox.innerHTML = `
+      <div style="flex-shrink:0; margin-bottom:16px; display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; padding-bottom:4px; min-height:42px;">
+        ${tabsHtml}
+      </div>
+      
+      <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:20px; padding:20px; margin-bottom:16px; box-shadow:0 8px 24px rgba(92,112,148,0.04);">
+        <div style="display:flex; align-items:center; gap:16px; border-bottom:1px dashed #dce5f0; padding-bottom:16px; margin-bottom:16px;">
+          <img src="${c.avatar || 'https://via.placeholder.com/64'}" style="width:64px; height:64px; border-radius:16px; object-fit:cover; border:2px solid #fff; box-shadow:0 4px 12px rgba(92,112,148,0.1);">
+          <div style="flex:1;">
+            <div style="font-size:18px; font-weight:900; color:#3d4a6a; margin-bottom:4px;">${safeEsc(c.name)}</div>
+            <div style="font-size:11px; color:#7a86a8; letter-spacing:1px;">相识于 <span style="font-family:ui-monospace, monospace; color:#5c7094; font-weight:bold;">${startDateStr}</span></div>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; text-align:center;">
+          <div style="flex:1;"><div style="font-size:11px; color:#a0aaba; font-weight:600; margin-bottom:6px;">相伴天数</div><div style="font-size:22px; font-weight:900; color:#5c7094; font-family:ui-monospace, monospace;">${days}<span style="font-size:12px; margin-left:2px;">天</span></div></div>
+          <div style="width:1px; height:30px; background:#dce5f0;"></div>
+          <div style="flex:1;"><div style="font-size:11px; color:#a0aaba; font-weight:600; margin-bottom:6px;">时空回音</div><div style="font-size:22px; font-weight:900; color:#5c7094; font-family:ui-monospace, monospace;">${totalMsgs}<span style="font-size:12px; margin-left:2px;">条</span></div></div>
+        </div>
+      </div>
+      
+      <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:20px; padding:16px; margin-bottom:16px; box-shadow:0 8px 24px rgba(92,112,148,0.04);">
+        <div style="font-size:11px; color:#7a86a8; font-weight:800; margin-bottom:12px; display:flex; align-items:center; gap:6px; letter-spacing:1px;"><svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:#5c7094; fill:none; stroke-width:2;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>心跳频率矩阵 (近35天)</div>
+        <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; justify-items:center;">${heatHtml}</div>
+      </div>
+      
+      <div style="background:linear-gradient(135deg, #eef4fa, #dce5f0); border:1px solid #cdd7e8; border-radius:16px; padding:16px; margin-bottom:20px; box-shadow:inset 0 2px 10px rgba(255,255,255,0.6), 0 4px 12px rgba(92,112,148,0.06); display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" onclick="window._generateTimeRelic()">
+        <div><div style="font-size:14px; font-weight:900; color:#3d4a6a; margin-bottom:4px; letter-spacing:1px;">✨ 凝聚岁月遗物</div><div style="font-size:10px; color:#5c7094;">抽取近期记忆，化作专属虚拟纪念品</div></div>
+        <div style="width:36px; height:36px; border-radius:50%; background:#fff; display:grid; place-items:center; color:#a5cfff; font-size:18px; font-weight:bold; box-shadow:0 2px 6px rgba(92,112,148,0.1);">›</div>
+      </div>
+      
+      <div style="font-size:12px; color:#7a86a8; font-weight:800; margin-bottom:12px; letter-spacing:1px; display:flex; align-items:center; gap:6px;"><svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>高阶灵魂悬念徽章</div>
+      <div style="display:flex; flex-direction:column; gap:12px; padding-bottom:30px;">${badgesHtml}</div>
+    `;
+  };
+
+  // 触发一次瞬间重绘！
+  const isJournalActive = document.querySelector('#bondJournal.active') !== null;
+  if(isJournalActive) {
+     window._initBondJournal();
+  }
+})();
+</script>
 </body>
   </html>
