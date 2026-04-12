@@ -2469,6 +2469,18 @@ body {
       <div id="bondBadgesGrid" style="display:flex; flex-direction:column; gap:12px; padding-bottom:30px;"></div>
     </div>
   </section>
+  <!-- 🌟 岁月遗物展示弹窗 (防丢失补丁版) -->
+  <div id="relicModal" class="modal" style="z-index: 10005;" onclick="this.classList.remove('active')">
+    <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:24px; padding:24px; text-align:center; box-shadow:0 12px 40px rgba(92,112,148,0.2);" onclick="event.stopPropagation()">
+      <div style="font-size:10px; color:#a5cfff; font-weight:800; letter-spacing:2px; margin-bottom:16px; font-family:ui-monospace, monospace;">TIME RELIC</div>
+      <div id="relicIcon" style="width:80px; height:80px; margin:0 auto 16px; border-radius:20px; background:linear-gradient(135deg, #eef4fa, #dce5f0); border:2px solid #fff; box-shadow:0 8px 24px rgba(92,112,148,0.15); display:grid; place-items:center; font-size:36px;">🎁</div>
+      <div id="relicName" style="font-size:18px; color:#3d4a6a; font-weight:900; margin-bottom:12px; letter-spacing:1px;">未知的遗物</div>
+      <div id="relicDesc" style="font-size:13px; color:#5c7094; line-height:1.6; text-align:justify; font-style:italic; background:rgba(238,244,250,0.6); padding:16px; border-radius:12px; border:1px dashed #dce5f0;">
+        "正在潜入深海，为您打捞记忆的碎片..."
+      </div>
+      <button class="btn p" onclick="window._saveRelicToArchive()" style="width:100%; margin-top:20px; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:12px; padding:12px 0; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.1); letter-spacing:1px;">妥善安放到档案馆</button>
+    </div>
+  </div>
   <!-- 阅读信件的专属弹窗 -->
   <div id="postReadModal" class="modal" style="z-index: 10001;" onclick="this.classList.remove('active')">
     <div class="modal-card" style="width:90%; max-width:380px; max-height:85dvh; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:20px; padding:0; display:flex; flex-direction:column; overflow:hidden;" onclick="event.stopPropagation()">
@@ -14338,6 +14350,84 @@ window._showOrderHistory = async function() {
     window.currentId = window._bondCurrentRoleId; // 伪装当前在聊天室
     window._renderMemoryCards();
     document.getElementById('memoryArchiveModal').classList.add('active');
+  };
+  // ================= 🌟 蓝色高定：岁月遗物生成与封存引擎 (防丢失补丁) =================
+  window._generateTimeRelic = async function() {
+    const roleId = window._bondCurrentRoleId;
+    if(!roleId) return alert('宝宝，请先在顶部胶囊导航选择一个角色哦！');
+    
+    const contacts = window.getContacts ? window.getContacts() : [];
+    const c = contacts.find(x => x.id === roleId);
+    
+    const arr = (window.getChatArr ? window.getChatArr(roleId) : []).filter(m => m.text && !m.hiddenForAi).slice(-50);
+    if(arr.length < 10) return alert('你们的羁绊还太浅，近期记忆不足以凝聚成遗物哦！再去聊聊吧~');
+
+    const modal = document.getElementById('relicModal');
+    const rIcon = document.getElementById('relicIcon');
+    const rName = document.getElementById('relicName');
+    const rDesc = document.getElementById('relicDesc');
+
+    modal.classList.add('active');
+    rIcon.innerHTML = `<div style="width:36px; height:36px; border:4px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite;"></div>`;
+    rName.textContent = '凝聚中...';
+    rDesc.textContent = '"正在潜入记忆深海，为您打捞潜意识的碎片..."';
+
+    try {
+      const meData = window.getMe ? window.getMe() : { name: '我' };
+      const chatCtx = arr.map(m => `${m.role==='user' ? meData.name : c.name}: ${m.text.replace(/<[^>]*>/g, '')}`).join('\\n');
+      
+      const sysPrompt = `你是一个拥有极高文学素养的浪漫物品生成器。
+请阅读以下玩家(${meData.name})和角色(${c.name})最近的聊天记录：
+${chatCtx}
+【任务】：根据他们最近互动的氛围、提到的事物或争吵/甜蜜的细节，凭空“具象化”一件带有他们专属记忆的【虚拟物品】（比如：半截电影票、洇湿的纸条、一颗海盐糖等）。
+【输出严格JSON格式】：
+{
+  "icon": "一个最符合该物品的Emoji",
+  "name": "物品名称（如：揉皱的检讨书）",
+  "desc": "一段极具画面感、略带感伤或极度宠溺的物品描述与内心旁白。字数80字以内。"
+}`;
+
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻凝聚岁月遗物！' }]);
+      const cleaned = out.replace(/```json|```/g, '').trim();
+      const data = JSON.parse(cleaned.match(/\{[\s\S]*\}/)[0]);
+
+      rIcon.innerHTML = data.icon || '🎁';
+      rName.textContent = data.name || '未知的遗物';
+      const safeDesc = String(data.desc || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+      rDesc.innerHTML = `"${safeDesc}"`;
+    } catch(e) {
+      rIcon.innerHTML = '💔';
+      rName.textContent = '凝聚失败';
+      rDesc.textContent = '时空乱流干扰了记忆的提取...请稍后再试。';
+    }
+  };
+
+  window._saveRelicToArchive = async function() {
+    const roleId = window._bondCurrentRoleId;
+    if(!roleId) return;
+    
+    const rIcon = document.getElementById('relicIcon').innerText || '🎁';
+    const rName = document.getElementById('relicName').innerText || '未知遗物';
+    const rDesc = document.getElementById('relicDesc').innerText || '无描述';
+
+    const allMems = (await localforage.getItem('mp_fix_chat_memories')) || {};
+    if(!allMems[roleId]) allMems[roleId] = [];
+    
+    const d = new Date();
+    const shortDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+
+    allMems[roleId].unshift({
+      id: 'mem_' + Date.now(),
+      date: shortDate,
+      title: '🎁 岁月遗物：' + rName,
+      content: `【专属数字纪念品】\n物品形态：${rIcon}\n物品描述：${rDesc}`,
+      injectEnabled: true 
+    });
+    
+    await localforage.setItem('mp_fix_chat_memories', allMems);
+    
+    document.getElementById('relicModal').classList.remove('active');
+    alert('✨ 遗物已妥善安放！快去右上角【档案馆】里查看这件新生成的专属纪念品吧！TA 也把这件事记在心里啦！');
   };
 </script>
   <!-- 🌟 蓝色高定：沉浸式专注挽留弹窗 -->
