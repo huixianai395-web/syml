@@ -15231,5 +15231,179 @@ ${chatCtx}
 
 
 </script>
+  <!-- ================= 🌟 蓝色高定：终极引力护盾 (修复一切导入断流与假报错) ================= -->
+<script>
+(function() {
+  const K_CONTACT = 'mp_fix_contacts', K_CHAT = 'mp_fix_chats', K_API = 'mp_fix_api', K_ME = 'mp_fix_me', K_PREF = 'mp_fix_pref', K_FONT = 'mp_fix_font', K_STICKER = 'mp_fix_sticker_groups', K_STUDY = 'mp_fix_study_books', K_ME_PRESETS = 'mp_fix_me_presets_list';
+
+  // 🌟 1. 修复【全部数据导入】断流问题：直接强行砸进外挂硬盘，等写完再刷新！
+  const globalImportFile = document.getElementById('globalImportFile');
+  if(globalImportFile) {
+    globalImportFile.onchange = async function(e) {
+      const f = e.target.files?.[0]; if(!f) return;
+      const btn = document.getElementById('globalImportBtn');
+      const oldText = btn.textContent;
+      btn.textContent = '数据重组中...';
+      
+      try {
+        const text = await f.text();
+        const j = JSON.parse(text);
+        
+        // 🚨 核心破壁：跨过缓冲池，强行 await 死死砸进外挂硬盘！
+        if(j.contacts) {
+           const cList = j.contacts.map(c=>({...c,settings:normSettings(c.settings)}));
+           GlobalState[K_CONTACT] = cList;
+           await localforage.setItem(K_CONTACT, cList);
+        }
+        if(j.chats) { GlobalState[K_CHAT] = j.chats; await localforage.setItem(K_CHAT, j.chats); }
+        if(j.api) { GlobalState[K_API] = j.api; await localforage.setItem(K_API, j.api); }
+        if(j.me) { GlobalState[K_ME] = j.me; await localforage.setItem(K_ME, j.me); }
+        if(j.pref) { GlobalState[K_PREF] = j.pref; await localforage.setItem(K_PREF, j.pref); }
+        if(j.font) { GlobalState[K_FONT] = j.font; await localforage.setItem(K_FONT, j.font); }
+        if(j.stickers) await localforage.setItem(K_STICKER, j.stickers);
+        if(j.study) await localforage.setItem(K_STUDY, j.study);
+        if(j.mePresets) await localforage.setItem(K_ME_PRESETS, j.mePresets);
+        if(j.customBg) await localforage.setItem('mp_fix_custom_bg', j.customBg);
+        if(j.chatNormalBg) await localforage.setItem('mp_fix_chat_normal_bg', j.chatNormalBg);
+        if(j.chatGlassBg) await localforage.setItem('mp_fix_chat_bg', j.chatGlassBg);
+        if(j.momentsCover) localStorage.setItem('mp_fix_moments_cover', j.momentsCover);
+        if(j.moments) localStorage.setItem('mp_fix_moments', JSON.stringify(j.moments));
+        
+        alert('✨ 时空恢复大成功！即将刷新页面唤醒全部数据！');
+        location.reload();
+      } catch(err) { 
+        alert('导入失败了宝宝：' + err.message); 
+        btn.textContent = oldText;
+      } finally { 
+        e.target.value = ''; 
+      }
+    };
+  }
+
+  // 🌟 2. 修复【单人导入与创建】的假报错：撕掉旧版限制，直接入库！
+  window.saveContact = async function() {
+    const name = clean(document.getElementById('newName').value); 
+    if(!name) return alert('宝宝，昵称不能为空哦！');
+    const avatarUrl = clean(document.getElementById('newAvatarUrl').value);
+    const persona = clean(document.getElementById('newPersona').value);
+    
+    const arr = getContacts();
+    arr.unshift({
+      id: 'c' + Date.now() + '_' + Math.floor(Math.random()*9999),
+      name: name,
+      note: '',
+      avatar: window.createAvatar || avatarUrl || '',
+      preview: '',
+      time: '',
+      persona: persona,
+      settings: { ...DEFAULT_CHAT_SETTINGS }
+    });
+    
+    // 强行写入外挂硬盘！绝对不会再报内存不足！
+    GlobalState[K_CONTACT] = arr;
+    await localforage.setItem(K_CONTACT, arr);
+    
+    renderContacts(document.getElementById('searchInput').value || ''); 
+    document.getElementById('contactModal').classList.remove('active');
+    document.getElementById('newName').value='';
+    document.getElementById('newAvatarUrl').value='';
+    document.getElementById('newPersona').value='';
+    window.createAvatar='';
+    document.getElementById('newAvatarPreview').classList.add('hidden');
+    document.getElementById('newAvatarPreview').src='';
+    
+    alert('✨ 新角色已成功跨越次元壁，安家落户啦！');
+  };
+  
+  const saveCreateBtn = document.getElementById('saveCreateBtn');
+  if(saveCreateBtn) saveCreateBtn.onclick = window.saveContact;
+
+  // 🌟 3. 修复【聊天设置保存】时的玄学报错
+  const saveChatSettingBtn = document.getElementById('saveChatSettingBtn');
+  if(saveChatSettingBtn) {
+    saveChatSettingBtn.onclick = async () => {
+      if(!currentId) return;
+      const btn = document.getElementById('saveChatSettingBtn');
+      btn.textContent = '保存中...';
+      
+      try {
+        const c = getContactById(currentId);
+        const mode = document.getElementById('replyModeSelect').value === 'offline' ? 'offline' : 'online';
+        const onlineStyle = document.getElementById('onlineStyleSelect').value === 'range' ? 'range' : 'free';
+        const onlineMin = Math.max(1, Number(document.getElementById('onlineMinInput').value || 2));
+        const onlineMax = Math.max(onlineMin, Number(document.getElementById('onlineMaxInput').value || 6));
+        const offlineMin = Math.max(80, Number(document.getElementById('offlineMinInput').value || 220));
+        const offlineMax = Math.max(offlineMin, Number(document.getElementById('offlineMaxInput').value || 420));
+        const contextLen = Math.max(5, Number(document.getElementById('contextLenInput').value || 30));
+
+        const newSettings = normSettings({
+          mode, onlineStyle, onlineMin, onlineMax, offlineMin, offlineMax, contextLen,
+          stream: !!document.getElementById('streamSwitch').checked,
+          summarySwitch: !!document.getElementById('summarySwitch')?.checked,
+          offlineColors: c?.settings?.offlineColors,
+          voiceHistory: c?.settings?.voiceHistory,
+          lastStatus: c?.settings?.lastStatus,
+          lastVoice: c?.settings?.lastVoice,
+          interceptedMsgs: c?.settings?.interceptedMsgs,
+          meName: clean(document.getElementById('meNameInput').value) || '我',
+          meNote: clean(document.getElementById('meNoteInput').value),
+          mePersona: clean(document.getElementById('mePersonaInput').value),
+          meAvatar: clean(document.getElementById('meAvatarInput').value) || '',
+          innerVoice: !!document.getElementById('innerVoiceSwitch').checked,
+          isBlockedByMe: document.getElementById('blockByMeSwitch') ? !!document.getElementById('blockByMeSwitch').checked : false,
+          bilingual: document.getElementById('bilingualSwitch') ? !!document.getElementById('bilingualSwitch').checked : false,
+          bilingualLang: document.getElementById('bilingualLangSelect') ? document.getElementById('bilingualLangSelect').value : 'English',
+          msgSound: window._tempRoleAudio.msgSound,
+          voiceRing: window._tempRoleAudio.voiceRing,
+          videoRing: window._tempRoleAudio.videoRing,
+          wbEnabled: c?.settings?.wbEnabled
+        });
+
+        if(c.isGroup) {
+          const groups = window.getGroups();
+          const idx = groups.findIndex(g => g.id === currentId);
+          if(idx > -1) {
+            groups[idx].name = clean(document.getElementById('groupNameInput').value) || '未命名群聊';
+            groups[idx].settings = newSettings;
+            GlobalState['mp_fix_groups'] = groups;
+            await localforage.setItem('mp_fix_groups', groups);
+          }
+        } else {
+          const arr = getContacts();
+          const i = arr.findIndex(x => x.id === currentId);
+          if(i > -1) {
+            arr[i].name = clean(document.getElementById('roleNameInput').value) || '聊天对象';
+            arr[i].note = clean(document.getElementById('roleNoteInput').value);
+            arr[i].persona = clean(document.getElementById('rolePersonaInput').value);
+            arr[i].avatar = clean(document.getElementById('roleAvatarInput').value) || '';
+            arr[i].settings = newSettings;
+            GlobalState[K_CONTACT] = arr;
+            await localforage.setItem(K_CONTACT, arr);
+          }
+        }
+
+        const p = getPref();
+        p.showTs = !!document.getElementById('showTsSwitch').checked;
+        p.bubbleCss = String(document.getElementById('bubbleCssInput').value || '');
+        p.fontSize = Number(document.getElementById('fontSizeRange').value || 16);
+        p.avatarHQ = !!document.getElementById('avatarHQSwitch').checked;
+        p.avatarCrop = !!document.getElementById('avatarCropSwitch').checked;
+        GlobalState[K_PREF] = p;
+        await localforage.setItem(K_PREF, p);
+        
+        applyBubbleCss(); applyFontSize();
+        
+        const now = getContactById(currentId); 
+        document.getElementById('chatTitle').textContent = now?.name || '聊天';
+        applyModeUI(); renderChat(); renderContacts(document.getElementById('searchInput').value || ''); show('chatRoom');
+      } catch(err) {
+        alert('保存失败：' + err.message);
+      } finally {
+        btn.textContent = '保存';
+      }
+    };
+  }
+})();
+</script>
 </body>
   </html>
