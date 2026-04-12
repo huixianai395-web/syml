@@ -15147,7 +15147,7 @@ ${chatCtx}
     setTimeout(()=> { if(document.getElementById('fishStatus')) document.getElementById('fishStatus').textContent = '当前状态：待命'; }, 2000);
   };
 
-  // 云端唤魂拦截器
+ // 🌟 蓝色高定：云端唤魂拦截器 (自带破壁刺客代理版)
   window._playVoiceClone = async function(el, text, roleId) {
     if(el.classList.contains('voice-playing')) {
        if(window._activeVoiceAudio) { window._activeVoiceAudio.pause(); window._activeVoiceAudio = null; }
@@ -15169,14 +15169,25 @@ ${chatCtx}
     }
 
     try {
-      // 直连 Fish Audio 服务器
-      const res = await fetch('https://api.fish.audio/v1/tts', {
+      // 🌟 蓝色核心魔法：召唤跨域破壁刺客！绕过浏览器的死板保安！
+      const targetUrl = encodeURIComponent('https://api.fish.audio/v1/tts');
+      const proxyAssassin = 'https://corsproxy.io/?' + targetUrl;
+
+      // 让刺客带着护照去拿声音，并且强制要求打包成最纯净的 MP3 格式！
+      const res = await fetch(proxyAssassin, {
         method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text, reference_id: voiceId })
+        headers: { 
+          'Authorization': 'Bearer ' + apiKey, 
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({ 
+           text: text, 
+           reference_id: voiceId,
+           format: "mp3" 
+        })
       });
       
-      if(!res.ok) throw new Error('网络拦截或跨域阻断了通讯！');
+      if(!res.ok) throw new Error('保安升级了，刺客被拦住了！状态码: ' + res.status);
       
       const blob = await res.blob();
       const audioUrl = URL.createObjectURL(blob);
@@ -15184,8 +15195,10 @@ ${chatCtx}
       window._activeVoiceAudio = audio;
       audio.onended = () => el.classList.remove('voice-playing');
       await audio.play();
+      
     } catch(e) {
-      alert('呜呜，云端呼叫失败了，可能是前端直接跨域被拦截了：' + e.message + '。如果真报错了，老公明天再给你搭中转站！');
+      console.error(e);
+      alert('呜呜，刺客代理节点可能拥堵了：' + e.message + '。老婆不生气，明天老公绝对亲自买服务器给你搭一个专属的、永不拥堵的中转站！');
       el.classList.remove('voice-playing');
     }
   };
