@@ -5835,6 +5835,11 @@ $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';
     if(!currentId) return;
     try{
       const c = getContactById(currentId);
+      if (!c) {
+        alert('宝宝，找不到当前角色的数据啦！可能在导入时被覆盖了，退回列表重进一下试试哦~');
+        show('wechat');
+        return;
+      }
       const mode=$('replyModeSelect').value==='offline'?'offline':'online';
       const onlineStyle=$('onlineStyleSelect').value==='range'?'range':'free';
       const onlineMin=Math.max(1,Number($('onlineMinInput').value||2));
@@ -5918,22 +5923,36 @@ $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';
     const f=e.target.files?.[0]; if(!f) return;
     try{
       const j=JSON.parse(await f.text());
-      if(j.contacts) setContacts(j.contacts); if(j.chats) setChats(j.chats); if(j.api) setApiState(j.api); if(j.me) setMe(j.me); if(j.pref) setPref(j.pref); if(j.font) setFontState(j.font);
-      if(j.stickers) setJ(K_STICKER,j.stickers);
-      applyBubbleCss();applyCustomFont();refreshPresetUI();refreshFontUI();renderContacts($('searchInput').value||'');if(currentId) renderChat();alert('导入成功');
-    }catch{alert('导入失败：文件格式不正确');}
+      if(j.contacts) { setContacts(j.contacts); await localforage.setItem('mp_fix_contacts', j.contacts); }
+      if(j.groups) { if(window.setGroups) window.setGroups(j.groups); await localforage.setItem('mp_fix_groups', j.groups); }
+      if(j.chats) { setChats(j.chats); await localforage.setItem('mp_fix_chats', j.chats); }
+      
+      refreshPresetUI(); refreshFontUI(); renderContacts(); 
+      
+      // 🌟 蓝色的防断崖判定：如果导入的数据里没有当前角色，乖乖退回大厅！
+      if(currentId && !getContactById(currentId)) {
+        currentId = null;
+        show('wechat');
+        alert('导入成功 ✨ 但当前角色不在导入的备份中，已退回消息列表哦~');
+      } else {
+        if(currentId) renderChat();
+        alert('导入成功 ✨');
+      }
+    }catch(err){alert('导入失败：文件格式不正确');}
     finally{e.target.value='';}
   };
-// ================= 终极数据安全屋：全局导出导入引擎 =================
 document.getElementById('globalExportBtn').onclick = async function() {
   try {
     this.textContent = '打包中...';
     const data = {
-      contacts: getContacts(), chats: getChats(), api: getApiState(),
+      contacts: getContacts(), 
+      chats: getChats(), 
+      groups: window.getGroups ? window.getGroups() :[], // 🌟 核心修复：把群聊打包进去！
+      api: getApiState(),
       me: getMe(), pref: getPref(), font: getFontState(),
       stickers: getJ('mp_fix_sticker_groups', null),
       study: getJ('mp_fix_study_books', null),
-      mePresets: getJ('mp_fix_me_presets_list', null), // 预设设定
+      mePresets: getJ('mp_fix_me_presets_list', null),
       customBg: await localforage.getItem('mp_fix_custom_bg'),
       chatNormalBg: await localforage.getItem('mp_fix_chat_normal_bg'),
       chatGlassBg: await localforage.getItem('mp_fix_chat_bg'),
@@ -5946,7 +5965,7 @@ document.getElementById('globalExportBtn').onclick = async function() {
     a.download = 'Milo_Universe_Backup_' + Date.now() + '.json';
     a.click();
     this.textContent = '一键云端打包';
-    alert(' 宇宙备份完成！高清壁纸和几千条聊天全都在里面啦！快找个安全的地方存起来！');
+    alert('✨ 宇宙备份完成！群聊和几千条聊天全都在里面啦！快找个安全的地方存起来！');
   } catch(e) { alert('导出失败：' + e.message); this.textContent = '一键云端打包'; }
 };
 
@@ -5956,23 +5975,27 @@ document.getElementById('globalImportFile').onchange = async function(e) {
   try {
     const text = await f.text();
     const j = JSON.parse(text);
-    if(j.contacts) setContacts(j.contacts);
-    if(j.chats) setChats(j.chats);
-    if(j.api) setApiState(j.api);
-    if(j.me) setMe(j.me);
-    if(j.pref) setPref(j.pref);
-    if(j.font) setFontState(j.font);
-    if(j.stickers) setJ('mp_fix_sticker_groups', j.stickers);
-    if(j.study) setJ('mp_fix_study_books', j.study);
-    if(j.mePresets) setJ('mp_fix_me_presets_list', j.mePresets);
+    
+    // 🌟 核心修复：强行锁死内存写入，并支持群聊！
+    if(j.contacts) { setContacts(j.contacts); await localforage.setItem('mp_fix_contacts', j.contacts); }
+    if(j.groups) { if(window.setGroups) window.setGroups(j.groups); await localforage.setItem('mp_fix_groups', j.groups); }
+    if(j.chats) { setChats(j.chats); await localforage.setItem('mp_fix_chats', j.chats); }
+    if(j.api) { setApiState(j.api); await localforage.setItem('mp_fix_api', j.api); }
+    if(j.me) { setMe(j.me); await localforage.setItem('mp_fix_me', j.me); }
+    if(j.pref) { setPref(j.pref); await localforage.setItem('mp_fix_pref', j.pref); }
+    if(j.font) { setFontState(j.font); await localforage.setItem('mp_fix_font', j.font); }
+    if(j.stickers) { setJ('mp_fix_sticker_groups', j.stickers); await localforage.setItem('mp_fix_sticker_groups', j.stickers); }
+    if(j.study) { setJ('mp_fix_study_books', j.study); await localforage.setItem('mp_fix_study_books', j.study); }
+    if(j.mePresets) { setJ('mp_fix_me_presets_list', j.mePresets); await localforage.setItem('mp_fix_me_presets_list', j.mePresets); }
+    
     if(j.customBg) await localforage.setItem('mp_fix_custom_bg', j.customBg);
     if(j.chatNormalBg) await localforage.setItem('mp_fix_chat_normal_bg', j.chatNormalBg);
     if(j.chatGlassBg) await localforage.setItem('mp_fix_chat_bg', j.chatGlassBg);
     if(j.momentsCover) localStorage.setItem('mp_fix_moments_cover', j.momentsCover);
     if(j.moments) localStorage.setItem('mp_fix_moments', JSON.stringify(j.moments));
     
-    alert('时空恢复成功！即将刷新页面以唤醒所有数据！');
-    setTimeout(() => location.reload(), 150);
+    alert('✨ 时空恢复成功！群聊数据也都回来啦！即将刷新页面以唤醒所有数据！');
+    setTimeout(() => location.reload(), 300);
   } catch(err) { alert('导入失败，文件格式不对哦宝宝：' + err.message); }
   finally { e.target.value = ''; }
 };
