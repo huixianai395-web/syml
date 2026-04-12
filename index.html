@@ -3501,10 +3501,13 @@ body {
       </div>
       <input type="file" id="cloneAudioFile" accept="audio/*" class="hidden" onchange="window._handleCloneAudioUpload(event)">
 
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px;">
+     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px;">
          <div id="cloneStatus" style="font-size:12px; color:#a5cfff; font-weight:bold;">当前状态：未录入</div>
-         <button class="btn p" onclick="window._saveCloneAudio()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:6px 16px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">刻入内存</button>
-      </div>
+         <div style="display:flex; gap:8px;">
+           <button class="btn d" onclick="window._clearCloneAudio()" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; padding:6px 14px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">抹除原声</button>
+           <button class="btn p" onclick="window._saveCloneAudio()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:6px 14px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">刻入外挂内存</button>
+         </div>
+     </div>
     </div>
     <!-- 🌟 蓝色高定：语音克隆 API (TTS) 专属通道 -->
     <div class="card" style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(47,102,216,0.04); margin-top:16px; border:none;">
@@ -15082,7 +15085,30 @@ ${chatCtx}
       btn.style.pointerEvents = 'auto';
     }
   };
-  
+  // 🌟 蓝色高定：尴尬原声抹除引擎
+  window._clearCloneAudio = async function() {
+    const roleId = document.getElementById('cloneRoleSelect').value;
+    if(!roleId) return alert('宝宝，请先选择要抹除的角色呀！');
+    if(!confirm('确定要抹除这段原声记录吗？抹除后就不会再尴尬地播放原音啦！')) return;
+    
+    let cloneData = await localforage.getItem('mp_fix_voice_clones') || {};
+    delete cloneData[roleId];
+    await localforage.setItem('mp_fix_voice_clones', cloneData);
+    
+    window._tempCloneAudioBase64 = '';
+    document.getElementById('cloneStatus').textContent = '当前状态：已彻底抹除 🧹';
+    document.getElementById('cloneStatus').style.color = '#7a86a8';
+    document.getElementById('cloneUploadHint').textContent = '点击上传 30s 原声 (.mp3/.wav)';
+    document.getElementById('cloneUploadArea').style.borderColor = '#dce5f0';
+    
+    // 顺便把正在播放的尴尬声音掐断！
+    if(window._activeVoiceAudio) {
+      window._activeVoiceAudio.pause();
+      window._activeVoiceAudio = null;
+      document.querySelectorAll('.voice-playing').forEach(n => n.classList.remove('voice-playing'));
+    }
+    alert('🧹 擦除成功！硬盘已经干干净净啦！');
+  };
   // 🌟 初始化声纹舱的角色列表
   setTimeout(() => {
     const cloneSel = document.getElementById('cloneRoleSelect');
