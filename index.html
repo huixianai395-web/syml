@@ -2442,32 +2442,48 @@ body {
       </div>
       
       <div style="background:rgba(255,255,255,0.6); border:1px solid #dce5f0; border-radius:16px; padding:20px; box-shadow:0 4px 16px rgba(92,112,148,0.03);">
-        <div style="font-size:12px; color:#5c7094; font-weight:bold; margin-bottom:8px;">邀请谁进入幻境？</div>
+        <div style="font-size:12px; color:#5c7094; font-weight:bold; margin-bottom:8px;">邀请谁共赴约会？</div>
         <select id="holoRoleSel" class="select" style="width:100%; background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:14px; padding:10px; margin-bottom:16px; outline:none; font-weight:bold;"></select>
         
-        <div style="font-size:12px; color:#5c7094; font-weight:bold; margin-bottom:8px;">幻境坐标 (你想去哪？)</div>
-        <input id="holoLocationInp" class="input" placeholder="例如：深夜的水族馆 / 赛博朋克酒馆" style="width:100%; background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:14px; padding:10px; margin-bottom:16px; box-sizing:border-box;">
+        <div style="font-size:12px; color:#5c7094; font-weight:bold; margin-bottom:8px;">约会坐标 (你想去哪？)</div>
+        <input id="holoLocationInp" class="input" placeholder="例如：深夜的水族馆 / 东京铁塔下" style="width:100%; background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:14px; padding:10px; margin-bottom:16px; box-sizing:border-box;">
         
-        <div style="font-size:12px; color:#5c7094; font-weight:bold; margin-bottom:8px;">上传全息背景图 (可选)</div>
-        <input type="file" id="holoBgUpload" accept="image/*" class="hidden" onchange="window._holoHandleBg(event)">
-        <button class="btn" onclick="document.getElementById('holoBgUpload').click()" style="width:100%; background:transparent; color:#7a86a8; border:1px dashed #a5cfff; border-radius:10px; padding:10px; font-weight:bold; margin-bottom:20px; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:6px;" id="holoBgBtn">
-          <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#a5cfff; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-          点击上传全息风景图
-        </button>
+        <div style="font-size:12px; color:#5c7094; font-weight:bold; margin-bottom:8px;">携入世界书设定？</div>
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:16px; background:rgba(238,244,250,0.6); padding:8px 12px; border-radius:10px; border:1px solid #dce5f0;">
+          <input type="checkbox" id="holoWbSwitch" checked style="accent-color:#5c7094; transform:scale(1.1);">
+          <span style="font-size:12px; color:#5c7094; font-weight:bold;">开启后自动注入TA的专属设定</span>
+        </label>
 
-        <button class="btn p" onclick="window._startHoloDate()" style="width:100%; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:12px; padding:14px 0; font-size:15px; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.1); letter-spacing:2px; transition:transform 0.1s;" id="holoStartBtn" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">撕开门票 · 潜入幻境</button>
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+          <div style="flex:1;">
+            <input type="file" id="holoBgUpload" accept="image/*" class="hidden" onchange="window._holoHandleBg(event)">
+            <button class="btn" onclick="document.getElementById('holoBgUpload').click()" style="width:100%; background:transparent; color:#7a86a8; border:1px dashed #a5cfff; border-radius:10px; padding:10px 0; font-weight:bold; transition:all 0.2s;" id="holoBgBtn">绝美风景图</button>
+          </div>
+          <div style="flex:1;">
+            <input type="file" id="holoBgmUpload" accept="audio/*" class="hidden" onchange="window._holoHandleBgm(event)">
+            <button class="btn" onclick="document.getElementById('holoBgmUpload').click()" style="width:100%; background:transparent; color:#7a86a8; border:1px dashed #a5cfff; border-radius:10px; padding:10px 0; font-weight:bold; transition:all 0.2s;" id="holoBgmBtn">🎵 专属 BGM</button>
+          </div>
+        </div>
+
+        <button class="btn p" onclick="window._startHoloDate()" style="width:100%; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:12px; padding:14px 0; font-size:15px; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.1); letter-spacing:2px; transition:transform 0.1s;" id="holoStartBtn" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">撕开门票 · 潜入约会</button>
       </div>
     </div>
   </section>
 
-  <!-- 沉浸式幻境层 (平时隐藏) -->
+  <!-- 沉浸式约会层 (平时隐藏) -->
   <div id="holoActiveScene" class="holo-scene-layer" style="display:none;">
-    <div id="holoSceneBg" style="position:absolute; inset:0; background-size:cover; background-position:center; filter:saturate(120%);"></div>
-    <div class="holo-scene-mask">
-      <div style="position:absolute; top:calc(16px + var(--safe-top)); right:20px; z-index:20;">
-        <button class="btn" onclick="window._exitHoloDate()" style="background:rgba(255,255,255,0.4); color:#5c7094; border:1px solid #dce5f0; border-radius:50%; width:36px; height:36px; padding:0; display:grid; place-items:center; font-size:20px; line-height:1; backdrop-filter:blur(8px);">×</button>
+    <div id="holoSceneBg" style="position:absolute; inset:0; background-size:cover; background-position:center;"></div>
+    <!-- 顶部悬浮双人头像框与结束按钮 -->
+    <div style="position:absolute; top:calc(16px + var(--safe-top)); left:20px; right:20px; z-index:25; display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:10px; background:rgba(250,252,255,0.7); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); padding:6px 12px; border-radius:24px; border:1px solid rgba(255,255,255,0.8); box-shadow:0 4px 16px rgba(0,0,0,0.1);">
+        <img id="holoMeAv" src="" style="width:32px; height:32px; border-radius:50%; object-fit:cover; border:2px solid #fff;">
+        <span style="color:#5c7094; font-size:12px; animation:blueBlink 2s infinite;">♡</span>
+        <img id="holoTaAv" src="" style="width:32px; height:32px; border-radius:50%; object-fit:cover; border:2px solid #fff;">
       </div>
-      
+      <button class="btn" onclick="window._endHoloDate()" style="background:rgba(255,255,255,0.6); backdrop-filter:blur(12px); color:#5c7094; border:1px solid #dce5f0; border-radius:14px; padding:6px 14px; font-size:12px; font-weight:bold; box-shadow:0 4px 12px rgba(0,0,0,0.1);">结束约会生成相纸</button>
+    </div>
+
+    <div class="holo-scene-mask" style="background:linear-gradient(180deg, rgba(238,244,250,0) 0%, rgba(238,244,250,0.5) 40%, rgba(238,244,250,0.98) 90%);">
       <div id="holoVoiceIndicator" style="display:none; align-items:center; gap:4px; margin-bottom:12px; justify-content:center;">
         <span style="font-size:11px; color:#5c7094; font-weight:bold; font-family:ui-monospace, monospace;">TA 正在低语</span>
         <div class="holo-voice-wave"></div><div class="holo-voice-wave" style="animation-delay:0.2s;"></div><div class="holo-voice-wave" style="animation-delay:0.4s;"></div>
@@ -2476,6 +2492,7 @@ body {
       <div id="holoSubtitles" style="flex:1; overflow-y:auto; scrollbar-width:none; padding-bottom:20px; display:flex; flex-direction:column; justify-content:flex-end;"></div>
       <div id="holoOptionsBox" style="margin-top:20px;"></div>
     </div>
+    <audio id="holoBgmAudio" loop preload="none"></audio>
   </div>
   
   <!-- 阅读信件的专属弹窗 -->
@@ -15359,13 +15376,13 @@ ${chatCtx}
   };
 </script>
 <script>
-  (function(){
-    // 🌟 蓝色高定防御罩：重塑底层神经元，解除字数封印与添加自由输入！
+   (function(){
     const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
     const getMe = () => { try { return JSON.parse(localStorage.getItem('mp_fix_me')) || {name:'我'}; } catch(e) { return {name:'我'}; } };
     const getContactById = (id) => { const arr = window.getContacts ? window.getContacts() :[]; return arr.find(c => c.id === id); };
 
     window._tempHoloBg = '';
+    window._tempHoloBgm = '';
     window._currentHoloRole = null;
     window._holoHistory =[];
 
@@ -15383,33 +15400,50 @@ ${chatCtx}
         const imgData = await compFn(f);
         window._tempHoloBg = imgData;
         const btn = document.getElementById('holoBgBtn');
-        btn.innerHTML = '✅ 风景已就绪';
-        btn.style.background = '#eef4fa';
-        btn.style.color = '#5c7094';
-        btn.style.borderColor = '#dce5f0';
-      } catch(err) { alert('图片处理失败啦宝宝：' + err.message); }
-      finally { e.target.value = ''; }
+        btn.innerHTML = '✅ 风景已就绪'; btn.style.background = '#eef4fa'; btn.style.color = '#5c7094'; btn.style.borderColor = '#dce5f0';
+      } catch(err) { alert('图片处理失败啦宝宝：' + err.message); } finally { e.target.value = ''; }
+    };
+
+    window._holoHandleBgm = function(e) {
+      const f = e.target.files?.[0]; if(!f) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        window._tempHoloBgm = ev.target.result;
+        const btn = document.getElementById('holoBgmBtn');
+        btn.innerHTML = '音乐已就绪'; btn.style.background = '#eef4fa'; btn.style.color = '#5c7094'; btn.style.borderColor = '#dce5f0';
+      };
+      reader.readAsDataURL(f);
+      e.target.value = '';
     };
 
     window._startHoloDate = async function() {
       const roleId = document.getElementById('holoRoleSel').value;
       const loc = document.getElementById('holoLocationInp').value.trim() || '初雪的街头';
-      if(!roleId) return alert('宝宝，请先选择共赴幻境的人！');
+      if(!roleId) return alert('宝宝，请先选择约会对象！');
 
       const c = getContactById(roleId);
-      if(!c) return alert('时空乱流，找不到这个角色啦！');
+      if(!c) return alert('找不到这个角色啦！');
       window._currentHoloRole = c;
       window._holoHistory =[];
+      
+      const me = getMe();
+      document.getElementById('holoMeAv').src = me.avatar || 'https://via.placeholder.com/32';
+      document.getElementById('holoTaAv').src = c.avatar || 'https://via.placeholder.com/32';
 
       document.getElementById('holoSceneBg').style.backgroundImage = window._tempHoloBg ? `url(${window._tempHoloBg})` : 'linear-gradient(135deg, #eef4fa, #cdd7e8)';
       document.getElementById('holoActiveScene').style.display = 'block';
       document.getElementById('holoSubtitles').innerHTML = '';
       document.getElementById('holoOptionsBox').innerHTML = '<div style="text-align:center; color:#5c7094; font-size:13px; font-weight:bold; letter-spacing:2px; animation:blueBlink 1.5s infinite; padding:20px 0;"><svg viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#a5cfff; fill:none; stroke-width:2; animation:pcSpin 3s linear infinite; margin-bottom:8px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg><br>时空跃迁中 · 正在接入 TA 的脑电波...</div>';
 
-      await window._holoProgressAI(`玩家刚刚撕开了通往【${loc}】的全息门票，幻境正式开启。请给出你的开场白和玩家的选项。`);
+      if(window._tempHoloBgm) {
+        const audio = document.getElementById('holoBgmAudio');
+        audio.src = window._tempHoloBgm;
+        audio.play().catch(e=>console.log('BGM被拦截', e));
+      }
+
+      await window._holoProgressAI(`我们来到了【${loc}】，约会正式开始。请给出你的开场白。`);
     };
 
-    // 🌟 命运齿轮转动动画！
     window._holoTriggerAction = function(actionText) {
       document.getElementById('holoOptionsBox').innerHTML = `
         <div style="text-align:center; color:#5c7094; font-size:13px; font-weight:bold; letter-spacing:2px; animation:blueBlink 1.5s infinite; padding:20px 0;">
@@ -15429,24 +15463,38 @@ ${chatCtx}
       const c = window._currentHoloRole;
       const me = getMe();
       
-      if(userAction && !userAction.includes('全息门票')) {
+      if(userAction && !userAction.includes('约会正式开始')) {
         window._holoHistory.push({ role: 'user', content: userAction });
         const subBox = document.getElementById('holoSubtitles');
-        subBox.insertAdjacentHTML('beforeend', `<div class="holo-subtitle" style="text-align:right; color:#7a86a8; font-size:14px; opacity:0.8; margin-bottom:12px;">"${safeEsc(userAction)}"</div>`);
+        subBox.insertAdjacentHTML('beforeend', `<div style="text-align:right; color:#7a86a8; font-size:14px; opacity:0.8; margin-bottom:12px; font-weight:bold;">"${safeEsc(userAction)}"</div>`);
         subBox.scrollTop = subBox.scrollHeight;
       }
 
-      // 🌟 彻底解除字数封印！
+      let wbText = '';
+      if(document.getElementById('holoWbSwitch') && document.getElementById('holoWbSwitch').checked) {
+        try {
+          const st = window.normSettings ? window.normSettings(c.settings) : {};
+          if(st.wbEnabled && st.wbEnabled.length > 0) {
+            const allBooks = JSON.parse(localStorage.getItem('mp_fix_wb_books_v3')||'null') || await window.localforage?.getItem('mp_fix_wb_books_v3') || [];
+            allBooks.forEach(b => { (b.entries || []).forEach(e => { if(st.wbEnabled.includes(e.id)) wbText += `[${e.keys}] ${e.content}\n`; }); });
+          }
+        } catch(e){}
+      }
+
       const sysPrompt = `你正在扮演：${c.name}。人设：${c.persona}。
-这是一场沉浸式的【全息幻境约会】。
-请根据上下文，输出极具张力的场景描写、你的内心OS，以及你要对玩家（${me.name||'我'}）说的话。
-【核心要求】：字数和情感完全根据人设和当前氛围自由发挥！不要拘泥于限制，越生动、越贴合人设越好！
+${wbText ? '【世界书设定】：\n' + wbText : ''}
+【绝密铁律】：
+1. 这是现实世界中一场极其真实的沉浸式线下约会！【绝对、永远禁止】提及“幻境”、“全息”、“虚拟”、“系统”、“代码”等破坏沉浸感的词汇！
+2. 玩家的真实名字是：【${me.name||'我'}】，绝对禁止叫她 "user"！
+3. 给出的 options 必须是自然的人类反应（如动作描写、一句话），【绝对禁止】带有“选项A：”、“选项B：”这种死板的前缀！
+4. 语言极致自然、不油腻、去标签化，展现真实的活人感。
+
 【输出格式铁律】必须严格输出JSON！
 {
-  "narration": "场景氛围与动作描写。要有电影感。",
-  "inner_voice": "你此刻真实的内心OS，无则留空。",
-  "dialog": "你要对玩家说的话（纯台词，不要带任何前缀！这段话会被直接推给语音引擎！）。",
-  "options":["选项A：玩家可能的反应", "选项B：玩家可能的反应"]
+  "narration": "约会场景氛围与TA的动作描写。电影感，纯净克制。",
+  "inner_voice": "TA此刻真实的内心OS，无则留空。",
+  "dialog": "TA对玩家说的话（纯台词，直接输出，不要带名字前缀！这段话会被直接推给语音引擎！）。",
+  "options": ["自然的回应1", "自然的回应2"]
 }`;
 
       try {
@@ -15461,18 +15509,20 @@ ${chatCtx}
 
         const subBox = document.getElementById('holoSubtitles');
         subBox.insertAdjacentHTML('beforeend', `
-          <div class="holo-subtitle">
-            <span style="font-size:13px; color:#7a86a8; display:block; margin-bottom:8px;">${safeEsc(data.narration)}</span>
-            ${data.inner_voice ? `<span style="font-size:12px; color:#a5cfff; font-style:italic; display:block; margin-bottom:8px;">💭 ${safeEsc(data.inner_voice)}</span>` : ''}
+          <div style="font-size:16px; color:#1a2b4c; line-height:1.8; text-align:justify; font-family:'STZhongsong', 'KaiTi', serif; margin-bottom:24px; font-weight:900;">
+            <span style="font-size:13px; color:#5c7094; display:block; margin-bottom:8px; font-weight:normal;">${safeEsc(data.narration)}</span>
+            ${data.inner_voice ? `<span style="font-size:12px; color:#a5cfff; font-style:italic; display:block; margin-bottom:8px; font-weight:normal;">💭 ${safeEsc(data.inner_voice)}</span>` : ''}
             "${safeEsc(data.dialog)}"
           </div>
         `);
         subBox.scrollTop = subBox.scrollHeight;
 
         const optBox = document.getElementById('holoOptionsBox');
-        const optsHtml = (data.options ||[]).map(opt => `<div class="holo-option" onclick="window._holoTriggerAction('${safeEsc(opt)}')">${safeEsc(opt)}</div>`).join('');
+        const optsHtml = (data.options ||[]).map(opt => {
+          let cleanOpt = opt.replace(/^选项[A-Z][：:]\s*/i, '');
+          return `<div class="holo-option" onclick="window._holoTriggerAction('${safeEsc(cleanOpt)}')">${safeEsc(cleanOpt)}</div>`;
+        }).join('');
         
-        // 🌟 注入自由发言输入框！
         const customHtml = `
           <div style="display:flex; gap:8px; margin-top:16px; align-items:center;">
             <input id="holoCustomInput" class="input" placeholder="不按套路出牌？自己输入..." onkeydown="if(event.key==='Enter') window._submitHoloCustom()" style="flex:1; background:rgba(255,255,255,0.8); border:1px solid #dce5f0; border-radius:12px; padding:10px 14px; font-size:14px; color:#5c7094; outline:none; box-shadow:inset 0 2px 6px rgba(92,112,148,0.03);">
@@ -15492,8 +15542,38 @@ ${chatCtx}
       }
     };
 
+    window._endHoloDate = async function() {
+      const c = window._currentHoloRole;
+      if(!c) return window._exitHoloDate();
+
+      document.getElementById('holoOptionsBox').innerHTML = '<div style="text-align:center; color:#5c7094; font-size:13px; font-weight:bold; animation:blueBlink 1.5s infinite;">正在结算约会记忆，生成专属相纸中...</div>';
+      
+      try {
+        const sys = `这是一场沉浸式约会的结尾。请根据刚刚的聊天历史，用极具诗意和画面感的口吻，为这场约会写下一句【绝美的判词/总结语】（必须在30字以内！）。只输出这句话，绝对不要带任何前缀或多余格式！`;
+        const out = await window.callApi([...window._holoHistory, {role: 'system', content: sys}]);
+        let summary = out.replace(/```json|```/g, '').replace(/^["'「”]+|["'」”]+$/g, '').trim();
+        
+        const bgUrl = window._tempHoloBg || 'https://cn.oilgasgpts.com/resource/profile/2026/04/08/vJowdrs5_vip_20260408120622A108.jpeg';
+        const cardHtml = `<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('${bgUrl}') center/cover no-repeat;"></div><div class="fi-desc">【约会纪念留影】<br>${safeEsc(summary)}</div></div>`;
+        
+        const arr = window.getChatArr ? window.getChatArr(c.id) : [];
+        arr.push({ id: 'm_' + Date.now(), role: 'assistant', text: cardHtml, time: Date.now(), stored: true });
+        if(window.setChatArr) window.setChatArr(c.id, arr);
+        
+        alert('✨ 约会完美落幕！纪念相纸已存入聊天记录，去【回忆放映机】里看看你们的定格瞬间吧！');
+        window._exitHoloDate();
+        if(window.renderChat && window.currentId === c.id) window.renderChat();
+        if(window._initMemoryProjector) window._initMemoryProjector();
+      } catch(e) {
+        alert('生成相纸失败，但约会很开心！');
+        window._exitHoloDate();
+      }
+    };
+
     window._exitHoloDate = function() {
       document.getElementById('holoActiveScene').style.display = 'none';
+      const audio = document.getElementById('holoBgmAudio');
+      if(audio) { audio.pause(); audio.currentTime = 0; }
       if(window._activeVoiceAudio) { window._activeVoiceAudio.pause(); window._activeVoiceAudio = null; }
     };
   })();
