@@ -15773,5 +15773,208 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     };
   })();
 </script>
+  <script>
+(function(){
+  // 🌟 蓝色高定防御罩：回忆永生与羁绊防断裂引擎！
+  
+  // 1. 劫持并重构：清空聊天记录
+  window.clearCurrentChat = function() {
+    if(!window.currentId) return;
+    if(!confirm('清空当前聊天？（已收藏进回忆放映机的相片将为您永久保留 ✨）')) return;
+    
+    const oldArr = window.getChatArr(window.currentId) || [];
+    // 🔪 核心过滤网：只保留被打上星星的记忆碎片！
+    const keepArr = oldArr.filter(m => m.proj_fav); 
+    window.setChatArr(window.currentId, keepArr);
+    
+    const c = window.getContactById(window.currentId);
+    if(c && c.isGroup) {
+      const groups = window.getGroups ? window.getGroups() : [];
+      const idx = groups.findIndex(g => g.id === window.currentId);
+      if(idx > -1){ groups[idx].preview=''; groups[idx].time=''; window.setGroups(groups); }
+    } else {
+      window.updateContact(window.currentId, {preview:'', time:''});
+    }
+    
+    window.selectMode = false; 
+    if(window.selectedIds) window.selectedIds.clear(); 
+    if(window.renderChat) window.renderChat(); 
+    if(window.renderContacts) window.renderContacts(document.getElementById('searchInput')?.value||'');
+  };
+  const clearBtn = document.getElementById('clearChatBtn2');
+  if(clearBtn) clearBtn.onclick = window.clearCurrentChat;
+
+  // 2. 劫持并重构：设置页内删除联系人
+  window.deleteCurrentContact = function() {
+    if(!window.currentId) return;
+    if(!confirm('删除当前好友及聊天记录？（已收藏进回忆放映机的相片将为您永久保留 ✨）')) return;
+    
+    const c = window.getContactById(window.currentId);
+    const cName = c ? c.name : '沉睡的羁绊';
+
+    const map = window.getChats();
+    const oldArr = map[window.currentId] || [];
+    const keepArr = oldArr.filter(m => m.proj_fav);
+    // 🏷️ 灵魂印记：把名字死死刻在游魂相纸上！
+    keepArr.forEach(m => m.savedChatName = cName); 
+
+    window.setContacts(window.getContacts().filter(x => x.id !== window.currentId));
+    
+    if(keepArr.length > 0) { map[window.currentId] = keepArr; } 
+    else { delete map[window.currentId]; }
+    window.setChats(map);
+    
+    window.currentId = null; 
+    if(window.renderContacts) window.renderContacts(document.getElementById('searchInput')?.value||''); 
+    window.show('wechat');
+  };
+  const delBtn = document.getElementById('deleteContactBtn');
+  if(delBtn) delBtn.onclick = window.deleteCurrentContact;
+
+  // 3. 劫持并重构：微信列表长按删除
+  window.deleteContactFromList = function(id, e) {
+    if(e) { e.preventDefault(); e.stopPropagation(); }
+    window._isDeleting = true; setTimeout(() => window._isDeleting = false, 500);
+    if(!confirm('确定要删除这个聊天及所有记录吗？（已收藏进回忆放映机的相片将为您永久保留 ✨）')) return false;
+    
+    const c = window.getContactById(id);
+    const cName = c ? c.name : '沉睡的羁绊';
+
+    const groups = window.getGroups ? window.getGroups() : [];
+    if(groups.some(g => g.id === id)) {
+      if(window.setGroups) window.setGroups(groups.filter(g => g.id !== id));
+    } else {
+      window.setContacts(window.getContacts().filter(x => x.id !== id));
+    }
+    
+    const map = window.getChats();
+    const oldArr = map[id] || [];
+    const keepArr = oldArr.filter(m => m.proj_fav);
+    // 🏷️ 灵魂印记：把名字死死刻在游魂相纸上！
+    keepArr.forEach(m => m.savedChatName = cName);
+
+    if(keepArr.length > 0) { map[id] = keepArr; } 
+    else { delete map[id]; }
+    window.setChats(map);
+
+    if(window.currentId === id) window.currentId = null; 
+    if(window.renderContacts) window.renderContacts(document.getElementById('searchInput')?.value||'');
+    return false;
+  };
+
+  // 4. 升级放映机收藏引擎：点亮星星时自动记录名字印记！
+  window._projFav = async function(chatId, msgId) {
+    const chats = await localforage.getItem('mp_fix_chats') || {};
+    const arr = chats[chatId] || [];
+    const msg = arr.find(m => m.id === msgId);
+    if(msg) {
+      msg.proj_fav = !msg.proj_fav; 
+      if(msg.proj_fav) {
+        const c = window.getContactById(chatId);
+        msg.savedChatName = c ? c.name : '沉睡的羁绊';
+      }
+      chats[chatId] = arr;
+      await localforage.setItem('mp_fix_chats', chats);
+      const p = window._projAllData.find(x => x.msgId === msgId && x.chatId === chatId);
+      if(p) p.favorite = msg.proj_fav;
+      if(window._renderProjectorWall) window._renderProjectorWall();
+    }
+  };
+
+  // 5. 升级放映机读取引擎：支持显示被删除的游魂名字！
+  const oldInitProj = window._initMemoryProjector;
+  window._initMemoryProjector = async function() {
+    const wall = document.getElementById('projectorWall');
+    if(!wall) return;
+    wall.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:13px; margin-top:40px; column-span:all;">
+      <div style="width:24px; height:24px; border:3px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite; margin:0 auto 12px;"></div>
+      正在潜入硬盘深海，为您打捞岁月的碎片...
+    </div>`;
+    
+    const chats = await localforage.getItem('mp_fix_chats') || {};
+    const contacts = window.getContacts ? window.getContacts() : [];
+    const groups = window.getGroups ? window.getGroups() : [];
+    const allEntities = [...contacts, ...groups]; 
+    
+    let allPhotos = [];
+    let chatNamesSet = new Set(); 
+
+    Object.keys(chats).forEach(chatId => {
+      const arr = chats[chatId] || [];
+      const c = allEntities.find(x => x.id === chatId);
+      const activeChatName = c ? c.name : null;
+
+      arr.forEach(msg => {
+        if(!msg.text || msg.proj_deleted) return; 
+        
+        // 🌟 核心侦测：如果找不到活人，就唤醒游魂名字！
+        const finalChatName = activeChatName || msg.savedChatName || '沉睡的羁绊';
+        let added = false;
+        const baseInfo = { msgId: msg.id, chatId: chatId, time: msg.time, chatName: finalChatName, favorite: !!msg.proj_fav };
+
+        const imgRegex = /\[img\]([\s\S]*?)\[\/img\]/gi;
+        let match;
+        while ((match = imgRegex.exec(msg.text)) !== null) {
+          if(match[1]) { allPhotos.push({ ...baseInfo, type: 'img', url: match[1].trim() }); added = true; }
+        }
+        
+        if(msg.text.includes('card-fakeimg')) {
+          try {
+             const tempDiv = document.createElement('div');
+             tempDiv.innerHTML = msg.text;
+             const fiThumb = tempDiv.querySelector('.fi-thumb');
+             const fiDesc = tempDiv.querySelector('.fi-desc');
+             if(fiThumb) {
+               const bgStr = fiThumb.style.backgroundImage || fiThumb.style.background;
+               const urlMatch = bgStr.match(/url\(['"]?(.*?)['"]?\)/i);
+               if(urlMatch && urlMatch[1]) {
+                 allPhotos.push({ ...baseInfo, type: 'fakeimg', url: urlMatch[1], desc: fiDesc ? fiDesc.innerHTML : '（无字相纸）' });
+                 added = true;
+               }
+             }
+          } catch(e) {}
+        }
+
+        if(msg.text.includes('card-camera')) {
+           const camMatch = msg.text.match(/<div class="cam-photo"[^>]*>([\s\S]*?)<\/div>/i);
+           if(camMatch && camMatch[1]) {
+              allPhotos.push({ ...baseInfo, type: 'text', content: camMatch[1].trim() });
+              added = true;
+           }
+        }
+
+        if(msg.text.includes('card-xhs-share')) {
+           const xhsMatch = msg.text.match(/<div class="xhs-share-text"[^>]*>([\s\S]*?)<\/div>/i);
+           const authorMatch = msg.text.match(/By:\s*([^<]+)<\/div>/i);
+           if(xhsMatch && xhsMatch[1]) {
+              allPhotos.push({ ...baseInfo, type: 'xhs', content: xhsMatch[1].trim(), author: authorMatch ? authorMatch[1].trim() : '某位路人' });
+              added = true;
+           }
+        }
+        
+        if(added && finalChatName !== '未知羁绊') {
+          chatNamesSet.add(finalChatName);
+        }
+      });
+    });
+
+    allPhotos.sort((a, b) => b.time - a.time);
+    window._projAllData = allPhotos;
+    
+    const tabsBox = document.getElementById('projTabsBox');
+    if(tabsBox) {
+      const names = Array.from(chatNamesSet);
+      let tabsHtml = `<div class="proj-tab" data-filter="all" onclick="window._setProjFilter('all')" style="${window._getTabStyle('all')}">全部相片</div>`;
+      tabsHtml += `<div class="proj-tab" data-filter="fav" onclick="window._setProjFilter('fav')" style="${window._getTabStyle('fav')}">🌟 拾光珍藏</div>`;
+      names.forEach(n => {
+        tabsHtml += `<div class="proj-tab" data-filter="${window._projSafeEsc(n)}" onclick="window._setProjFilter('${window._projSafeEsc(n)}')" style="${window._getTabStyle(n)}">${window._projSafeEsc(n)}</div>`;
+      });
+      tabsBox.innerHTML = tabsHtml;
+    }
+
+    if(window._renderProjectorWall) window._renderProjectorWall();
+  };
+})();
+  </script>
 </body>
   </html>
