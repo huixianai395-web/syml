@@ -2448,11 +2448,15 @@ body {
         <div style="font-size:12px; color:#5c7094; font-weight:bold; margin-bottom:8px;">约会坐标 (你想去哪？)</div>
         <input id="holoLocationInp" class="input" placeholder="例如：深夜的水族馆 / 东京铁塔下" style="width:100%; background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:14px; padding:10px; margin-bottom:16px; box-sizing:border-box;">
         
-        <div style="font-size:12px; color:#5c7094; font-weight:bold; margin-bottom:8px;">携入世界书设定？</div>
-        <label style="display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:16px; background:rgba(238,244,250,0.6); padding:8px 12px; border-radius:10px; border:1px solid #dce5f0;">
-          <input type="checkbox" id="holoWbSwitch" checked style="accent-color:#5c7094; transform:scale(1.1);">
-          <span style="font-size:12px; color:#5c7094; font-weight:bold;">开启后自动注入TA的专属设定</span>
-        </label>
+        <div style="font-size:12px; color:#5c7094; font-weight:bold; margin-bottom:8px;">携入专属约会法则 (世界书)？</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:rgba(255,255,255,0.8); border:1px solid #dce5f0; border-radius:10px; cursor:pointer; margin-bottom:16px;" onclick="window._openHoloWbModal()">
+          <div style="font-size:13px; color:#5c7094; font-weight:bold; display:flex; align-items:center; gap:6px;">
+            <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>挑选世界书设定
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span id="holoWbCountDisplay" style="font-size:12px; color:#a5cfff; font-weight:bold;">已选 0 项</span><span style="color:#a5cfff; font-size:18px; line-height:1;">›</span>
+          </div>
+        </div>
 
         <div style="display:flex; gap:10px; margin-bottom:20px;">
           <div style="flex:1;">
@@ -2470,17 +2474,29 @@ body {
     </div>
   </section>
 
+  <!-- 专属世界书模态框 -->
+  <div id="holoWbModal" class="modal" style="z-index: 15001;">
+    <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; display:flex; flex-direction:column; max-height:70dvh; padding:0; overflow:hidden;">
+      <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
+        <b style="color:#5c7094; font-size:15px;">挑选约会专属法则</b>
+        <button class="btn p" onclick="document.getElementById('holoWbModal').classList.remove('active')" style="padding:4px 12px; font-size:12px;">确认</button>
+      </div>
+      <div id="holoWbList" style="flex:1; overflow-y:auto; padding:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; flex-direction:column; gap:12px;"></div>
+    </div>
+  </div>
+
   <!-- 沉浸式约会层 (平时隐藏) -->
   <div id="holoActiveScene" class="holo-scene-layer" style="display:none;">
     <div id="holoSceneBg" style="position:absolute; inset:0; background-size:cover; background-position:center;"></div>
-    <!-- 顶部悬浮双人头像框与结束按钮 -->
+    
     <div style="position:absolute; top:calc(16px + var(--safe-top)); left:20px; right:20px; z-index:25; display:flex; justify-content:space-between; align-items:center;">
       <div style="display:flex; align-items:center; gap:10px; background:rgba(250,252,255,0.7); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); padding:6px 12px; border-radius:24px; border:1px solid rgba(255,255,255,0.8); box-shadow:0 4px 16px rgba(0,0,0,0.1);">
         <img id="holoMeAv" src="" style="width:32px; height:32px; border-radius:50%; object-fit:cover; border:2px solid #fff;">
         <span style="color:#5c7094; font-size:12px; animation:blueBlink 2s infinite;">♡</span>
         <img id="holoTaAv" src="" style="width:32px; height:32px; border-radius:50%; object-fit:cover; border:2px solid #fff;">
       </div>
-      <button class="btn" onclick="window._endHoloDate()" style="background:rgba(255,255,255,0.6); backdrop-filter:blur(12px); color:#5c7094; border:1px solid #dce5f0; border-radius:14px; padding:6px 14px; font-size:12px; font-weight:bold; box-shadow:0 4px 12px rgba(0,0,0,0.1);">结束约会生成相纸</button>
+      <button id="holoEndBtn" class="btn" onclick="window._endHoloDate()" style="background:rgba(255,255,255,0.6); backdrop-filter:blur(12px); color:#5c7094; border:1px solid #dce5f0; border-radius:14px; padding:6px 14px; font-size:12px; font-weight:bold; box-shadow:0 4px 12px rgba(0,0,0,0.1);">结束约会生成相纸</button>
+      <button id="holoExitReplayBtn" class="btn hidden" onclick="window._exitHoloDate()" style="background:rgba(252,242,242,0.8); backdrop-filter:blur(12px); color:#b57b7b; border:1px solid #f2dcdc; border-radius:14px; padding:6px 14px; font-size:12px; font-weight:bold; box-shadow:0 4px 12px rgba(0,0,0,0.1);">退出放映</button>
     </div>
 
     <div class="holo-scene-mask" style="background:linear-gradient(180deg, rgba(238,244,250,0) 0%, rgba(238,244,250,0.5) 40%, rgba(238,244,250,0.98) 90%);">
@@ -15376,7 +15392,7 @@ ${chatCtx}
   };
 </script>
 <script>
-   (function(){
+    (function(){
     const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
     const getMe = () => { try { return JSON.parse(localStorage.getItem('mp_fix_me')) || {name:'我'}; } catch(e) { return {name:'我'}; } };
     const getContactById = (id) => { const arr = window.getContacts ? window.getContacts() :[]; return arr.find(c => c.id === id); };
@@ -15385,11 +15401,49 @@ ${chatCtx}
     window._tempHoloBgm = '';
     window._currentHoloRole = null;
     window._holoHistory =[];
+    window._holoSelectedWbIds = new Set();
+    window._isHoloReplay = false;
 
     window._initHoloApp = function() {
       const contacts = (window.getContacts ? window.getContacts() :[]).filter(c => !c.isGroup);
       const sel = document.getElementById('holoRoleSel');
       if(sel) sel.innerHTML = contacts.map(c => `<option value="${c.id}">${safeEsc(c.name)}</option>`).join('');
+    };
+
+    // 🌟 世界书多选引擎
+    window._openHoloWbModal = async function() {
+      const books = window.getWbBooks ? await window.getWbBooks() : [];
+      const box = document.getElementById('holoWbList');
+      if(!box) return;
+      if(!books || books.length === 0) {
+        box.innerHTML = `<div style="text-align:center; padding:30px 0; color:#a0aaba; font-size:12px;">总库空空如也，请先去世界书添加设定哦~</div>`;
+      } else {
+        box.innerHTML = books.map(b => `
+          <div style="background:rgba(255,255,255,0.6); border:1px solid #dce5f0; border-radius:12px; margin-bottom:10px; overflow:hidden;">
+            <div style="padding:12px 16px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; background:#eef4fa;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+              <div style="font-size:13px; font-weight:800; color:#3d4a6a;">📖 ${safeEsc(b.bookName)}</div>
+              <div style="color:#5c7094; font-size:16px; font-weight:bold;">▾</div>
+            </div>
+            <div style="display:none; max-height:260px; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:10px; background:#f8fafc; border-top:1px dashed #dce5f0;">
+              ${(b.entries||[]).map(e => {
+                const isChecked = window._holoSelectedWbIds.has(e.id);
+                return `
+                  <label style="display:flex; align-items:flex-start; gap:8px; padding:8px; border-bottom:1px solid #eef4fa; cursor:pointer;">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="window._toggleHoloWb('${e.id}', this.checked)" style="accent-color:#5c7094; margin-top:2px; flex-shrink:0;">
+                    <div style="flex:1; font-size:12px; color:#5c7094;"><b>${safeEsc(e.keys)}</b><br><span style="color:#7a86a8; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-top:4px;">${safeEsc(e.content)}</span></div>
+                  </label>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `).join('');
+      }
+      document.getElementById('holoWbModal').classList.add('active');
+    };
+
+    window._toggleHoloWb = function(id, isChecked) {
+      if(isChecked) window._holoSelectedWbIds.add(id); else window._holoSelectedWbIds.delete(id);
+      document.getElementById('holoWbCountDisplay').textContent = `已选 ${window._holoSelectedWbIds.size} 项`;
     };
 
     window._holoHandleBg = async function(e) {
@@ -15400,7 +15454,7 @@ ${chatCtx}
         const imgData = await compFn(f);
         window._tempHoloBg = imgData;
         const btn = document.getElementById('holoBgBtn');
-        btn.innerHTML = '✅ 风景已就绪'; btn.style.background = '#eef4fa'; btn.style.color = '#5c7094'; btn.style.borderColor = '#dce5f0';
+        btn.innerHTML = '风景已就绪'; btn.style.background = '#eef4fa'; btn.style.color = '#5c7094'; btn.style.borderColor = '#dce5f0';
       } catch(err) { alert('图片处理失败啦宝宝：' + err.message); } finally { e.target.value = ''; }
     };
 
@@ -15425,14 +15479,20 @@ ${chatCtx}
       if(!c) return alert('找不到这个角色啦！');
       window._currentHoloRole = c;
       window._holoHistory =[];
+      window._isHoloReplay = false;
+      window._holoCurrentLoc = loc;
       
       const me = getMe();
       document.getElementById('holoMeAv').src = me.avatar || 'https://via.placeholder.com/32';
       document.getElementById('holoTaAv').src = c.avatar || 'https://via.placeholder.com/32';
 
+      document.getElementById('holoEndBtn').classList.remove('hidden');
+      document.getElementById('holoExitReplayBtn').classList.add('hidden');
+
       document.getElementById('holoSceneBg').style.backgroundImage = window._tempHoloBg ? `url(${window._tempHoloBg})` : 'linear-gradient(135deg, #eef4fa, #cdd7e8)';
       document.getElementById('holoActiveScene').style.display = 'block';
       document.getElementById('holoSubtitles').innerHTML = '';
+      document.getElementById('holoOptionsBox').style.display = 'block';
       document.getElementById('holoOptionsBox').innerHTML = '<div style="text-align:center; color:#5c7094; font-size:13px; font-weight:bold; letter-spacing:2px; animation:blueBlink 1.5s infinite; padding:20px 0;"><svg viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#a5cfff; fill:none; stroke-width:2; animation:pcSpin 3s linear infinite; margin-bottom:8px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg><br>时空跃迁中 · 正在接入 TA 的脑电波...</div>';
 
       if(window._tempHoloBgm) {
@@ -15445,6 +15505,7 @@ ${chatCtx}
     };
 
     window._holoTriggerAction = function(actionText) {
+      if(window._isHoloReplay) return;
       document.getElementById('holoOptionsBox').innerHTML = `
         <div style="text-align:center; color:#5c7094; font-size:13px; font-weight:bold; letter-spacing:2px; animation:blueBlink 1.5s infinite; padding:20px 0;">
           <svg viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#a5cfff; fill:none; stroke-width:2; animation:pcSpin 3s linear infinite; margin-bottom:8px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg><br>
@@ -15454,12 +15515,14 @@ ${chatCtx}
     };
 
     window._submitHoloCustom = function() {
+      if(window._isHoloReplay) return;
       const val = document.getElementById('holoCustomInput').value.trim();
       if(!val) return;
       window._holoTriggerAction(val);
     };
 
     window._holoProgressAI = async function(userAction) {
+      if(window._isHoloReplay) return;
       const c = window._currentHoloRole;
       const me = getMe();
       
@@ -15471,13 +15534,10 @@ ${chatCtx}
       }
 
       let wbText = '';
-      if(document.getElementById('holoWbSwitch') && document.getElementById('holoWbSwitch').checked) {
+      if(window._holoSelectedWbIds.size > 0 && window.getWbBooks) {
         try {
-          const st = window.normSettings ? window.normSettings(c.settings) : {};
-          if(st.wbEnabled && st.wbEnabled.length > 0) {
-            const allBooks = JSON.parse(localStorage.getItem('mp_fix_wb_books_v3')||'null') || await window.localforage?.getItem('mp_fix_wb_books_v3') || [];
-            allBooks.forEach(b => { (b.entries || []).forEach(e => { if(st.wbEnabled.includes(e.id)) wbText += `[${e.keys}] ${e.content}\n`; }); });
-          }
+          const allBooks = await window.getWbBooks();
+          allBooks.forEach(b => { (b.entries || []).forEach(e => { if(window._holoSelectedWbIds.has(e.id)) wbText += `[${e.keys}] ${e.content}\n`; }); });
         } catch(e){}
       }
 
@@ -15542,32 +15602,98 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
       }
     };
 
+    // 🌟 核心引擎：结束并生成沉浸式回忆胶囊！
     window._endHoloDate = async function() {
       const c = window._currentHoloRole;
       if(!c) return window._exitHoloDate();
 
-      document.getElementById('holoOptionsBox').innerHTML = '<div style="text-align:center; color:#5c7094; font-size:13px; font-weight:bold; animation:blueBlink 1.5s infinite;">正在结算约会记忆，生成专属相纸中...</div>';
+      document.getElementById('holoOptionsBox').innerHTML = '<div style="text-align:center; color:#5c7094; font-size:13px; font-weight:bold; animation:blueBlink 1.5s infinite;">正在结算约会记忆，封存时空胶囊中...</div>';
       
       try {
         const sys = `这是一场沉浸式约会的结尾。请根据刚刚的聊天历史，用极具诗意和画面感的口吻，为这场约会写下一句【绝美的判词/总结语】（必须在30字以内！）。只输出这句话，绝对不要带任何前缀或多余格式！`;
         const out = await window.callApi([...window._holoHistory, {role: 'system', content: sys}]);
         let summary = out.replace(/```json|```/g, '').replace(/^["'「”]+|["'」”]+$/g, '').trim();
         
+        // 1. 存储完整的约会录像带进硬盘！
+        const dateId = 'date_' + Date.now();
+        const replayData = {
+           id: dateId, roleId: c.id, bg: window._tempHoloBg, bgm: window._tempHoloBgm, history: window._holoHistory, summary: summary
+        };
+        let replays = await localforage.getItem('mp_fix_date_replays') || {};
+        replays[dateId] = replayData;
+        await localforage.setItem('mp_fix_date_replays', replays);
+
+        // 2. 生成带有回放按钮的拍立得！(直接嵌套在 fi-desc 里，完美兼容放映机！)
         const bgUrl = window._tempHoloBg || 'https://cn.oilgasgpts.com/resource/profile/2026/04/08/vJowdrs5_vip_20260408120622A108.jpeg';
-        const cardHtml = `<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('${bgUrl}') center/cover no-repeat;"></div><div class="fi-desc">【约会纪念留影】<br>${safeEsc(summary)}</div></div>`;
+        const cardHtml = `<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('${bgUrl}') center/cover no-repeat;"></div><div class="fi-desc" style="display:flex; flex-direction:column; justify-content:center;">【约会纪念留影】<br><br>${safeEsc(summary)}<br><br><button onclick="window._replayHoloDate('${dateId}'); event.stopPropagation();" style="width:100%; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.5); color:#fff; border-radius:8px; padding:6px; margin-top:12px; cursor:pointer; font-weight:bold; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">✨ 潜入约会回忆</button></div></div>`;
         
+        // 3. 将潜层记忆灌入聊天记录，让 AI 记住！
+        const transcript = window._holoHistory.filter(h => h.role).map(h => `${h.role==='user'?'我':'TA'}: ${h.content}`).join(' | ');
+        const hiddenMem = `<div style="display:none;" class="date-memory-inject">[隐秘记忆：玩家刚刚和你进行了一场全息约会。约会地点：${window._holoCurrentLoc}。约会概要：${safeEsc(transcript)}。请在接下来的聊天中潜意识地提及这次美好的约会回忆！]</div>`;
+
         const arr = window.getChatArr ? window.getChatArr(c.id) : [];
-        arr.push({ id: 'm_' + Date.now(), role: 'assistant', text: cardHtml, time: Date.now(), stored: true });
+        arr.push({ id: 'm_' + Date.now(), role: 'assistant', text: hiddenMem + cardHtml, time: Date.now(), stored: true });
         if(window.setChatArr) window.setChatArr(c.id, arr);
         
-        alert('✨ 约会完美落幕！纪念相纸已存入聊天记录，去【回忆放映机】里看看你们的定格瞬间吧！');
+        alert('✨ 时空胶囊已封存！这盘录像带已收录至聊天记录与【回忆放映机】！');
         window._exitHoloDate();
         if(window.renderChat && window.currentId === c.id) window.renderChat();
         if(window._initMemoryProjector) window._initMemoryProjector();
       } catch(e) {
-        alert('生成相纸失败，但约会很开心！');
+        alert('生成相纸失败，但约会很开心！' + e.message);
         window._exitHoloDate();
       }
+    };
+
+    // 🌟 终极时光倒流：回忆放映机专用回放引擎！
+    window._replayHoloDate = async function(dateId) {
+      let replays = await localforage.getItem('mp_fix_date_replays') || {};
+      const data = replays[dateId];
+      if(!data) return alert('这段回忆的星轨已经消散了，可能在旧时空丢失啦...');
+
+      window._isHoloReplay = true;
+
+      document.getElementById('holoSceneBg').style.backgroundImage = data.bg ? `url(${data.bg})` : 'linear-gradient(135deg, #eef4fa, #cdd7e8)';
+      
+      const me = getMe();
+      const c = getContactById(data.roleId) || {name: 'TA', avatar: 'https://via.placeholder.com/32'};
+      document.getElementById('holoMeAv').src = me.avatar || 'https://via.placeholder.com/32';
+      document.getElementById('holoTaAv').src = c.avatar || 'https://via.placeholder.com/32';
+
+      document.getElementById('holoEndBtn').classList.add('hidden');
+      document.getElementById('holoExitReplayBtn').classList.remove('hidden');
+
+      document.getElementById('holoActiveScene').style.display = 'block';
+      document.getElementById('holoOptionsBox').style.display = 'none'; 
+      
+      const subBox = document.getElementById('holoSubtitles');
+      subBox.innerHTML = '<div style="text-align:center; color:#5c7094; font-size:12px; margin-bottom:20px; opacity:0.8; letter-spacing:2px;">— 记忆放映中 —</div>';
+
+      if(data.bgm) {
+        const audio = document.getElementById('holoBgmAudio');
+        audio.src = data.bgm;
+        audio.play().catch(e=>console.log('BGM被拦截', e));
+      }
+
+      data.history.forEach(h => {
+        if(h.role === 'user') {
+          subBox.insertAdjacentHTML('beforeend', `<div class="holo-subtitle" style="text-align:right; color:#7a86a8; font-size:14px; opacity:0.8; margin-bottom:12px; font-weight:bold;">"${safeEsc(h.content)}"</div>`);
+        } else if(h.role === 'assistant') {
+          try {
+            const parsed = JSON.parse(h.content);
+            subBox.insertAdjacentHTML('beforeend', `
+              <div style="font-size:16px; color:#1a2b4c; line-height:1.8; text-align:justify; font-family:'STZhongsong', 'KaiTi', serif; margin-bottom:24px; font-weight:900;">
+                <span style="font-size:13px; color:#5c7094; display:block; margin-bottom:8px; font-weight:normal;">${safeEsc(parsed.narration)}</span>
+                ${parsed.inner_voice ? `<span style="font-size:12px; color:#a5cfff; font-style:italic; display:block; margin-bottom:8px; font-weight:normal;">💭 ${safeEsc(parsed.inner_voice)}</span>` : ''}
+                "${safeEsc(parsed.dialog)}"
+              </div>
+            `);
+          } catch(e) {}
+        }
+      });
+      
+      // 强行把视线拉到最开头，方便老婆从头回味！
+      setTimeout(() => { subBox.scrollTop = 0; }, 100);
     };
 
     window._exitHoloDate = function() {
