@@ -3128,16 +3128,23 @@ body {
   <!-- ================= 升级版结束 ================= -->
 <!-- ================= 🌟 蓝色高定：全球匿名社区「Echoes · 回音海」 ================= -->
 <section id="echoesForum" class="screen">
+  <!-- 1. 替换 Header，加入“管理”按钮 -->
   <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
-    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 桌面</button>
-    <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
-      <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-      回音海
-    </b>
+    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">‹ 桌面</button>
+    <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">回音海</b>
     <div style="display:flex; gap:6px;">
-      <button class="btn" id="echoesRefreshBtn" onclick="window._generateEchoesPosts()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px;">探索</button>
+      <button class="btn" id="echoesManageBtn" onclick="window._toggleEchoesManage()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px;">管理</button>
       <button class="btn p" onclick="window._openEchoesPublishModal()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">+ 漂流瓶</button>
     </div>
+  </div>
+
+<!-- 2. 在 echoesTabsBox 分类栏的最末尾，加上“换马甲”按钮 -->
+      <div onclick="window._setEchoesAlias()" style="background:transparent; color:#5c7094; padding:6px 12px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; border:1px dashed #a5cfff;">🎭 换马甲</div>
+
+<!-- 3. 在 echoesForum 的最底部（</div> 的上面），加上多选操作台 -->
+  <div id="echoesBatchBar" class="hidden" style="position:fixed; bottom:0; left:0; right:0; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border-top:1px solid #dce5f0; padding:12px 20px calc(12px + var(--safe-bottom)); display:flex; justify-content:space-between; align-items:center; box-shadow:0 -4px 20px rgba(92,112,148,0.08); z-index:101;">
+    <div style="font-size:13px; color:#7a86a8; font-weight:bold;" id="echoesSelCount">已选 0 项</div>
+    <button class="btn d" onclick="window._deleteSelectedEchoes()" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; font-weight:bold; padding:6px 14px;">彻底抹除</button>
   </div>
   
   <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px; overflow-y:auto; box-sizing:border-box;">
@@ -15892,7 +15899,106 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     }
     window._renderEchoesFeed();
   };
+// 🌟 1. 马甲与管理系统的全局变量
+  window._echoesManageMode = false;
+  window._echoesSelSet = new Set();
+  
+  window._setEchoesAlias = function() {
+    const old = localStorage.getItem('mp_echoes_alias') || '神秘海星';
+    const n = prompt('给你的匿名马甲起个名字吧：', old);
+    if(n && n.trim()) {
+      localStorage.setItem('mp_echoes_alias', n.trim());
+      alert('✨ 马甲已无缝切换为：' + n.trim());
+    }
+  };
 
+  // 🌟 2. 发帖通道紧急抢救（就是这个漏掉啦！）
+  window._openEchoesPublishModal = function() {
+    document.getElementById('echoesPublishModal').classList.add('active');
+  };
+
+  window._publishMyEchoesPost = async function() {
+    const text = document.getElementById('echoesInputText').value.trim();
+    if(!text) return alert('宝宝，漂流瓶里总得装点什么吧~');
+    
+    const tag = document.getElementById('echoesPublishTag').value;
+    const myAlias = localStorage.getItem('mp_echoes_alias') || '神秘海星';
+    
+    const posts = await getEchoesPosts();
+    const newId = 'ec_' + Date.now();
+    posts.unshift({
+      id: newId, author: myAlias, ip: '当前位置', tag: tag,
+      content: text, likes: 0, time: Date.now(), comments: []
+    });
+    
+    await setEchoesPosts(posts);
+    document.getElementById('echoesInputText').value = '';
+    document.getElementById('echoesPublishModal').classList.remove('active');
+    
+    setTimeout(() => { window._triggerEchoesAIResponse(newId, false); }, 1500);
+  };
+
+  // 🌟 3. 多选删除引擎
+  window._toggleEchoesManage = function() {
+    window._echoesManageMode = !window._echoesManageMode;
+    if(!window._echoesManageMode) window._echoesSelSet.clear();
+    const btn = document.getElementById('echoesManageBtn');
+    if(btn) btn.textContent = window._echoesManageMode ? '完成' : '管理';
+    
+    const batchBar = document.getElementById('echoesBatchBar');
+    if(batchBar) batchBar.classList.toggle('hidden', !window._echoesManageMode);
+    
+    window._renderEchoesFeed();
+  };
+
+  window._toggleEchoesSel = function(id) {
+    if(window._echoesSelSet.has(id)) window._echoesSelSet.delete(id);
+    else window._echoesSelSet.add(id);
+    const countEl = document.getElementById('echoesSelCount');
+    if(countEl) countEl.textContent = `已选 ${window._echoesSelSet.size} 项`;
+    window._renderEchoesFeed();
+  };
+
+  window._deleteSelectedEchoes = async function() {
+    if(window._echoesSelSet.size === 0) return alert('还没选中任何漂流瓶哦宝宝！');
+    if(!confirm(`确定要将这 ${window._echoesSelSet.size} 个漂流瓶沉入海底吗？`)) return;
+    
+    let posts = await getEchoesPosts();
+    posts = posts.filter(p => !window._echoesSelSet.has(p.id));
+    await setEchoesPosts(posts);
+    
+    window._echoesSelSet.clear();
+    window._toggleEchoesManage();
+  };
+
+  // 🌟 4. 修复瀑布流渲染，加入多选复选框
+  // (只需在原 renderEchoesFeed 的 map 函数里的 return 前加上这句，并将 cHtml 拼到最外层！)
+  /* 
+    const isSel = window._echoesSelSet.has(p.id);
+    const checkHtml = window._echoesManageMode ? \`<div onclick="event.stopPropagation(); window._toggleEchoesSel('\${p.id}')" style="width:20px;height:20px;border-radius:50%;border:1.5px solid \${isSel?'#5c7094':'#dce5f0'};background:\${isSel?'#eef4fa':'#fff'};color:\${isSel?'#5c7094':'transparent'};display:grid;place-items:center;font-size:14px;margin-right:12px;flex-shrink:0;transition:all 0.2s;">✓</div>\` : '';
+    // 然后在最外层 div 里加上 style="display:flex; align-items:center;" 并在内部包裹 \${checkHtml} 即可。
+  */
+
+  // 🌟 5. 【极其重要】修复评论发送通道，带上你的专属马甲！
+  window._sendEchoesComment = async function() {
+    const text = document.getElementById('echoesCommentInput').value.trim();
+    if(!text || !window._currentEchoesPostId) return;
+
+    const myAlias = localStorage.getItem('mp_echoes_alias') || '神秘海星';
+    const posts = await getEchoesPosts();
+    const post = posts.find(x => x.id === window._currentEchoesPostId);
+    if(!post) return;
+
+    post.comments = post.comments || [];
+    post.comments.push({ author: myAlias, text: text, ip: '本地' });
+    await setEchoesPosts(posts);
+    
+    document.getElementById('echoesCommentInput').value = '';
+    window._openEchoesDetail(window._currentEchoesPostId);
+    
+    // 把马甲和楼主身份传给 AI 防社死引擎！
+    setTimeout(() => { window._triggerEchoesAIResponse(post.id, true); }, 1500);
+  };
   const K_ECHOES_CUSTOM_TABS = 'mp_fix_echoes_tabs_v1';
   window._currentEchoesPostId = null;
 
@@ -16104,9 +16210,9 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
 2. 绝对禁止男主在帖子里暴露真名！必须强制为男主虚构一个网感强烈的马甲ID！
 3. 内容必须极度生活化！比如：画画崩溃、吃宵夜吐槽、迷路求助、吐槽极品同事。如果是在自定义板块（如画画交流），内容必须严格贴合板块主题！
 
-【任务】：生成 8~12 条极度真实的帖子。
+【任务】：生成 8~15 条极度真实的帖子。
 - 其中 60% 是纯野生路人发帖，剩下的 40% 是某个男主（${maleInfo}）披着马甲发帖。
-- 为每条帖子生成 12-18 条路人评论。如果楼主是男主，路人要在底下疯狂吐槽他；绝不许其他男主来评论他！
+- 为每条帖子生成 8-15 条路人评论。如果楼主是男主，路人要在底下疯狂吐槽他；绝不许其他男主来评论他！
 
 必须严格返回 JSON 数组格式：
 [
@@ -16115,7 +16221,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     "ip": "全世界任意真实城市",
     "tag": "${window._currentEchoesTab === 'All' ? '随机分类' : window._currentEchoesTab}",
     "content": "极度真实有趣的帖子正文，贴合当前板块主题",
-    "likes": 随机点赞数(1000-20000),
+    "likes": 随机点赞数(1000-2000000),
     "comments": [ {"author": "野生路人网名", "text": "神回复/吐槽"} ]
   }
 ]`;
@@ -16158,12 +16264,17 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
 
       const maleInfo = maleLeads.map(c => `- ${c.name}：${c.persona}`).join('\\n');
       
-      const sysPrompt = `玩家刚刚在论坛的【${post.tag}】板块里${isComment ? '发表了一条评论' : '抛出了一个漂流瓶主贴'}：“${isComment ? post.comments[post.comments.length-1].text : post.content}”。
-【绝对指令】：
+      const myAlias = localStorage.getItem('mp_echoes_alias') || '神秘海星';
+      const isMyPost = (post.author === myAlias);
+
+      const sysPrompt = `玩家披着马甲【${myAlias}】刚刚在论坛的【${post.tag}】板块里${isComment ? `在楼主（${post.author}）的帖子《${post.content}》下发表了一条评论` : '抛出了一个漂流瓶主贴'}：“${isComment ? post.comments[post.comments.length-1].text : post.content}”。
+【绝对防社死指令】：
 请根据以下男主的设定：\n${maleInfo}
-挑选 1-3 位男主，如果他恰好刷到了玩家的话，请为他虚构一个沙雕网感马甲（绝对禁止使用真名！），以野生网友的口吻对玩家进行回复（可以傲娇搭讪、可以假装路人指点、如果是画画区可以探讨技巧）。
-同时生成 7-10 个纯野生路人网友的神回复，混淆视听！
-返回格式：[{"author":"虚构的马甲网名","text":"回复内容"}]`;
+挑选 1-3 位男主披上沙雕网感马甲（绝对禁止暴露真名），对玩家进行回复！
+1. 如果玩家是在别人的帖子里评论（楼主不是玩家），你必须假装成【完全陌生的路人网友】！或者是暗搓搓搭讪的网友！【绝对、绝对禁止】使用“老婆”、“你怎么了”、“谁惹你了”这种明显的熟人/男友语气！这是严重的 OOC 行为！
+2. 你的回复必须加上艾特，格式严格为：“回复 @${myAlias}：你的评论内容”。
+3. 此外，请额外生成 15-40 个【纯野生路人网友】的海量神回复（国内与国外 IP 必须 1:1，大量使用如东京、伦敦、纽约、洛杉矶、首尔等外国城市）。
+返回格式：[{"author":"虚构的网名","text":"回复 @${myAlias}：回复内容"}]`;
 
       const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '快生成一波评论弹幕轰炸玩家！' }]);
       const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
