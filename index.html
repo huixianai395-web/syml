@@ -16186,7 +16186,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     document.getElementById('echoesDetailModal').classList.add('active');
   };
 
-    // 🌟 终极水军召唤：自带点赞和IP的评论流
+    // 🌟 终极水军召唤：强制中文翻译补丁
   window._fetchMoreComments = async function(postId) {
     const btn = document.getElementById('echoesFetchCmtBtn');
     if(btn) { btn.textContent = '正在连接全球电波...'; btn.style.pointerEvents = 'none'; btn.style.opacity = '0.7'; }
@@ -16198,9 +16198,10 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
 
       const sysPrompt = `玩家正在查看帖子：“${post.content}”。请为这篇帖子生成 15-30 条路人回复！
 【要求】：必须包含外国IP和国内IP，中外比例1:1。每条评论必须带有 likes 点赞数字段！
-JSON格式：[{"author":"网友ID", "ip":"真实城市", "text":"吐槽内容", "likes": 50}]`;
+⚠️【语言护盾铁律】：如果是外国IP的评论，绝对不允许只发纯外文，必须带有中文翻译（如：“Oh my god! (我的天啊！)”），确保玩家能完全看懂！
+JSON格式：[{"author":"网友ID", "ip":"真实城市", "text":"吐槽内容 (带中文翻译)", "likes": 50}]`;
 
-      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '发动全球水军！必须带IP和点赞！' }]);
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '发动全球水军！外国网友必须附带中文翻译！必须带IP和点赞！' }]);
       const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
       const match = cleaned.match(/\[[\s\S]*\]/);
       if(match) {
@@ -16295,7 +16296,7 @@ JSON格式：[{"author":"网友ID", "ip":"真实城市", "text":"吐槽内容", 
     if(typeof window._sendToAI === 'function') window._sendToAI(chatId, hiddenPrompt, true);
   };
 
-// 🌟 AI 造梦：男主专属定位护盾 + 全新评论生成引擎！
+// 🌟 AI 造梦：完美的全球生态 + 强制双语翻译引擎！
   window._generateEchoesPosts = async function() {
     const btn = document.getElementById('echoesRefreshBtn');
     if(btn) { btn.textContent = '电波汇聚中...'; btn.style.pointerEvents = 'none'; btn.style.opacity = '0.7'; }
@@ -16305,24 +16306,26 @@ JSON格式：[{"author":"网友ID", "ip":"真实城市", "text":"吐槽内容", 
       const maleLeads = contacts.filter(c => !c.isGroup);
       const maleInfo = maleLeads.map(c => `- ${c.name}：${c.persona}`).join('\\n');
 
+      // ⚠️ 核心修改：在系统指令里加入了【语言铁律】
       const sysPrompt = `你是「Echoes」生态引擎。当前时间：${new Date().toLocaleString()}。
 
 【核心铁律】：
 1. 生成 8-10 条帖子，【50%中国网友，50%外国网友】。
-2. 包含 2-3 个男主（${maleInfo}）披马甲发帖。如果是男主，必须在JSON中标记 "isMaleLead": true！并且IP写他合理的所在地（如东京或国内）。
-3. 每个帖子的 comments 必须自带 7 到 12 条纯路人神评！并且每条评论必须包含 ip 和 likes 字段！
+2. 包含 2-3 个男主（${maleInfo}）披马甲发帖。必须在JSON中标记 "isMaleLead": true！并且IP写他合理的所在地。
+3. 每个帖子的 comments 必须自带 8 到 15 条纯路人神评！并且每条评论必须包含 ip 和 likes 字段！
+4. ⚠️【语言护盾铁律（极其重要）】：绝对不允许出现纯外文！如果是外国网友发帖或评论，为了让玩家看懂，必须采用双语格式（如："This is crazy! (这简直太疯狂了！)"）或者直接使用带有"机翻感"的中文！绝不许满屏纯英文！
 
 严格返回 JSON 格式：
 [
   {
     "author": "虚构网名", "ip": "真实城市", "isMaleLead": false,
     "tag": "${window._currentEchoesTab === 'All' ? '随机' : window._currentEchoesTab}",
-    "content": "正文", "likes": 5000,
-    "comments": [ {"author": "路人A", "ip": "纽约", "text": "神回复", "likes": 120} ]
+    "content": "外文原句 (中文翻译)", "likes": 5000,
+    "comments": [ {"author": "路人A", "ip": "纽约", "text": "Oh my god! (我的天啊！)", "likes": 120} ]
   }
 ]`;
 
-      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '开始生成！每个帖子自带8-15条评论，必须带上所有字段！' }]);
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '开始生成！每个帖子自带8-15条评论，必须带上所有字段！外国网友必须附带中文翻译！' }]);
       const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
       const dataArr = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
       
@@ -16330,7 +16333,6 @@ JSON格式：[{"author":"网友ID", "ip":"真实城市", "text":"吐槽内容", 
       const foreignCities = ['东京', '巴黎', '纽约', '伦敦', '罗马', '首尔', '曼谷', '洛杉矶', '柏林', '冰岛', '莫斯科', '悉尼'];
       const domesticCities = ['北京', '上海', '广州', '成都', '杭州', '重庆', '深圳', '长沙', '武汉'];
 
-      // 提取纯路人进行洗牌，男主不动！
       let bystanderIndices = [];
       dataArr.forEach((d, i) => { if(!d.isMaleLead) bystanderIndices.push(i); });
       let ipTypes = bystanderIndices.map((_, i) => i % 2 === 0 ? 'foreign' : 'domestic');
@@ -16341,13 +16343,11 @@ JSON格式：[{"author":"网友ID", "ip":"真实城市", "text":"吐槽内容", 
         const timeOffset = Math.floor(Math.random() * 86400000); 
         
         let finalIp = data.ip || '未知';
-        // 如果是路人，应用洗牌后的全球IP；如果是男主，保留他自己的IP！
         if (!data.isMaleLead) {
           finalIp = ipTypes[typeIdx] === 'foreign' ? foreignCities[Math.floor(Math.random() * foreignCities.length)] : domesticCities[Math.floor(Math.random() * domesticCities.length)];
           typeIdx++;
         }
 
-        // 处理评论的缺失字段
         const processedComments = (data.comments || []).map(c => ({
           author: c.author || '神秘网友',
           ip: c.ip || (Math.random() > 0.5 ? foreignCities[Math.floor(Math.random()*foreignCities.length)] : domesticCities[Math.floor(Math.random()*domesticCities.length)]),
