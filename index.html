@@ -2487,6 +2487,21 @@ body {
 
   <!-- 沉浸式约会层 (平时隐藏) -->
   <div id="holoActiveScene" class="holo-scene-layer" style="display:none;">
+    <style>
+      /* 🌟 蓝色高定：动态调色盘专属穿透样式，绝不触碰底层 JS！ */
+      #holoActiveScene { --holo-text-color: #1a2b4c; }
+      #holoActiveScene.custom-color-active div[style*="color:#1a2b4c"] { color: var(--holo-text-color) !important; }
+      #holoActiveScene.custom-color-active span[style*="color:#5c7094"] { color: var(--holo-text-color) !important; opacity: 0.85 !important; }
+      #holoActiveScene.custom-color-active span[style*="color:#a5cfff"] { color: var(--holo-text-color) !important; opacity: 0.75 !important; }
+      #holoActiveScene.custom-color-active #holoVoiceIndicator span { color: var(--holo-text-color) !important; opacity: 0.8 !important; }
+      #holoActiveScene.custom-color-active .holo-voice-wave { background: var(--holo-text-color) !important; opacity: 0.5 !important; }
+      
+      /* 智能边缘双重光晕：专治各种花里胡哨的复杂风景图！ */
+      #holoSubtitles div[style*="font-size:16px"] {
+         text-shadow: 0 1px 3px rgba(255,255,255,0.7), 0 2px 10px rgba(0,0,0,0.35) !important;
+      }
+    </style>
+
     <div id="holoSceneBg" style="position:absolute; inset:0; background-size:cover; background-position:center;"></div>
     
     <div style="position:absolute; top:calc(16px + var(--safe-top)); left:20px; right:20px; z-index:25; display:flex; justify-content:space-between; align-items:center;">
@@ -2495,18 +2510,29 @@ body {
         <span style="color:#5c7094; font-size:12px; animation:blueBlink 2s infinite;">♡</span>
         <img id="holoTaAv" src="" style="width:32px; height:32px; border-radius:50%; object-fit:cover; border:2px solid #fff;">
       </div>
-      <button id="holoEndBtn" class="btn" onclick="window._endHoloDate()" style="background:rgba(255,255,255,0.6); backdrop-filter:blur(12px); color:#5c7094; border:1px solid #dce5f0; border-radius:14px; padding:6px 14px; font-size:12px; font-weight:bold; box-shadow:0 4px 12px rgba(0,0,0,0.1);">结束约会生成相纸</button>
-      <button id="holoExitReplayBtn" class="btn hidden" onclick="window._exitHoloDate()" style="background:rgba(252,242,242,0.8); backdrop-filter:blur(12px); color:#b57b7b; border:1px solid #f2dcdc; border-radius:14px; padding:6px 14px; font-size:12px; font-weight:bold; box-shadow:0 4px 12px rgba(0,0,0,0.1);">退出放映</button>
+      
+      <div style="display:flex; gap:10px; align-items:center;">
+        <!-- 🌟 蓝色高定：隐形字体调色盘，完美融入 UI -->
+        <div style="position:relative; width:34px; height:34px; border-radius:12px; background:rgba(255,255,255,0.6); backdrop-filter:blur(12px); border:1px solid #dce5f0; display:grid; place-items:center; box-shadow:0 4px 12px rgba(0,0,0,0.1); overflow:hidden;" title="调整字体颜色">
+          <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round;"><path d="M12 2L2 22h20L12 2z"></path><line x1="12" y1="2" x2="12" y2="22"></line></svg>
+          <input type="color" oninput="document.getElementById('holoActiveScene').style.setProperty('--holo-text-color', this.value); document.getElementById('holoActiveScene').classList.add('custom-color-active');" style="position:absolute; inset:-10px; width:200%; height:200%; opacity:0; cursor:pointer;">
+        </div>
+
+        <button id="holoEndBtn" class="btn" onclick="window._endHoloDate()" style="background:rgba(255,255,255,0.6); backdrop-filter:blur(12px); color:#5c7094; border:1px solid #dce5f0; border-radius:12px; padding:6px 14px; font-size:12px; font-weight:bold; box-shadow:0 4px 12px rgba(0,0,0,0.1);">结束约会生成相纸</button>
+        <button id="holoExitReplayBtn" class="btn hidden" onclick="window._exitHoloDate()" style="background:rgba(252,242,242,0.8); backdrop-filter:blur(12px); color:#b57b7b; border:1px solid #f2dcdc; border-radius:12px; padding:6px 14px; font-size:12px; font-weight:bold; box-shadow:0 4px 12px rgba(0,0,0,0.1);">退出放映</button>
+      </div>
     </div>
 
-    <div class="holo-scene-mask" style="background:linear-gradient(180deg, rgba(238,244,250,0) 0%, rgba(238,244,250,0.5) 40%, rgba(238,244,250,0.98) 90%);">
+    <div class="holo-scene-mask" style="background:linear-gradient(180deg, rgba(238,244,250,0) 0%, rgba(238,244,250,0.3) 40%, rgba(238,244,250,0.98) 90%); pointer-events:none;"></div>
+    
+    <div style="position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; padding:40px 24px calc(24px + var(--safe-bottom)); z-index:10; pointer-events:none;">
       <div id="holoVoiceIndicator" style="display:none; align-items:center; gap:4px; margin-bottom:12px; justify-content:center;">
-        <span style="font-size:11px; color:#5c7094; font-weight:bold; font-family:ui-monospace, monospace;">TA 正在低语</span>
-        <div class="holo-voice-wave"></div><div class="holo-voice-wave" style="animation-delay:0.2s;"></div><div class="holo-voice-wave" style="animation-delay:0.4s;"></div>
+        <span style="font-size:11px; color:var(--holo-text-color, #5c7094); font-weight:bold; font-family:ui-monospace, monospace;">TA 正在低语</span>
+        <div class="holo-voice-wave" style="background:var(--holo-text-color, #a5cfff);"></div><div class="holo-voice-wave" style="background:var(--holo-text-color, #a5cfff); animation-delay:0.2s;"></div><div class="holo-voice-wave" style="background:var(--holo-text-color, #a5cfff); animation-delay:0.4s;"></div>
       </div>
 
-      <div id="holoSubtitles" style="flex:1; overflow-y:auto; scrollbar-width:none; padding-bottom:20px; display:flex; flex-direction:column; justify-content:flex-end;"></div>
-      <div id="holoOptionsBox" style="margin-top:20px;"></div>
+      <div id="holoSubtitles" style="flex:1; overflow-y:auto; scrollbar-width:none; padding-bottom:20px; display:flex; flex-direction:column; justify-content:flex-end; pointer-events:auto;"></div>
+      <div id="holoOptionsBox" style="margin-top:20px; pointer-events:auto;"></div>
     </div>
     <audio id="holoBgmAudio" loop preload="none"></audio>
   </div>
