@@ -15775,8 +15775,15 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
 </script>
   <script>
 (function(){
-  // 🌟 蓝色高定防御罩：回忆永生与羁绊防断裂引擎！
+  // 🌟 蓝色高定防御罩：回忆永生与羁绊防断裂引擎 (终极防死机修复版)！
   
+  // 🕵️ 蓝色的私密调查员：专门负责查户口，拥有全宇宙通行证，绝不报错！
+  const safeGetContact = (id) => {
+    if(window.getContacts) { const c = window.getContacts().find(x=>x.id===id); if(c) return c; }
+    if(window.getGroups) { return window.getGroups().find(x=>x.id===id) || null; }
+    return null;
+  };
+
   // 1. 劫持并重构：清空聊天记录
   window.clearCurrentChat = function() {
     if(!window.currentId) return;
@@ -15787,7 +15794,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     const keepArr = oldArr.filter(m => m.proj_fav); 
     window.setChatArr(window.currentId, keepArr);
     
-    const c = window.getContactById(window.currentId);
+    const c = safeGetContact(window.currentId);
     if(c && c.isGroup) {
       const groups = window.getGroups ? window.getGroups() : [];
       const idx = groups.findIndex(g => g.id === window.currentId);
@@ -15809,7 +15816,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     if(!window.currentId) return;
     if(!confirm('删除当前好友及聊天记录？（已收藏进回忆放映机的相片将为您永久保留 ✨）')) return;
     
-    const c = window.getContactById(window.currentId);
+    const c = safeGetContact(window.currentId);
     const cName = c ? c.name : '沉睡的羁绊';
 
     const map = window.getChats();
@@ -15837,7 +15844,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     window._isDeleting = true; setTimeout(() => window._isDeleting = false, 500);
     if(!confirm('确定要删除这个聊天及所有记录吗？（已收藏进回忆放映机的相片将为您永久保留 ✨）')) return false;
     
-    const c = window.getContactById(id);
+    const c = safeGetContact(id);
     const cName = c ? c.name : '沉睡的羁绊';
 
     const groups = window.getGroups ? window.getGroups() : [];
@@ -15870,7 +15877,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     if(msg) {
       msg.proj_fav = !msg.proj_fav; 
       if(msg.proj_fav) {
-        const c = window.getContactById(chatId);
+        const c = safeGetContact(chatId);
         msg.savedChatName = c ? c.name : '沉睡的羁绊';
       }
       chats[chatId] = arr;
@@ -15975,6 +15982,6 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     if(window._renderProjectorWall) window._renderProjectorWall();
   };
 })();
-  </script>
+</script>
 </body>
   </html>
