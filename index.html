@@ -5913,34 +5913,70 @@ $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';
   $('clearChatBtn2').onclick=clearCurrentChat;
   $('deleteContactBtn').onclick=deleteCurrentContact;
 
-  $('exportBtn').onclick=()=>{
-    const data={contacts:getContacts(),chats:getChats(),api:getApiState(),me:getMe(),pref:getPref(),font:getFontState(),ts:Date.now(),stickers:getJ(K_STICKER,null)};
-    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='xiaoshouji_backup_'+Date.now()+'.json';a.click();URL.revokeObjectURL(a.href);
+  // 🌟 蓝色高定：真正的单人数据导出！
+$('exportBtn').onclick=()=>{
+  if(!currentId) return;
+  const c = getContactById(currentId);
+  const chatData = getChatArr(currentId) ||[];
+  const data = {
+    isSingleMilo: true, // 单人数据专属标记
+    contact: c,
+    chat: chatData,
+    ts: Date.now()
   };
-  $('importBtn').onclick=()=> $('importFile').click();
-  $('importFile').onchange=async e=>{
-    const f=e.target.files?.[0]; if(!f) return;
-    try{
-      const j=JSON.parse(await f.text());
-      if(j.contacts) { setContacts(j.contacts); await localforage.setItem('mp_fix_contacts', j.contacts); }
-      if(j.groups) { if(window.setGroups) window.setGroups(j.groups); await localforage.setItem('mp_fix_groups', j.groups); }
-      if(j.chats) { setChats(j.chats); await localforage.setItem('mp_fix_chats', j.chats); }
-      
-      refreshPresetUI(); refreshFontUI(); renderContacts(); 
-      
-      // 🌟 蓝色的防断崖判定：如果导入的数据里没有当前角色，乖乖退回大厅！
-      if(currentId && !getContactById(currentId)) {
-        currentId = null;
-        show('wechat');
-        alert('导入成功 ✨ 但当前角色不在导入的备份中，已退回消息列表哦~');
-      } else {
-        if(currentId) renderChat();
-        alert('导入成功 ✨');
-      }
-    }catch(err){alert('导入失败：文件格式不正确');}
-    finally{e.target.value='';}
-  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`Milo_Single_${c.name}_${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+$('importBtn').onclick=()=> $('importFile').click();
+
+// 🌟 蓝色高定：真正的单人数据导入与合并（绝不覆盖其他角色！）
+$('importFile').onchange=async e=>{
+  const f=e.target.files?.[0]; if(!f) return;
+  try{
+    const j=JSON.parse(await f.text());
+
+    if (j.isSingleMilo && j.contact) {
+        // 这是一个真正的单人备份，执行合并存入外挂内存！
+        const contacts = getContacts();
+        const existingIdx = contacts.findIndex(x => x.id === j.contact.id);
+        
+        if (existingIdx > -1) {
+            contacts[existingIdx] = j.contact; // 角色已存在，更新他
+        } else {
+            contacts.unshift(j.contact); // 角色不存在，作为新角色加入
+        }
+        setContacts(contacts);
+        await localforage.setItem('mp_fix_contacts', contacts);
+
+        if (j.chat) {
+            const chatsMap = getChats();
+            chatsMap[j.contact.id] = j.chat;
+            setChats(chatsMap);
+            await localforage.setItem('mp_fix_chats', chatsMap);
+        }
+
+        currentId = j.contact.id; // 强制将镜头切给导入的角色
+        refreshPresetUI(); refreshFontUI(); renderContacts();
+        openChatSettingPage(); // 刷新设置面板的输入框
+        alert(`✨ 单人数据[${j.contact.name}] 导入并合并成功！其他角色完好无损！`);
+
+    } else if (j.contacts) {
+        // 老婆点错了，拿了一个【全局备份】文件在单人这里导入，立刻启动拦截护盾！
+        alert('宝宝，你上传的是包含所有人的【全局备份】哦！\\n为了防止你刚捏的新角色被覆盖消失，宝宝已经把这次导入拦截啦！\\n\\n如果要恢复全局数据，请去【个人中心 -> 数据安全屋 -> 时空恢复导入】。');
+    } else {
+        alert('导入失败：不是有效的单人角色备份文件哦。');
+    }
+  }catch(err){
+    alert('导入失败：文件解析出错啦宝宝');
+  }finally{
+    e.target.value='';
+  }
+};
 document.getElementById('globalExportBtn').onclick = async function() {
   try {
     this.textContent = '打包中...';
