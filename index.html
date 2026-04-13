@@ -14131,14 +14131,28 @@ window._showOrderHistory = async function() {
           if(match[1]) { allPhotos.push({ ...baseInfo, type: 'img', url: match[1].trim() }); added = true; }
         }
         
-        // 📡 雷达 2 号：模拟相片 (card-fakeimg)
+        // 📡 雷达 2 号：模拟相片 (card-fakeimg) 🌟 蓝色高定完美升级版！
         if(msg.text.includes('card-fakeimg')) {
-          const fakeMatch = msg.text.match(/url\(['"]?(https?:\/\/[^'"\)]+|data:image\/[^'"\)]+)['"]?\)/i);
-          const descMatch = msg.text.match(/<div class="fi-desc">([\s\S]*?)<\/div>/i);
-          if(fakeMatch && fakeMatch[1]) {
-            allPhotos.push({ ...baseInfo, type: 'fakeimg', url: fakeMatch[1], desc: descMatch ? descMatch[1].trim() : '（无字相纸）' });
-            added = true;
-          }
+          try {
+             // 🌟 核心魔法：借用浏览器的虚拟 DOM 来完美拆解复杂的 HTML，绝不漏掉任何一个按钮和判词！
+             const tempDiv = document.createElement('div');
+             tempDiv.innerHTML = msg.text;
+             const fiThumb = tempDiv.querySelector('.fi-thumb');
+             const fiDesc = tempDiv.querySelector('.fi-desc');
+             if(fiThumb) {
+               const bgStr = fiThumb.style.backgroundImage || fiThumb.style.background;
+               const urlMatch = bgStr.match(/url\(['"]?(.*?)['"]?\)/i);
+               if(urlMatch && urlMatch[1]) {
+                 allPhotos.push({ 
+                   ...baseInfo, 
+                   type: 'fakeimg', 
+                   url: urlMatch[1], 
+                   desc: fiDesc ? fiDesc.innerHTML : '（无字相纸）' 
+                 });
+                 added = true;
+               }
+             }
+          } catch(e) {}
         }
 
         // 📡 雷达 3 号：文字胶片 (card-camera)
@@ -14155,12 +14169,7 @@ window._showOrderHistory = async function() {
            const xhsMatch = msg.text.match(/<div class="xhs-share-text"[^>]*>([\s\S]*?)<\/div>/i);
            const authorMatch = msg.text.match(/By:\s*([^<]+)<\/div>/i);
            if(xhsMatch && xhsMatch[1]) {
-              allPhotos.push({ 
-                ...baseInfo, 
-                type: 'xhs', 
-                content: xhsMatch[1].trim(),
-                author: authorMatch ? authorMatch[1].trim() : '某位路人'
-              });
+              allPhotos.push({ ...baseInfo, type: 'xhs', content: xhsMatch[1].trim(), author: authorMatch ? authorMatch[1].trim() : '某位路人' });
               added = true;
            }
         }
