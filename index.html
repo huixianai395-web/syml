@@ -15775,7 +15775,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
 </script>
   <script>
 (function(){
-  // 🌟 蓝色高定防御罩：回忆永生与羁绊防断裂引擎 (终极破壁直连版)！
+  // 🌟 蓝色高定防御罩：回忆永生与羁绊防断裂引擎 (绝不刷新的丝滑无感版)！
   
   const safeGetContact = (id) => {
     if(window.getContacts) { const c = window.getContacts().find(x=>x.id===id); if(c) return c; }
@@ -15783,18 +15783,23 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     return null;
   };
 
-  // 1. 劫持并重构：清空聊天记录 (绕过闭包限制，直调公开接口)
+  // 1. 劫持并重构：清空聊天记录
   window.clearCurrentChat = function() {
     if(!window.currentId) return;
     if(!confirm('清空当前聊天？（已收藏进回忆放映机的相片将为您永久保留 ✨）')) return;
     
     const oldArr = window.getChatArr(window.currentId) || [];
-    // 🔪 核心过滤网：只保留被打上星星的记忆碎片！
     const keepArr = oldArr.filter(m => m.proj_fav); 
     window.setChatArr(window.currentId, keepArr);
     
-    // 唤醒公开的预览刷新器
-    if(window.updateContactPreview) window.updateContactPreview(window.currentId);
+    const c = safeGetContact(window.currentId);
+    if(c && c.isGroup) {
+      const groups = window.getGroups ? window.getGroups() : [];
+      const idx = groups.findIndex(g => g.id === window.currentId);
+      if(idx > -1){ groups[idx].preview=''; groups[idx].time=''; window.setGroups(groups); }
+    } else {
+      if(window.updateContact) window.updateContact(window.currentId, {preview:'', time:''});
+    }
     
     window.selectMode = false; 
     if(window.selectedIds) window.selectedIds.clear(); 
@@ -15804,37 +15809,52 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
   const clearBtn = document.getElementById('clearChatBtn2');
   if(clearBtn) clearBtn.onclick = window.clearCurrentChat;
 
-  // 2. 劫持并重构：设置页内删除联系人 (直捣硬盘深处 + 时空刷新)
+  // 2. 劫持并重构：设置页内删除联系人 (双轨同步，告别刷新)
   window.deleteCurrentContact = async function() {
     if(!window.currentId) return;
     if(!confirm('删除当前好友及聊天记录？（已收藏进回忆放映机的相片将为您永久保留 ✨）')) return;
     
-    const cName = safeGetContact(window.currentId)?.name || '沉睡的羁绊';
+    const id = window.currentId;
+    const c = safeGetContact(id);
+    const cName = c ? c.name : '沉睡的羁绊';
 
-    // 斩断外挂硬盘里的聊天线
-    let allChats = await localforage.getItem('mp_fix_chats') || {};
-    const oldArr = allChats[window.currentId] || [];
+    // 🌟 抹除屏幕内存 (RAM)
+    const map = window.getChats ? window.getChats() : {};
+    const oldArr = map[id] || [];
     const keepArr = oldArr.filter(m => m.proj_fav);
-    // 🏷️ 灵魂印记：把名字死死刻在游魂相纸上！
     keepArr.forEach(m => m.savedChatName = cName); 
 
-    if(keepArr.length > 0) { allChats[window.currentId] = keepArr; } 
-    else { delete allChats[window.currentId]; }
+    if(keepArr.length > 0) { map[id] = keepArr; } 
+    else { delete map[id]; }
+    if(window.setChats) window.setChats(map);
+    
+    // 🌟 抹除外挂硬盘 (HDD)
+    let allChats = await localforage.getItem('mp_fix_chats') || {};
+    if(keepArr.length > 0) { allChats[id] = keepArr; } 
+    else { delete allChats[id]; }
     await localforage.setItem('mp_fix_chats', allChats);
 
-    // 斩断外挂硬盘里的联系人线
-    let allContacts = await localforage.getItem('mp_fix_contacts') || [];
-    allContacts = allContacts.filter(x => x.id !== window.currentId);
-    await localforage.setItem('mp_fix_contacts', allContacts);
+    // 🌟 双轨清除联系人或群聊
+    if(c && c.isGroup) {
+       if(window.getGroups && window.setGroups) window.setGroups(window.getGroups().filter(g => g.id !== id));
+       let allGroups = await localforage.getItem('mp_fix_groups') || [];
+       allGroups = allGroups.filter(g => g.id !== id);
+       await localforage.setItem('mp_fix_groups', allGroups);
+    } else {
+       if(window.getContacts && window.setContacts) window.setContacts(window.getContacts().filter(x => x.id !== id));
+       let allContacts = await localforage.getItem('mp_fix_contacts') || [];
+       allContacts = allContacts.filter(x => x.id !== id);
+       await localforage.setItem('mp_fix_contacts', allContacts);
+    }
     
     window.currentId = null; 
-    // 瞬间重载时空，保证内存绝对干净！
-    location.reload();
+    if(window.renderContacts) window.renderContacts(document.getElementById('searchInput')?.value||''); 
+    if(window.show) window.show('wechat');
   };
   const delBtn = document.getElementById('deleteContactBtn');
   if(delBtn) delBtn.onclick = window.deleteCurrentContact;
 
-  // 3. 劫持并重构：微信列表长按删除 (直捣硬盘深处 + 时空刷新)
+  // 3. 劫持并重构：微信列表长按删除 (双轨同步，告别刷新)
   window.deleteContactFromList = async function(id, e) {
     if(e) { e.preventDefault(); e.stopPropagation(); }
     window._isDeleting = true; setTimeout(() => window._isDeleting = false, 500);
@@ -15843,33 +15863,38 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     const c = safeGetContact(id);
     const cName = c ? c.name : '沉睡的羁绊';
 
-    // 斩断聊天线
-    let allChats = await localforage.getItem('mp_fix_chats') || {};
-    const oldArr = allChats[id] || [];
+    const map = window.getChats ? window.getChats() : {};
+    const oldArr = map[id] || [];
     const keepArr = oldArr.filter(m => m.proj_fav);
     keepArr.forEach(m => m.savedChatName = cName);
 
+    if(keepArr.length > 0) { map[id] = keepArr; } 
+    else { delete map[id]; }
+    if(window.setChats) window.setChats(map);
+
+    let allChats = await localforage.getItem('mp_fix_chats') || {};
     if(keepArr.length > 0) { allChats[id] = keepArr; } 
     else { delete allChats[id]; }
     await localforage.setItem('mp_fix_chats', allChats);
 
-    // 斩断群聊或单人线
     if(c && c.isGroup) {
+       if(window.getGroups && window.setGroups) window.setGroups(window.getGroups().filter(g => g.id !== id));
        let allGroups = await localforage.getItem('mp_fix_groups') || [];
        allGroups = allGroups.filter(g => g.id !== id);
        await localforage.setItem('mp_fix_groups', allGroups);
     } else {
+       if(window.getContacts && window.setContacts) window.setContacts(window.getContacts().filter(x => x.id !== id));
        let allContacts = await localforage.getItem('mp_fix_contacts') || [];
        allContacts = allContacts.filter(x => x.id !== id);
        await localforage.setItem('mp_fix_contacts', allContacts);
     }
 
     if(window.currentId === id) window.currentId = null; 
-    location.reload();
+    if(window.renderContacts) window.renderContacts(document.getElementById('searchInput')?.value||'');
     return false;
   };
 
-  // 4. 升级放映机收藏引擎：点亮星星时自动记录名字印记！
+  // 4. 升级放映机收藏引擎
   window._projFav = async function(chatId, msgId) {
     const chats = await localforage.getItem('mp_fix_chats') || {};
     const arr = chats[chatId] || [];
@@ -15888,7 +15913,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     }
   };
 
-  // 5. 升级放映机读取引擎：支持显示被删除的游魂名字！
+  // 5. 升级放映机读取引擎
   const oldInitProj = window._initMemoryProjector;
   window._initMemoryProjector = async function() {
     const wall = document.getElementById('projectorWall');
