@@ -15775,7 +15775,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
 </script>
   <script>
 (function(){
-  // 🌟 蓝色高定防御罩：回忆永生与羁绊防断裂引擎 (绝不刷新的丝滑无感版)！
+  // 🌟 蓝色高定防御罩：回忆永生与羁绊防断裂引擎 (终极手术刀无感版)！
   
   const safeGetContact = (id) => {
     if(window.getContacts) { const c = window.getContacts().find(x=>x.id===id); if(c) return c; }
@@ -15783,23 +15783,37 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     return null;
   };
 
-  // 1. 劫持并重构：清空聊天记录
+  // 🌟 核心破壁魔法：打造一个隐形的“内存黑洞”，拦截已被删除的联系人！
+  window._deletedContactIds = window._deletedContactIds || new Set();
+  
+  const originalGetContacts = window.getContacts;
+  if(originalGetContacts && !window._isHookedGetContacts) {
+    window.getContacts = function() {
+      const arr = originalGetContacts();
+      return arr.filter(c => !window._deletedContactIds.has(c.id));
+    };
+    window._isHookedGetContacts = true;
+  }
+  
+  const originalGetGroups = window.getGroups;
+  if(originalGetGroups && !window._isHookedGetGroups) {
+    window.getGroups = function() {
+      const arr = originalGetGroups();
+      return arr.filter(g => !window._deletedContactIds.has(g.id));
+    };
+    window._isHookedGetGroups = true;
+  }
+
+  // 1. 劫持并重构：清空聊天记录 (利用已公开的 setChatArr)
   window.clearCurrentChat = function() {
     if(!window.currentId) return;
     if(!confirm('清空当前聊天？（已收藏进回忆放映机的相片将为您永久保留 ✨）')) return;
     
     const oldArr = window.getChatArr(window.currentId) || [];
     const keepArr = oldArr.filter(m => m.proj_fav); 
-    window.setChatArr(window.currentId, keepArr);
+    window.setChatArr(window.currentId, keepArr); // 这个是公开的，绝对安全！
     
-    const c = safeGetContact(window.currentId);
-    if(c && c.isGroup) {
-      const groups = window.getGroups ? window.getGroups() : [];
-      const idx = groups.findIndex(g => g.id === window.currentId);
-      if(idx > -1){ groups[idx].preview=''; groups[idx].time=''; window.setGroups(groups); }
-    } else {
-      if(window.updateContact) window.updateContact(window.currentId, {preview:'', time:''});
-    }
+    if(window.updateContactPreview) window.updateContactPreview(window.currentId);
     
     window.selectMode = false; 
     if(window.selectedIds) window.selectedIds.clear(); 
@@ -15809,7 +15823,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
   const clearBtn = document.getElementById('clearChatBtn2');
   if(clearBtn) clearBtn.onclick = window.clearCurrentChat;
 
-  // 2. 劫持并重构：设置页内删除联系人 (双轨同步，告别刷新)
+  // 2. 劫持并重构：设置页内删除联系人 (黑洞吞噬 + 异步毁尸灭迹)
   window.deleteCurrentContact = async function() {
     if(!window.currentId) return;
     if(!confirm('删除当前好友及聊天记录？（已收藏进回忆放映机的相片将为您永久保留 ✨）')) return;
@@ -15818,33 +15832,31 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     const c = safeGetContact(id);
     const cName = c ? c.name : '沉睡的羁绊';
 
-    // 🌟 抹除屏幕内存 (RAM)
-    const map = window.getChats ? window.getChats() : {};
-    const oldArr = map[id] || [];
+    // 第一步：拯救星星相纸，然后清空屏幕内存的聊天
+    const oldArr = window.getChatArr(id) || [];
     const keepArr = oldArr.filter(m => m.proj_fav);
-    keepArr.forEach(m => m.savedChatName = cName); 
+    keepArr.forEach(m => m.savedChatName = cName);
+    window.setChatArr(id, keepArr); // 安全更新屏幕内存
 
-    if(keepArr.length > 0) { map[id] = keepArr; } 
-    else { delete map[id]; }
-    if(window.setChats) window.setChats(map);
-    
-    // 🌟 抹除外挂硬盘 (HDD)
+    // 第二步：把这个人扔进内存黑洞！界面瞬间消失！
+    window._deletedContactIds.add(id);
+
+    // 第三步：悄悄去外挂硬盘里毁尸灭迹（绝不影响屏幕渲染）
     let allChats = await localforage.getItem('mp_fix_chats') || {};
     if(keepArr.length > 0) { allChats[id] = keepArr; } 
     else { delete allChats[id]; }
     await localforage.setItem('mp_fix_chats', allChats);
 
-    // 🌟 双轨清除联系人或群聊
     if(c && c.isGroup) {
-       if(window.getGroups && window.setGroups) window.setGroups(window.getGroups().filter(g => g.id !== id));
        let allGroups = await localforage.getItem('mp_fix_groups') || [];
        allGroups = allGroups.filter(g => g.id !== id);
        await localforage.setItem('mp_fix_groups', allGroups);
+       localStorage.setItem('mp_fix_groups', JSON.stringify(allGroups)); // 顺手清本地
     } else {
-       if(window.getContacts && window.setContacts) window.setContacts(window.getContacts().filter(x => x.id !== id));
        let allContacts = await localforage.getItem('mp_fix_contacts') || [];
        allContacts = allContacts.filter(x => x.id !== id);
        await localforage.setItem('mp_fix_contacts', allContacts);
+       localStorage.setItem('mp_fix_contacts', JSON.stringify(allContacts)); // 顺手清本地
     }
     
     window.currentId = null; 
@@ -15854,7 +15866,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
   const delBtn = document.getElementById('deleteContactBtn');
   if(delBtn) delBtn.onclick = window.deleteCurrentContact;
 
-  // 3. 劫持并重构：微信列表长按删除 (双轨同步，告别刷新)
+  // 3. 劫持并重构：微信列表长按删除 (双轨同步)
   window.deleteContactFromList = async function(id, e) {
     if(e) { e.preventDefault(); e.stopPropagation(); }
     window._isDeleting = true; setTimeout(() => window._isDeleting = false, 500);
@@ -15863,30 +15875,30 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     const c = safeGetContact(id);
     const cName = c ? c.name : '沉睡的羁绊';
 
-    const map = window.getChats ? window.getChats() : {};
-    const oldArr = map[id] || [];
+    const oldArr = window.getChatArr(id) || [];
     const keepArr = oldArr.filter(m => m.proj_fav);
     keepArr.forEach(m => m.savedChatName = cName);
+    window.setChatArr(id, keepArr); 
 
-    if(keepArr.length > 0) { map[id] = keepArr; } 
-    else { delete map[id]; }
-    if(window.setChats) window.setChats(map);
+    // 扔进黑洞，彻底隐形！
+    window._deletedContactIds.add(id);
 
+    // 硬盘擦除
     let allChats = await localforage.getItem('mp_fix_chats') || {};
     if(keepArr.length > 0) { allChats[id] = keepArr; } 
     else { delete allChats[id]; }
     await localforage.setItem('mp_fix_chats', allChats);
 
     if(c && c.isGroup) {
-       if(window.getGroups && window.setGroups) window.setGroups(window.getGroups().filter(g => g.id !== id));
        let allGroups = await localforage.getItem('mp_fix_groups') || [];
        allGroups = allGroups.filter(g => g.id !== id);
        await localforage.setItem('mp_fix_groups', allGroups);
+       localStorage.setItem('mp_fix_groups', JSON.stringify(allGroups));
     } else {
-       if(window.getContacts && window.setContacts) window.setContacts(window.getContacts().filter(x => x.id !== id));
        let allContacts = await localforage.getItem('mp_fix_contacts') || [];
        allContacts = allContacts.filter(x => x.id !== id);
        await localforage.setItem('mp_fix_contacts', allContacts);
+       localStorage.setItem('mp_fix_contacts', JSON.stringify(allContacts));
     }
 
     if(window.currentId === id) window.currentId = null; 
@@ -15913,7 +15925,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     }
   };
 
-  // 5. 升级放映机读取引擎
+  // 5. 放映机读取引擎：全盘扫描游魂！
   const oldInitProj = window._initMemoryProjector;
   window._initMemoryProjector = async function() {
     const wall = document.getElementById('projectorWall');
@@ -15924,9 +15936,10 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     </div>`;
     
     const chats = await localforage.getItem('mp_fix_chats') || {};
-    const contacts = window.getContacts ? window.getContacts() : [];
-    const groups = window.getGroups ? window.getGroups() : [];
-    const allEntities = [...contacts, ...groups]; 
+    // 🌟 从底层硬盘里强行读取被删掉的残骸！
+    let allContacts = await localforage.getItem('mp_fix_contacts') || [];
+    let allGroups = await localforage.getItem('mp_fix_groups') || [];
+    const allEntities = [...allContacts, ...allGroups]; 
     
     let allPhotos = [];
     let chatNamesSet = new Set(); 
