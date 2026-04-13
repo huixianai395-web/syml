@@ -3139,12 +3139,13 @@ body {
   </div>
 
 
-      <!-- 🌟 蓝色高定：绝美左右对称操作栏 (换马甲 + 打捞刷新) -->
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding:0 4px;">
-      <div onclick="window._setEchoesAlias()" style="background:transparent; color:#5c7094; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; cursor:pointer; border:1px dashed #a5cfff; display:flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(165,207,255,0.1); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
-        🎭 换马甲
+    <!-- 🌟 蓝色高定：绝美三键操作栏 (换马甲 + 收藏夹 + 打捞刷新) -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding:0 4px; gap:8px;">
+      <div style="display:flex; gap:8px;">
+        <div onclick="window._setEchoesAlias()" style="background:transparent; color:#5c7094; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:bold; cursor:pointer; border:1px dashed #a5cfff; display:flex; align-items:center; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">🎭 换马甲</div>
+        <div onclick="window._switchEchoesTab('Favorite')" style="background:#eef4fa; color:#5c7094; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:bold; cursor:pointer; border:1px solid #dce5f0; display:flex; align-items:center; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">★ 我的珍藏</div>
       </div>
-      <button class="btn p" id="echoesRefreshBtn" onclick="window._generateEchoesPosts()" style="background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:999px; padding:6px 16px; font-size:13px; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.06); display:flex; align-items:center; gap:6px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+      <button class="btn p" id="echoesRefreshBtn" onclick="window._generateEchoesPosts()" style="background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:999px; padding:6px 12px; font-size:12px; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.06); display:flex; align-items:center; gap:4px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
         <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2.5;"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 1 0 2.13-5.83L2 12"></path></svg>
         打捞新瓶子
       </button>
@@ -16011,12 +16012,22 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
   const K_ECHOES_CUSTOM_TABS = 'mp_fix_echoes_tabs_v1';
   window._currentEchoesPostId = null;
 
-  // 🌟 沉浸式瀑布流渲染（附带高级点选交互）
+  // 🌟 1. 独立出来的收藏操作函数（加在上方）
+  window._toggleEchoesFav = async function(id) {
+    const posts = await getEchoesPosts();
+    const p = posts.find(x => x.id === id);
+    if(p) { 
+      p.isFav = !p.isFav; 
+      await setEchoesPosts(posts); 
+    }
+  };
+
+  // 🌟 2. 终极完美版：瀑布流渲染引擎 (直接替换你原本的 _renderEchoesFeed)
   window._renderEchoesFeed = async function() {
     const box = document.getElementById('echoesPostList');
     if(!box) return;
 
-    // 动态渲染自定义 Tab
+    // 处理顶部自定义 Tab 拨片
     const customTabs = await localforage.getItem(K_ECHOES_CUSTOM_TABS) || [];
     const tabsBox = document.getElementById('echoesTabsBox');
     Array.from(tabsBox.children).forEach((child, idx) => { if(idx > 4) child.remove(); });
@@ -16034,7 +16045,10 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
 
     const allPosts = await getEchoesPosts();
     let posts = allPosts;
-    if(window._currentEchoesTab !== 'All') posts = allPosts.filter(p => p.tag === window._currentEchoesTab);
+    
+    // 🌟 核心魔法：筛选出“我的珍藏”
+    if(window._currentEchoesTab === 'Favorite') posts = allPosts.filter(p => p.isFav);
+    else if(window._currentEchoesTab !== 'All') posts = allPosts.filter(p => p.tag === window._currentEchoesTab);
 
     if(posts.length === 0) {
       box.innerHTML = `<div style="text-align:center; padding:80px 0; color:#a0aaba; font-size:13px; letter-spacing:1px; line-height:1.8;">这片海域还很安静<br>点击右上角「探索」召唤全世界的漂流瓶吧</div>`;
@@ -16058,12 +16072,10 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
           </div>`;
       }
 
-      // 🌟 核心魔法：管理模式下的多选框与卡片高亮交互
       const isSel = window._echoesManageMode && window._echoesSelSet.has(p.id);
       const checkHtml = window._echoesManageMode ? 
         `<div style="width:22px; height:22px; border-radius:50%; border:1.5px solid ${isSel ? '#5c7094' : '#dce5f0'}; background:${isSel ? '#eef4fa' : 'transparent'}; color:${isSel ? '#5c7094' : 'transparent'}; display:grid; place-items:center; font-size:14px; font-weight:bold; transition:all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); margin-right:12px; flex-shrink:0; transform:${isSel ? 'scale(1.1)' : 'scale(1)'};">✓</div>` : '';
 
-      // 根据模式动态切换点击事件：管理模式点卡片选中，普通模式点卡片看详情！
       const clickAction = window._echoesManageMode ? `window._toggleEchoesSel('${p.id}')` : `window._openEchoesDetail('${p.id}')`;
       const cardStyle = `flex:1; min-width:0; background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border:1px solid ${isSel ? '#a5cfff' : '#dce5f0'}; border-radius:16px; padding:16px; box-shadow:${isSel ? '0 8px 24px rgba(165,207,255,0.2)' : '0 4px 16px rgba(92,112,148,0.03)'}; transition:all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); cursor:pointer; transform:${isSel ? 'scale(0.98)' : 'scale(1)'};`;
 
@@ -16079,10 +16091,20 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
               <div style="font-size:10px; font-weight:bold; color:#7a86a8; background:rgba(238,244,250,0.8); padding:4px 8px; border-radius:6px; border:1px solid #dce5f0;"># ${safeEsc(p.tag)}</div>
             </div>
             <div style="font-size:14px; color:#2b3a60; line-height:1.6; text-align:justify; white-space:pre-wrap; margin-bottom:12px;">${safeEsc(p.content).replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</div>
-            <div style="display:flex; align-items:center; gap:16px; border-top:1px dashed #eef4fa; padding-top:12px; color:#7a86a8;">
-              <div style="display:flex; align-items:center; gap:4px; font-size:12px; font-weight:bold;">${svgLike} ${p.likes}</div>
-              <div style="display:flex; align-items:center; gap:4px; font-size:12px; font-weight:bold;">${svgComment} ${(p.comments || []).length}</div>
+            
+            <!-- 🌟 这里就是替换了的绝美底部栏：带点赞、虚拟评论、和最右侧的收藏小书签！ -->
+            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #eef4fa; padding-top:12px; color:#7a86a8;">
+              <div style="display:flex; align-items:center; gap:16px;">
+                <div style="display:flex; align-items:center; gap:4px; font-size:12px; font-weight:bold;">${svgLike} ${p.likes || 0}</div>
+                <div style="display:flex; align-items:center; gap:4px; font-size:12px; font-weight:bold;">
+                  ${svgComment} ${Math.max((p.comments||[]).length, p.virtualCmtCount || 0)} 
+                </div>
+              </div>
+              <div onclick="event.stopPropagation(); window._toggleEchoesFav('${p.id}')" style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:8px; background:${p.isFav ? '#eef4fa' : 'transparent'}; transition:all 0.2s;">
+                <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:${p.isFav ? '#5c7094' : 'currentColor'}; fill:${p.isFav ? '#5c7094' : 'none'}; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+              </div>
             </div>
+            
             ${commentsHtml}
           </div>
         </div>
@@ -16267,7 +16289,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     if(typeof window._sendToAI === 'function') window._sendToAI(chatId, hiddenPrompt, true);
   };
 
- // 🌟 AI 造梦与掉落引擎升级（加入物理 IP 劫持，绝对不许它偷懒！）
+// 🌟 AI 造梦：1:1真实的全球生态 + 虚拟赛博评论数
   window._generateEchoesPosts = async function() {
     const btn = document.getElementById('echoesRefreshBtn');
     if(btn) { btn.textContent = '探索中...'; btn.style.pointerEvents = 'none'; }
@@ -16277,47 +16299,43 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
       const maleLeads = contacts.filter(c => !c.isGroup);
       const maleInfo = maleLeads.map(c => `- ${c.name}：${c.persona}`).join('\\n');
 
-      const sysPrompt = `你是全球匿名社区「Echoes」的生态引擎。当前时间：${new Date().toLocaleString()}。当前板块：【${window._currentEchoesTab}】。
+      const sysPrompt = `你是全球匿名社区「Echoes」的活人生态引擎。当前时间：${new Date().toLocaleString()}。
 
-【绝对神级防串戏与防OOC铁律】：
-1. 绝对禁止男主在帖子里暴露真名！必须强制为男主虚构一个网感强烈的马甲ID！
-2. 内容必须极度生活化、多元化！
+【绝对生态铁律】：
+1. 必须生成 8-10 条帖子，【50%为中国网友，50%为真正的外国网友】！
+2. 外国网友的帖子：不要写成“中国留学生”，必须是真实的外国人！名字要像“John_NYC”、“Mike_London”、“Sakura酱”、“Elena_RU”。他们的内容必须贴合当地文化（如：抱怨伦敦地铁停运、吐槽纽约贝果太硬、涩谷街头的见闻），语气可以带有“机翻感”或混杂少量本土单词。
+3. 中国网友的帖子：必须极度接地气，包含 2-3 个男主（${maleInfo}）披着网感马甲发的帖子，其余为路人。
 
-【任务】：生成 8~12 条极度真实的帖子。
-- 60% 是纯野生路人发帖，剩下的 40% 是男主（${maleInfo}）披着马甲发帖。
-- 【强制警告】：你的 IP 字段必须填写真实的海外城市！如：东京、巴黎、纽约、伦敦、雷克雅未克、佛罗伦萨、首尔等……。
-帖。
--  【提示】：这是一个全球生态的地方，所以全球各地一切的地方和事物日常什么都可以生成，大胆真实一点。
-
-必须严格返回 JSON 数组格式：
+必须返回纯 JSON 数组格式：
 [
   {
-    "author": "虚构的网名马甲",
-    "ip": "必须是真实的海外国家或城市",
+    "author": "虚构的网名马甲(中外风格均有)",
+    "ip": "必须填写真实的城市名",
     "tag": "${window._currentEchoesTab === 'All' ? '随机分类' : window._currentEchoesTab}",
-    "content": "极度真实有趣的帖子正文，贴合当前板块主题",
-    "likes": 随机点赞数(1000-2000000),
-    "comments": [ {"author": "野生路人网名", "text": "神回复/吐槽"} ]
+    "content": "极度真实有趣的帖子正文，包含多元文化",
+    "likes": 随机生成(100到300000之间),
+    "comments": [ {"author": "野生网友", "text": "神回复"} ]
   }
 ]`;
 
-      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻生成神仙帖子！如果IP全是中国城市系统将会崩溃，请大量生成海外IP！' }]);
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻生成！必须有50%的真正外国人发帖，IP必须中外1:1平衡！' }]);
       const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
       const dataArr = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
       
       const posts = await getEchoesPosts();
-      
-      // 🌟 终极物理劫持阵列（大模型敢偷懒，我们就强行改！）
-      const globalIps = ['东京', '巴黎', '纽约', '伦敦', '冰岛', '罗马', '首尔', '曼谷', '北海道', '洛杉矶', '柏林', '米兰', '莫斯科', '苏黎世'];
+      const foreignCities = ['东京', '巴黎', '纽约', '伦敦', '罗马', '首尔', '曼谷', '洛杉矶', '柏林', '冰岛', '莫斯科'];
+      const domesticCities = ['北京', '上海', '广州', '成都', '杭州', '重庆', '深圳', '长沙', '武汉'];
 
-      dataArr.forEach(data => {
+      dataArr.forEach((data, index) => {
         const timeOffset = Math.floor(Math.random() * 86400000); 
-        
-        let finalIp = data.ip || '未知';
-        // 只要发现带有国内省份的字眼，或者随机概率，强行覆写为国际IP！
-        if (Math.random() < 0.6 || /北京|上海|广东|浙江|江苏|山东|四川|河南|河北/.test(finalIp)) {
-          finalIp = globalIps[Math.floor(Math.random() * globalIps.length)];
-        }
+        // 🌟 终极物理拦截：严格 1:1 分配 IP，确保一半出国一半在国内
+        let finalIp = data.ip;
+        if (index % 2 === 0) finalIp = foreignCities[Math.floor(Math.random() * foreignCities.length)];
+        else finalIp = domesticCities[Math.floor(Math.random() * domesticCities.length)];
+
+        // 🌟 赛博伪装引擎：根据点赞量动态生成逼真的评论数
+        const fakeLikes = data.likes || Math.floor(Math.random() * 5000 + 100);
+        const fakeVirtualCmt = Math.floor(fakeLikes * (0.01 + Math.random() * 0.05)) + 12;
 
         posts.unshift({
           id: 'ec_' + Date.now() + Math.floor(Math.random()*1000),
@@ -16325,7 +16343,9 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
           ip: finalIp, 
           tag: data.tag,
           content: data.content, 
-          likes: data.likes || Math.floor(Math.random() * 500 + 10),
+          likes: fakeLikes,
+          virtualCmtCount: fakeVirtualCmt, // 存储虚拟评论数
+          isFav: false, // 收藏状态
           time: Date.now() - timeOffset, 
           comments: data.comments || []
         });
@@ -16337,7 +16357,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     } catch(e) {
       alert('探索海域失败：' + (e.message || e));
     } finally {
-      if(btn) { btn.textContent = '探索'; btn.style.pointerEvents = 'auto'; }
+      if(btn) { btn.textContent = '打捞新瓶子'; btn.style.pointerEvents = 'auto'; }
     }
   };
 
