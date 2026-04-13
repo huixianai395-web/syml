@@ -16123,7 +16123,18 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     window._switchEchoesTab(tagName.trim());
   };
 
- // 🌟 沉浸式详情页渲染 (带召唤水军按钮)
+  // 🌟 独立的评论点赞引擎
+  window._likeEchoesComment = async function(postId, cmtIdx) {
+    const posts = await getEchoesPosts();
+    const p = posts.find(x => x.id === postId);
+    if(p && p.comments[cmtIdx]) {
+      p.comments[cmtIdx].likes = (p.comments[cmtIdx].likes || 0) + 1;
+      await setEchoesPosts(posts);
+      window._openEchoesDetail(postId); // 重新渲染刷新点赞数
+    }
+  };
+
+  // 🌟 沉浸式详情页渲染 (加入评论点赞与IP解析)
   window._openEchoesDetail = async function(postId) {
     window._currentEchoesPostId = postId;
     const posts = await getEchoesPosts();
@@ -16146,13 +16157,18 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     if(!post.comments || post.comments.length === 0) {
       cmtHtml = `<div style="text-align:center; color:#a0aaba; font-size:12px; padding:20px 0;">暂时没有回音，快来抢沙发吧~</div>`;
     } else {
-      cmtHtml = post.comments.map(c => `
+      cmtHtml = post.comments.map((c, idx) => `
         <div style="display:flex; gap:10px; margin-bottom:16px;">
           <div style="width:32px; height:32px; border-radius:10px; background:#f4f6fb; color:#7a86a8; display:grid; place-items:center; font-weight:800; font-size:14px; border:1px solid #eef4fa; flex-shrink:0;">${safeEsc(c.author).substring(0,1)}</div>
           <div style="flex:1; min-width:0; border-bottom:1px dashed #eef4fa; padding-bottom:12px;">
             <div style="display:flex; justify-content:space-between; align-items:baseline;">
-              <span style="font-size:12px; font-weight:800; color:#7a86a8;">${safeEsc(c.author)}</span>
-              <span style="font-size:10px; color:#cdd7e8;">IP: ${safeEsc(c.ip || '未知')}</span>
+              <div>
+                <span style="font-size:12px; font-weight:800; color:#7a86a8;">${safeEsc(c.author)}</span>
+                <span style="font-size:10px; color:#cdd7e8; margin-left:4px;">IP: ${safeEsc(c.ip || '本地')}</span>
+              </div>
+              <div onclick="event.stopPropagation(); window._likeEchoesComment('${post.id}', ${idx})" style="display:flex; align-items:center; gap:3px; font-size:11px; color:#a0aaba; cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.85)'" onmouseup="this.style.transform='scale(1)'">
+                ${svgLike} ${c.likes || 0}
+              </div>
             </div>
             <div style="font-size:14px; color:#3d4a6a; line-height:1.5; word-break:break-all; margin-top:4px;">${safeEsc(c.text)}</div>
           </div>
@@ -16160,10 +16176,9 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
       `).join('');
     }
     
-    // 🌊 核心魔法：召唤海量水军按钮！
     cmtHtml += `
       <button class="btn" id="echoesFetchCmtBtn" onclick="window._fetchMoreComments('${post.id}')" style="width:100%; margin-top:10px; background:rgba(238,244,250,0.6); color:#5c7094; border:1px dashed #a5cfff; border-radius:12px; padding:12px 0; font-weight:bold; font-size:13px; box-shadow:none; transition:all 0.2s ease;" onmousedown="this.style.transform='scale(0.98)'; this.style.background='rgba(220,229,240,0.8)';" onmouseup="this.style.transform='scale(1)'; this.style.background='rgba(238,244,250,0.6)';">
-        🌊 召唤全网路人热评 (加载更多)
+        🌊 召唤全网路人热评
       </button>
     `;
     
@@ -16171,29 +16186,21 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     document.getElementById('echoesDetailModal').classList.add('active');
   };
 
-  // 🌟 终极按需加载：召唤全球野生网友！
+    // 🌟 终极水军召唤：自带点赞和IP的评论流
   window._fetchMoreComments = async function(postId) {
     const btn = document.getElementById('echoesFetchCmtBtn');
-    if(btn) { btn.textContent = '全世界的电波正在汇聚中...'; btn.style.pointerEvents = 'none'; btn.style.opacity = '0.7'; }
+    if(btn) { btn.textContent = '正在连接全球电波...'; btn.style.pointerEvents = 'none'; btn.style.opacity = '0.7'; }
     
     try {
       const posts = await getEchoesPosts();
       const post = posts.find(x => x.id === postId);
       if(!post) return;
 
-      const contacts = window.getContacts ? window.getContacts() : [];
-      const maleLeads = contacts.filter(c => !c.isGroup).map(c => `- ${c.name}：${c.persona}`).join('\\n');
+      const sysPrompt = `玩家正在查看帖子：“${post.content}”。请为这篇帖子生成 15-30 条路人回复！
+【要求】：必须包含外国IP和国内IP，中外比例1:1。每条评论必须带有 likes 点赞数字段！
+JSON格式：[{"author":"网友ID", "ip":"真实城市", "text":"吐槽内容", "likes": 50}]`;
 
-      const sysPrompt = `你是「Echoes」论坛生态引擎。玩家正在查看楼主【${post.author}】发布的帖子：“${post.content}”。
-【任务】：请为这篇帖子一次性生成 15-30 条极具网感的神回复！
-【绝对生态铁律】：
-1. 评论者全部是【纯野生路人网友】，名字必须是沙雕网感ID。
-2. 绝对不允许出现系统提示音或者带真实名字的回复。
-3. 【全球 IP 强制注入】：为了体现全球生态，这 20 多条评论里，IP 属地必须覆盖全世界！必须出现纽约、伦敦、巴黎、东京、冰岛等国外城市，且中外城市比例必须 1:1！
-必须返回纯 JSON 数组格式：
-[{"author":"沙雕网友ID", "ip":"世界各地真实城市", "text":"极度真实的吐槽或吃瓜回复"}]`;
-
-      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻发动水军！我要看到全是外国IP和国内IP混杂的热闹评论区！' }]);
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '发动全球水军！必须带IP和点赞！' }]);
       const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
       const match = cleaned.match(/\[[\s\S]*\]/);
       if(match) {
@@ -16206,12 +16213,11 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
           if (window._currentEchoesPostId === postId) window._openEchoesDetail(postId);
         }
       }
-    } catch(e) {
-      alert('电波召唤失败：' + e.message);
-      if(btn) { btn.textContent = '🌊 召唤全网路人热评 (加载更多)'; btn.style.pointerEvents = 'auto'; btn.style.opacity = '1'; }
+    } catch(e) { alert('召唤失败：' + e.message); }
+      finally {
+      if(btn) { btn.textContent = '🌊 召唤全网路人热评'; btn.style.pointerEvents = 'auto'; btn.style.opacity = '1'; }
     }
   };
-
   // 🌟 亲自下场评论引擎
   window._sendEchoesComment = async function() {
     const text = document.getElementById('echoesCommentInput').value.trim();
@@ -16289,7 +16295,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     if(typeof window._sendToAI === 'function') window._sendToAI(chatId, hiddenPrompt, true);
   };
 
-// 🌟 AI 造梦：完美的全球生态 + 乱序洗牌算法 + 海量神评！
+// 🌟 AI 造梦：男主专属定位护盾 + 全新评论生成引擎！
   window._generateEchoesPosts = async function() {
     const btn = document.getElementById('echoesRefreshBtn');
     if(btn) { btn.textContent = '电波汇聚中...'; btn.style.pointerEvents = 'none'; btn.style.opacity = '0.7'; }
@@ -16299,73 +16305,73 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
       const maleLeads = contacts.filter(c => !c.isGroup);
       const maleInfo = maleLeads.map(c => `- ${c.name}：${c.persona}`).join('\\n');
 
-      const sysPrompt = `你是全球匿名社区「Echoes」的活人生态引擎。当前时间：${new Date().toLocaleString()}。
+      const sysPrompt = `你是「Echoes」生态引擎。当前时间：${new Date().toLocaleString()}。
 
-【绝对生态铁律】：
-1. 必须生成 8-10 条帖子，【50%为中国网友，50%为真正的外国网友】！
-2. 外国网友的帖子：必须是真实的外国人（可带英文或机翻感），严禁全写成留学生。
-3. 中国网友的帖子：包含 2-3 个男主（${maleInfo}）披着网感马甲发的帖子，其余为路人。
-4. 【神级评论要求】：每个帖子必须在 comments 数组里，一次性生成 8 到 15 条纯正路人的吃瓜神回复！绝对不允许只有一两条！
+【核心铁律】：
+1. 生成 8-10 条帖子，【50%中国网友，50%外国网友】。
+2. 包含 2-3 个男主（${maleInfo}）披马甲发帖。如果是男主，必须在JSON中标记 "isMaleLead": true！并且IP写他合理的所在地（如东京或国内）。
+3. 每个帖子的 comments 必须自带 7 到 12 条纯路人神评！并且每条评论必须包含 ip 和 likes 字段！
 
-必须返回纯 JSON 数组格式：
+严格返回 JSON 格式：
 [
   {
-    "author": "虚构的网名马甲",
-    "ip": "真实的城市名",
-    "tag": "${window._currentEchoesTab === 'All' ? '随机分类' : window._currentEchoesTab}",
-    "content": "极度真实有趣的帖子正文",
-    "likes": 随机生成(100到1300000之间),
-    "comments": [ {"author": "野生网友A", "text": "神回复1"}, {"author": "野生网友B", "text": "神回复2"} ]
+    "author": "虚构网名", "ip": "真实城市", "isMaleLead": false,
+    "tag": "${window._currentEchoesTab === 'All' ? '随机' : window._currentEchoesTab}",
+    "content": "正文", "likes": 5000,
+    "comments": [ {"author": "路人A", "ip": "纽约", "text": "神回复", "likes": 120} ]
   }
 ]`;
 
-      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻生成！每个帖子必须带8-15条评论！' }]);
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '开始生成！每个帖子自带8-15条评论，必须带上所有字段！' }]);
       const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
       const dataArr = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
       
       const posts = await getEchoesPosts();
       const foreignCities = ['东京', '巴黎', '纽约', '伦敦', '罗马', '首尔', '曼谷', '洛杉矶', '柏林', '冰岛', '莫斯科', '悉尼'];
-      const domesticCities = ['北京', '上海', '广州', '成都', '杭州', '重庆', '深圳', '长沙', '武汉', '南京', '大理'];
+      const domesticCities = ['北京', '上海', '广州', '成都', '杭州', '重庆', '深圳', '长沙', '武汉'];
 
-      // 🌟 核心魔法：生成绝对 1:1 的身份牌，然后疯狂洗牌打乱！
-      let ipTypes = dataArr.map((_, i) => i % 2 === 0 ? 'foreign' : 'domestic');
+      // 提取纯路人进行洗牌，男主不动！
+      let bystanderIndices = [];
+      dataArr.forEach((d, i) => { if(!d.isMaleLead) bystanderIndices.push(i); });
+      let ipTypes = bystanderIndices.map((_, i) => i % 2 === 0 ? 'foreign' : 'domestic');
       ipTypes.sort(() => Math.random() - 0.5);
 
+      let typeIdx = 0;
       dataArr.forEach((data, index) => {
         const timeOffset = Math.floor(Math.random() * 86400000); 
         
-        // 🌟 根据洗牌结果，随机抽取对应城市的 IP
-        let finalIp;
-        if (ipTypes[index] === 'foreign') {
-          finalIp = foreignCities[Math.floor(Math.random() * foreignCities.length)];
-        } else {
-          finalIp = domesticCities[Math.floor(Math.random() * domesticCities.length)];
+        let finalIp = data.ip || '未知';
+        // 如果是路人，应用洗牌后的全球IP；如果是男主，保留他自己的IP！
+        if (!data.isMaleLead) {
+          finalIp = ipTypes[typeIdx] === 'foreign' ? foreignCities[Math.floor(Math.random() * foreignCities.length)] : domesticCities[Math.floor(Math.random() * domesticCities.length)];
+          typeIdx++;
         }
 
-        // 赛博伪装引擎：生成逼真的虚拟总评论数
+        // 处理评论的缺失字段
+        const processedComments = (data.comments || []).map(c => ({
+          author: c.author || '神秘网友',
+          ip: c.ip || (Math.random() > 0.5 ? foreignCities[Math.floor(Math.random()*foreignCities.length)] : domesticCities[Math.floor(Math.random()*domesticCities.length)]),
+          text: c.text,
+          likes: c.likes || Math.floor(Math.random() * 300)
+        }));
+
         const fakeLikes = data.likes || Math.floor(Math.random() * 5000 + 100);
-        const generatedCmtCount = (data.comments || []).length;
-        const fakeVirtualCmt = Math.max(generatedCmtCount, Math.floor(fakeLikes * (0.01 + Math.random() * 0.05)) + 15);
+        const fakeVirtualCmt = Math.max(processedComments.length, Math.floor(fakeLikes * (0.01 + Math.random() * 0.05)) + 15);
 
         posts.unshift({
           id: 'ec_' + Date.now() + Math.floor(Math.random()*1000),
-          author: data.author, 
-          ip: finalIp, 
-          tag: data.tag,
-          content: data.content, 
-          likes: fakeLikes,
-          virtualCmtCount: fakeVirtualCmt, 
-          isFav: false, 
+          author: data.author, ip: finalIp, tag: data.tag,
+          content: data.content, likes: fakeLikes,
+          virtualCmtCount: fakeVirtualCmt, isFav: false, 
           time: Date.now() - timeOffset, 
-          comments: data.comments || []
+          comments: processedComments
         });
       });
 
       if(posts.length > 200) posts.length = 200;
       await setEchoesPosts(posts);
-      
     } catch(e) {
-      alert('探索海域失败：' + (e.message || e));
+      alert('探索失败：' + (e.message || e));
     } finally {
       const btn = document.getElementById('echoesRefreshBtn');
       if(btn) { btn.textContent = '打捞新瓶子'; btn.style.pointerEvents = 'auto'; btn.style.opacity = '1'; }
