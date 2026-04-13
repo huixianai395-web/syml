@@ -15775,7 +15775,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
 </script>
   <script>
 (function(){
-  // 🌟 蓝色高定防御罩：回忆永生与羁绊防断裂引擎 (完美刷新留存版)
+  // 🌟 蓝色高定防御罩：回忆永生与羁绊防断裂引擎 (终极破壁直连版)！
   
   const safeGetContact = (id) => {
     if(window.getContacts) { const c = window.getContacts().find(x=>x.id===id); if(c) return c; }
@@ -15783,64 +15783,58 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     return null;
   };
 
-  // 1. 劫持：清空聊天记录 (暴力刷新同步)
-  window.clearCurrentChat = async function() {
+  // 1. 劫持并重构：清空聊天记录 (绕过闭包限制，直调公开接口)
+  window.clearCurrentChat = function() {
     if(!window.currentId) return;
     if(!confirm('清空当前聊天？（已收藏进回忆放映机的相片将为您永久保留 ✨）')) return;
     
-    let allChats = await localforage.getItem('mp_fix_chats') || {};
-    const oldArr = allChats[window.currentId] || (window.getChatArr ? window.getChatArr(window.currentId) : []);
+    const oldArr = window.getChatArr(window.currentId) || [];
+    // 🔪 核心过滤网：只保留被打上星星的记忆碎片！
+    const keepArr = oldArr.filter(m => m.proj_fav); 
+    window.setChatArr(window.currentId, keepArr);
     
-    // 🌟 核心修复：无论是聊天里的收藏，还是放映机里的星星，统统保住！
-    const keepArr = oldArr.filter(m => m.proj_fav || m.favorite); 
+    // 唤醒公开的预览刷新器
+    if(window.updateContactPreview) window.updateContactPreview(window.currentId);
     
-    if(keepArr.length > 0) { allChats[window.currentId] = keepArr; }
-    else { delete allChats[window.currentId]; }
-    await localforage.setItem('mp_fix_chats', allChats);
-
-    location.reload(); // 听老婆的话，果断拔电源重启，保证内存最干净！
+    window.selectMode = false; 
+    if(window.selectedIds) window.selectedIds.clear(); 
+    if(window.renderChat) window.renderChat(); 
+    if(window.renderContacts) window.renderContacts(document.getElementById('searchInput')?.value||'');
   };
   const clearBtn = document.getElementById('clearChatBtn2');
   if(clearBtn) clearBtn.onclick = window.clearCurrentChat;
 
-  // 2. 劫持：设置页内删除联系人 (硬盘深处抹除 + 重启宇宙)
+  // 2. 劫持并重构：设置页内删除联系人 (直捣硬盘深处 + 时空刷新)
   window.deleteCurrentContact = async function() {
     if(!window.currentId) return;
     if(!confirm('删除当前好友及聊天记录？（已收藏进回忆放映机的相片将为您永久保留 ✨）')) return;
     
-    const id = window.currentId;
-    const c = safeGetContact(id);
-    const cName = c ? c.name : '沉睡的羁绊';
+    const cName = safeGetContact(window.currentId)?.name || '沉睡的羁绊';
 
+    // 斩断外挂硬盘里的聊天线
     let allChats = await localforage.getItem('mp_fix_chats') || {};
-    const oldArr = allChats[id] || (window.getChatArr ? window.getChatArr(id) : []);
-    
-    // 🌟 核心修复：把老婆辛辛苦苦点的收藏全部留下来！
-    const keepArr = oldArr.filter(m => m.proj_fav || m.favorite);
+    const oldArr = allChats[window.currentId] || [];
+    const keepArr = oldArr.filter(m => m.proj_fav);
+    // 🏷️ 灵魂印记：把名字死死刻在游魂相纸上！
     keepArr.forEach(m => m.savedChatName = cName); 
 
-    if(keepArr.length > 0) { allChats[id] = keepArr; } 
-    else { delete allChats[id]; }
+    if(keepArr.length > 0) { allChats[window.currentId] = keepArr; } 
+    else { delete allChats[window.currentId]; }
     await localforage.setItem('mp_fix_chats', allChats);
 
-    if(c && c.isGroup) {
-       let allGroups = await localforage.getItem('mp_fix_groups') || [];
-       allGroups = allGroups.filter(g => g.id !== id);
-       await localforage.setItem('mp_fix_groups', allGroups);
-       localStorage.setItem('mp_fix_groups', JSON.stringify(allGroups));
-    } else {
-       let allContacts = await localforage.getItem('mp_fix_contacts') || [];
-       allContacts = allContacts.filter(x => x.id !== id);
-       await localforage.setItem('mp_fix_contacts', allContacts);
-       localStorage.setItem('mp_fix_contacts', JSON.stringify(allContacts));
-    }
+    // 斩断外挂硬盘里的联系人线
+    let allContacts = await localforage.getItem('mp_fix_contacts') || [];
+    allContacts = allContacts.filter(x => x.id !== window.currentId);
+    await localforage.setItem('mp_fix_contacts', allContacts);
     
+    window.currentId = null; 
+    // 瞬间重载时空，保证内存绝对干净！
     location.reload();
   };
   const delBtn = document.getElementById('deleteContactBtn');
   if(delBtn) delBtn.onclick = window.deleteCurrentContact;
 
-  // 3. 劫持：微信列表长按删除
+  // 3. 劫持并重构：微信列表长按删除 (直捣硬盘深处 + 时空刷新)
   window.deleteContactFromList = async function(id, e) {
     if(e) { e.preventDefault(); e.stopPropagation(); }
     window._isDeleting = true; setTimeout(() => window._isDeleting = false, 500);
@@ -15849,41 +15843,39 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     const c = safeGetContact(id);
     const cName = c ? c.name : '沉睡的羁绊';
 
+    // 斩断聊天线
     let allChats = await localforage.getItem('mp_fix_chats') || {};
-    const oldArr = allChats[id] || (window.getChatArr ? window.getChatArr(id) : []);
-    
-    // 🌟 核心修复：兼容双重收藏标记！
-    const keepArr = oldArr.filter(m => m.proj_fav || m.favorite);
+    const oldArr = allChats[id] || [];
+    const keepArr = oldArr.filter(m => m.proj_fav);
     keepArr.forEach(m => m.savedChatName = cName);
 
     if(keepArr.length > 0) { allChats[id] = keepArr; } 
     else { delete allChats[id]; }
     await localforage.setItem('mp_fix_chats', allChats);
 
+    // 斩断群聊或单人线
     if(c && c.isGroup) {
        let allGroups = await localforage.getItem('mp_fix_groups') || [];
        allGroups = allGroups.filter(g => g.id !== id);
        await localforage.setItem('mp_fix_groups', allGroups);
-       localStorage.setItem('mp_fix_groups', JSON.stringify(allGroups));
     } else {
        let allContacts = await localforage.getItem('mp_fix_contacts') || [];
        allContacts = allContacts.filter(x => x.id !== id);
        await localforage.setItem('mp_fix_contacts', allContacts);
-       localStorage.setItem('mp_fix_contacts', JSON.stringify(allContacts));
     }
 
+    if(window.currentId === id) window.currentId = null; 
     location.reload();
     return false;
   };
 
-  // 4. 升级放映机收藏引擎
+  // 4. 升级放映机收藏引擎：点亮星星时自动记录名字印记！
   window._projFav = async function(chatId, msgId) {
     const chats = await localforage.getItem('mp_fix_chats') || {};
     const arr = chats[chatId] || [];
     const msg = arr.find(m => m.id === msgId);
     if(msg) {
       msg.proj_fav = !msg.proj_fav; 
-      // 如果点亮了星星，顺手给它刻上名字！
       if(msg.proj_fav) {
         const c = safeGetContact(chatId);
         msg.savedChatName = c ? c.name : '沉睡的羁绊';
@@ -15891,22 +15883,25 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
       chats[chatId] = arr;
       await localforage.setItem('mp_fix_chats', chats);
       const p = window._projAllData.find(x => x.msgId === msgId && x.chatId === chatId);
-      // 🌟 统一更新显示状态
-      if(p) p.favorite = (msg.proj_fav || msg.favorite);
+      if(p) p.favorite = msg.proj_fav;
       if(window._renderProjectorWall) window._renderProjectorWall();
     }
   };
 
-  // 5. 升级放映机读取引擎：识别两种收藏星星！
+  // 5. 升级放映机读取引擎：支持显示被删除的游魂名字！
+  const oldInitProj = window._initMemoryProjector;
   window._initMemoryProjector = async function() {
     const wall = document.getElementById('projectorWall');
     if(!wall) return;
-    wall.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:13px; margin-top:40px; column-span:all;"><div style="width:24px; height:24px; border:3px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite; margin:0 auto 12px;"></div>正在潜入硬盘深海，为您打捞岁月的碎片...</div>`;
+    wall.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:13px; margin-top:40px; column-span:all;">
+      <div style="width:24px; height:24px; border:3px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite; margin:0 auto 12px;"></div>
+      正在潜入硬盘深海，为您打捞岁月的碎片...
+    </div>`;
     
     const chats = await localforage.getItem('mp_fix_chats') || {};
-    let allContacts = await localforage.getItem('mp_fix_contacts') || [];
-    let allGroups = await localforage.getItem('mp_fix_groups') || [];
-    const allEntities = [...allContacts, ...allGroups]; 
+    const contacts = window.getContacts ? window.getContacts() : [];
+    const groups = window.getGroups ? window.getGroups() : [];
+    const allEntities = [...contacts, ...groups]; 
     
     let allPhotos = [];
     let chatNamesSet = new Set(); 
@@ -15921,8 +15916,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
         
         const finalChatName = activeChatName || msg.savedChatName || '沉睡的羁绊';
         let added = false;
-        // 🌟 核心修复：无论是哪种方式收藏的，都承认它是星星！
-        const baseInfo = { msgId: msg.id, chatId: chatId, time: msg.time, chatName: finalChatName, favorite: !!(msg.proj_fav || msg.favorite) };
+        const baseInfo = { msgId: msg.id, chatId: chatId, time: msg.time, chatName: finalChatName, favorite: !!msg.proj_fav };
 
         const imgRegex = /\[img\]([\s\S]*?)\[\/img\]/gi;
         let match;
