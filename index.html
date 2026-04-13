@@ -16023,33 +16023,60 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     }
   };
 
-   // 🌟 终极渲染引擎：彻底隔离每一个圈层生态！
+   // 🌟 终极渲染引擎：全动态标签栏 + 绝对圈层隔离
   window._renderEchoesFeed = async function() {
     const box = document.getElementById('echoesPostList');
     if(!box) return;
 
-    // 历史遗留问题自动修复：如果以前是 All，强行转到 全球海岸
+    // 历史遗留问题修复
     if(window._currentEchoesTab === 'All') window._currentEchoesTab = '全球海岸';
 
-    const customTabs = await localforage.getItem(K_ECHOES_CUSTOM_TABS) || [];
+    // 🌟 核心魔法：彻底抛弃死板的HTML，用JS动态接管所有标签的渲染与变色！
+    const defaultTabs = ['全球海岸', '深夜树洞', '人类迷惑日常', '同城吃瓜'];
+    const customKey = typeof K_ECHOES_CUSTOM_TABS !== 'undefined' ? K_ECHOES_CUSTOM_TABS : 'ECHOES_CUSTOM_TABS';
+    const realCustomTabs = await localforage.getItem(customKey) || [];
+    const allTabs = [...defaultTabs, ...realCustomTabs];
+    
     const tabsBox = document.getElementById('echoesTabsBox');
-    Array.from(tabsBox.children).forEach((child, idx) => { if(idx > 3) child.remove(); });
-    customTabs.forEach(t => {
-      const btn = document.createElement('div');
-      btn.textContent = t;
-      btn.onclick = () => window._switchEchoesTab(t);
-      if(window._currentEchoesTab === t) {
-        btn.style.cssText = 'background:#5c7094; color:#fff; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; box-shadow:0 2px 8px rgba(92,112,148,0.2);';
-      } else {
-        btn.style.cssText = 'background:rgba(255,255,255,0.6); color:#7a86a8; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; border:1px solid #dce5f0; box-shadow:none;';
-      }
-      tabsBox.insertBefore(btn, tabsBox.lastElementChild);
-    });
+    if(tabsBox) {
+      tabsBox.innerHTML = ''; // 瞬间拆除旧架构
+      allTabs.forEach(t => {
+        const btn = document.createElement('div');
+        
+        // 🌟 沉浸式管理模式：自定义海域可以一键删除了！
+        if (window._echoesManageMode && !defaultTabs.includes(t)) {
+           btn.innerHTML = `${safeEsc(t)} <span style="color:#ff8a8a; font-weight:900; margin-left:4px; font-size:14px;">×</span>`;
+           btn.onclick = async () => {
+              if(confirm(`老婆，确定要拆除【${t}】这个海域吗？`)) {
+                 const newCustom = realCustomTabs.filter(x => x !== t);
+                 await localforage.setItem(customKey, newCustom);
+                 if(window._currentEchoesTab === t) window._currentEchoesTab = '全球海岸';
+                 window._renderEchoesFeed();
+              }
+           };
+        } else {
+           btn.textContent = t;
+           btn.onclick = () => window._switchEchoesTab(t);
+        }
+
+        // 🌟 绝美高亮判定：选中的穿海盐蓝战袍，没选中的变成半透明！
+        if(window._currentEchoesTab === t) {
+          btn.style.cssText = 'background:#5c7094; color:#fff; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; box-shadow:0 2px 8px rgba(92,112,148,0.2); transition:all 0.2s ease;';
+        } else {
+          btn.style.cssText = 'background:rgba(255,255,255,0.6); color:#7a86a8; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; border:1px solid #dce5f0; transition:all 0.2s ease;';
+          // 管理模式下，没被选中的自定义标签微微闪烁提示可删除
+          if(window._echoesManageMode && !defaultTabs.includes(t)) {
+            btn.style.opacity = '0.8';
+          }
+        }
+        tabsBox.appendChild(btn);
+      });
+    }
 
     const allPosts = await getEchoesPosts();
     let posts = [];
     
-    // 🌟 核心魔法：只显示当前标签下的帖子，再也没有大杂烩了！
+    // 绝对隔离判定
     if(window._currentEchoesTab === 'Favorite') {
       posts = allPosts.filter(p => p.isFav);
     } else {
@@ -16057,7 +16084,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     }
 
     if(posts.length === 0) {
-      box.innerHTML = `<div style="text-align:center; padding:80px 0; color:#a0aaba; font-size:13px; letter-spacing:1px; line-height:1.8;">【${window._currentEchoesTab}】这片海域还很安静<br>点击右上角「探索」召唤专属的漂流瓶吧</div>`;
+      box.innerHTML = `<div style="text-align:center; padding:80px 0; color:#a0aaba; font-size:13px; letter-spacing:1px; line-height:1.8;">【${window._currentEchoesTab}】这片海域还很安静<br>点击右上角「打捞新瓶子」召唤专属电波吧</div>`;
       return;
     }
 
@@ -16073,7 +16100,11 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
         const topComments = p.comments.slice(0, 2);
         commentsHtml = `
           <div style="margin-top:12px; padding:12px; background:rgba(238,244,250,0.4); border-radius:10px; border:1px dashed #dce5f0;">
-            ${topComments.map(c => `<div style="font-size:12px; color:#5c7094; margin-bottom:6px; line-height:1.5;"><b style="color:#3d4a6a;">${safeEsc(c.author)}:</b> ${safeEsc(c.text)}</div>`).join('')}
+            ${topComments.map(c => {
+               // 首页也能享受绝美 @ 渲染！
+               const formattedText = safeEsc(c.text).replace(/(@[^\s:：]+)/g, '<span style="color:#5c7094; font-weight:800; background:rgba(238,244,250,0.8); padding:2px 6px; border-radius:6px; margin-right:4px;">$1</span>');
+               return `<div style="font-size:12px; color:#5c7094; margin-bottom:6px; line-height:1.5;"><b style="color:#3d4a6a;">${safeEsc(c.author)}:</b> ${formattedText}</div>`;
+            }).join('')}
             ${p.comments.length > 2 ? `<div style="font-size:11px; color:#a0aaba; cursor:pointer; text-align:center; margin-top:4px;">查看全部 ${p.comments.length} 条评论 ▾</div>` : ''}
           </div>`;
       }
@@ -16100,9 +16131,9 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
             
             <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #eef4fa; padding-top:12px; color:#7a86a8;">
               <div style="display:flex; align-items:center; gap:16px;">
-                <div style="display:flex; align-items:center; gap:4px; font-size:12px; font-weight:bold;">${svgLike} ${p.likes || 0}</div>
+                <div style="display:flex; align-items:center; gap:4px; font-size:12px; font-weight:bold;">${svgLike || '♡'} ${p.likes || 0}</div>
                 <div style="display:flex; align-items:center; gap:4px; font-size:12px; font-weight:bold;">
-                  ${svgComment} ${Math.max((p.comments||[]).length, p.virtualCmtCount || 0)} 
+                  ${svgComment || '🗨'} ${Math.max((p.comments||[]).length, p.virtualCmtCount || 0)} 
                 </div>
               </div>
               <div onclick="event.stopPropagation(); window._toggleEchoesFav('${p.id}')" style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:8px; background:${p.isFav ? '#eef4fa' : 'transparent'}; transition:all 0.2s;">
