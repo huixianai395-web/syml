@@ -2118,7 +2118,17 @@ body {
 .xhs-avatar { width: 22px; height: 22px; border-radius: 50%; border: 1px solid #dce5f0; object-fit: cover; flex-shrink: 0; background: #eef4fa; display: grid; place-items: center; font-size: 10px; font-weight: bold; color: #5c7094; }
 .xhs-name { font-size: 11px; color: #7a86a8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
 .xhs-tag { color: #5c7094; font-weight: 900; cursor: pointer; transition: opacity 0.2s; margin-right: 2px; }
-.xhs-tag:active { opacity: 0.6; }                                     }
+.xhs-tag:active { opacity: 0.6; }     
+    /* 🌊 蓝色高定：幻境邀约专属美学 */
+#holoMirageApp { background: #eef4fa; }
+.holo-ticket { background: rgba(255,255,255,0.65); backdrop-filter: blur(24px); border: 1px dashed #dce5f0; border-radius: 16px; padding: 24px; box-shadow: 0 12px 40px rgba(92,112,148,0.06); cursor: pointer; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.holo-ticket:active { transform: scale(0.96); }
+.holo-scene-layer { position: fixed; inset: 0; z-index: 15000; background-size: cover; background-position: center; transition: background 1.5s ease; }
+.holo-scene-mask { position: absolute; inset: 0; background: rgba(238,244,250,0.85); backdrop-filter: blur(16px); display: flex; flex-direction: column; justify-content: flex-end; padding: 40px 24px calc(40px + var(--safe-bottom)); }
+.holo-subtitle { font-size: 16px; color: #5c7094; line-height: 1.8; text-align: justify; font-family: 'STZhongsong', 'KaiTi', serif; margin-bottom: 24px; text-shadow: 0 1px 2px rgba(255,255,255,0.9); font-weight: bold; }
+.holo-option { background: rgba(250,252,255,0.7); border: 1px solid #dce5f0; border-radius: 12px; padding: 14px 16px; font-size: 14px; color: #3d4a6a; margin-bottom: 12px; cursor: pointer; transition: background 0.2s; text-align: center; font-weight: bold; }
+.holo-option:active { background: #eef4fa; transform: scale(0.98); }
+.holo-voice-wave { display: inline-block; width: 4px; height: 12px; background: #a5cfff; margin: 0 2px; border-radius: 2px; animation: blueBlink 1s infinite; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
@@ -2329,6 +2339,17 @@ body {
             </div>
             <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">时光星轨</span>
           </div>
+        <!-- 幻境邀约入口 -->
+          <div class="ios-icon" onclick="show('holoMirageApp'); window._initHoloApp();">
+            <div class="ibg" style="background-color:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
+              <svg viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+              </svg>
+            </div>
+            <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">幻境邀约</span>
+          </div>
       </div> <!-- 第二页的大门关上！ -->
 
     </div> <!-- ⚠️ 滑动总管 (home-slider) 的大门在这里关上！ -->
@@ -2406,7 +2427,52 @@ body {
       </div>
     </div>
   </section>
+<section id="holoMirageApp" class="screen">
+    <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
+      <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px;">‹ 桌面</button>
+      <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">幻境邀约</b>
+      <div style="width:56px;"></div>
+    </div>
+    
+    <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:20px;">
+      <div style="font-size:12px; color:#7a86a8; font-weight:800; margin-bottom:12px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
+        <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+        全息信标设定
+      </div>
+      
+      <div style="background:rgba(255,255,255,0.6); border:1px solid #dce5f0; border-radius:16px; padding:20px; box-shadow:0 4px 16px rgba(92,112,148,0.03);">
+        <div style="font-size:12px; color:#5c7094; font-weight:bold; margin-bottom:8px;">邀请谁进入幻境？</div>
+        <select id="holoRoleSel" class="select" style="width:100%; background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:14px; padding:10px; margin-bottom:16px; outline:none; font-weight:bold;"></select>
+        
+        <div style="font-size:12px; color:#5c7094; font-weight:bold; margin-bottom:8px;">幻境坐标 (你想去哪？)</div>
+        <input id="holoLocationInp" class="input" placeholder="例如：深夜的水族馆 / 赛博朋克酒馆" style="width:100%; background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:14px; padding:10px; margin-bottom:16px; box-sizing:border-box;">
+        
+        <div style="font-size:12px; color:#5c7094; font-weight:bold; margin-bottom:8px;">上传全息背景图 (可选)</div>
+        <input type="file" id="holoBgUpload" accept="image/*" class="hidden" onchange="window._holoHandleBg(event)">
+        <button class="btn" onclick="document.getElementById('holoBgUpload').click()" style="width:100%; background:transparent; color:#7a86a8; border:1px dashed #a5cfff; border-radius:10px; padding:10px; font-weight:bold; margin-bottom:20px; transition:all 0.2s;" id="holoBgBtn">🖼️ 点击上传风景图</button>
 
+        <button class="btn p" onclick="window._startHoloDate()" style="width:100%; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:12px; padding:14px 0; font-size:15px; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.1); letter-spacing:2px; transition:transform 0.1s;" id="holoStartBtn" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">撕开门票 · 潜入幻境</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 沉浸式幻境层 (平时隐藏) -->
+  <div id="holoActiveScene" class="holo-scene-layer" style="display:none;">
+    <div id="holoSceneBg" style="position:absolute; inset:0; background-size:cover; background-position:center; filter:saturate(120%);"></div>
+    <div class="holo-scene-mask">
+      <div style="position:absolute; top:calc(16px + var(--safe-top)); right:20px; z-index:20;">
+        <button class="btn" onclick="window._exitHoloDate()" style="background:rgba(255,255,255,0.4); color:#5c7094; border:1px solid #dce5f0; border-radius:50%; width:36px; height:36px; padding:0; display:grid; place-items:center; font-size:20px; line-height:1; backdrop-filter:blur(8px);">×</button>
+      </div>
+      
+      <div id="holoVoiceIndicator" style="display:none; align-items:center; gap:4px; margin-bottom:12px; justify-content:center;">
+        <span style="font-size:11px; color:#5c7094; font-weight:bold; font-family:ui-monospace, monospace;">TA 正在低语</span>
+        <div class="holo-voice-wave"></div><div class="holo-voice-wave" style="animation-delay:0.2s;"></div><div class="holo-voice-wave" style="animation-delay:0.4s;"></div>
+      </div>
+
+      <div id="holoSubtitles" style="flex:1; overflow-y:auto; scrollbar-width:none; padding-bottom:20px; display:flex; flex-direction:column; justify-content:flex-end;"></div>
+      <div id="holoOptionsBox" style="margin-top:20px;"></div>
+    </div>
+  </div>
   
   <!-- 阅读信件的专属弹窗 -->
   <div id="postReadModal" class="modal" style="z-index: 10001;" onclick="this.classList.remove('active')">
@@ -15288,7 +15354,117 @@ ${chatCtx}
     }
   };
 
+window._tempHoloBg = '';
+  window._currentHoloRole = null;
+  window._holoHistory =[];
 
+  window._initHoloApp = function() {
+    const contacts = (window.getContacts ? window.getContacts() :[]).filter(c => !c.isGroup);
+    const sel = document.getElementById('holoRoleSel');
+    if(sel) sel.innerHTML = contacts.map(c => `<option value="${c.id}">${safeEsc(c.name)}</option>`).join('');
+  };
+
+  window._holoHandleBg = async function(e) {
+    const f = e.target.files?.[0]; if(!f) return;
+    try {
+      const imgData = await window._fiCompressImage ? await window._fiCompressImage(f) : await compressImage(f);
+      window._tempHoloBg = imgData;
+      const btn = document.getElementById('holoBgBtn');
+      btn.textContent = '✅ 风景已就绪';
+      btn.style.background = '#eef4fa';
+      btn.style.color = '#5c7094';
+      btn.style.borderColor = '#dce5f0';
+    } catch(err) { alert('图片处理失败'); }
+  };
+
+  window._startHoloDate = async function() {
+    const roleId = document.getElementById('holoRoleSel').value;
+    const loc = document.getElementById('holoLocationInp').value.trim() || '初雪的街头';
+    if(!roleId) return alert('请先选择共赴幻境的人！');
+
+    const c = getContactById(roleId);
+    window._currentHoloRole = c;
+    window._holoHistory =[];
+
+    // 开启沉浸层
+    document.getElementById('holoSceneBg').style.backgroundImage = window._tempHoloBg ? \`url(\${window._tempHoloBg})\` : 'linear-gradient(135deg, #eef4fa, #cdd7e8)';
+    document.getElementById('holoActiveScene').style.display = 'block';
+    document.getElementById('holoSubtitles').innerHTML = '';
+    document.getElementById('holoOptionsBox').innerHTML = '<div style="text-align:center; color:#5c7094; font-size:13px; font-weight:bold; letter-spacing:2px; animation:blueBlink 1.5s infinite;">时空跃迁中 · 正在接入 TA 的脑电波...</div>';
+
+    await window._holoProgressAI(\`玩家刚刚撕开了通往【\${loc}】的全息门票，幻境正式开启。请给出你的开场白和玩家的选项。\`);
+  };
+
+  window._holoProgressAI = async function(userAction) {
+    const c = window._currentHoloRole;
+    const me = getMe();
+    
+    // 把玩家的行动记录下来
+    if(userAction && !userAction.includes('全息门票')) {
+      window._holoHistory.push({ role: 'user', content: userAction });
+      const subBox = document.getElementById('holoSubtitles');
+      subBox.insertAdjacentHTML('beforeend', \`<div class="holo-subtitle" style="text-align:right; color:#7a86a8; font-size:14px; opacity:0.8;">"\${safeEsc(userAction)}"</div>\`);
+    }
+
+    const sysPrompt = \`你正在扮演：\${c.name}。人设：\${c.persona}。
+这是一场沉浸式的【全息幻境约会】。
+请根据上下文，输出极具张力的场景描写、你的内心OS，以及你要对玩家（\${me.name||'我'}）说的话。
+【输出格式铁律】必须严格输出JSON！
+{
+  "narration": "场景氛围与动作描写。要有电影感，限50字。",
+  "inner_voice": "你此刻真实的内心OS，限30字。",
+  "dialog": "你亲口对玩家说的话（必须是纯粹的台词，不要带任何前缀！这段话会被直接推给语音引擎！）。",
+  "options": ["选项A：玩家的反应", "选项B：玩家的反应"]
+}\`;
+
+    try {
+      const msgs =[
+        { role: 'system', content: sysPrompt },
+        ...window._holoHistory,
+        { role: 'user', content: userAction || '继续' }
+      ];
+
+      const out = await callApi(msgs);
+      const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
+      const data = JSON.parse(cleaned.match(/\\{[\\s\\S]*\\}/)[0]);
+
+      // 记录 AI 的回复
+      window._holoHistory.push({ role: 'assistant', content: JSON.stringify(data) });
+
+      // 渲染字幕
+      const subBox = document.getElementById('holoSubtitles');
+      let html = \`
+        <div class="holo-subtitle">
+          <span style="font-size:13px; color:#7a86a8; display:block; margin-bottom:8px;">\${safeEsc(data.narration)}</span>
+          <span style="font-size:12px; color:#a5cfff; font-style:italic; display:block; margin-bottom:8px;">💭 \${safeEsc(data.inner_voice)}</span>
+          "\${safeEsc(data.dialog)}"
+        </div>
+      \`;
+      subBox.insertAdjacentHTML('beforeend', html);
+      subBox.scrollTop = subBox.scrollHeight;
+
+      // 渲染选项
+      const optBox = document.getElementById('holoOptionsBox');
+      optBox.innerHTML = (data.options ||[]).map(opt => \`<div class="holo-option" onclick="document.getElementById('holoOptionsBox').innerHTML='<div style=\\'text-align:center; color:#5c7094; font-weight:bold;\\'>命运推演中...</div>'; window._holoProgressAI('\${safeEsc(opt)}')">\${safeEsc(opt)}</div>\`).join('');
+
+      // 🌟 终极魔法：静默触发 MiniMax 语音引擎！
+      if(data.dialog && window._playVoiceClone) {
+        const dummyEl = document.getElementById('holoVoiceIndicator');
+        dummyEl.style.display = 'flex';
+        // 悄悄劫持 _playVoiceClone 让他读出来！
+        await window._playVoiceClone(dummyEl, data.dialog, c.id);
+        dummyEl.style.display = 'none';
+      }
+
+    } catch(e) {
+      document.getElementById('holoOptionsBox').innerHTML = \`<div class="holo-option" onclick="window._exitHoloDate()">时空乱流中断了连接，点击退出</div>\`;
+    }
+  };
+
+  window._exitHoloDate = function() {
+    document.getElementById('holoActiveScene').style.display = 'none';
+    if(window._activeVoiceAudio) { window._activeVoiceAudio.pause(); window._activeVoiceAudio = null; }
+  };
 </script>
 </body>
   </html>
