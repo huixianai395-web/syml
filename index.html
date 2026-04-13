@@ -3128,7 +3128,6 @@ body {
   <!-- ================= 升级版结束 ================= -->
 <!-- ================= 🌟 蓝色高定：全球匿名社区「Echoes · 回音海」 ================= -->
 <section id="echoesForum" class="screen">
-  <!-- 1. 替换 Header，加入“管理”按钮 -->
   <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
     <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">‹ 桌面</button>
     <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">回音海</b>
@@ -3138,12 +3137,20 @@ body {
     </div>
   </div>
 
-
-    <!-- 🌟 蓝色高定：绝美三键操作栏 (换马甲 + 收藏夹 + 打捞刷新) -->
+  <!-- 批量操作栏固定在可视区底部 -->
+  <div id="echoesBatchBar" class="hidden" style="position:fixed; bottom:0; left:0; right:0; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border-top:1px solid #dce5f0; padding:12px 20px calc(12px + var(--safe-bottom)); display:flex; justify-content:space-between; align-items:center; box-shadow:0 -4px 20px rgba(92,112,148,0.08); z-index:101;">
+    <div style="font-size:13px; color:#7a86a8; font-weight:bold;" id="echoesSelCount">已选 0 项</div>
+    <button class="btn d" onclick="window._deleteSelectedEchoes()" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; font-weight:bold; padding:6px 14px;">彻底抹除</button>
+  </div>
+  
+  <!-- 核心展示柜容器，限制了高度和滚动 -->
+  <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px; overflow-y:auto; box-sizing:border-box;">
+    
+    <!-- 绝美三键操作栏 -->
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding:0 4px; gap:8px;">
       <div style="display:flex; gap:8px;">
-        <div onclick="window._setEchoesAlias()" style="background:transparent; color:#5c7094; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:bold; cursor:pointer; border:1px dashed #a5cfff; display:flex; align-items:center; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">🎭 换马甲</div>
-        <div onclick="window._switchEchoesTab('Favorite')" style="background:#eef4fa; color:#5c7094; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:bold; cursor:pointer; border:1px solid #dce5f0; display:flex; align-items:center; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">★ 我的珍藏</div>
+        <div onclick="window._setEchoesAlias()" style="background:transparent; color:#5c7094; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:bold; cursor:pointer; border:1px dashed #a5cfff; display:flex; align-items:center; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">换马甲</div>
+        <div onclick="window._switchEchoesTab('Favorite')" style="background:#eef4fa; color:#5c7094; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:bold; cursor:pointer; border:1px solid #dce5f0; display:flex; align-items:center; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">我的珍藏</div>
       </div>
       <button class="btn p" id="echoesRefreshBtn" onclick="window._generateEchoesPosts()" style="background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:999px; padding:6px 12px; font-size:12px; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.06); display:flex; align-items:center; gap:4px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
         <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2.5;"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 1 0 2.13-5.83L2 12"></path></svg>
@@ -3151,26 +3158,16 @@ body {
       </button>
     </div>
 
-<!-- 3. 在 echoesForum 的最底部（</div> 的上面），加上多选操作台 -->
-  <div id="echoesBatchBar" class="hidden" style="position:fixed; bottom:0; left:0; right:0; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border-top:1px solid #dce5f0; padding:12px 20px calc(12px + var(--safe-bottom)); display:flex; justify-content:space-between; align-items:center; box-shadow:0 -4px 20px rgba(92,112,148,0.08); z-index:101;">
-    <div style="font-size:13px; color:#7a86a8; font-weight:bold;" id="echoesSelCount">已选 0 项</div>
-    <button class="btn d" onclick="window._deleteSelectedEchoes()" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; font-weight:bold; padding:6px 14px;">彻底抹除</button>
-  </div>
-  
-  <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px; overflow-y:auto; box-sizing:border-box;">
-   <!-- 🌟 绝美极简分类栏 -->
-    <div id="echoesTabsBox" style="display:flex; gap:12px; overflow-x:auto; padding:4px; margin-bottom:16px; scrollbar-width:none;">
-      <div onclick="window._switchEchoesTab('全球海岸')" style="background:#5c7094; color:#fff; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; box-shadow:0 2px 8px rgba(92,112,148,0.2);">全球海岸</div>
-      <div onclick="window._switchEchoesTab('深夜树洞')" style="background:rgba(255,255,255,0.6); color:#7a86a8; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; border:1px solid #dce5f0;">深夜树洞</div>
-      <div onclick="window._switchEchoesTab('人类迷惑日常')" style="background:rgba(255,255,255,0.6); color:#7a86a8; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; border:1px solid #dce5f0;">人类迷惑日常</div>
-      <div onclick="window._switchEchoesTab('同城吃瓜')" style="background:rgba(255,255,255,0.6); color:#7a86a8; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; border:1px solid #dce5f0;">同城吃瓜</div>
-    </div>
-      <!-- 之前已有的分类... -->
-      <div onclick="window._addCustomEchoesTab()" style="background:transparent; color:#5c7094; padding:6px 12px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; border:1px dashed #a5cfff;">+ 新建海域</div>
+    <!-- 🌟 绝美极简分类栏 (融合新建海域按钮，放入同一滚动轨道) -->
+    <div style="display:flex; gap:12px; align-items:center; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; padding:4px; margin-bottom:16px;">
+      <div id="echoesTabsBox" style="display:flex; gap:12px; flex-shrink:0;">
+        <!-- 标签由JS动态渲染 -->
+      </div>
+      <div onclick="window._addCustomEchoesTab()" style="background:transparent; color:#5c7094; padding:6px 12px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; border:1px dashed #a5cfff; flex-shrink:0;">+ 新建海域</div>
     </div>
 
-    <!-- 帖子列表容器 -->
-    <div id="echoesPostList" style="display:flex; flex-direction:column; gap:14px;"></div>
+    <!-- 帖子列表容器 (这次乖乖待在透明展示柜里面！) -->
+    <div id="echoesPostList" style="display:flex; flex-direction:column; gap:14px; padding-bottom:20px;"></div>
   </div>
 </section>
 
