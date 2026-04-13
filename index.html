@@ -16289,10 +16289,10 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     if(typeof window._sendToAI === 'function') window._sendToAI(chatId, hiddenPrompt, true);
   };
 
-// 🌟 AI 造梦：1:1真实的全球生态 + 虚拟赛博评论数
+// 🌟 AI 造梦：完美的全球生态 + 乱序洗牌算法 + 海量神评！
   window._generateEchoesPosts = async function() {
     const btn = document.getElementById('echoesRefreshBtn');
-    if(btn) { btn.textContent = '探索中...'; btn.style.pointerEvents = 'none'; }
+    if(btn) { btn.textContent = '电波汇聚中...'; btn.style.pointerEvents = 'none'; btn.style.opacity = '0.7'; }
     
     try {
       const contacts = window.getContacts ? window.getContacts() : [];
@@ -16303,39 +16303,49 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
 
 【绝对生态铁律】：
 1. 必须生成 8-10 条帖子，【50%为中国网友，50%为真正的外国网友】！
-2. 外国网友的帖子：不要写成“中国留学生”，必须是真实的外国人！名字要像“John_NYC”、“Mike_London”、“Sakura酱”、“Elena_RU”。他们的内容必须贴合当地文化（如：抱怨伦敦地铁停运、吐槽纽约贝果太硬、涩谷街头的见闻），语气可以带有“机翻感”或混杂少量本土单词。
-3. 中国网友的帖子：必须极度接地气，包含 2-3 个男主（${maleInfo}）披着网感马甲发的帖子，其余为路人。
+2. 外国网友的帖子：必须是真实的外国人（可带英文或机翻感），严禁全写成留学生。
+3. 中国网友的帖子：包含 2-3 个男主（${maleInfo}）披着网感马甲发的帖子，其余为路人。
+4. 【神级评论要求】：每个帖子必须在 comments 数组里，一次性生成 8 到 15 条纯正路人的吃瓜神回复！绝对不允许只有一两条！
 
 必须返回纯 JSON 数组格式：
 [
   {
-    "author": "虚构的网名马甲(中外风格均有)",
-    "ip": "必须填写真实的城市名",
+    "author": "虚构的网名马甲",
+    "ip": "真实的城市名",
     "tag": "${window._currentEchoesTab === 'All' ? '随机分类' : window._currentEchoesTab}",
-    "content": "极度真实有趣的帖子正文，包含多元文化",
-    "likes": 随机生成(100到300000之间),
-    "comments": [ {"author": "野生网友", "text": "神回复"} ]
+    "content": "极度真实有趣的帖子正文",
+    "likes": 随机生成(100到1300000之间),
+    "comments": [ {"author": "野生网友A", "text": "神回复1"}, {"author": "野生网友B", "text": "神回复2"} ]
   }
 ]`;
 
-      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻生成！必须有50%的真正外国人发帖，IP必须中外1:1平衡！' }]);
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻生成！每个帖子必须带8-15条评论！' }]);
       const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
       const dataArr = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
       
       const posts = await getEchoesPosts();
-      const foreignCities = ['东京', '巴黎', '纽约', '伦敦', '罗马', '首尔', '曼谷', '洛杉矶', '柏林', '冰岛', '莫斯科'];
-      const domesticCities = ['北京', '上海', '广州', '成都', '杭州', '重庆', '深圳', '长沙', '武汉'];
+      const foreignCities = ['东京', '巴黎', '纽约', '伦敦', '罗马', '首尔', '曼谷', '洛杉矶', '柏林', '冰岛', '莫斯科', '悉尼'];
+      const domesticCities = ['北京', '上海', '广州', '成都', '杭州', '重庆', '深圳', '长沙', '武汉', '南京', '大理'];
+
+      // 🌟 核心魔法：生成绝对 1:1 的身份牌，然后疯狂洗牌打乱！
+      let ipTypes = dataArr.map((_, i) => i % 2 === 0 ? 'foreign' : 'domestic');
+      ipTypes.sort(() => Math.random() - 0.5);
 
       dataArr.forEach((data, index) => {
         const timeOffset = Math.floor(Math.random() * 86400000); 
-        // 🌟 终极物理拦截：严格 1:1 分配 IP，确保一半出国一半在国内
-        let finalIp = data.ip;
-        if (index % 2 === 0) finalIp = foreignCities[Math.floor(Math.random() * foreignCities.length)];
-        else finalIp = domesticCities[Math.floor(Math.random() * domesticCities.length)];
+        
+        // 🌟 根据洗牌结果，随机抽取对应城市的 IP
+        let finalIp;
+        if (ipTypes[index] === 'foreign') {
+          finalIp = foreignCities[Math.floor(Math.random() * foreignCities.length)];
+        } else {
+          finalIp = domesticCities[Math.floor(Math.random() * domesticCities.length)];
+        }
 
-        // 🌟 赛博伪装引擎：根据点赞量动态生成逼真的评论数
+        // 赛博伪装引擎：生成逼真的虚拟总评论数
         const fakeLikes = data.likes || Math.floor(Math.random() * 5000 + 100);
-        const fakeVirtualCmt = Math.floor(fakeLikes * (0.01 + Math.random() * 0.05)) + 12;
+        const generatedCmtCount = (data.comments || []).length;
+        const fakeVirtualCmt = Math.max(generatedCmtCount, Math.floor(fakeLikes * (0.01 + Math.random() * 0.05)) + 15);
 
         posts.unshift({
           id: 'ec_' + Date.now() + Math.floor(Math.random()*1000),
@@ -16344,8 +16354,8 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
           tag: data.tag,
           content: data.content, 
           likes: fakeLikes,
-          virtualCmtCount: fakeVirtualCmt, // 存储虚拟评论数
-          isFav: false, // 收藏状态
+          virtualCmtCount: fakeVirtualCmt, 
+          isFav: false, 
           time: Date.now() - timeOffset, 
           comments: data.comments || []
         });
@@ -16357,7 +16367,8 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     } catch(e) {
       alert('探索海域失败：' + (e.message || e));
     } finally {
-      if(btn) { btn.textContent = '打捞新瓶子'; btn.style.pointerEvents = 'auto'; }
+      const btn = document.getElementById('echoesRefreshBtn');
+      if(btn) { btn.textContent = '打捞新瓶子'; btn.style.pointerEvents = 'auto'; btn.style.opacity = '1'; }
     }
   };
 
