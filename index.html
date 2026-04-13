@@ -3138,8 +3138,17 @@ body {
     </div>
   </div>
 
-<!-- 2. 在 echoesTabsBox 分类栏的最末尾，加上“换马甲”按钮 -->
-      <div onclick="window._setEchoesAlias()" style="background:transparent; color:#5c7094; padding:6px 12px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; border:1px dashed #a5cfff;">🎭 换马甲</div>
+
+      <!-- 🌟 蓝色高定：绝美左右对称操作栏 (换马甲 + 打捞刷新) -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding:0 4px;">
+      <div onclick="window._setEchoesAlias()" style="background:transparent; color:#5c7094; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; cursor:pointer; border:1px dashed #a5cfff; display:flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(165,207,255,0.1); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+        🎭 换马甲
+      </div>
+      <button class="btn p" id="echoesRefreshBtn" onclick="window._generateEchoesPosts()" style="background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:999px; padding:6px 16px; font-size:13px; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.06); display:flex; align-items:center; gap:6px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+        <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2.5;"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 1 0 2.13-5.83L2 12"></path></svg>
+        打捞新瓶子
+      </button>
+    </div>
 
 <!-- 3. 在 echoesForum 的最底部（</div> 的上面），加上多选操作台 -->
   <div id="echoesBatchBar" class="hidden" style="position:fixed; bottom:0; left:0; right:0; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border-top:1px solid #dce5f0; padding:12px 20px calc(12px + var(--safe-bottom)); display:flex; justify-content:space-between; align-items:center; box-shadow:0 -4px 20px rgba(92,112,148,0.08); z-index:101;">
@@ -16081,7 +16090,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     window._switchEchoesTab(tagName.trim());
   };
 
-  // 🌟 沉浸式详情页渲染
+ // 🌟 沉浸式详情页渲染 (带召唤水军按钮)
   window._openEchoesDetail = async function(postId) {
     window._currentEchoesPostId = postId;
     const posts = await getEchoesPosts();
@@ -16100,20 +16109,74 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     `;
 
     const cmtBox = document.getElementById('echoesDetailComments');
+    let cmtHtml = '';
     if(!post.comments || post.comments.length === 0) {
-      cmtBox.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:12px; padding:20px 0;">暂时没有回音，快来抢沙发吧~</div>`;
+      cmtHtml = `<div style="text-align:center; color:#a0aaba; font-size:12px; padding:20px 0;">暂时没有回音，快来抢沙发吧~</div>`;
     } else {
-      cmtBox.innerHTML = post.comments.map(c => `
+      cmtHtml = post.comments.map(c => `
         <div style="display:flex; gap:10px; margin-bottom:16px;">
           <div style="width:32px; height:32px; border-radius:10px; background:#f4f6fb; color:#7a86a8; display:grid; place-items:center; font-weight:800; font-size:14px; border:1px solid #eef4fa; flex-shrink:0;">${safeEsc(c.author).substring(0,1)}</div>
           <div style="flex:1; min-width:0; border-bottom:1px dashed #eef4fa; padding-bottom:12px;">
-            <div style="font-size:12px; font-weight:800; color:#7a86a8; margin-bottom:4px;">${safeEsc(c.author)}</div>
-            <div style="font-size:14px; color:#3d4a6a; line-height:1.5; word-break:break-all;">${safeEsc(c.text)}</div>
+            <div style="display:flex; justify-content:space-between; align-items:baseline;">
+              <span style="font-size:12px; font-weight:800; color:#7a86a8;">${safeEsc(c.author)}</span>
+              <span style="font-size:10px; color:#cdd7e8;">IP: ${safeEsc(c.ip || '未知')}</span>
+            </div>
+            <div style="font-size:14px; color:#3d4a6a; line-height:1.5; word-break:break-all; margin-top:4px;">${safeEsc(c.text)}</div>
           </div>
         </div>
       `).join('');
     }
+    
+    // 🌊 核心魔法：召唤海量水军按钮！
+    cmtHtml += `
+      <button class="btn" id="echoesFetchCmtBtn" onclick="window._fetchMoreComments('${post.id}')" style="width:100%; margin-top:10px; background:rgba(238,244,250,0.6); color:#5c7094; border:1px dashed #a5cfff; border-radius:12px; padding:12px 0; font-weight:bold; font-size:13px; box-shadow:none; transition:all 0.2s ease;" onmousedown="this.style.transform='scale(0.98)'; this.style.background='rgba(220,229,240,0.8)';" onmouseup="this.style.transform='scale(1)'; this.style.background='rgba(238,244,250,0.6)';">
+        🌊 召唤全网路人热评 (加载更多)
+      </button>
+    `;
+    
+    cmtBox.innerHTML = cmtHtml;
     document.getElementById('echoesDetailModal').classList.add('active');
+  };
+
+  // 🌟 终极按需加载：召唤全球野生网友！
+  window._fetchMoreComments = async function(postId) {
+    const btn = document.getElementById('echoesFetchCmtBtn');
+    if(btn) { btn.textContent = '全世界的电波正在汇聚中...'; btn.style.pointerEvents = 'none'; btn.style.opacity = '0.7'; }
+    
+    try {
+      const posts = await getEchoesPosts();
+      const post = posts.find(x => x.id === postId);
+      if(!post) return;
+
+      const contacts = window.getContacts ? window.getContacts() : [];
+      const maleLeads = contacts.filter(c => !c.isGroup).map(c => `- ${c.name}：${c.persona}`).join('\\n');
+
+      const sysPrompt = `你是「Echoes」论坛生态引擎。玩家正在查看楼主【${post.author}】发布的帖子：“${post.content}”。
+【任务】：请为这篇帖子一次性生成 15-30 条极具网感的神回复！
+【绝对生态铁律】：
+1. 评论者全部是【纯野生路人网友】，名字必须是沙雕网感ID。
+2. 绝对不允许出现系统提示音或者带真实名字的回复。
+3. 【全球 IP 强制注入】：为了体现全球生态，这 20 多条评论里，IP 属地必须覆盖全世界！必须出现纽约、伦敦、巴黎、东京、冰岛等国外城市，且中外城市比例必须 1:1！
+必须返回纯 JSON 数组格式：
+[{"author":"沙雕网友ID", "ip":"世界各地真实城市", "text":"极度真实的吐槽或吃瓜回复"}]`;
+
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻发动水军！我要看到全是外国IP和国内IP混杂的热闹评论区！' }]);
+      const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
+      const match = cleaned.match(/\[[\s\S]*\]/);
+      if(match) {
+        const newComments = JSON.parse(match[0]);
+        const freshPosts = await getEchoesPosts();
+        const t = freshPosts.find(x => x.id === postId);
+        if(t) {
+          t.comments = [...t.comments, ...newComments];
+          await setEchoesPosts(freshPosts);
+          if (window._currentEchoesPostId === postId) window._openEchoesDetail(postId);
+        }
+      }
+    } catch(e) {
+      alert('电波召唤失败：' + e.message);
+      if(btn) { btn.textContent = '🌊 召唤全网路人热评 (加载更多)'; btn.style.pointerEvents = 'auto'; btn.style.opacity = '1'; }
+    }
   };
 
   // 🌟 亲自下场评论引擎
