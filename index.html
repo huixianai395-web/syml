@@ -2350,6 +2350,15 @@ body {
             </div>
             <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">幻境邀约</span>
       </div>
+          <!-- 回音海入口 -->
+<div class="ios-icon" onclick="show('echoesForum'); window._initEchoesForum();">
+  <div class="ibg" style="background-color:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
+    <svg viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;">
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+    </svg>
+  </div>
+  <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">回音海</span>
+</div>
     </div> <!-- 🌟 补回这扇网格大门！图标完美归位！ -->
   </div> <!-- 第二页的大门关上！ -->
 
@@ -3117,7 +3126,53 @@ body {
     </div>
   </div>
   <!-- ================= 升级版结束 ================= -->
+<!-- ================= 🌟 蓝色高定：全球匿名社区「Echoes · 回音海」 ================= -->
+<section id="echoesForum" class="screen">
+  <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
+    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 桌面</button>
+    <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
+      <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+      回音海
+    </b>
+    <div style="display:flex; gap:6px;">
+      <button class="btn" id="echoesRefreshBtn" onclick="window._generateEchoesPosts()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px;">探索</button>
+      <button class="btn p" onclick="window._openEchoesPublishModal()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">+ 漂流瓶</button>
+    </div>
+  </div>
+  
+  <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px; overflow-y:auto; box-sizing:border-box;">
+    <!-- 极简标签分类拨片 -->
+    <div style="display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; margin-bottom:16px; min-height:36px; flex-shrink:0;" id="echoesTabsBox">
+      <div onclick="window._switchEchoesTab('All')" style="background:#5c7094; color:#fff; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; box-shadow:0 2px 8px rgba(92,112,148,0.2);">全球海岸 (全部)</div>
+      <div onclick="window._switchEchoesTab('Secret')" style="background:rgba(255,255,255,0.6); color:#7a86a8; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; border:1px solid #dce5f0;">深夜树洞</div>
+      <div onclick="window._switchEchoesTab('Daily')" style="background:rgba(255,255,255,0.6); color:#7a86a8; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; border:1px solid #dce5f0;">人类迷惑日常</div>
+      <div onclick="window._switchEchoesTab('Gossip')" style="background:rgba(255,255,255,0.6); color:#7a86a8; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:bold; white-space:nowrap; cursor:pointer; border:1px solid #dce5f0;">同城吃瓜</div>
+    </div>
 
+    <!-- 帖子列表容器 -->
+    <div id="echoesPostList" style="display:flex; flex-direction:column; gap:14px;"></div>
+  </div>
+</section>
+
+<!-- 发帖弹窗 -->
+<div id="echoesPublishModal" class="modal" style="z-index: 10001; padding:0;">
+  <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:none; display:flex; flex-direction:column; padding:0; overflow:hidden; border-radius:0; width:100%; height:100%; max-width:430px; margin:0 auto;">
+    <div style="padding:calc(12px + var(--safe-top)) 16px 12px 16px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
+      <span onclick="document.getElementById('echoesPublishModal').classList.remove('active')" style="color:#7a86a8; font-size:14px; cursor:pointer; font-weight:bold;">取消</span>
+      <b style="color:#3d4a6a; font-size:15px;">投入漂流瓶</b>
+      <button class="btn p" onclick="window._publishMyEchoesPost()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:4px 16px; font-weight:bold; box-shadow:none;">抛出</button>
+    </div>
+    <div style="padding:16px; flex:1; background:linear-gradient(180deg, #f4f6fb, #eef4fa);">
+      <div style="font-size:12px; color:#5c7094; font-weight:bold; margin-bottom:8px;">选择投递的海域</div>
+      <select id="echoesPublishTag" class="select" style="background:rgba(255,255,255,0.7); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; font-size:14px; padding:10px; outline:none; margin-bottom:16px; font-weight:bold;">
+        <option value="Secret">深夜树洞</option>
+        <option value="Daily">人类迷惑日常</option>
+        <option value="Gossip">同城吃瓜</option>
+      </select>
+      <textarea id="echoesInputText" class="ta" style="width:100%; min-height:220px; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; border-radius:12px; padding:16px; font-size:15px; color:#5c7094; line-height:1.6; resize:none; outline:none; box-sizing:border-box;" placeholder="写下你此刻的想法，或者向世界提出一个问题..."></textarea>
+    </div>
+  </div>
+</div>
   <section id="chatRoom" class="screen">
     <div class="header" style="background:rgba(255,255,255,0.85); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid #dce5f0; position:relative; z-index:50;">
   <button class="btn" data-nav="wechat" style="background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; font-weight:600; border-radius:10px; padding:6px 12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 返回</button>
@@ -15772,6 +15827,252 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
       if(window._activeVoiceAudio) { window._activeVoiceAudio.pause(); window._activeVoiceAudio = null; }
     };
   })();
+  // ================= 🌟 蓝色高定：全球匿名社区「Echoes · 回音海」底层逻辑 =================
+(function() {
+  const K_ECHOES_POSTS = 'mp_fix_echoes_forum_v1';
+  async function getEchoesPosts() { return (await localforage.getItem(K_ECHOES_POSTS)) || []; }
+  async function setEchoesPosts(data) { await localforage.setItem(K_ECHOES_POSTS, data); window._renderEchoesFeed(); }
+
+  const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  window._currentEchoesTab = 'All';
+
+  // 纯净的 SVG 图标库
+  const svgLike = `<svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
+  const svgComment = `<svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
+  const svgLoc = `<svg viewBox="0 0 24 24" style="width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vertical-align:-2px; margin-right:2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>`;
+
+  window._initEchoesForum = async function() {
+    window._renderEchoesFeed();
+  };
+
+  window._switchEchoesTab = function(tab) {
+    window._currentEchoesTab = tab;
+    const tabs = document.getElementById('echoesTabsBox').children;
+    const tabMap = ['All', 'Secret', 'Daily', 'Gossip'];
+    for(let i=0; i<tabs.length; i++) {
+      if(tabMap[i] === tab) {
+        tabs[i].style.background = '#5c7094'; tabs[i].style.color = '#fff'; tabs[i].style.border = 'none'; tabs[i].style.boxShadow = '0 2px 8px rgba(92,112,148,0.2)';
+      } else {
+        tabs[i].style.background = 'rgba(255,255,255,0.6)'; tabs[i].style.color = '#7a86a8'; tabs[i].style.border = '1px solid #dce5f0'; tabs[i].style.boxShadow = 'none';
+      }
+    }
+    window._renderEchoesFeed();
+  };
+
+  window._renderEchoesFeed = async function() {
+    const box = document.getElementById('echoesPostList');
+    if(!box) return;
+    const allPosts = await getEchoesPosts();
+    let posts = allPosts;
+    
+    if(window._currentEchoesTab !== 'All') {
+      posts = allPosts.filter(p => p.tag === window._currentEchoesTab);
+    }
+
+    if(posts.length === 0) {
+      box.innerHTML = `<div style="text-align:center; padding:80px 0; color:#a0aaba; font-size:13px; letter-spacing:1px; line-height:1.8;">这片海域还很安静<br>点击右上角「探索」召唤全世界的漂流瓶吧</div>`;
+      return;
+    }
+
+    box.innerHTML = posts.map(p => {
+      let timeStr = '刚刚';
+      const diff = Date.now() - p.time;
+      if (diff > 60000) timeStr = Math.floor(diff / 60000) + '分钟前';
+      if (diff > 3600000) timeStr = Math.floor(diff / 3600000) + '小时前';
+      if (diff > 86400000) timeStr = Math.floor(diff / 86400000) + '天前';
+
+      const tagMap = {'Secret': '深夜树洞', 'Daily': '人类迷惑日常', 'Gossip': '同城吃瓜', 'Me': '我的漂流瓶'};
+      const tagName = tagMap[p.tag] || '树洞';
+
+      // 渲染评论区摘要
+      let commentsHtml = '';
+      if(p.comments && p.comments.length > 0) {
+        const topComments = p.comments.slice(0, 3);
+        commentsHtml = `
+          <div style="margin-top:12px; padding:12px; background:rgba(238,244,250,0.4); border-radius:10px; border:1px dashed #dce5f0;">
+            ${topComments.map(c => `
+              <div style="font-size:12px; color:#5c7094; margin-bottom:6px; line-height:1.5;">
+                <b style="color:#3d4a6a;">${safeEsc(c.author)}:</b> ${safeEsc(c.text)}
+              </div>
+            `).join('')}
+            ${p.comments.length > 3 ? `<div style="font-size:11px; color:#a0aaba; cursor:pointer; text-align:center; margin-top:4px;">查看全部 ${p.comments.length} 条评论 ▾</div>` : ''}
+          </div>
+        `;
+      }
+
+      return `
+        <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:16px; padding:16px; box-shadow:0 4px 16px rgba(92,112,148,0.03); transition:transform 0.2s;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="width:36px; height:36px; border-radius:10px; background:#eef4fa; color:#5c7094; display:grid; place-items:center; font-weight:900; font-size:16px; border:1px solid #cdd7e8;">${safeEsc(p.author).substring(0,1)}</div>
+              <div>
+                <div style="font-size:14px; font-weight:800; color:#3d4a6a;">${safeEsc(p.author)}</div>
+                <div style="font-size:10px; color:#a0aaba; margin-top:2px;">${timeStr} · ${svgLoc}IP属地：${safeEsc(p.ip)}</div>
+              </div>
+            </div>
+            <div style="font-size:10px; font-weight:bold; color:#7a86a8; background:rgba(238,244,250,0.8); padding:4px 8px; border-radius:6px; border:1px solid #dce5f0;"># ${tagName}</div>
+          </div>
+          
+          <div style="font-size:14px; color:#2b3a60; line-height:1.6; text-align:justify; white-space:pre-wrap; margin-bottom:12px;">${safeEsc(p.content).replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</div>
+          
+          <div style="display:flex; align-items:center; gap:16px; border-top:1px dashed #eef4fa; padding-top:12px; color:#7a86a8;">
+            <div style="display:flex; align-items:center; gap:4px; font-size:12px; font-weight:bold; cursor:pointer;" onclick="window._toggleEchoesLike('${p.id}')">
+              ${svgLike} ${p.likes}
+            </div>
+            <div style="display:flex; align-items:center; gap:4px; font-size:12px; font-weight:bold; cursor:pointer;">
+              ${svgComment} ${(p.comments || []).length}
+            </div>
+          </div>
+          
+          ${commentsHtml}
+        </div>
+      `;
+    }).join('');
+  };
+
+  // 🌟 核心造梦引擎：全网真实生态生成器 (防油腻/防重复/全球IP)
+  window._generateEchoesPosts = async function() {
+    const btn = document.getElementById('echoesRefreshBtn');
+    if(btn) { btn.textContent = '探索中...'; btn.style.pointerEvents = 'none'; }
+    
+    try {
+      const contacts = window.getContacts ? window.getContacts() : [];
+      const maleLeads = contacts.filter(c => !c.isGroup);
+      const maleInfo = maleLeads.map(c => `- ${c.name}：${c.persona}`).join('\\n');
+
+      const sysPrompt = `你是全球匿名社区「Echoes」的活人贴子生成引擎。
+当前时间：${new Date().toLocaleString()}。
+
+【核心生态铁律】：
+1. 生成 5~12 条完全不同主题的帖子。
+2. 【地理大一统】：IP属地必须是全世界各个国家的真实城市！如：伦敦、东京、纽约、巴黎、北海道、曼谷、北京、上海等。
+3. 【反油腻与反刻板】：内容包罗万象，绝对不要拘泥于角色的固定设定！角色和路人可以发极度生活化的东西（比如：在伦敦喂鸽子被抢了三明治、打游戏被坑、做饭炸厨房、深夜在东京街头迷路、看到奇葩的广告牌）。只要不OOC，角色可以脱下伪装自由发帖。
+4. 【作者分配】：其中 2-5 篇必须是候选男主（${maleInfo}）披着匿名马甲发的！其他全是路人网友发的。路人的名字必须是有网感的ID（如：熬夜秃头小宝贝、东京流浪汉、不吃香菜等）。如果是男主发的，直接用他的名字作为author，UI 会自动模糊处理。
+5. 【神级互动】：为每篇帖子生成 12-18 条极具活人感的评论。路人和男主们也可以在评论区互相吐槽。
+6. tag 必须从 ["Secret", "Daily", "Gossip"] 中选一个。
+7. 【绝对禁止】出现“女人你在玩火”、“冷笑”、“邪魅”等霸总式描述，全网必须是极度真实的日常吐槽、八卦和树洞。
+
+必须严格返回 JSON 数组格式：
+[
+  {
+    "author": "发布者名字(路人网名或男主真名)",
+    "ip": "全世界任意真实城市",
+    "tag": "Secret 或 Daily 或 Gossip",
+    "content": "极度真实有趣的帖子正文，带一点标点和颜文字",
+    "likes": 随机点赞数(10-2000),
+    "comments": [
+      {"author": "评论者网名", "text": "神回复/吐槽"}
+    ]
+  }
+]`;
+
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻打捞来自全世界的漂流瓶！必须有意思，细节多！' }]);
+      const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
+      const dataArr = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
+      
+      const posts = await getEchoesPosts();
+      
+      dataArr.forEach(data => {
+        const timeOffset = Math.floor(Math.random() * 86400000); // 24小时内随机
+        posts.unshift({
+          id: 'ec_' + Date.now() + Math.floor(Math.random()*1000),
+          author: data.author,
+          ip: data.ip,
+          tag: data.tag,
+          content: data.content,
+          likes: data.likes || Math.floor(Math.random() * 500 + 10),
+          time: Date.now() - timeOffset,
+          comments: data.comments || []
+        });
+      });
+
+      // 防爆兜底，只保留最新的 100 条
+      if(posts.length > 100) posts.length = 100;
+      await setEchoesPosts(posts);
+      
+    } catch(e) {
+      alert('探索海域失败：' + (e.message || e));
+    } finally {
+      if(btn) { btn.textContent = '探索'; btn.style.pointerEvents = 'auto'; }
+    }
+  };
+
+  window._openEchoesPublishModal = function() {
+    document.getElementById('echoesPublishModal').classList.add('active');
+  };
+
+  window._publishMyEchoesPost = async function() {
+    const text = document.getElementById('echoesInputText').value.trim();
+    if(!text) return alert('瓶子里空空的，写点什么再抛出去吧~');
+    
+    const tag = document.getElementById('echoesPublishTag').value;
+    const meData = window.getMe ? window.getMe() : { name: '我' };
+    
+    const posts = await getEchoesPosts();
+    posts.unshift({
+      id: 'ec_' + Date.now(),
+      author: meData.name || '我',
+      ip: '当前位置',
+      tag: tag,
+      content: text,
+      likes: 0,
+      time: Date.now(),
+      comments: []
+    });
+    
+    await setEchoesPosts(posts);
+    document.getElementById('echoesInputText').value = '';
+    document.getElementById('echoesPublishModal').classList.remove('active');
+    
+    // 🌟 老婆发帖，立刻触发男主野生捕获机制！
+    setTimeout(() => { window._triggerEchoesAIResponse(posts[0].id); }, 1500);
+  };
+
+  // 🌟 老婆发帖后的男主掉落引擎
+  window._triggerEchoesAIResponse = async function(postId) {
+    try {
+      const posts = await getEchoesPosts();
+      const post = posts.find(x => x.id === postId);
+      if(!post) return;
+
+      const contacts = window.getContacts ? window.getContacts() : [];
+      const maleLeads = contacts.filter(c => !c.isGroup);
+      if(maleLeads.length === 0) return;
+
+      const maleInfo = maleLeads.map(c => `- ${c.name}：${c.persona}`).join('\\n');
+      
+      const sysPrompt = `玩家刚刚在论坛的【${post.tag}】板块抛出了一个漂流瓶：“${post.content}”。
+请根据以下男主的设定：
+${maleInfo}
+挑选 1-3 位男主，如果他们刷到了这条帖子，请以匿名网友的口吻在下方进行回复（可能是在安慰、可能是在吃醋、或者傲娇地搭话，绝不能暴露真名，要极具网感）。
+返回格式：[{"author":"匿名马甲(符合他性格的网名)","text":"回复内容"}]`;
+
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '快去抢沙发！' }]);
+      const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
+      const match = cleaned.match(/\[[\s\S]*\]/);
+      if(match) {
+        const comments = JSON.parse(match[0]);
+        const freshPosts = await getEchoesPosts();
+        const t = freshPosts.find(x => x.id === postId);
+        if(t) {
+          t.comments = [...t.comments, ...comments];
+          await setEchoesPosts(freshPosts);
+        }
+      }
+    } catch(e) { console.log('回音捕获失败', e); }
+  };
+
+  window._toggleEchoesLike = async function(id) {
+    const posts = await getEchoesPosts();
+    const p = posts.find(x => x.id === id);
+    if(p) {
+      p.likes++;
+      await setEchoesPosts(posts);
+    }
+  };
+
+})();
+
 </script>
 </body>
   </html>
