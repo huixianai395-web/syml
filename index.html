@@ -2327,9 +2327,9 @@ body {
               </svg>
             </div>
             <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">回忆放映机</span>
-          </div>
-        </div>
-        <!-- 时光星轨入口 -->
+      </div>
+      <!-- 🌟 蓝色修复：让星轨和幻境回到网格里 -->
+    <!-- 时光星轨入口 -->
           <div class="ios-icon" onclick="show('bondJournal'); window._initBondJournal();">
             <div class="ibg" id="icon_journal" style="background-color:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
               <!-- 极其高级的极简星盘 SVG 图标 -->
@@ -2349,8 +2349,9 @@ body {
               </svg>
             </div>
             <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">幻境邀约</span>
-          </div>
-      </div> <!-- 第二页的大门关上！ -->
+      </div>
+    </div> <!-- 🌟 补回这扇网格大门！图标完美归位！ -->
+  </div> <!-- 第二页的大门关上！ -->
 
     </div> <!-- ⚠️ 滑动总管 (home-slider) 的大门在这里关上！ -->
       
@@ -15356,9 +15357,9 @@ ${chatCtx}
 
 <script>
   (function(){
-    // 🌟 蓝色高定防御罩：重新为幻境引擎分配基础工具，打破作用域壁垒！
+    // 🌟 蓝色高定防御罩：重塑底层神经元，绝对兼容任何系统！
     const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
-    const getMe = () => { try { return JSON.parse(localStorage.getItem('mp_fix_me')) || {name:'我'}; } catch{ return {name:'我'}; } };
+    const getMe = () => { try { return JSON.parse(localStorage.getItem('mp_fix_me')) || {name:'我'}; } catch(e) { return {name:'我'}; } };
     const getContactById = (id) => { const arr = window.getContacts ? window.getContacts() :[]; return arr.find(c => c.id === id); };
 
     window._tempHoloBg = '';
@@ -15374,11 +15375,12 @@ ${chatCtx}
     window._holoHandleBg = async function(e) {
       const f = e.target.files?.[0]; if(!f) return;
       try {
-        // 调用我们刚才挂在全局的无损压缩雷达
-        const imgData = await window._fiCompressImage(f);
+        const compFn = window._fiCompressImage || window.compressImage;
+        if(!compFn) throw new Error("压缩引擎未加载");
+        const imgData = await compFn(f);
         window._tempHoloBg = imgData;
         const btn = document.getElementById('holoBgBtn');
-        btn.innerHTML = '✅ 风景已就绪';
+        btn.innerHTML = '风景已就绪';
         btn.style.background = '#eef4fa';
         btn.style.color = '#5c7094';
         btn.style.borderColor = '#dce5f0';
@@ -15396,7 +15398,6 @@ ${chatCtx}
       window._currentHoloRole = c;
       window._holoHistory =[];
 
-      // 开启清透海盐蓝沉浸层
       document.getElementById('holoSceneBg').style.backgroundImage = window._tempHoloBg ? `url(${window._tempHoloBg})` : 'linear-gradient(135deg, #eef4fa, #cdd7e8)';
       document.getElementById('holoActiveScene').style.display = 'block';
       document.getElementById('holoSubtitles').innerHTML = '';
@@ -15450,7 +15451,6 @@ ${chatCtx}
         const optBox = document.getElementById('holoOptionsBox');
         optBox.innerHTML = (data.options ||[]).map(opt => `<div class="holo-option" onclick="document.getElementById('holoOptionsBox').innerHTML='<div style=\\'text-align:center; color:#5c7094; font-weight:bold; animation:blueBlink 1.5s infinite;\\'>命运推演中...</div>'; window._holoProgressAI('${safeEsc(opt)}')">${safeEsc(opt)}</div>`).join('');
 
-        // 🌟 终极魔法：静默触发语音引擎！
         if(data.dialog && window._playVoiceClone) {
           const dummyEl = document.getElementById('holoVoiceIndicator');
           dummyEl.style.display = 'flex';
@@ -15467,7 +15467,6 @@ ${chatCtx}
       if(window._activeVoiceAudio) { window._activeVoiceAudio.pause(); window._activeVoiceAudio = null; }
     };
   })();
-
-</script>
+  </script>
 </body>
   </html>
