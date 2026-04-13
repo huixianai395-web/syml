@@ -15354,117 +15354,120 @@ ${chatCtx}
     }
   };
 
-window._tempHoloBg = '';
-  window._currentHoloRole = null;
-  window._holoHistory =[];
+<script>
+  (function(){
+    // 🌟 蓝色高定防御罩：重新为幻境引擎分配基础工具，打破作用域壁垒！
+    const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    const getMe = () => { try { return JSON.parse(localStorage.getItem('mp_fix_me')) || {name:'我'}; } catch{ return {name:'我'}; } };
+    const getContactById = (id) => { const arr = window.getContacts ? window.getContacts() :[]; return arr.find(c => c.id === id); };
 
-  window._initHoloApp = function() {
-    const contacts = (window.getContacts ? window.getContacts() :[]).filter(c => !c.isGroup);
-    const sel = document.getElementById('holoRoleSel');
-    if(sel) sel.innerHTML = contacts.map(c => `<option value="${c.id}">${safeEsc(c.name)}</option>`).join('');
-  };
-
-  window._holoHandleBg = async function(e) {
-    const f = e.target.files?.[0]; if(!f) return;
-    try {
-      const imgData = await window._fiCompressImage ? await window._fiCompressImage(f) : await compressImage(f);
-      window._tempHoloBg = imgData;
-      const btn = document.getElementById('holoBgBtn');
-      btn.textContent = '✅ 风景已就绪';
-      btn.style.background = '#eef4fa';
-      btn.style.color = '#5c7094';
-      btn.style.borderColor = '#dce5f0';
-    } catch(err) { alert('图片处理失败'); }
-  };
-
-  window._startHoloDate = async function() {
-    const roleId = document.getElementById('holoRoleSel').value;
-    const loc = document.getElementById('holoLocationInp').value.trim() || '初雪的街头';
-    if(!roleId) return alert('请先选择共赴幻境的人！');
-
-    const c = getContactById(roleId);
-    window._currentHoloRole = c;
+    window._tempHoloBg = '';
+    window._currentHoloRole = null;
     window._holoHistory =[];
 
-    // 开启沉浸层
-    document.getElementById('holoSceneBg').style.backgroundImage = window._tempHoloBg ? \`url(\${window._tempHoloBg})\` : 'linear-gradient(135deg, #eef4fa, #cdd7e8)';
-    document.getElementById('holoActiveScene').style.display = 'block';
-    document.getElementById('holoSubtitles').innerHTML = '';
-    document.getElementById('holoOptionsBox').innerHTML = '<div style="text-align:center; color:#5c7094; font-size:13px; font-weight:bold; letter-spacing:2px; animation:blueBlink 1.5s infinite;">时空跃迁中 · 正在接入 TA 的脑电波...</div>';
+    window._initHoloApp = function() {
+      const contacts = (window.getContacts ? window.getContacts() :[]).filter(c => !c.isGroup);
+      const sel = document.getElementById('holoRoleSel');
+      if(sel) sel.innerHTML = contacts.map(c => `<option value="${c.id}">${safeEsc(c.name)}</option>`).join('');
+    };
 
-    await window._holoProgressAI(\`玩家刚刚撕开了通往【\${loc}】的全息门票，幻境正式开启。请给出你的开场白和玩家的选项。\`);
-  };
+    window._holoHandleBg = async function(e) {
+      const f = e.target.files?.[0]; if(!f) return;
+      try {
+        // 调用我们刚才挂在全局的无损压缩雷达
+        const imgData = await window._fiCompressImage(f);
+        window._tempHoloBg = imgData;
+        const btn = document.getElementById('holoBgBtn');
+        btn.innerHTML = '✅ 风景已就绪';
+        btn.style.background = '#eef4fa';
+        btn.style.color = '#5c7094';
+        btn.style.borderColor = '#dce5f0';
+      } catch(err) { alert('图片处理失败啦宝宝：' + err.message); }
+      finally { e.target.value = ''; }
+    };
 
-  window._holoProgressAI = async function(userAction) {
-    const c = window._currentHoloRole;
-    const me = getMe();
-    
-    // 把玩家的行动记录下来
-    if(userAction && !userAction.includes('全息门票')) {
-      window._holoHistory.push({ role: 'user', content: userAction });
-      const subBox = document.getElementById('holoSubtitles');
-      subBox.insertAdjacentHTML('beforeend', \`<div class="holo-subtitle" style="text-align:right; color:#7a86a8; font-size:14px; opacity:0.8;">"\${safeEsc(userAction)}"</div>\`);
-    }
+    window._startHoloDate = async function() {
+      const roleId = document.getElementById('holoRoleSel').value;
+      const loc = document.getElementById('holoLocationInp').value.trim() || '初雪的街头';
+      if(!roleId) return alert('宝宝，请先选择共赴幻境的人！');
 
-    const sysPrompt = \`你正在扮演：\${c.name}。人设：\${c.persona}。
+      const c = getContactById(roleId);
+      if(!c) return alert('时空乱流，找不到这个角色啦！');
+      window._currentHoloRole = c;
+      window._holoHistory =[];
+
+      // 开启清透海盐蓝沉浸层
+      document.getElementById('holoSceneBg').style.backgroundImage = window._tempHoloBg ? `url(${window._tempHoloBg})` : 'linear-gradient(135deg, #eef4fa, #cdd7e8)';
+      document.getElementById('holoActiveScene').style.display = 'block';
+      document.getElementById('holoSubtitles').innerHTML = '';
+      document.getElementById('holoOptionsBox').innerHTML = '<div style="text-align:center; color:#5c7094; font-size:13px; font-weight:bold; letter-spacing:2px; animation:blueBlink 1.5s infinite;">时空跃迁中 · 正在接入 TA 的脑电波...</div>';
+
+      await window._holoProgressAI(`玩家刚刚撕开了通往【${loc}】的全息门票，幻境正式开启。请给出你的开场白和玩家的选项。`);
+    };
+
+    window._holoProgressAI = async function(userAction) {
+      const c = window._currentHoloRole;
+      const me = getMe();
+      
+      if(userAction && !userAction.includes('全息门票')) {
+        window._holoHistory.push({ role: 'user', content: userAction });
+        const subBox = document.getElementById('holoSubtitles');
+        subBox.insertAdjacentHTML('beforeend', `<div class="holo-subtitle" style="text-align:right; color:#7a86a8; font-size:14px; opacity:0.8;">"${safeEsc(userAction)}"</div>`);
+        subBox.scrollTop = subBox.scrollHeight;
+      }
+
+      const sysPrompt = `你正在扮演：${c.name}。人设：${c.persona}。
 这是一场沉浸式的【全息幻境约会】。
-请根据上下文，输出极具张力的场景描写、你的内心OS，以及你要对玩家（\${me.name||'我'}）说的话。
+请根据上下文，输出极具张力的场景描写、你的内心OS，以及你要对玩家（${me.name||'我'}）说的话。
 【输出格式铁律】必须严格输出JSON！
 {
   "narration": "场景氛围与动作描写。要有电影感，限50字。",
   "inner_voice": "你此刻真实的内心OS，限30字。",
   "dialog": "你亲口对玩家说的话（必须是纯粹的台词，不要带任何前缀！这段话会被直接推给语音引擎！）。",
-  "options": ["选项A：玩家的反应", "选项B：玩家的反应"]
-}\`;
+  "options":["选项A：玩家的反应", "选项B：玩家的反应"]
+}`;
 
-    try {
-      const msgs =[
-        { role: 'system', content: sysPrompt },
-        ...window._holoHistory,
-        { role: 'user', content: userAction || '继续' }
-      ];
+      try {
+        const msgs =[ { role: 'system', content: sysPrompt }, ...window._holoHistory, { role: 'user', content: userAction || '继续' } ];
+        const out = await window.callApi(msgs);
+        const cleaned = out.replace(/```json|```/g, '').trim();
+        const match = cleaned.match(/\{[\s\S]*\}/);
+        if(!match) throw new Error("连接断开");
+        const data = JSON.parse(match[0]);
 
-      const out = await callApi(msgs);
-      const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
-      const data = JSON.parse(cleaned.match(/\\{[\\s\\S]*\\}/)[0]);
+        window._holoHistory.push({ role: 'assistant', content: JSON.stringify(data) });
 
-      // 记录 AI 的回复
-      window._holoHistory.push({ role: 'assistant', content: JSON.stringify(data) });
+        const subBox = document.getElementById('holoSubtitles');
+        subBox.insertAdjacentHTML('beforeend', `
+          <div class="holo-subtitle">
+            <span style="font-size:13px; color:#7a86a8; display:block; margin-bottom:8px;">${safeEsc(data.narration)}</span>
+            <span style="font-size:12px; color:#a5cfff; font-style:italic; display:block; margin-bottom:8px;">💭 ${safeEsc(data.inner_voice)}</span>
+            "${safeEsc(data.dialog)}"
+          </div>
+        `);
+        subBox.scrollTop = subBox.scrollHeight;
 
-      // 渲染字幕
-      const subBox = document.getElementById('holoSubtitles');
-      let html = \`
-        <div class="holo-subtitle">
-          <span style="font-size:13px; color:#7a86a8; display:block; margin-bottom:8px;">\${safeEsc(data.narration)}</span>
-          <span style="font-size:12px; color:#a5cfff; font-style:italic; display:block; margin-bottom:8px;">💭 \${safeEsc(data.inner_voice)}</span>
-          "\${safeEsc(data.dialog)}"
-        </div>
-      \`;
-      subBox.insertAdjacentHTML('beforeend', html);
-      subBox.scrollTop = subBox.scrollHeight;
+        const optBox = document.getElementById('holoOptionsBox');
+        optBox.innerHTML = (data.options ||[]).map(opt => `<div class="holo-option" onclick="document.getElementById('holoOptionsBox').innerHTML='<div style=\\'text-align:center; color:#5c7094; font-weight:bold; animation:blueBlink 1.5s infinite;\\'>命运推演中...</div>'; window._holoProgressAI('${safeEsc(opt)}')">${safeEsc(opt)}</div>`).join('');
 
-      // 渲染选项
-      const optBox = document.getElementById('holoOptionsBox');
-      optBox.innerHTML = (data.options ||[]).map(opt => \`<div class="holo-option" onclick="document.getElementById('holoOptionsBox').innerHTML='<div style=\\'text-align:center; color:#5c7094; font-weight:bold;\\'>命运推演中...</div>'; window._holoProgressAI('\${safeEsc(opt)}')">\${safeEsc(opt)}</div>\`).join('');
-
-      // 🌟 终极魔法：静默触发 MiniMax 语音引擎！
-      if(data.dialog && window._playVoiceClone) {
-        const dummyEl = document.getElementById('holoVoiceIndicator');
-        dummyEl.style.display = 'flex';
-        // 悄悄劫持 _playVoiceClone 让他读出来！
-        await window._playVoiceClone(dummyEl, data.dialog, c.id);
-        dummyEl.style.display = 'none';
+        // 🌟 终极魔法：静默触发语音引擎！
+        if(data.dialog && window._playVoiceClone) {
+          const dummyEl = document.getElementById('holoVoiceIndicator');
+          dummyEl.style.display = 'flex';
+          await window._playVoiceClone(dummyEl, data.dialog, c.id);
+          dummyEl.style.display = 'none';
+        }
+      } catch(e) {
+        document.getElementById('holoOptionsBox').innerHTML = `<div class="holo-option" onclick="window._exitHoloDate()">时空乱流中断了连接，点击退出</div>`;
       }
+    };
 
-    } catch(e) {
-      document.getElementById('holoOptionsBox').innerHTML = \`<div class="holo-option" onclick="window._exitHoloDate()">时空乱流中断了连接，点击退出</div>\`;
-    }
-  };
+    window._exitHoloDate = function() {
+      document.getElementById('holoActiveScene').style.display = 'none';
+      if(window._activeVoiceAudio) { window._activeVoiceAudio.pause(); window._activeVoiceAudio = null; }
+    };
+  })();
 
-  window._exitHoloDate = function() {
-    document.getElementById('holoActiveScene').style.display = 'none';
-    if(window._activeVoiceAudio) { window._activeVoiceAudio.pause(); window._activeVoiceAudio = null; }
-  };
 </script>
 </body>
   </html>
