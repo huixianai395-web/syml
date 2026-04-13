@@ -15401,9 +15401,10 @@ ${chatCtx}
   };
 </script>
 <script>
-    (function(){
+  (function(){
     const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
-    const getMe = () => { try { return JSON.parse(localStorage.getItem('mp_fix_me')) || {name:'我'}; } catch(e) { return {name:'我'}; } };
+    // 🌟 核心修复1：让幻境引擎彻底打通全局内存，准确抓取老婆的高清头像！
+    const getMe = () => { try { return window.getMe ? window.getMe() : (JSON.parse(localStorage.getItem('mp_fix_me')) || {name:'我'}); } catch(e) { return {name:'我'}; } };
     const getContactById = (id) => { const arr = window.getContacts ? window.getContacts() :[]; return arr.find(c => c.id === id); };
 
     window._tempHoloBg = '';
@@ -15419,7 +15420,6 @@ ${chatCtx}
       if(sel) sel.innerHTML = contacts.map(c => `<option value="${c.id}">${safeEsc(c.name)}</option>`).join('');
     };
 
-    // 🌟 世界书多选引擎
     window._openHoloWbModal = async function() {
       const books = window.getWbBooks ? await window.getWbBooks() : [];
       const box = document.getElementById('holoWbList');
@@ -15491,8 +15491,13 @@ ${chatCtx}
       window._isHoloReplay = false;
       window._holoCurrentLoc = loc;
       
+      // 🌟 修复：拉取老婆的专属头像！
       const me = getMe();
-      document.getElementById('holoMeAv').src = me.avatar || 'https://via.placeholder.com/32';
+      let myAv = me.avatar;
+      if(!myAv && window.meAvatarDraftGlobal) myAv = window.meAvatarDraftGlobal;
+      if(!myAv) myAv = 'https://via.placeholder.com/32';
+
+      document.getElementById('holoMeAv').src = myAv;
       document.getElementById('holoTaAv').src = c.avatar || 'https://via.placeholder.com/32';
 
       document.getElementById('holoEndBtn').classList.remove('hidden');
@@ -15636,18 +15641,25 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
         const bgUrl = window._tempHoloBg || 'https://cn.oilgasgpts.com/resource/profile/2026/04/08/vJowdrs5_vip_20260408120622A108.jpeg';
         const cardHtml = `<div class="card-fakeimg"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('${bgUrl}') center/cover no-repeat;"></div><div class="fi-desc" style="display:flex; flex-direction:column; justify-content:center;">【约会纪念留影】<br><br>${safeEsc(summary)}<br><br><button onclick="window._replayHoloDate('${dateId}'); event.stopPropagation();" style="width:100%; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.5); color:#fff; border-radius:8px; padding:6px; margin-top:12px; cursor:pointer; font-weight:bold; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">✨ 潜入约会回忆</button></div></div>`;
         
-        // 3. 将潜层记忆灌入聊天记录，让 AI 记住！
+        // 3. 🌟 核心伪装术：假装是老婆把照片发给了男主！
         const transcript = window._holoHistory.filter(h => h.role).map(h => `${h.role==='user'?'我':'TA'}: ${h.content}`).join(' | ');
-        const hiddenMem = `<div style="display:none;" class="date-memory-inject">[隐秘记忆：玩家刚刚和你进行了一场全息约会。约会地点：${window._holoCurrentLoc}。约会概要：${safeEsc(transcript)}。请在接下来的聊天中潜意识地提及这次美好的约会回忆！]</div>`;
+        const hiddenMem = `<div style="display:none;" class="date-memory-inject">[系统提示：玩家向你发送了一张刚才你们在【${window._holoCurrentLoc}】约会的纪念相片。约会的经过是：${safeEsc(transcript)}。请你配合这段美好回忆和她聊天！]</div>`;
 
         const arr = window.getChatArr ? window.getChatArr(c.id) : [];
-        arr.push({ id: 'm_' + Date.now(), role: 'assistant', text: hiddenMem + cardHtml, time: Date.now(), stored: true });
+        arr.push({ id: 'm_' + Date.now(), role: 'user', text: hiddenMem + cardHtml, time: Date.now(), stored: true }); // ⚠️ Role 变成了 'user'！
         if(window.setChatArr) window.setChatArr(c.id, arr);
         
-        alert('✨ 时空胶囊已封存！这盘录像带已收录至聊天记录与【回忆放映机】！');
+        alert('✨ 约会完美落幕！纪念相纸已经像你亲手发送的一样，存进你们的聊天记录里啦！');
         window._exitHoloDate();
         if(window.renderChat && window.currentId === c.id) window.renderChat();
         if(window._initMemoryProjector) window._initMemoryProjector();
+
+        // 4. 🌟 终极绝杀：让 AI 秒回这层浪漫！
+        setTimeout(() => {
+            const triggerPrompt = `【系统指令】：玩家刚刚把你们在【${window._holoCurrentLoc}】约会的纪念相片发给了你。约会过程概要：\n${safeEsc(transcript)}\n请你立刻根据这个人设和约会剧情，自然地对她发来的照片做出反应，主动开口回味这场约会！（就像刚分别时在微信上意犹未尽的聊天，绝对不要带名字前缀或提“系统提示”）。`;
+            if(window._sendToAI) window._sendToAI(c.id, triggerPrompt, true);
+        }, 1200);
+
       } catch(e) {
         alert('生成相纸失败，但约会很开心！' + e.message);
         window._exitHoloDate();
@@ -15665,8 +15677,12 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
       document.getElementById('holoSceneBg').style.backgroundImage = data.bg ? `url(${data.bg})` : 'linear-gradient(135deg, #eef4fa, #cdd7e8)';
       
       const me = getMe();
+      let myAv = me.avatar;
+      if(!myAv && window.meAvatarDraftGlobal) myAv = window.meAvatarDraftGlobal;
+      if(!myAv) myAv = 'https://via.placeholder.com/32';
+
       const c = getContactById(data.roleId) || {name: 'TA', avatar: 'https://via.placeholder.com/32'};
-      document.getElementById('holoMeAv').src = me.avatar || 'https://via.placeholder.com/32';
+      document.getElementById('holoMeAv').src = myAv;
       document.getElementById('holoTaAv').src = c.avatar || 'https://via.placeholder.com/32';
 
       document.getElementById('holoEndBtn').classList.add('hidden');
@@ -15701,7 +15717,6 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
         }
       });
       
-      // 强行把视线拉到最开头，方便老婆从头回味！
       setTimeout(() => { subBox.scrollTop = 0; }, 100);
     };
 
