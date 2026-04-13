@@ -15775,16 +15775,15 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
 </script>
   <script>
 (function(){
-  // 🌟 蓝色高定防御罩：回忆永生与羁绊防断裂引擎 (终极防死机修复版)！
+  // 🌟 蓝色高定防御罩：回忆永生与羁绊防断裂引擎 (终极破壁直连版)！
   
-  // 🕵️ 蓝色的私密调查员：专门负责查户口，拥有全宇宙通行证，绝不报错！
   const safeGetContact = (id) => {
     if(window.getContacts) { const c = window.getContacts().find(x=>x.id===id); if(c) return c; }
     if(window.getGroups) { return window.getGroups().find(x=>x.id===id) || null; }
     return null;
   };
 
-  // 1. 劫持并重构：清空聊天记录
+  // 1. 劫持并重构：清空聊天记录 (绕过闭包限制，直调公开接口)
   window.clearCurrentChat = function() {
     if(!window.currentId) return;
     if(!confirm('清空当前聊天？（已收藏进回忆放映机的相片将为您永久保留 ✨）')) return;
@@ -15794,14 +15793,8 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     const keepArr = oldArr.filter(m => m.proj_fav); 
     window.setChatArr(window.currentId, keepArr);
     
-    const c = safeGetContact(window.currentId);
-    if(c && c.isGroup) {
-      const groups = window.getGroups ? window.getGroups() : [];
-      const idx = groups.findIndex(g => g.id === window.currentId);
-      if(idx > -1){ groups[idx].preview=''; groups[idx].time=''; window.setGroups(groups); }
-    } else {
-      window.updateContact(window.currentId, {preview:'', time:''});
-    }
+    // 唤醒公开的预览刷新器
+    if(window.updateContactPreview) window.updateContactPreview(window.currentId);
     
     window.selectMode = false; 
     if(window.selectedIds) window.selectedIds.clear(); 
@@ -15811,35 +15804,38 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
   const clearBtn = document.getElementById('clearChatBtn2');
   if(clearBtn) clearBtn.onclick = window.clearCurrentChat;
 
-  // 2. 劫持并重构：设置页内删除联系人
-  window.deleteCurrentContact = function() {
+  // 2. 劫持并重构：设置页内删除联系人 (直捣硬盘深处 + 时空刷新)
+  window.deleteCurrentContact = async function() {
     if(!window.currentId) return;
     if(!confirm('删除当前好友及聊天记录？（已收藏进回忆放映机的相片将为您永久保留 ✨）')) return;
     
-    const c = safeGetContact(window.currentId);
-    const cName = c ? c.name : '沉睡的羁绊';
+    const cName = safeGetContact(window.currentId)?.name || '沉睡的羁绊';
 
-    const map = window.getChats();
-    const oldArr = map[window.currentId] || [];
+    // 斩断外挂硬盘里的聊天线
+    let allChats = await localforage.getItem('mp_fix_chats') || {};
+    const oldArr = allChats[window.currentId] || [];
     const keepArr = oldArr.filter(m => m.proj_fav);
     // 🏷️ 灵魂印记：把名字死死刻在游魂相纸上！
     keepArr.forEach(m => m.savedChatName = cName); 
 
-    window.setContacts(window.getContacts().filter(x => x.id !== window.currentId));
-    
-    if(keepArr.length > 0) { map[window.currentId] = keepArr; } 
-    else { delete map[window.currentId]; }
-    window.setChats(map);
+    if(keepArr.length > 0) { allChats[window.currentId] = keepArr; } 
+    else { delete allChats[window.currentId]; }
+    await localforage.setItem('mp_fix_chats', allChats);
+
+    // 斩断外挂硬盘里的联系人线
+    let allContacts = await localforage.getItem('mp_fix_contacts') || [];
+    allContacts = allContacts.filter(x => x.id !== window.currentId);
+    await localforage.setItem('mp_fix_contacts', allContacts);
     
     window.currentId = null; 
-    if(window.renderContacts) window.renderContacts(document.getElementById('searchInput')?.value||''); 
-    window.show('wechat');
+    // 瞬间重载时空，保证内存绝对干净！
+    location.reload();
   };
   const delBtn = document.getElementById('deleteContactBtn');
   if(delBtn) delBtn.onclick = window.deleteCurrentContact;
 
-  // 3. 劫持并重构：微信列表长按删除
-  window.deleteContactFromList = function(id, e) {
+  // 3. 劫持并重构：微信列表长按删除 (直捣硬盘深处 + 时空刷新)
+  window.deleteContactFromList = async function(id, e) {
     if(e) { e.preventDefault(); e.stopPropagation(); }
     window._isDeleting = true; setTimeout(() => window._isDeleting = false, 500);
     if(!confirm('确定要删除这个聊天及所有记录吗？（已收藏进回忆放映机的相片将为您永久保留 ✨）')) return false;
@@ -15847,25 +15843,29 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     const c = safeGetContact(id);
     const cName = c ? c.name : '沉睡的羁绊';
 
-    const groups = window.getGroups ? window.getGroups() : [];
-    if(groups.some(g => g.id === id)) {
-      if(window.setGroups) window.setGroups(groups.filter(g => g.id !== id));
-    } else {
-      window.setContacts(window.getContacts().filter(x => x.id !== id));
-    }
-    
-    const map = window.getChats();
-    const oldArr = map[id] || [];
+    // 斩断聊天线
+    let allChats = await localforage.getItem('mp_fix_chats') || {};
+    const oldArr = allChats[id] || [];
     const keepArr = oldArr.filter(m => m.proj_fav);
-    // 🏷️ 灵魂印记：把名字死死刻在游魂相纸上！
     keepArr.forEach(m => m.savedChatName = cName);
 
-    if(keepArr.length > 0) { map[id] = keepArr; } 
-    else { delete map[id]; }
-    window.setChats(map);
+    if(keepArr.length > 0) { allChats[id] = keepArr; } 
+    else { delete allChats[id]; }
+    await localforage.setItem('mp_fix_chats', allChats);
+
+    // 斩断群聊或单人线
+    if(c && c.isGroup) {
+       let allGroups = await localforage.getItem('mp_fix_groups') || [];
+       allGroups = allGroups.filter(g => g.id !== id);
+       await localforage.setItem('mp_fix_groups', allGroups);
+    } else {
+       let allContacts = await localforage.getItem('mp_fix_contacts') || [];
+       allContacts = allContacts.filter(x => x.id !== id);
+       await localforage.setItem('mp_fix_contacts', allContacts);
+    }
 
     if(window.currentId === id) window.currentId = null; 
-    if(window.renderContacts) window.renderContacts(document.getElementById('searchInput')?.value||'');
+    location.reload();
     return false;
   };
 
@@ -15914,7 +15914,6 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
       arr.forEach(msg => {
         if(!msg.text || msg.proj_deleted) return; 
         
-        // 🌟 核心侦测：如果找不到活人，就唤醒游魂名字！
         const finalChatName = activeChatName || msg.savedChatName || '沉睡的羁绊';
         let added = false;
         const baseInfo = { msgId: msg.id, chatId: chatId, time: msg.time, chatName: finalChatName, favorite: !!msg.proj_fav };
@@ -15982,6 +15981,6 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     if(window._renderProjectorWall) window._renderProjectorWall();
   };
 })();
-</script>
+  </script>
 </body>
   </html>
