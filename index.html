@@ -16011,7 +16011,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
   const K_ECHOES_CUSTOM_TABS = 'mp_fix_echoes_tabs_v1';
   window._currentEchoesPostId = null;
 
-  // 渲染瀑布流（支持点击进入详情）
+  // 🌟 沉浸式瀑布流渲染（附带高级点选交互）
   window._renderEchoesFeed = async function() {
     const box = document.getElementById('echoesPostList');
     if(!box) return;
@@ -16019,7 +16019,6 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     // 动态渲染自定义 Tab
     const customTabs = await localforage.getItem(K_ECHOES_CUSTOM_TABS) || [];
     const tabsBox = document.getElementById('echoesTabsBox');
-    // 保留前4个默认按钮，移除旧的自定义按钮，再重新生成
     Array.from(tabsBox.children).forEach((child, idx) => { if(idx > 4) child.remove(); });
     customTabs.forEach(t => {
       const btn = document.createElement('div');
@@ -16059,21 +16058,33 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
           </div>`;
       }
 
+      // 🌟 核心魔法：管理模式下的多选框与卡片高亮交互
+      const isSel = window._echoesManageMode && window._echoesSelSet.has(p.id);
+      const checkHtml = window._echoesManageMode ? 
+        `<div style="width:22px; height:22px; border-radius:50%; border:1.5px solid ${isSel ? '#5c7094' : '#dce5f0'}; background:${isSel ? '#eef4fa' : 'transparent'}; color:${isSel ? '#5c7094' : 'transparent'}; display:grid; place-items:center; font-size:14px; font-weight:bold; transition:all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); margin-right:12px; flex-shrink:0; transform:${isSel ? 'scale(1.1)' : 'scale(1)'};">✓</div>` : '';
+
+      // 根据模式动态切换点击事件：管理模式点卡片选中，普通模式点卡片看详情！
+      const clickAction = window._echoesManageMode ? `window._toggleEchoesSel('${p.id}')` : `window._openEchoesDetail('${p.id}')`;
+      const cardStyle = `flex:1; min-width:0; background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border:1px solid ${isSel ? '#a5cfff' : '#dce5f0'}; border-radius:16px; padding:16px; box-shadow:${isSel ? '0 8px 24px rgba(165,207,255,0.2)' : '0 4px 16px rgba(92,112,148,0.03)'}; transition:all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); cursor:pointer; transform:${isSel ? 'scale(0.98)' : 'scale(1)'};`;
+
       return `
-        <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:16px; padding:16px; box-shadow:0 4px 16px rgba(92,112,148,0.03); transition:transform 0.2s; cursor:pointer;" onclick="window._openEchoesDetail('${p.id}')">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <div style="width:36px; height:36px; border-radius:10px; background:#eef4fa; color:#5c7094; display:grid; place-items:center; font-weight:900; font-size:16px; border:1px solid #cdd7e8;">${safeEsc(p.author).substring(0,1)}</div>
-              <div><div style="font-size:14px; font-weight:800; color:#3d4a6a;">${safeEsc(p.author)}</div><div style="font-size:10px; color:#a0aaba; margin-top:2px;">${timeStr} · IP属地：${safeEsc(p.ip)}</div></div>
+        <div style="display:flex; align-items:center; margin-bottom:14px;">
+          ${checkHtml}
+          <div style="${cardStyle}" onclick="${clickAction}">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="width:36px; height:36px; border-radius:10px; background:#eef4fa; color:#5c7094; display:grid; place-items:center; font-weight:900; font-size:16px; border:1px solid #cdd7e8;">${safeEsc(p.author).substring(0,1)}</div>
+                <div><div style="font-size:14px; font-weight:800; color:#3d4a6a;">${safeEsc(p.author)}</div><div style="font-size:10px; color:#a0aaba; margin-top:2px;">${timeStr} · IP属地：${safeEsc(p.ip)}</div></div>
+              </div>
+              <div style="font-size:10px; font-weight:bold; color:#7a86a8; background:rgba(238,244,250,0.8); padding:4px 8px; border-radius:6px; border:1px solid #dce5f0;"># ${safeEsc(p.tag)}</div>
             </div>
-            <div style="font-size:10px; font-weight:bold; color:#7a86a8; background:rgba(238,244,250,0.8); padding:4px 8px; border-radius:6px; border:1px solid #dce5f0;"># ${safeEsc(p.tag)}</div>
+            <div style="font-size:14px; color:#2b3a60; line-height:1.6; text-align:justify; white-space:pre-wrap; margin-bottom:12px;">${safeEsc(p.content).replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</div>
+            <div style="display:flex; align-items:center; gap:16px; border-top:1px dashed #eef4fa; padding-top:12px; color:#7a86a8;">
+              <div style="display:flex; align-items:center; gap:4px; font-size:12px; font-weight:bold;">${svgLike} ${p.likes}</div>
+              <div style="display:flex; align-items:center; gap:4px; font-size:12px; font-weight:bold;">${svgComment} ${(p.comments || []).length}</div>
+            </div>
+            ${commentsHtml}
           </div>
-          <div style="font-size:14px; color:#2b3a60; line-height:1.6; text-align:justify; white-space:pre-wrap; margin-bottom:12px;">${safeEsc(p.content).replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</div>
-          <div style="display:flex; align-items:center; gap:16px; border-top:1px dashed #eef4fa; padding-top:12px; color:#7a86a8;">
-            <div style="display:flex; align-items:center; gap:4px; font-size:12px; font-weight:bold;">${svgLike} ${p.likes}</div>
-            <div style="display:flex; align-items:center; gap:4px; font-size:12px; font-weight:bold;">${svgComment} ${(p.comments || []).length}</div>
-          </div>
-          ${commentsHtml}
         </div>
       `;
     }).join('');
@@ -16256,7 +16267,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     if(typeof window._sendToAI === 'function') window._sendToAI(chatId, hiddenPrompt, true);
   };
 
-  // 🌟 AI 造梦与掉落引擎升级（加入大量路人与绝对防 OOC 护盾）
+ // 🌟 AI 造梦与掉落引擎升级（加入物理 IP 劫持，绝对不许它偷懒！）
   window._generateEchoesPosts = async function() {
     const btn = document.getElementById('echoesRefreshBtn');
     if(btn) { btn.textContent = '探索中...'; btn.style.pointerEvents = 'none'; }
@@ -16266,22 +16277,23 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
       const maleLeads = contacts.filter(c => !c.isGroup);
       const maleInfo = maleLeads.map(c => `- ${c.name}：${c.persona}`).join('\\n');
 
-      const sysPrompt = `你是全球匿名社区「Echoes」的生态引擎。当前时间：${new Date().toLocaleString()}。当前用户处于板块：【${window._currentEchoesTab}】。
+      const sysPrompt = `你是全球匿名社区「Echoes」的生态引擎。当前时间：${new Date().toLocaleString()}。当前板块：【${window._currentEchoesTab}】。
 
-【绝对神级防串戏与防OOC铁律（违反直接崩溃）】：
-1. 绝对禁止角色之间互相对话！这是平行匿名世界，每个男主都在独立冲浪，互不知晓！
-2. 绝对禁止男主在帖子里暴露真名！必须强制为男主虚构一个网感强烈的马甲ID！
-3. 内容必须极度生活化！比如：画画崩溃、吃宵夜吐槽、迷路求助、吐槽极品同事。如果是在自定义板块（如画画交流），内容必须严格贴合板块主题！
+【绝对神级防串戏与防OOC铁律】：
+1. 绝对禁止男主在帖子里暴露真名！必须强制为男主虚构一个网感强烈的马甲ID！
+2. 内容必须极度生活化、多元化！
 
-【任务】：生成 8~15 条极度真实的帖子。
-- 其中 60% 是纯野生路人发帖，剩下的 40% 是某个男主（${maleInfo}）披着马甲发帖。
-- 为每条帖子生成 8-15 条路人评论。如果楼主是男主，路人要在底下疯狂吐槽他；绝不许其他男主来评论他！
+【任务】：生成 8~12 条极度真实的帖子。
+- 60% 是纯野生路人发帖，剩下的 40% 是男主（${maleInfo}）披着马甲发帖。
+- 【强制警告】：你的 IP 字段必须填写真实的海外城市！如：东京、巴黎、纽约、伦敦、雷克雅未克、佛罗伦萨、首尔等……。
+帖。
+-  【提示】：这是一个全球生态的地方，所以全球各地一切的地方和事物日常什么都可以生成，大胆真实一点。
 
 必须严格返回 JSON 数组格式：
 [
   {
-    "author": "必须是虚构的沙雕网名马甲（绝对禁止写真名！）",
-    "ip": "全世界任意真实城市",
+    "author": "虚构的网名马甲",
+    "ip": "必须是真实的海外国家或城市",
     "tag": "${window._currentEchoesTab === 'All' ? '随机分类' : window._currentEchoesTab}",
     "content": "极度真实有趣的帖子正文，贴合当前板块主题",
     "likes": 随机点赞数(1000-2000000),
@@ -16289,18 +16301,33 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
   }
 ]`;
 
-      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻生成当前板块的神仙帖子！绝对不准暴露男主真名和互相串门！' }]);
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻生成神仙帖子！如果IP全是中国城市系统将会崩溃，请大量生成海外IP！' }]);
       const cleaned = out.replace(/\`\`\`json|\`\`\`/g, '').trim();
       const dataArr = JSON.parse(cleaned.match(/\[[\s\S]*\]/)[0]);
       
       const posts = await getEchoesPosts();
+      
+      // 🌟 终极物理劫持阵列（大模型敢偷懒，我们就强行改！）
+      const globalIps = ['东京', '巴黎', '纽约', '伦敦', '冰岛', '罗马', '首尔', '曼谷', '北海道', '洛杉矶', '柏林', '米兰', '莫斯科', '苏黎世'];
+
       dataArr.forEach(data => {
         const timeOffset = Math.floor(Math.random() * 86400000); 
+        
+        let finalIp = data.ip || '未知';
+        // 只要发现带有国内省份的字眼，或者随机概率，强行覆写为国际IP！
+        if (Math.random() < 0.6 || /北京|上海|广东|浙江|江苏|山东|四川|河南|河北/.test(finalIp)) {
+          finalIp = globalIps[Math.floor(Math.random() * globalIps.length)];
+        }
+
         posts.unshift({
           id: 'ec_' + Date.now() + Math.floor(Math.random()*1000),
-          author: data.author, ip: data.ip, tag: data.tag,
-          content: data.content, likes: data.likes || Math.floor(Math.random() * 500 + 10),
-          time: Date.now() - timeOffset, comments: data.comments || []
+          author: data.author, 
+          ip: finalIp, 
+          tag: data.tag,
+          content: data.content, 
+          likes: data.likes || Math.floor(Math.random() * 500 + 10),
+          time: Date.now() - timeOffset, 
+          comments: data.comments || []
         });
       });
 
