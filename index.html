@@ -16888,15 +16888,16 @@ ${ecoRules}
     }
   };
 
-  // 3. PNG 导出引擎 (绝对防栈溢出纯净版)
+  // 3. PNG 导出引擎 (绝对防栈溢出 + 防弹玻璃纯净版)
   window._exportRoleToPng = async function() {
     if(!window.currentId) return;
     const c = window.getContactById(window.currentId);
     if(!c) return;
 
+    // 🔪 核心修复 1：加上安全判断，绝对不允许触摸空壳导致死机！
     const btn = document.getElementById('exportPngBtn');
-    const oldText = btn.textContent;
-    btn.textContent = '✨ 正在凝聚卡牌...'; btn.style.pointerEvents = 'none';
+    const oldText = btn ? btn.textContent : '✨ 封印为 PNG 灵魂卡牌 (发给朋友导入)';
+    if(btn) { btn.textContent = '✨ 正在凝聚卡牌...'; btn.style.pointerEvents = 'none'; }
 
     try {
       // 打包标准 V2 格式数据
@@ -16909,7 +16910,7 @@ ${ecoRules}
       const jsonStr = JSON.stringify(cardData);
       const utf8Bytes = new TextEncoder().encode(jsonStr);
       
-      // 🔪 核心修复：用最原始的 for 循环拼接，绝对不会触发栈溢出！
+      // 用最原始的 for 循环拼接，绝对不会触发栈溢出！
       let binary = '';
       const len = utf8Bytes.byteLength;
       for (let i = 0; i < len; i++) {
@@ -16932,9 +16933,18 @@ ${ecoRules}
       canvas.width = img.width || 400; 
       canvas.height = img.height || 400;
       const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#eef4fa'; // 兜底海盐蓝底色
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       
-      const dataUrl = canvas.toDataURL('image/png');
+      // 🔪 核心修复 2：防止跨域污染导致 toDataURL 崩溃
+      let dataUrl;
+      try {
+        dataUrl = canvas.toDataURL('image/png');
+      } catch(canvasErr) {
+        throw new Error("头像图片跨域污染啦，请重新上传一张本地图片作为头像再导出哦！");
+      }
+
       const base64 = dataUrl.split(',')[1];
       const binaryString = atob(base64);
       const binLen = binaryString.length;
@@ -16988,7 +16998,7 @@ ${ecoRules}
     } catch(e) {
       alert('封印卡牌失败啦宝宝：' + e.message);
     } finally {
-      btn.textContent = oldText; btn.style.pointerEvents = 'auto';
+      if(btn) { btn.textContent = oldText; btn.style.pointerEvents = 'auto'; }
     }
   };
 
