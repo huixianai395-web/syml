@@ -2891,19 +2891,58 @@ body {
     setTimeout(() => { screen.style.display = 'none'; }, 400);
   };
 
+  // 💡 蓝色高定：图标专属无损裁切引擎（替换掉原本的上传监听器！）
   document.getElementById('customIconUpload').addEventListener('change', async (e) => {
     const f = e.target.files?.[0];
     if(!f) return;
     try {
-      const compFn = window._fiCompressImage || window.compressImage;
-      if(!compFn) throw new Error("压缩引擎尚未就绪哦");
-      const imgData = await compFn(f, true); 
+      // 放弃通用压缩，为桌面图标手写一个极其严苛的 1024x1024 智能裁切画布！
+      const imgData = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            // 苹果视网膜屏幕的最优解：强制锁定 1024x1024
+            const targetSize = 1024; 
+            canvas.width = targetSize; 
+            canvas.height = targetSize;
+            const ctx = canvas.getContext('2d');
+
+            // 1. 铺上我们高定的海盐蓝底色，彻底杜绝透明PNG带来的死亡黑边
+            ctx.fillStyle = '#eef4fa';
+            ctx.fillRect(0, 0, targetSize, targetSize);
+
+            // 2. 核心数学魔法：计算出刚好能覆盖整个画布的缩放比例（等比缩放，绝不压扁）
+            const scale = Math.max(targetSize / img.width, targetSize / img.height);
+            const w = img.width * scale;
+            const h = img.height * scale;
+            
+            // 3. 计算居中偏移量，把多余的部分像切蛋糕一样切掉
+            const x = (targetSize - w) / 2;
+            const y = (targetSize - h) / 2;
+
+            // 4. 将图片完美盖上去，提取极清 JPEG
+            ctx.drawImage(img, x, y, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.95)); 
+          };
+          img.onerror = reject;
+          img.src = ev.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(f);
+      });
+      
+      // 更新前台预览
       document.getElementById('iconPreviewImg').src = imgData;
+      // 核心护盾：死死咬住外挂内存，刷新绝对不丢！
       await localforage.setItem(K_APP_ICON, imgData);
+      // 注入系统头部
       window._injectAppleTouchIcon(imgData);
-      alert('✨ 专属印记已锁定！现在点击浏览器的分享按钮，选择「添加到主屏幕」吧！');
+      
+      alert('✨ 专属印记已完美无损裁切并锁定！现在去添加到主屏幕吧！');
     } catch(err) {
-      alert('图标处理失败了：' + err.message);
+      alert('图标处理失败了宝宝：' + err.message);
     } finally {
       e.target.value = '';
     }
