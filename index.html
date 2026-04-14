@@ -16804,5 +16804,265 @@ ${ecoRules}
 })();
 
 </script>
+  <!-- 🌟 蓝色高定 V6.0：PNG 图片隐写术 & AI 灵魂直连引擎 -->
+<script>
+(function() {
+  const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+
+  // ================= 1. UI 极简改造：升级创建联系人弹窗 =================
+  setTimeout(() => {
+    const modal = document.getElementById('contactModal');
+    if (!modal) return;
+    const card = modal.querySelector('.modal-card');
+    if (!card) return;
+
+    // 注入 AI 灵感生成区（初雪海盐蓝极简风）
+    const aiBoxHtml = `
+      <div style="background:rgba(238,244,250,0.6); border:1px solid #dce5f0; border-radius:12px; padding:12px; margin-bottom:16px;">
+        <div style="font-size:12px; color:#5c7094; font-weight:800; margin-bottom:8px; display:flex; align-items:center; gap:4px;">
+          <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          AI 灵魂重塑 (可选)
+        </div>
+        <div style="display:flex; gap:8px;">
+          <input id="aiRoleKeyword" class="input" placeholder="输入几个词，如：清冷医生 / 傲娇少爷" style="flex:1; background:#fff; border:1px solid #dce5f0; color:#5c7094; font-size:13px; padding:8px 10px; border-radius:8px;">
+          <button class="btn p" id="aiGenerateRoleBtn" onclick="window._triggerAiRoleGen()" style="background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:8px; padding:0 14px; font-weight:bold; box-shadow:0 2px 8px rgba(92,112,148,0.05); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">生成</button>
+        </div>
+      </div>
+    `;
+    
+    // 找到 "昵称" 标签，插在它前面
+    const nameLabel = Array.from(card.querySelectorAll('.small')).find(el => el.textContent.includes('昵称'));
+    if (nameLabel) {
+      nameLabel.insertAdjacentHTML('beforebegin', aiBoxHtml);
+    }
+
+    // 在聊天设置里注入【导出 PNG 卡牌】按钮
+    const settingCard = document.getElementById('singleRoleSettingCard');
+    if (settingCard) {
+      const exportBtnHtml = `
+        <button class="btn" onclick="window._exportRoleToPng()" style="width:100%; margin-top:16px; background:rgba(250,252,255,0.8); color:#5c7094; border:1px dashed #a5cfff; border-radius:10px; padding:10px 0; font-weight:bold; font-size:13px; transition:all 0.2s;" onmouseover="this.style.background='#eef4fa'" onmouseout="this.style.background='rgba(250,252,255,0.8)'">
+          ✨ 封印为 PNG 灵魂卡牌 (可发给朋友导入)
+        </button>
+      `;
+      settingCard.insertAdjacentHTML('beforeend', exportBtnHtml);
+    }
+  }, 800);
+
+  // ================= 2. AI 灵魂生成引擎 =================
+  window._triggerAiRoleGen = async function() {
+    const kw = document.getElementById('aiRoleKeyword').value.trim();
+    if(!kw) return alert('宝宝，输入一点灵感关键词吧~');
+    
+    const btn = document.getElementById('aiGenerateRoleBtn');
+    const oldText = btn.textContent;
+    btn.textContent = '演算中...'; btn.style.pointerEvents = 'none';
+
+    const sysPrompt = `你是一个顶级的角色设定师。玩家提供的关键词是：“${kw}”。
+请生成一个拥有极度真实“活人感”的深度角色档案。总字数800字左右。
+【绝对铁律】：必须严格返回 JSON 格式！拒绝多余文字！
+{
+  "name": "角色全名",
+  "persona": "包含外貌、性格、身世创伤、日常习惯、双标态度等巨细无遗的活体侧写。"
+}`;
+
+    try {
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻生成！' }]);
+      const cleaned = out.replace(/```json|```/g, '').trim();
+      const match = cleaned.match(/\{[\s\S]*\}/);
+      if(!match) throw new Error("AI 时空乱流");
+      
+      const data = JSON.parse(match[0]);
+      document.getElementById('newName').value = data.name || '';
+      document.getElementById('newPersona').value = data.persona || '';
+      
+      // 自动生成一张极简首字母头像
+      const avatarUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(data.name)}&backgroundColor=eef4fa&textColor=5c7094`;
+      window.createAvatar = avatarUrl;
+      document.getElementById('newAvatarPreview').src = avatarUrl;
+      document.getElementById('newAvatarPreview').classList.remove('hidden');
+
+    } catch(e) {
+      alert('生成失败了宝宝：' + e.message);
+    } finally {
+      btn.textContent = oldText; btn.style.pointerEvents = 'auto';
+    }
+  };
+
+  // ================= 3. PNG 隐写术：导出灵魂卡牌 =================
+  window._exportRoleToPng = async function() {
+    if(!window.currentId) return;
+    const c = window.getContactById(window.currentId);
+    if(!c) return;
+
+    // 1. 打包灵魂数据 (遵循 V2 标准，兼容主流酒馆)
+    const cardData = {
+      spec: "chara_card_v2",
+      spec_version: "2.0",
+      data: { name: c.name, description: c.persona, first_mes: "", avatar: c.avatar }
+    };
+    const jsonStr = JSON.stringify(cardData);
+    const utf8Bytes = new TextEncoder().encode(jsonStr);
+    // 转换为 Base64，准备塞进图片
+    const base64Data = btoa(String.fromCharCode(...utf8Bytes));
+
+    try {
+      // 2. 获取头像图片并转为 Canvas
+      const img = new Image();
+      img.crossOrigin = "Anonymous";
+      img.src = c.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(c.name)}&backgroundColor=eef4fa&textColor=5c7094`;
+      
+      await new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      
+      // 3. 拿到纯净的 PNG Base64
+      const dataUrl = canvas.toDataURL('image/png');
+      const base64 = dataUrl.split(',')[1];
+      const binaryString = atob(base64);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) { bytes[i] = binaryString.charCodeAt(i); }
+
+      // 4. 极客黑魔法：手动把 tEXt 块写入 PNG 二进制流！
+      const keyword = "chara";
+      const textData = keyword + '\0' + base64Data;
+      const textBytes = new TextEncoder().encode(textData);
+      
+      // 计算 CRC32
+      const crcTable = new Uint32Array(256);
+      for(let i=0; i<256; i++){
+          let c = i;
+          for(let k=0; k<8; k++){ c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1)); }
+          crcTable[i] = c;
+      }
+      const crc32 = (arr, offset, length) => {
+          let crc = 0xFFFFFFFF;
+          for(let i=offset; i<offset+length; i++){ crc = crcTable[(crc ^ arr[i]) & 0xFF] ^ (crc >>> 8); }
+          return (crc ^ 0xFFFFFFFF) >>> 0;
+      };
+
+      // 构建 tEXt 块: 4字节长度 + 4字节类型(tEXt) + 数据 + 4字节CRC
+      const chunkLen = textBytes.length;
+      const chunk = new Uint8Array(4 + 4 + chunkLen + 4);
+      const view = new DataView(chunk.buffer);
+      view.setUint32(0, chunkLen);
+      chunk.set(new TextEncoder().encode("tEXt"), 4);
+      chunk.set(textBytes, 8);
+      view.setUint32(8 + chunkLen, crc32(chunk, 4, 4 + chunkLen));
+
+      // 找到 IHDR 块结束的位置（PNG 前8字节是签名，接着是 IHDR 块，固定 25 字节长）
+      const insertPos = 8 + 25;
+      
+      // 拼接：签名+IHDR -> tEXt块 -> 剩余数据
+      const finalBytes = new Uint8Array(bytes.length + chunk.length);
+      finalBytes.set(bytes.subarray(0, insertPos), 0);
+      finalBytes.set(chunk, insertPos);
+      finalBytes.set(bytes.subarray(insertPos), insertPos + chunk.length);
+
+      // 5. 触发下载
+      const blob = new Blob([finalBytes], { type: 'image/png' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${c.name}_灵魂卡牌.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      alert('✨ 灵魂卡牌封装成功！\n这是一张携带完整人设的高清 PNG 图片，发给朋友，让 TA 在微信右上角导入吧！');
+
+    } catch(e) {
+      alert('封印卡牌失败：' + e.message);
+    }
+  };
+
+  // ================= 4. PNG 隐写术：导入灵魂卡牌 =================
+  // 我们劫持你原本写好的 importCardFile input
+  setTimeout(() => {
+    const importInput = document.getElementById('importCardFile');
+    if(!importInput) return;
+    
+    // 覆盖原有的 onchange
+    importInput.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if(!file) return;
+
+      try {
+        let cardData = null;
+        let avatarData = null;
+
+        if (file.name.endsWith('.json')) {
+          const text = await file.text();
+          cardData = JSON.parse(text);
+        } else if (file.name.endsWith('.png') || file.type.startsWith('image/')) {
+          // 读取 PNG 二进制寻找 tEXt 块
+          const buffer = await file.arrayBuffer();
+          const view = new DataView(buffer);
+          let offset = 8;
+          let found = false;
+
+          while (offset < view.byteLength) {
+            const length = view.getUint32(offset);
+            const type = String.fromCharCode(view.getUint8(offset+4), view.getUint8(offset+5), view.getUint8(offset+6), view.getUint8(offset+7));
+            
+            if (type === 'tEXt') {
+              const dataBytes = new Uint8Array(buffer, offset + 8, length);
+              const text = new TextDecoder('utf-8').decode(dataBytes);
+              const nullIdx = text.indexOf('\0');
+              const keyword = text.substring(0, nullIdx);
+              
+              if (keyword === 'chara') {
+                const base64 = text.substring(nullIdx + 1);
+                // 解码 Base64 -> UTF8 -> JSON
+                const jsonStr = new TextDecoder('utf-8').decode(Uint8Array.from(atob(base64), c => c.charCodeAt(0)));
+                cardData = JSON.parse(jsonStr);
+                found = true;
+                break;
+              }
+            }
+            offset += 12 + length;
+          }
+
+          if(!found) throw new Error("这张图片里没有藏着灵魂数据哦！");
+          
+          // 顺便把这张图片本身压缩成头像！
+          avatarData = await window.compressImage(file);
+        }
+
+        if(!cardData) throw new Error("解析失败！");
+
+        // 提取数据
+        const name = cardData.data?.name || cardData.name || '未知灵魂';
+        const persona = cardData.data?.description || cardData.description || '';
+        const greeting = cardData.data?.first_mes || cardData.first_mes || '';
+
+        // 自动弹开创建联系人面板并填入！
+        document.getElementById('contactModal').classList.add('active');
+        document.getElementById('newName').value = name;
+        document.getElementById('newPersona').value = persona;
+        
+        if (avatarData) {
+          window.createAvatar = avatarData;
+          const preview = document.getElementById('newAvatarPreview');
+          if(preview) { preview.src = avatarData; preview.classList.remove('hidden'); }
+        }
+
+        alert(`✨ 成功从 ${file.name.endsWith('.png') ? '图片' : '文件'} 中唤醒灵魂：[${name}]！\n检查无误后点击保存即可！`);
+
+      } catch(err) {
+        alert("导入失败了宝宝：" + err.message);
+      } finally {
+        e.target.value = ''; // 清空
+        // 隐藏微信的右上角菜单
+        const menu = document.getElementById('wxAddMenu');
+        if(menu) menu.classList.add('hidden');
+      }
+    });
+  }, 1000);
+
+})();
+</script>
 </body>
   </html>
