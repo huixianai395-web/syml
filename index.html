@@ -16888,13 +16888,13 @@ ${ecoRules}
     }
   };
 
-  // 3. PNG 导出引擎 (绝对防栈溢出 + 防弹玻璃纯净版)
+ // 3. PNG 导出引擎 (绝对防栈溢出 + 终极防死锁纯净版)
   window._exportRoleToPng = async function() {
     if(!window.currentId) return;
     const c = window.getContactById(window.currentId);
     if(!c) return;
 
-    // 🔪 核心修复 1：加上安全判断，绝对不允许触摸空壳导致死机！
+    // 🔪 核心护盾 1：加上安全判断，绝对不允许触摸空壳导致死机！
     const btn = document.getElementById('exportPngBtn');
     const oldText = btn ? btn.textContent : '✨ 封印为 PNG 灵魂卡牌 (发给朋友导入)';
     if(btn) { btn.textContent = '✨ 正在凝聚卡牌...'; btn.style.pointerEvents = 'none'; }
@@ -16922,11 +16922,16 @@ ${ecoRules}
       const img = new Image();
       img.crossOrigin = "Anonymous";
       const fallbackSrc = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(c.name)}&backgroundColor=eef4fa&textColor=5c7094`;
-      img.src = c.avatar || fallbackSrc;
       
-      await new Promise((res, rej) => { 
-        img.onload = res; 
-        img.onerror = () => { img.src = fallbackSrc; img.onload = res; img.onerror = rej; }; 
+      // 🔪 核心护盾 2：必须先戴上耳机（onload），再去加载图片（src）！绝对防止死锁！
+      await new Promise((res, rej) => {
+        img.onload = res;
+        img.onerror = () => { 
+          img.onload = res; 
+          img.onerror = rej; 
+          img.src = fallbackSrc; 
+        };
+        img.src = c.avatar || fallbackSrc;
       });
       
       const canvas = document.createElement('canvas');
@@ -16937,7 +16942,7 @@ ${ecoRules}
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       
-      // 🔪 核心修复 2：防止跨域污染导致 toDataURL 崩溃
+      // 🔪 核心护盾 3：防止跨域污染导致 toDataURL 崩溃
       let dataUrl;
       try {
         dataUrl = canvas.toDataURL('image/png');
