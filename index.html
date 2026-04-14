@@ -16888,19 +16888,38 @@ ${ecoRules}
     }
   };
 
- // 3. PNG 导出引擎 (绝对防栈溢出 + 终极防死锁纯净版)
+  // 🧊 蓝色高定：PNG 导出引擎 (绝对防栈溢出 + 终极防死锁纯净版)
   window._exportRoleToPng = async function() {
-    if(!window.currentId) return;
-    const c = window.getContactById(window.currentId);
+    // ✦ 核心修复：用全局雷达打破作用域结界，精准抓取当前角色 ID！
+    let cid = window._exposed_currentId;
+    if(!cid) {
+      const titleEl = document.getElementById('chatTitle');
+      if(titleEl) {
+        const title = titleEl.innerText.trim();
+        const contacts = window.getContacts ? window.getContacts() : [];
+        let c = contacts.find(x => x.name === title);
+        if(c) cid = c.id;
+      }
+    }
+    
+    if(!cid) return alert('宝宝，系统雷达迷路啦，请退出去重新点进聊天室再试一次哦！');
+
+    const c = window.getContactById(cid);
     if(!c) return;
 
-    // 🔪 核心护盾 1：加上安全判断，绝对不允许触摸空壳导致死机！
     const btn = document.getElementById('exportPngBtn');
-    const oldText = btn ? btn.textContent : '✨ 封印为 PNG 灵魂卡牌 (发给朋友导入)';
-    if(btn) { btn.textContent = '✨ 正在凝聚卡牌...'; btn.style.pointerEvents = 'none'; }
+    const oldText = btn ? btn.textContent : '✦ 封印为 PNG 灵魂卡牌';
+    if(btn) { 
+      btn.textContent = '✦ 正在注入灵魂，凝聚卡牌...'; 
+      btn.style.pointerEvents = 'none'; 
+      btn.style.opacity = '0.7'; 
+      // 注入初雪海盐蓝极简美学
+      btn.style.background = '#eef4fa';
+      btn.style.color = '#5c7094';
+      btn.style.border = '1px solid #dce5f0';
+    }
 
     try {
-      // 打包标准 V2 格式数据
       const cardData = {
         spec: "chara_card_v2",
         spec_version: "2.0",
@@ -16910,7 +16929,6 @@ ${ecoRules}
       const jsonStr = JSON.stringify(cardData);
       const utf8Bytes = new TextEncoder().encode(jsonStr);
       
-      // 用最原始的 for 循环拼接，绝对不会触发栈溢出！
       let binary = '';
       const len = utf8Bytes.byteLength;
       for (let i = 0; i < len; i++) {
@@ -16918,12 +16936,10 @@ ${ecoRules}
       }
       const base64Data = btoa(binary);
 
-      // 提取头像
       const img = new Image();
       img.crossOrigin = "Anonymous";
-      const fallbackSrc = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(c.name)}&backgroundColor=eef4fa&textColor=5c7094`;
+      const fallbackSrc = \`https://api.dicebear.com/7.x/initials/svg?seed=\${encodeURIComponent(c.name)}&backgroundColor=eef4fa&textColor=5c7094\`;
       
-      // 🔪 核心护盾 2：必须先戴上耳机（onload），再去加载图片（src）！绝对防止死锁！
       await new Promise((res, rej) => {
         img.onload = res;
         img.onerror = () => { 
@@ -16938,16 +16954,16 @@ ${ecoRules}
       canvas.width = img.width || 400; 
       canvas.height = img.height || 400;
       const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#eef4fa'; // 兜底海盐蓝底色
+      // ✦ 使用我们的初雪海盐蓝作为兜底底色
+      ctx.fillStyle = '#eef4fa'; 
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       
-      // 🔪 核心护盾 3：防止跨域污染导致 toDataURL 崩溃
       let dataUrl;
       try {
         dataUrl = canvas.toDataURL('image/png');
       } catch(canvasErr) {
-        throw new Error("头像图片跨域污染啦，请重新上传一张本地图片作为头像再导出哦！");
+        throw new Error("头像图片被跨域结界挡住了，请重新上传一张本地图片作为头像再导出哦！");
       }
 
       const base64 = dataUrl.split(',')[1];
@@ -16956,9 +16972,8 @@ ${ecoRules}
       const bytes = new Uint8Array(binLen);
       for (let i = 0; i < binLen; i++) { bytes[i] = binaryString.charCodeAt(i); }
 
-      // 注入隐写数据块
       const keyword = "chara";
-      const textData = keyword + '\0' + base64Data;
+      const textData = keyword + '\\0' + base64Data;
       const textBytes = new TextEncoder().encode(textData);
       
       const crcTable = new Uint32Array(256);
@@ -16987,23 +17002,26 @@ ${ecoRules}
       finalBytes.set(chunk, insertPos);
       finalBytes.set(bytes.subarray(insertPos), insertPos + chunk.length);
 
-      // 触发下载
       const blob = new Blob([finalBytes], { type: 'image/png' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${c.name}_灵魂卡牌.png`;
+      a.download = \`\${c.name}_灵魂卡牌.png\`;
       document.body.appendChild(a); 
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      alert('✨ 灵魂卡牌封装成功！\n这是一张携带完整人设的高清 PNG 图片，快发给朋友，让她在微信右上角点导入吧！');
+      alert('✦ 灵魂卡牌封装成功！\\n这是一张携带完整人设的高清 PNG 图片，快发给朋友，让她在微信右上角点导入吧！');
 
     } catch(e) {
       alert('封印卡牌失败啦宝宝：' + e.message);
     } finally {
-      if(btn) { btn.textContent = oldText; btn.style.pointerEvents = 'auto'; }
+      if(btn) { 
+        btn.textContent = oldText; 
+        btn.style.pointerEvents = 'auto'; 
+        btn.style.opacity = '1';
+      }
     }
   };
 
