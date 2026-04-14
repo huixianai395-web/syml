@@ -2803,10 +2803,11 @@ body {
 </style>
 
 <script>
+  // 3. 【JS 部分升级版：活体炼金引擎】：请用这段替换掉刚才的 JS 部分！
   const K_APP_ICON = 'mp_fix_app_icon_v1';
-  // 这就是我用纯代码画的极简高定原皮：初雪星芒！
-  const DEFAULT_ICON_SVG = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  // 依然是我们绝美的高定 SVG 原皮
+  const DEFAULT_ICON_SVG = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
       <rect width="1024" height="1024" fill="#eef4fa"/>
       <g transform="translate(512, 512)">
          <polygon points="0,-280 280,0 0,280 -280,0" fill="#5c7094" opacity="0.08" transform="translate(0, 20)"/>
@@ -2815,8 +2816,24 @@ body {
          <line x1="-300" y1="0" x2="300" y2="0" stroke="#ffffff" stroke-width="16"/>
          <polygon points="0,-150 150,0 0,150 -150,0" fill="none" stroke="#ffffff" stroke-width="12" opacity="0.8"/>
       </g>
-    </svg>
-  `);
+    </svg>`;
+
+  // 💡 蓝色核心魔法：把 SVG 瞬间炼金成苹果能吃的 PNG！
+  window._svgToPng = function(svgStr) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement('canvas');
+        c.width = 1024; c.height = 1024;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#eef4fa'; // 锁死海盐蓝底色
+        ctx.fillRect(0,0,1024,1024);
+        ctx.drawImage(img,0,0);
+        resolve(c.toDataURL('image/png', 0.9)); // 压榨出纯正的高清 PNG！
+      };
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr.trim());
+    });
+  };
 
   window._injectAppleTouchIcon = function(base64Data) {
     let link = document.querySelector('link[rel="apple-touch-icon"]');
@@ -2829,27 +2846,31 @@ body {
   };
 
   window._checkAndInitAppIcon = async function() {
-    // 检测是否在独立 App 模式下运行（已经添加到主屏幕了）
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     const savedIcon = await localforage.getItem(K_APP_ICON);
     
     if (savedIcon) {
       window._injectAppleTouchIcon(savedIcon);
+      if (!isStandalone) {
+        document.getElementById('iconSetupScreen').style.display = 'flex';
+        document.getElementById('iconPreviewImg').src = savedIcon;
+      }
     } else {
-      window._injectAppleTouchIcon(DEFAULT_ICON_SVG);
-    }
-
-    // 如果还没添加到主屏幕，并且是第一次来（或者强制想换图标），才显示这个界面
-    if (!isStandalone) {
-      document.getElementById('iconSetupScreen').style.display = 'flex';
-      document.getElementById('iconPreviewImg').src = savedIcon || DEFAULT_ICON_SVG;
+      // 强制把纯净代码变成 PNG，再喂给系统和预览框！
+      const pngBase64 = await window._svgToPng(DEFAULT_ICON_SVG);
+      window._injectAppleTouchIcon(pngBase64);
+      if (!isStandalone) {
+        document.getElementById('iconSetupScreen').style.display = 'flex';
+        document.getElementById('iconPreviewImg').src = pngBase64;
+      }
     }
   };
 
   window._useDefaultIcon = async function() {
-    document.getElementById('iconPreviewImg').src = DEFAULT_ICON_SVG;
+    const pngBase64 = await window._svgToPng(DEFAULT_ICON_SVG);
+    document.getElementById('iconPreviewImg').src = pngBase64;
     await localforage.removeItem(K_APP_ICON);
-    window._injectAppleTouchIcon(DEFAULT_ICON_SVG);
+    window._injectAppleTouchIcon(pngBase64);
   };
 
   window._confirmAndHideIconSetup = function() {
@@ -2862,24 +2883,21 @@ body {
     const f = e.target.files?.[0];
     if(!f) return;
     try {
-      // 借用你原有的高清无死角压缩引擎，强制画在白底 Canvas 上
       const compFn = window._fiCompressImage || window.compressImage;
-      if(!compFn) throw new Error("引擎未就绪");
-      const imgData = await compFn(f, true); // 强制走高清模式
-      
+      if(!compFn) throw new Error("压缩引擎尚未就绪哦");
+      const imgData = await compFn(f, true); 
       document.getElementById('iconPreviewImg').src = imgData;
       await localforage.setItem(K_APP_ICON, imgData);
       window._injectAppleTouchIcon(imgData);
-      
-      alert('✨ 专属印记已锁定！现在点击浏览器的分享按钮，选择「添加到主屏幕」，就能看到你的专属图标啦！');
+      alert('✨ 专属印记已锁定！现在点击浏览器的分享按钮，选择「添加到主屏幕」吧！');
     } catch(err) {
-      alert('图标处理失败了宝宝：' + err.message);
+      alert('图标处理失败了：' + err.message);
     } finally {
       e.target.value = '';
     }
   });
 
-  // 启动自检
+  // 延时启动自检，确保一切加载完毕
   setTimeout(() => { window._checkAndInitAppIcon(); }, 200);
   // ================= 自动掉落配置中心（支持全部/勾选） =================
   const K_AUTO_ON = 'globalAutoChatOn';
