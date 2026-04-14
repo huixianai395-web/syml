@@ -2805,18 +2805,40 @@ body {
 <script>
   // 3. 【JS 部分升级版：活体炼金引擎】：请用这段替换掉刚才的 JS 部分！
   const K_APP_ICON = 'mp_fix_app_icon_v1';
-  // 依然是我们绝美的高定 SVG 原皮
+  // 💎 蓝色高定进阶版：加入光影折射与冰蓝水晶之心的绝美原皮！
   const DEFAULT_ICON_SVG = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
-      <rect width="1024" height="1024" fill="#eef4fa"/>
-      <g transform="translate(512, 512)">
-         <polygon points="0,-280 280,0 0,280 -280,0" fill="#5c7094" opacity="0.08" transform="translate(0, 20)"/>
-         <polygon points="0,-300 300,0 0,300 -300,0" fill="none" stroke="#ffffff" stroke-width="16"/>
-         <line x1="0" y1="-300" x2="0" y2="300" stroke="#ffffff" stroke-width="16"/>
-         <line x1="-300" y1="0" x2="300" y2="0" stroke="#ffffff" stroke-width="16"/>
-         <polygon points="0,-150 150,0 0,150 -150,0" fill="none" stroke="#ffffff" stroke-width="12" opacity="0.8"/>
+      <defs>
+        <!-- 底板微渐变：模拟光线扫过毛玻璃的质感 -->
+        <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" />
+          <stop offset="100%" stop-color="#eef4fa" />
+        </linearGradient>
+        <!-- 几何体渐变：晶莹剔透的冰块反光 -->
+        <linearGradient id="starGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+          <stop offset="100%" stop-color="#eef4fa" stop-opacity="0.2" />
+        </linearGradient>
+        <!-- 高级柔和阴影：让水晶彻底悬浮 -->
+        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#5c7094" flood-opacity="0.18" />
+        </filter>
+      </defs>
+      
+      <rect width="1024" height="1024" fill="url(#bgGrad)"/>
+      <g transform="translate(512, 512)" filter="url(#glow)">
+         <!-- 底层透明冰块 -->
+         <polygon points="0,-240 240,0 0,240 -240,0" fill="url(#starGrad)" stroke="#ffffff" stroke-width="12" stroke-linejoin="round"/>
+         
+         <!-- 视觉核心锚点：一抹高级的冰透蓝 -->
+         <polygon points="0,-100 100,0 0,100 -100,0" fill="#a5cfff" opacity="0.6"/>
+         
+         <!-- 极细的切割光带 -->
+         <line x1="0" y1="-320" x2="0" y2="320" stroke="#ffffff" stroke-width="16" stroke-linecap="round"/>
+         <line x1="-320" y1="0" x2="320" y2="0" stroke="#ffffff" stroke-width="16" stroke-linecap="round"/>
       </g>
-    </svg>`;
+    </svg>
+  `;
 
   // 💡 蓝色核心魔法：把 SVG 瞬间炼金成苹果能吃的 PNG！
   window._svgToPng = function(svgStr) {
