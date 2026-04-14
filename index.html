@@ -2135,6 +2135,27 @@ body {
 </head>
 <body>
 <div id="app">
+  <section id="iconSetupScreen" style="display: none;">
+  <div class="icon-setup-card">
+    <div style="font-size:12px; color:#a5cfff; font-weight:800; letter-spacing:2px; margin-bottom:8px; font-family:ui-monospace, monospace;">WELCOME</div>
+    <div style="font-size:18px; color:#3d4a6a; font-weight:900; margin-bottom:24px; letter-spacing:1px;">定制你的专属入口</div>
+    
+    <div class="icon-preview-box" onclick="document.getElementById('customIconUpload').click()" style="cursor:pointer;" title="点击更换图标">
+      <img id="iconPreviewImg" src="">
+      <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(250,252,255,0.8); backdrop-filter:blur(4px); color:#5c7094; font-size:10px; font-weight:bold; padding:4px 0; letter-spacing:1px;">点击更换</div>
+    </div>
+    <input type="file" id="customIconUpload" accept="image/*" class="hidden">
+    
+    <div style="font-size:11px; color:#7a86a8; line-height:1.6; margin-bottom:24px; text-align:justify; background:rgba(238,244,250,0.6); padding:10px; border-radius:12px; border:1px solid rgba(220,229,240,0.5);">
+      <b style="color:#5c7094;">系统指引：</b>当前展示的是「初雪星芒」极简默认徽章。你可以上传自己喜欢的图片，确认后点击下方按钮，并按照系统提示将网页<b>「添加到主屏幕」</b>，即可生成完美的高清桌面图标。
+    </div>
+    
+    <div style="display:flex; gap:12px;">
+      <button class="btn" onclick="window._useDefaultIcon()" style="flex:1; background:#f4f6fb; color:#7a86a8; border:1px solid #dce5f0; border-radius:14px; padding:12px 0; font-weight:bold; font-size:13px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">恢复默认</button>
+      <button class="btn p" onclick="window._confirmAndHideIconSetup()" style="flex:1; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:14px; padding:12px 0; font-weight:bold; font-size:13px; box-shadow:0 4px 12px rgba(92,112,148,0.1); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">封存并进入</button>
+    </div>
+  </div>
+</section>
 <section id="bootScreen" class="screen active">
   <div class="boot-bg">
     <div class="boot-ink boot-ink1"></div>
@@ -2513,6 +2534,34 @@ body {
       #holoSubtitles div[style*="font-size:16px"] {
          text-shadow: none !important;
       }
+      
+/* 🌟 蓝色高定：小手机专属图标定制台 */
+#iconSetupScreen {
+  position: fixed; inset: 0; z-index: 99999;
+  background: #eef4fa; /* 初雪海盐蓝底色 */
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  transition: opacity 0.4s ease;
+}
+.icon-setup-card {
+  width: 85%; max-width: 340px;
+  background: rgba(250, 252, 255, 0.75);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border: 1px solid #dce5f0;
+  border-radius: 24px; padding: 30px 24px;
+  box-shadow: 0 12px 40px rgba(92, 112, 148, 0.12);
+  text-align: center;
+}
+.icon-preview-box {
+  width: 120px; height: 120px; margin: 0 auto 20px;
+  border-radius: 24px; overflow: hidden;
+  background: #eef4fa; border: 1px solid #dce5f0;
+  box-shadow: 0 8px 24px rgba(92, 112, 148, 0.08), inset 0 2px 6px rgba(255,255,255,0.8);
+  display: grid; place-items: center; position: relative;
+}
+#iconPreviewImg {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
     </style>
 
     <div id="holoSceneBg" style="position:absolute; inset:0; background-size:cover; background-position:center;"></div>
@@ -2754,6 +2803,84 @@ body {
 </style>
 
 <script>
+  const K_APP_ICON = 'mp_fix_app_icon_v1';
+  // 这就是我用纯代码画的极简高定原皮：初雪星芒！
+  const DEFAULT_ICON_SVG = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+      <rect width="1024" height="1024" fill="#eef4fa"/>
+      <g transform="translate(512, 512)">
+         <polygon points="0,-280 280,0 0,280 -280,0" fill="#5c7094" opacity="0.08" transform="translate(0, 20)"/>
+         <polygon points="0,-300 300,0 0,300 -300,0" fill="none" stroke="#ffffff" stroke-width="16"/>
+         <line x1="0" y1="-300" x2="0" y2="300" stroke="#ffffff" stroke-width="16"/>
+         <line x1="-300" y1="0" x2="300" y2="0" stroke="#ffffff" stroke-width="16"/>
+         <polygon points="0,-150 150,0 0,150 -150,0" fill="none" stroke="#ffffff" stroke-width="12" opacity="0.8"/>
+      </g>
+    </svg>
+  `);
+
+  window._injectAppleTouchIcon = function(base64Data) {
+    let link = document.querySelector('link[rel="apple-touch-icon"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'apple-touch-icon';
+      document.head.appendChild(link);
+    }
+    link.href = base64Data;
+  };
+
+  window._checkAndInitAppIcon = async function() {
+    // 检测是否在独立 App 模式下运行（已经添加到主屏幕了）
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const savedIcon = await localforage.getItem(K_APP_ICON);
+    
+    if (savedIcon) {
+      window._injectAppleTouchIcon(savedIcon);
+    } else {
+      window._injectAppleTouchIcon(DEFAULT_ICON_SVG);
+    }
+
+    // 如果还没添加到主屏幕，并且是第一次来（或者强制想换图标），才显示这个界面
+    if (!isStandalone) {
+      document.getElementById('iconSetupScreen').style.display = 'flex';
+      document.getElementById('iconPreviewImg').src = savedIcon || DEFAULT_ICON_SVG;
+    }
+  };
+
+  window._useDefaultIcon = async function() {
+    document.getElementById('iconPreviewImg').src = DEFAULT_ICON_SVG;
+    await localforage.removeItem(K_APP_ICON);
+    window._injectAppleTouchIcon(DEFAULT_ICON_SVG);
+  };
+
+  window._confirmAndHideIconSetup = function() {
+    const screen = document.getElementById('iconSetupScreen');
+    screen.style.opacity = '0';
+    setTimeout(() => { screen.style.display = 'none'; }, 400);
+  };
+
+  document.getElementById('customIconUpload').addEventListener('change', async (e) => {
+    const f = e.target.files?.[0];
+    if(!f) return;
+    try {
+      // 借用你原有的高清无死角压缩引擎，强制画在白底 Canvas 上
+      const compFn = window._fiCompressImage || window.compressImage;
+      if(!compFn) throw new Error("引擎未就绪");
+      const imgData = await compFn(f, true); // 强制走高清模式
+      
+      document.getElementById('iconPreviewImg').src = imgData;
+      await localforage.setItem(K_APP_ICON, imgData);
+      window._injectAppleTouchIcon(imgData);
+      
+      alert('✨ 专属印记已锁定！现在点击浏览器的分享按钮，选择「添加到主屏幕」，就能看到你的专属图标啦！');
+    } catch(err) {
+      alert('图标处理失败了宝宝：' + err.message);
+    } finally {
+      e.target.value = '';
+    }
+  });
+
+  // 启动自检
+  setTimeout(() => { window._checkAndInitAppIcon(); }, 200);
   // ================= 自动掉落配置中心（支持全部/勾选） =================
   const K_AUTO_ON = 'globalAutoChatOn';
   const K_AUTO_MIN = 'autoChatMin';
