@@ -17012,8 +17012,7 @@ window._exportNexusFile = function() {
   a.download = `Milo_${data.name}_Nexus.json`;
   a.click();
 };
-
-// 🌟 6. 无服务器量子压缩：生成物理密钥！
+// 1. 【修复】生成物理密匙：突破浏览器剪贴板限制，化暗为明！
 window._uploadNexusToCloud = function() {
   if(!window._tempNexusData) return;
   try {
@@ -17021,133 +17020,56 @@ window._uploadNexusToCloud = function() {
     const compressedData = btoa(unescape(encodeURIComponent(jsonStr)));
     const freqKey = 'NEXUS-' + compressedData;
     
-    // 强制复制到剪贴板
-    const tempInput = document.createElement('textarea');
-    tempInput.value = freqKey; document.body.appendChild(tempInput);
-    tempInput.select(); document.execCommand('copy'); document.body.removeChild(tempInput);
-
-    alert('✨ 灵魂数据已完成量子压缩！\\n这是一把不需要服务器的【绝对物理密钥】！\\n\\n密钥已自动复制到剪贴板，快发给朋友吧！');
-  } catch(e) {
-    alert('封装失败：' + e.message);
-  }
-};
-
-// 🌟 7. 真·频段解析器（反向解冻 Base64 密文）
-window._fetchNexusCloud = function() {
-  let key = document.getElementById('nexusSyncKey').value.trim();
-  if(!key) return alert('请输入频段密钥哦！');
-  
-  const btn = document.getElementById('nexusSyncBtn');
-  const box = document.getElementById('nexusResultBox');
-  btn.innerHTML = '<div style="width:16px; height:16px; border:2px solid #5c7094; border-top-color:transparent; border-radius:50%; animation:pcSpin 1s linear infinite;"></div> 正在破译时空密文...';
-  btn.style.pointerEvents = 'none';
-
-  setTimeout(() => {
-    try {
-      if(!key.startsWith('NEXUS-')) throw new Error("密钥格式不正确，必须是以 NEXUS- 开头的波段哦！");
-      const base64Data = key.replace(/^NEXUS-/i, '').trim();
-      const jsonStr = decodeURIComponent(escape(atob(base64Data)));
-      const payload = JSON.parse(jsonStr);
-      
-      if(!payload || !payload.name || !payload.persona) throw new Error("捕获到的数据胶囊已损坏。");
-      window._renderNexusCard(payload.name, payload.persona, payload.avatar, payload.greeting, '物理密钥已解锁');
-
-    } catch(e) {
-      box.innerHTML = `<div style="text-align:center; color:#b57b7b; font-size:12px; background:rgba(252,242,242,0.8); padding:12px; border-radius:12px; border:1px solid #f2dcdc;">⚠️ 解析失败：密文不完整或格式错误。</div>`;
-    } finally {
-      btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>[ 解析波段 · 解冻胶囊 ]';
-      btn.style.pointerEvents = 'auto';
+    // 🌟 核心魔法：把按钮直接变成一个绝美的海盐蓝只读输入框，点击自动全选复制！
+    const box = document.getElementById('nexusResultBox');
+    const uploadBtnArea = box.querySelector('div[style*="display:flex; gap:8px;"]');
+    if(uploadBtnArea) {
+      uploadBtnArea.innerHTML = `
+        <div style="width:100%; display:flex; flex-direction:column; gap:6px; margin-bottom:12px;">
+          <div style="font-size:11px; color:#5c7094; font-weight:bold; text-align:center;">✨ 物理密匙已生成，请点击下方框框复制发给朋友：</div>
+          <input type="text" readonly value="${freqKey}" onclick="this.select(); document.execCommand('copy'); alert('✨ 密匙已成功复制到剪贴板！');" style="width:100%; background:#eef4fa; border:1px dashed #a5cfff; color:#5c7094; border-radius:12px; padding:12px; font-size:12px; font-family:ui-monospace, monospace; font-weight:bold; text-align:center; cursor:pointer; outline:none; box-shadow:inset 0 2px 6px rgba(92,112,148,0.05);" title="点击复制密匙">
+        </div>
+      `;
     }
-  }, 600);
+  } catch(e) { alert('封装失败：' + e.message); }
 };
 
-// 🌟 8. 发布至漫游广场 (写入专属外挂硬盘)
-window._publishToNexusSquare = async function() {
+// 2. 【修复】导出实体胶囊：强制写入标准 V2 格式，死死裹住头像！
+window._exportNexusFile = function() {
   if(!window._tempNexusData) return;
-  let squareData = await localforage.getItem('mp_fix_nexus_square') || [];
-  squareData.unshift(window._tempNexusData);
-  await localforage.setItem('mp_fix_nexus_square', squareData);
-  alert('✨ 已成功将角色发射至漫游广场！');
-  window._openNexusSquare();
+  const data = window._tempNexusData;
+  // 强制使用符合业界标准的嵌套格式，确保头像 Base64 不被丢弃
+  const card = { 
+    spec: "chara_card_v2", 
+    data: { name: data.name, description: data.persona, first_mes: data.greeting, avatar: data.avatar } 
+  };
+  const blob = new Blob([JSON.stringify(card, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `Milo_Role_${data.name}_${Date.now()}.json`;
+  a.click();
 };
 
-// 9. 绝美卡片渲染引擎 (防挤压钛合金版)
-window._renderNexusCard = function(name, persona, avatar, greeting, isDecrypted) {
-  const box = document.getElementById('nexusResultBox');
-  window._tempNexusData = { name, persona, avatar, greeting };
-
-  let uploadBtnHtml = '';
-  if (!isDecrypted) {
-    uploadBtnHtml = `
-      <div style="display:flex; gap:8px; margin-bottom:12px;">
-        <button onclick="window._uploadNexusToCloud()" style="flex:1; background:transparent; color:#5c7094; border:1px dashed #a5cfff; border-radius:12px; padding:10px 0; font-size:12px; font-weight:bold; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#eef4fa'" onmouseout="this.style.background='transparent'">[ 生成波段密匙 ]</button>
-        <button onclick="window._exportNexusFile()" style="flex:1; background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:12px; padding:10px 0; font-size:12px; font-weight:bold; cursor:pointer; box-shadow:none;">[ 💾 数据胶囊 ]</button>
-        <button onclick="window._publishToNexusSquare()" style="flex:1; background:#5c7094; color:#fff; border:none; border-radius:12px; padding:10px 0; font-size:12px; font-weight:bold; cursor:pointer; box-shadow:0 4px 12px rgba(92,112,148,0.2);">发至广场</button>
-      </div>`;
-  } else {
-    uploadBtnHtml = `<div style="font-size:11px; color:#a5cfff; text-align:center; margin-bottom:12px; font-family:ui-monospace, monospace;">STATUS: DECRYPTED SUCCESSFULLY</div>`;
-  }
-
-  box.innerHTML = `
-    <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border:1px solid #a5cfff; border-radius:16px; padding:20px; position:relative; box-shadow:0 12px 40px rgba(165,207,255,0.15); animation: floatMenuPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);">
-      
-      <!-- 绝对定位的复制按钮 -->
-      <div onclick="window._copyNexusPersona()" style="position:absolute; top:20px; right:20px; width:28px; height:28px; background:rgba(238,244,250,0.8); border:1px solid #dce5f0; border-radius:8px; display:grid; place-items:center; cursor:pointer; color:#5c7094;" title="一键复制人设">
-        <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-      </div>
-
-      <div style="font-size:10px; color:#a5cfff; font-weight:900; letter-spacing:2px; font-family:ui-monospace, monospace; margin-bottom:12px; display:flex; align-items:center; gap:4px;">
-        <span style="display:inline-block; width:6px; height:6px; background:#a5cfff; border-radius:50%; animation:blueBlink 1.5s infinite;"></span>SOUL ARCHIVE
-      </div>
-      
-      <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
-        <!-- 🔪 绝对防御：flex-shrink:0 死死扛住压力，拒绝被挤成大饼！ -->
-        <div style="position:relative; width:64px; height:64px; flex-shrink:0; border-radius:16px; cursor:pointer;" onclick="document.getElementById('nexusAvatarUp').click()" title="点击更换绝美头像">
-          <img id="nexusCardAvatar" src="${avatar}" style="width:100%; height:100%; border-radius:16px; border:2px solid #fff; box-shadow:0 4px 16px rgba(92,112,148,0.1); object-fit:cover;">
-          <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.5); color:#fff; font-size:9px; text-align:center; padding:2px 0; border-radius:0 0 16px 16px;">换头像</div>
-        </div>
-        <div style="flex:1; min-width:0;">
-          <div style="font-size:18px; font-weight:900; color:#3d4a6a; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${safeEsc(name)}</div>
-          <div style="font-size:11px; color:#7a86a8;">灵魂契合度：100%</div>
-        </div>
-      </div>
-      
-      <div style="font-size:13px; color:#5c7094; line-height:1.7; text-align:justify; margin-bottom:12px; background:rgba(238,244,250,0.5); padding:12px; border-radius:10px; border:1px dashed #dce5f0; white-space:pre-wrap; max-height:300px; overflow-y:auto;">${safeEsc(persona)}</div>
-      ${greeting ? `<div style="font-size:12px; color:#7a86a8; font-style:italic; margin-bottom:20px; padding:0 12px; border-left:3px solid #a5cfff; white-space:pre-wrap;">"${safeEsc(greeting)}"</div>` : ''}
-      
-      ${uploadBtnHtml}
-
-      <button onclick="window._saveNexusToLocal()" style="width:100%; background:#5c7094; color:#fff; border:none; border-radius:12px; padding:12px 0; font-size:14px; font-weight:bold; box-shadow:0 4px 16px rgba(92,112,148,0.2); cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
-        刻录至本地宇宙 (死死咬住内存)
-      </button>
-    </div>
-  `;
-};
-
-// 🌟 10. 拯救世界的本地直写补丁 (彻底无视未暴露的 setContacts)
+// 3. 【修复】刻录至本地宇宙：解决成功后没反应的假象，强制瞬移回微信！
 window._saveNexusToLocal = async function() {
   if(!window._tempNexusData) return;
   const { name, persona, avatar, greeting } = window._tempNexusData;
   
   try {
-    // 🔪 不管原本代码有没有漏掉，我直接绕后调外挂硬盘！
     let contacts = await localforage.getItem('mp_fix_contacts') || [];
-    
     const newId = 'c_' + Date.now() + '_' + Math.floor(Math.random() * 9999);
+    
     contacts.unshift({
       id: newId, name: name, note: '时空共振', avatar: avatar, preview: '新的灵魂已接入本地宇宙...', time: window.fmtTs ? window.fmtTs(Date.now()) : '', persona: persona, 
       settings: { mode: 'offline', onlineMin: 2, onlineMax: 6, offlineMin: 220, offlineMax: 420, contextLen: 30 }
     });
     
-    // 死死写回外挂硬盘！
     await localforage.setItem('mp_fix_contacts', contacts);
-    if(window.setContacts) window.setContacts(contacts); // 顺手同步一下运行内存（如果存在的话）
+    if(window.setContacts) window.setContacts(contacts); 
     
     if (greeting) {
       let chatsMap = await localforage.getItem('mp_fix_chats') || {};
-      chatsMap[newId] = [{
-        id: 'm_' + Date.now(), role: 'assistant', text: greeting, time: Date.now(), stored: true, hiddenForAi: false
-      }];
+      chatsMap[newId] = [{ id: 'm_' + Date.now(), role: 'assistant', text: greeting, time: Date.now(), stored: true, hiddenForAi: false }];
       await localforage.setItem('mp_fix_chats', chatsMap);
       if(window.setChats) window.setChats(chatsMap);
     }
@@ -17155,38 +17077,43 @@ window._saveNexusToLocal = async function() {
     document.getElementById('nexusResultBox').innerHTML = ''; 
     window._tempNexusData = null;
     
-    if(window.renderContacts && document.getElementById('searchInput')) {
-      window.renderContacts(document.getElementById('searchInput').value || '');
-    }
-    
-    alert('✨ 刻录成功！这缕灵魂已经死死锁进你的本地宇宙了！快去微信列表找TA聊天吧！');
+    // 🌟 核心路由魔法：刻录完毕后，强行关闭信号塔，把你瞬移回微信列表！
+    alert('✨ 刻录成功！这缕灵魂已经死死锁进你的本地宇宙了！这就带你去见TA！');
+    if(window.renderContacts) window.renderContacts();
+    window.show('wechat'); // 瞬间切回微信界面！
   } catch(e) {
     alert('刻录失败了宝宝：' + e.message);
   }
 };
 
-// 🌟 11. 真·漫游广场 (连通专属外挂数据库)
+// 4. 【修复】漫游广场引擎：放弃危险的字符串传递，改用绝对安全的数组锚点！
+window._nexusSquareData = []; // 全局悬浮数组，死死记住广场上的所有人
+
 window._openNexusSquare = async function() {
   const box = document.getElementById('nexusResultBox');
   const btn = document.querySelector('button[onclick="window._openNexusSquare()"]');
   if(btn) { btn.textContent = '跃迁中...'; btn.style.pointerEvents = 'none'; }
   
-  box.innerHTML = '<div style="text-align:center; padding:40px 0; color:#5c7094; font-size:13px; font-weight:bold;"><div style="width:32px; height:32px; border:3px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite; margin:0 auto 12px;"></div>连接星海广场中...</div>';
+  box.innerHTML = '<div style="text-align:center; padding:40px 0; color:#5c7094; font-size:13px; font-weight:bold;"><div style="width:32px; height:32px; border:3px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite; margin:0 auto 12px;"></div>连接私人星海展厅中...</div>';
   
   setTimeout(async () => {
     try {
       let squareData = await localforage.getItem('mp_fix_nexus_square') || [];
-      
       if(squareData.length === 0) {
-        // 初始彩蛋预设
         squareData = [
           { name: "沈祁晏", persona: "25岁，老钱家族的幺子，现为自由微缩模型师。拥有一张生人勿近的冷峻脸庞...是个严重的“冷脸前”综合征患者。占有欲极强却死要面子，吃醋时会面无表情地捏碎手里的饼干。", avatar: "https://api.dicebear.com/7.x/initials/svg?seed=沈祁晏&backgroundColor=eef4fa&textColor=5c7094", greeting: "你迟到了三分零七秒。别误会，我没有在等你，只是恰好在这个路口寻找灵感罢了。还不跟上？" },
           { name: "林霁尘", persona: "温润如玉的外科主治医师，白切黑。金丝眼镜下总是藏着让人如沐春风的笑意。只有在手术台上，或是面对你身边其他异性时，才会暴露出骨子里的偏执与极度占有欲。", avatar: "https://api.dicebear.com/7.x/initials/svg?seed=林霁尘&backgroundColor=eef4fa&textColor=5c7094", greeting: "怎么又把自己弄伤了？过来，我帮你包扎。" }
         ];
       }
 
-      box.innerHTML = '<div style="column-count:2; column-gap:12px;">' + squareData.map(c => `
-        <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:16px; padding:12px; margin-bottom:12px; display:inline-block; width:100%; box-sizing:border-box; box-shadow:0 4px 12px rgba(92,112,148,0.03); cursor:pointer; transition:transform 0.2s; break-inside:avoid;" onclick="window._renderNexusCard('${safeEsc(c.name)}', '${safeEsc(c.persona)}', '${c.avatar}', '${safeEsc(c.greeting||'')}', '广场免密捕获')" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
+      window._nexusSquareData = squareData; // 存入全局保险箱
+
+      box.innerHTML = '<div style="column-count:2; column-gap:12px;">' + squareData.map((c, idx) => `
+        <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:16px; padding:12px; margin-bottom:12px; display:inline-block; width:100%; box-sizing:border-box; box-shadow:0 4px 12px rgba(92,112,148,0.03); cursor:pointer; transition:transform 0.2s; break-inside:avoid; position:relative;" onclick="window._viewSquareItem(${idx})" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
+          
+          <!-- 🌟 新增：右上角销毁按钮 -->
+          <div onclick="event.stopPropagation(); window._deleteSquareItem(${idx})" style="position:absolute; top:8px; right:8px; width:22px; height:22px; background:rgba(252,242,242,0.8); border:1px solid #f2dcdc; border-radius:50%; display:grid; place-items:center; color:#b57b7b; font-size:14px; line-height:1; z-index:10;" title="移出广场">×</div>
+          
           <img src="${c.avatar}" style="width:100%; aspect-ratio:1; object-fit:cover; border-radius:12px; border:1px solid #eef4fa; margin-bottom:8px; pointer-events:none;">
           <div style="font-size:14px; font-weight:900; color:#3d4a6a; margin-bottom:4px;">${safeEsc(c.name)}</div>
           <div style="font-size:11px; color:#7a86a8; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; line-height:1.5;">${safeEsc(c.persona)}</div>
@@ -17199,6 +17126,52 @@ window._openNexusSquare = async function() {
     }
   }, 400);
 };
+
+// 5. 【修复】广场点击详情：从全局保险箱里拿数据，彻底告别单引号断裂 Bug！
+window._viewSquareItem = function(idx) {
+  const c = window._nexusSquareData[idx];
+  if(c) {
+    // 调出全屏详情卡片
+    window._renderNexusCard(c.name, c.persona, c.avatar, c.greeting, '广场免密捕获');
+    // 滚动到顶部，方便你直接看
+    document.querySelector('#nexusTerminal .page').scrollTop = 0;
+  }
+};// 6. 【新增】广场删除引擎：物理抹除，拒绝拖泥带水！
+window._deleteSquareItem = async function(idx) {
+  if(!confirm('宝宝，确定要把 TA 从你的私人广场上彻底移出吗？')) return;
+  
+  // 唤醒外挂内存，调取当前广场的所有数据
+  let squareData = await localforage.getItem('mp_fix_nexus_square') ||[];
+  
+  // 🔪 核心切割魔法：精准定位，瞬间销毁这缕灵魂！
+  squareData.splice(idx, 1);
+  
+  // 死死写回外挂硬盘，永久生效
+  await localforage.setItem('mp_fix_nexus_square', squareData);
+  
+  // 同步更新全局保险箱，防止数据幽灵残留
+  window._nexusSquareData = squareData;
+  
+  alert('移出成功！广场又腾出了一个新的绝美展位啦！');
+  
+  // 瞬间重绘广场，让你亲眼看着 TA 消失
+  window._openNexusSquare(); 
+};
+
+// 7. 【终极闭环】补充发布至漫游广场的逻辑，确保大一统！
+window._publishToNexusSquare = async function() {
+  if(!window._tempNexusData) return;
+  let squareData = await localforage.getItem('mp_fix_nexus_square') ||[];
+  
+  // 把新捏好的绝美角色，推到广场数组的最前面
+  squareData.unshift(window._tempNexusData);
+  await localforage.setItem('mp_fix_nexus_square', squareData);
+  
+  alert('已成功将角色发射至漫游广场！快去看看吧！');
+  // 自动跳转到广场为你展示成果
+  window._openNexusSquare();
+};
+
 })();
 
 </script>
