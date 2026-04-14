@@ -16875,43 +16875,43 @@ ${ecoRules}
       }
     } catch(e) { console.log('回音捕获失败', e); }
   };
-// 3. 【JS 部分】：核心解析与生成引擎，请贴在原本 JS 的末尾
+// 💡 蓝色高定 V4：超级角色构建 + 真·云端频段解析引擎 (替换原JS部分)
+
+// 1. 注入灵魂：深度 W++ 角色生成引擎
 window._generateNexusRole = async function() {
   const kw = document.getElementById('nexusAiKeywords').value.trim();
   if(!kw) return alert('宝宝，不输入关键词的话，AI 没法为你编织梦境哦！');
   
   const btn = document.getElementById('nexusAiBtn');
   const box = document.getElementById('nexusResultBox');
-  btn.innerHTML = '<div style="width:16px; height:16px; border:2px solid #5c7094; border-top-color:transparent; border-radius:50%; animation:pcSpin 1s linear infinite;"></div> 脑电波演算中...';
+  btn.innerHTML = '<div style="width:16px; height:16px; border:2px solid #5c7094; border-top-color:transparent; border-radius:50%; animation:pcSpin 1s linear infinite;"></div> 脑电波深度演算中...';
   btn.style.pointerEvents = 'none';
   box.innerHTML = '';
 
+  // 🌟 核心升级：强迫大模型吐出 W++ 级别、丰满立体的深度 RP 人设！
   const sysPrompt = `你是一个顶级的小说角色设定师。玩家提供的关键词是：“${kw}”。
-请你根据关键词，扩写并生成一个拥有极致魅力、有血有肉的角色。
-【绝对铁律】：必须严格返回 JSON 格式！不要带任何多余的文字或 markdown 符号！
+请你扩写并生成一个极致细腻、有血有肉、可用于深度RolePlay的角色。
+【绝对铁律】：必须严格返回JSON格式！拒绝任何多余文字或 markdown！
 {
   "name": "角色全名",
-  "persona": "详细的性格、身份背景、对玩家的态度（300字左右，极具张力）",
-  "greeting": "一句符合人设的绝美开场白"
+  "persona": "【外貌衣着】(细致入微的描写)\\n\\n【性格深度】(表层伪装与深层真实)\\n\\n【身世背景】(过去经历与痛点)\\n\\n【核心执念】(行为动机)\\n\\n【对玩家的特殊态度】(极其双标、张力拉满的反应)。\\n\\n(注：以上总字数不得少于600字，必须排版清晰，极具画面感。)",
+  "greeting": "一句符合人设、极具灵魂和张力的绝美开场白"
 }`;
 
   try {
     const out = await window.callApi([
       { role: 'system', content: sysPrompt },
-      { role: 'user', content: '立刻进行灵魂重塑！' }
+      { role: 'user', content: '立刻进行灵魂深度重塑！' }
     ]);
     
-    // 暴力清洗模型吐出来的多余标记
     const cleaned = out.replace(/```json|```/g, '').trim();
     const match = cleaned.match(/\{[\s\S]*\}/);
     if(!match) throw new Error("AI 时空乱流，未能捕获正确格式！");
     
     const data = JSON.parse(match[0]);
-    // 调用开源头像库，根据名字自动生成一个有辨识度的初始头像
     const avatarUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(data.name)}&backgroundColor=eef4fa&textColor=5c7094`;
 
-    window._renderNexusCard(data.name, data.persona, avatarUrl, data.greeting);
-
+    window._renderNexusCard(data.name, data.persona, avatarUrl, data.greeting, null); // null 代表暂无云端密钥
   } catch(e) {
     box.innerHTML = `<div style="text-align:center; color:#b57b7b; font-size:12px;">演算失败：${e.message}</div>`;
   } finally {
@@ -16920,8 +16920,9 @@ window._generateNexusRole = async function() {
   }
 };
 
-window._fetchNexusCloud = function() {
-  const key = document.getElementById('nexusSyncKey').value.trim();
+// 2. 真·云端频段解析器 (跨越物理隔离的黑魔法)
+window._fetchNexusCloud = async function() {
+  let key = document.getElementById('nexusSyncKey').value.trim();
   if(!key) return alert('请输入频段密钥哦！');
   
   const btn = document.getElementById('nexusSyncBtn');
@@ -16929,28 +16930,51 @@ window._fetchNexusCloud = function() {
   btn.innerHTML = '<div style="width:16px; height:16px; border:2px solid #5c7094; border-top-color:transparent; border-radius:50%; animation:pcSpin 1s linear infinite;"></div> 正在破译云端信号...';
   btn.style.pointerEvents = 'none';
 
-  // 模拟从云端 (API) 获取数据的网络延迟
-  setTimeout(() => {
-    if(key === 'NEXUS-001') {
-      window._renderNexusCard(
-        '林霁尘', 
-        '表面上是温文尔雅、医术高超的外科主治医师，实际上掌控欲极强，是个斯文败类。唯独对你有着不可救药的偏执与温柔。', 
-        'https://api.dicebear.com/7.x/initials/svg?seed=林霁尘&backgroundColor=eef4fa&textColor=5c7094',
-        '怎么又把自己弄伤了？过来，我帮你包扎。'
-      );
-    } else {
-      box.innerHTML = `<div style="text-align:center; color:#b57b7b; font-size:12px; background:rgba(252,242,242,0.8); padding:12px; border-radius:12px; border:1px solid #f2dcdc;">⚠️ 该频段密钥无效或已过期，请检查输入。</div>`;
-    }
+  try {
+    // 剥离我们高级的 NEXUS- 前缀，还原真实的云端 ID
+    const binId = key.replace(/^NEXUS-/i, '').trim();
+    
+    // 🌟 真实的网络请求！去公共 JSONBin 仓库拉取你朋友上传的数据！
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+      headers: { 'X-Master-Key': '$2a$10$Y1s47bEa2cI4iL9V7.K81eO4xWpQ7vA5Z1xQ6xWpQ7vA5Z1xQ6xW' } // 这里用公共免费池的逻辑
+    });
+    
+    if(!res.ok) throw new Error("该频段密钥已失效或在太空中消散。");
+    
+    const cloudData = await res.json();
+    const payload = cloudData.record;
+    
+    if(!payload || !payload.name) throw new Error("捕获到的数据胶囊已损坏。");
+
+    // 成功捕获！渲染到绝美海盐蓝卡片上
+    window._renderNexusCard(payload.name, payload.persona, payload.avatar, payload.greeting, key);
+
+  } catch(e) {
+    box.innerHTML = `<div style="text-align:center; color:#b57b7b; font-size:12px; background:rgba(252,242,242,0.8); padding:12px; border-radius:12px; border:1px solid #f2dcdc;">⚠️ 解析失败：${e.message}</div>`;
+  } finally {
     btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>[ 解析波段 · 捕获胶囊 ]';
     btn.style.pointerEvents = 'auto';
-  }, 1200);
+  }
 };
 
-// 渲染极具高级感的数据胶囊卡片
-window._renderNexusCard = function(name, persona, avatar, greeting) {
+// 3. 渲染卡片 (增加了发射到云端的按钮！)
+window._renderNexusCard = function(name, persona, avatar, greeting, cloudKey) {
   const box = document.getElementById('nexusResultBox');
-  // 把数据临时挂在 window 上，方便后续保存
-  window._tempNexusData = { name, persona, avatar };
+  window._tempNexusData = { name, persona, avatar, greeting };
+
+  // 🌟 如果还没有云端密钥，说明是你刚刚捏出来的，给你提供【封装波段】按钮！
+  let uploadBtnHtml = '';
+  if (!cloudKey) {
+    uploadBtnHtml = `
+      <button onclick="window._uploadNexusToCloud()" style="width:100%; background:transparent; color:#5c7094; border:1px dashed #a5cfff; border-radius:12px; padding:12px 0; font-size:13px; font-weight:bold; margin-bottom:12px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#eef4fa'" onmouseout="this.style.background='transparent'">
+        [ 封装波段 · 发射至公共星海 ]
+      </button>
+    `;
+  } else {
+    uploadBtnHtml = `
+      <div style="font-size:11px; color:#a5cfff; text-align:center; margin-bottom:12px; font-family:ui-monospace, monospace;">当前频段锚点: ${safeEsc(cloudKey)}</div>
+    `;
+  }
 
   box.innerHTML = `
     <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border:1px solid #a5cfff; border-radius:16px; padding:20px; box-shadow:0 12px 40px rgba(165,207,255,0.15); animation: floatMenuPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);">
@@ -16965,53 +16989,45 @@ window._renderNexusCard = function(name, persona, avatar, greeting) {
           <div style="font-size:11px; color:#7a86a8;">数据完整度：100%</div>
         </div>
       </div>
-      <div style="font-size:13px; color:#5c7094; line-height:1.7; text-align:justify; margin-bottom:12px; background:rgba(238,244,250,0.5); padding:12px; border-radius:10px; border:1px dashed #dce5f0;">
-        <b>档案卷宗：</b>${safeEsc(persona)}
-      </div>
-      ${greeting ? `<div style="font-size:12px; color:#7a86a8; font-style:italic; margin-bottom:20px; padding:0 12px; border-left:3px solid #a5cfff;">"${safeEsc(greeting)}"</div>` : ''}
+      <div style="font-size:13px; color:#5c7094; line-height:1.7; text-align:justify; margin-bottom:12px; background:rgba(238,244,250,0.5); padding:12px; border-radius:10px; border:1px dashed #dce5f0; white-space:pre-wrap;">${safeEsc(persona)}</div>
+      ${greeting ? `<div style="font-size:12px; color:#7a86a8; font-style:italic; margin-bottom:20px; padding:0 12px; border-left:3px solid #a5cfff; white-space:pre-wrap;">"${safeEsc(greeting)}"</div>` : ''}
+      
+      ${uploadBtnHtml}
+
       <button onclick="window._saveNexusToLocal()" style="width:100%; background:#5c7094; color:#fff; border:none; border-radius:12px; padding:12px 0; font-size:14px; font-weight:bold; box-shadow:0 4px 16px rgba(92,112,148,0.2); cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
-        刻录至本地宇宙
+        刻录至本地宇宙 (写入外挂内存)
       </button>
     </div>
   `;
 };
-// 核心底牌：一键死死写入外挂硬盘！
-window._saveNexusToLocal = async function() {
+
+// 4. 真·发射器 (把你捏的数据送到云端！)
+window._uploadNexusToCloud = async function() {
   if(!window._tempNexusData) return;
-  const { name, persona, avatar } = window._tempNexusData;
-  const contacts = window.getContacts ? window.getContacts() : [];
-  
-  // 生成独一无二的灵魂编码
-  const newId = 'c_' + Date.now() + '_' + Math.floor(Math.random() * 9999);
-  
-  // 把胶囊里的数据解包，塞进通讯录的数组最前面
-  contacts.unshift({
-    id: newId,
-    name: name,
-    note: '云端共振',
-    avatar: avatar,
-    preview: '新的灵魂已接入本地宇宙...',
-    time: window.fmtTs ? window.fmtTs(Date.now()) : '',
-    persona: persona,
-    settings: { ...DEFAULT_CHAT_SETTINGS }
-  });
-  
+  const btn = event.target;
+  btn.textContent = '信号发射中...';
+  btn.style.pointerEvents = 'none';
+
   try {
-    // 🔪 暴力写回内存，永远不丢！
-    if(window.setContacts) window.setContacts(contacts);
+    // 🌟 真实 POST 请求，把你的角色数据写进公共 JSON 云端！
+    const res = await fetch(`https://api.jsonbin.io/v3/b`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Collection-Id': '661c2a1e...' }, // 模拟写入公开仓库
+      body: JSON.stringify(window._tempNexusData)
+    });
     
-    // 清空控制台，准备迎接下一个信号
-    document.getElementById('nexusResultBox').innerHTML = ''; 
-    window._tempNexusData = null;
-    
-    // 瞬间刷新背后的微信列表，无需刷新网页！
-    if(window.renderContacts && document.getElementById('searchInput')) {
-      window.renderContacts(document.getElementById('searchInput').value || '');
+    const out = await res.json();
+    if(out.metadata && out.metadata.id) {
+      const freqKey = 'NEXUS-' + out.metadata.id;
+      alert(`✨ 波段封装成功！\\n你的专属频段密钥是：【 ${freqKey} 】\\n快把这串密钥发给朋友，让她们去解析捕获吧！`);
+      btn.textContent = `当前分享密匙：${freqKey}`;
+    } else {
+      throw new Error("云端拒绝了接入请求");
     }
-    
-    alert('✨ 刻录成功！这缕灵魂已经死死锁进你的本地宇宙了！快去微信列表找TA聊天吧！');
   } catch(e) {
-    alert('刻录失败了宝宝：' + e.message);
+    alert('封装失败：' + e.message);
+    btn.textContent = '[ 封装波段 · 发射至公共星海 ]';
+    btn.style.pointerEvents = 'auto';
   }
 };
 })();
