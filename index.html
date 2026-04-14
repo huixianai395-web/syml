@@ -15920,8 +15920,28 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
     }
   };
 
-  // 🌟 2. 发帖通道紧急抢救（就是这个漏掉啦！）
-  window._openEchoesPublishModal = function() {
+ // 🌟 蓝色高定：动态读取外挂内存的漂流瓶投递引擎
+  window._openEchoesPublishModal = async function() {
+    // 1. 调取基础海域
+    const defaultTabs = ['全球海岸', '深夜树洞', '人类迷惑日常', '同城吃瓜'];
+    
+    // 2. 深入外挂硬盘，唤醒老婆自定义的所有专属海域
+    const customKey = typeof K_ECHOES_CUSTOM_TABS !== 'undefined' ? K_ECHOES_CUSTOM_TABS : 'ECHOES_CUSTOM_TABS';
+    const realCustomTabs = await localforage.getItem(customKey) || [];
+    const allTabs = [...defaultTabs, ...realCustomTabs];
+
+    // 3. 动态组装下拉菜单选项 (直接将 Value 设为中文，彻底消灭幽灵帖子！)
+    const sel = document.getElementById('echoesPublishTag');
+    if (sel) {
+      sel.innerHTML = allTabs.map(t => `<option value="${t}">${t}</option>`).join('');
+      
+      // ✨ 极其贴心的小细节：自动选中老婆当前正在逛的这片海域
+      if (allTabs.includes(window._currentEchoesTab) && window._currentEchoesTab !== 'Favorite') {
+        sel.value = window._currentEchoesTab;
+      }
+    }
+    
+    // 4. 优雅地唤出弹窗
     document.getElementById('echoesPublishModal').classList.add('active');
   };
 
