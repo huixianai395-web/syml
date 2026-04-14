@@ -16804,227 +16804,247 @@ ${ecoRules}
 })();
 
 </script>
-  <!-- 🌟 蓝色高定：极简纯净版 AI 造梦与 PNG 卡牌封印引擎 -->
+  <!-- 🌟 蓝色高定：AI 灵魂锻造室与导出引擎 -->
+<div id="personaForgeModal" class="modal" style="z-index: 10005;" onclick="if(event.target===this) this.classList.remove('active')">
+  <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:24px; padding:0; display:flex; flex-direction:column; max-height:85dvh; max-width:400px; box-shadow:0 12px 40px rgba(92,112,148,0.15); overflow:hidden;">
+    
+    <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
+      <b style="color:#5c7094; font-size:16px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
+        <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
+        灵魂锻造室
+      </b>
+      <button class="btn" onclick="document.getElementById('personaForgeModal').classList.remove('active')" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:28px; height:28px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0;">×</button>
+    </div>
+
+    <div style="flex:1; overflow-y:auto; padding:20px; background:linear-gradient(180deg, #f4f6fb, #eef4fa);">
+      <div style="font-size:12px; color:#5c7094; font-weight:800; margin-bottom:8px;">角色基底 (关键词)</div>
+      <input id="pfKeywords" class="input" placeholder="例如：高冷, 医生, 占有欲极强" style="background:rgba(255,255,255,0.7); border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; padding:10px; width:100%; box-sizing:border-box; margin-bottom:16px;">
+
+      <div style="font-size:12px; color:#5c7094; font-weight:800; margin-bottom:8px;">挂载世界书法则</div>
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:rgba(255,255,255,0.5); border:1px solid #dce5f0; border-radius:10px; cursor:pointer; margin-bottom:16px;" onclick="window._openForgeWbModal()">
+        <div style="font-size:13px; color:#5c7094; font-weight:bold; display:flex; align-items:center; gap:6px;">
+          <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>挑选设定
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span id="pfWbCount" style="font-size:12px; color:#a5cfff; font-weight:bold;">已选 0 项</span><span style="color:#a5cfff; font-size:18px; line-height:1;">›</span>
+        </div>
+      </div>
+
+      <button class="btn p" id="pfGenerateBtn" onclick="window._generatePersona()" style="width:100%; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:12px; padding:12px 0; font-size:14px; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.1); margin-bottom:20px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">✨ 注入灵魂 (AI 生成)</button>
+
+      <div style="font-size:12px; color:#5c7094; font-weight:800; margin-bottom:8px;">最终档案</div>
+      <textarea id="pfResultArea" class="ta" style="width:100%; min-height:220px; background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:12px; padding:12px; font-size:12px; color:#3d4a6a; line-height:1.6; resize:vertical; outline:none; box-sizing:border-box;"></textarea>
+    </div>
+
+    <div style="padding:16px 20px; background:rgba(250,252,255,0.8); border-top:1px solid #dce5f0; display:flex; gap:10px;">
+      <button class="btn" onclick="window._exportPersonaPng()" style="flex:1; background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold;">导出 PNG</button>
+      <button class="btn p" onclick="window._applyPersona()" style="flex:1; background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; box-shadow:none;">应用到角色</button>
+    </div>
+  </div>
+</div>
+
 <script>
-(function() {
-  const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
-
-  // 1. 悄悄在你的 UI 里挂载两个按钮 (延时等待你的页面渲染完毕)
+(function(){
+  // 1. 注入入口按钮
   setTimeout(() => {
-    const modal = document.getElementById('contactModal');
-    if (modal) {
-      const card = modal.querySelector('.modal-card');
-      const nameLabel = Array.from(card.querySelectorAll('.small')).find(el => el.textContent.includes('昵称'));
-      
-      // 在“昵称”前面插入 AI 生成框
-      if (nameLabel && !document.getElementById('aiRoleKeyword')) {
-        const aiBoxHtml = `
-          <div style="background:rgba(238,244,250,0.6); border:1px solid #dce5f0; border-radius:12px; padding:12px; margin-bottom:16px;">
-            <div style="font-size:12px; color:#5c7094; font-weight:800; margin-bottom:8px; display:flex; align-items:center; gap:4px;">
-              <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-              AI 灵感生成 (可选)
-            </div>
-            <div style="display:flex; gap:8px;">
-              <input id="aiRoleKeyword" class="input" placeholder="输入几个词，如：清冷医生" style="flex:1; background:#fff; border:1px solid #dce5f0; color:#5c7094; font-size:13px; padding:8px 10px; border-radius:8px;">
-              <button class="btn" id="aiGenerateRoleBtn" onclick="window._triggerAiRoleGen()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:0 14px; font-weight:bold;">生成</button>
-            </div>
-          </div>
-        `;
-        nameLabel.insertAdjacentHTML('beforebegin', aiBoxHtml);
-      }
-    }
-
-    // 在单聊设置底部插入导出按钮
-    const settingCard = document.getElementById('singleRoleSettingCard');
-    if (settingCard && !document.getElementById('exportPngBtn')) {
-      const exportBtnHtml = `
-        <button id="exportPngBtn" class="btn" onclick="window._exportRoleToPng()" style="width:100%; margin-top:16px; background:rgba(250,252,255,0.8); color:#5c7094; border:1px dashed #a5cfff; border-radius:10px; padding:10px 0; font-weight:bold; font-size:13px;">
-          ✨ 封印为 PNG 灵魂卡牌 (发给朋友导入)
-        </button>
-      `;
-      settingCard.insertAdjacentHTML('beforeend', exportBtnHtml);
-    }
-  }, 800);
-
-  // 2. AI 灵魂演算引擎
-  window._triggerAiRoleGen = async function() {
-    const kw = document.getElementById('aiRoleKeyword').value.trim();
-    if(!kw) return alert('宝宝，输入一点灵感关键词吧~');
+    const forgeBtnHtml = `<button class="btn p" onclick="window._openPersonaForge()" style="width:100%; margin-top:12px; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:10px; padding:10px 0; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.1); display:flex; align-items:center; justify-content:center; gap:6px;"><svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg> AI 灵魂锻造</button>`;
     
-    const btn = document.getElementById('aiGenerateRoleBtn');
-    const oldText = btn.textContent;
-    btn.textContent = '演算中...'; btn.style.pointerEvents = 'none';
+    const contactModalTa = document.getElementById('newPersona');
+    if(contactModalTa && !document.getElementById('forgeBtn1')) {
+      contactModalTa.insertAdjacentHTML('afterend', forgeBtnHtml.replace('window._openPersonaForge()', 'window._openPersonaForge("new")'));
+    }
+    
+    const roleModalTa = document.getElementById('rolePersonaInput');
+    if(roleModalTa && !document.getElementById('forgeBtn2')) {
+      roleModalTa.insertAdjacentHTML('afterend', forgeBtnHtml.replace('window._openPersonaForge()', 'window._openPersonaForge("edit")'));
+    }
+  }, 1000);
 
-    const sysPrompt = `你是一个顶级的角色设定师。玩家提供的关键词是：“${kw}”。
-请生成一个拥有极度真实“活人感”的深度角色档案。总字数800字左右。
-【绝对铁律】：必须严格返回 JSON 格式！拒绝多余文字！
-{
-  "name": "角色全名",
-  "persona": "包含外貌、性格、身世创伤、日常习惯等巨细无遗的活体侧写。"
-}`;
+  window._forgeTarget = 'new';
+  window._forgeWbIds = new Set();
 
-    try {
-      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻生成！' }]);
-      const cleaned = out.replace(/```json|```/g, '').trim();
-      const match = cleaned.match(/\{[\s\S]*\}/);
-      if(!match) throw new Error("AI 时空乱流");
-      
-      const data = JSON.parse(match[0]);
-      document.getElementById('newName').value = data.name || '';
-      document.getElementById('newPersona').value = data.persona || '';
-      
-      // 自动画一个头像
-      const avatarUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(data.name)}&backgroundColor=eef4fa&textColor=5c7094`;
-      if(typeof window.createAvatar !== 'undefined') window.createAvatar = avatarUrl;
-      const preview = document.getElementById('newAvatarPreview');
-      if(preview) {
-        preview.src = avatarUrl;
-        preview.classList.remove('hidden');
-      }
-    } catch(e) {
-      alert('生成失败了宝宝：' + e.message);
-    } finally {
-      btn.textContent = oldText; btn.style.pointerEvents = 'auto';
+  window._openPersonaForge = function(target) {
+    window._forgeTarget = target;
+    document.getElementById('pfKeywords').value = '';
+    document.getElementById('pfResultArea').value = '';
+    window._forgeWbIds.clear();
+    document.getElementById('pfWbCount').textContent = '已选 0 项';
+    document.getElementById('personaForgeModal').classList.add('active');
+  };
+
+  window._openForgeWbModal = async function() {
+    // 复用已有的世界书挑选逻辑
+    if(typeof window._openEchoesWbModal === 'function') {
+      window._echoesSelectedWbIds = window._forgeWbIds; 
+      window._openEchoesWbModal();
+      // 监听弹窗关闭更新计数
+      const checkClose = setInterval(() => {
+        if(!document.getElementById('echoesWbModal').classList.contains('active')) {
+          document.getElementById('pfWbCount').textContent = \`已选 \${window._forgeWbIds.size} 项\`;
+          clearInterval(checkClose);
+        }
+      }, 500);
+    } else {
+      alert('世界书模块未完全加载哦宝宝~');
     }
   };
 
-  // 🧊 蓝色高定：PNG 导出引擎 (绝对防栈溢出 + 终极防死锁纯净版)
-  window._exportRoleToPng = async function() {
-    // ✦ 核心修复：用全局雷达打破作用域结界，精准抓取当前角色 ID！
-    let cid = window._exposed_currentId;
-    if(!cid) {
-      const titleEl = document.getElementById('chatTitle');
-      if(titleEl) {
-        const title = titleEl.innerText.trim();
-        const contacts = window.getContacts ? window.getContacts() : [];
-        let c = contacts.find(x => x.name === title);
-        if(c) cid = c.id;
-      }
-    }
+  window._generatePersona = async function() {
+    const kw = document.getElementById('pfKeywords').value.trim();
+    if(!kw) return alert('宝宝，给点关键词提示吧！');
     
-    if(!cid) return alert('宝宝，系统雷达迷路啦，请退出去重新点进聊天室再试一次哦！');
-
-    const c = window.getContactById(cid);
-    if(!c) return;
-
-    const btn = document.getElementById('exportPngBtn');
-    const oldText = btn ? btn.textContent : '✦ 封印为 PNG 灵魂卡牌';
-    if(btn) { 
-      btn.textContent = '✦ 正在注入灵魂，凝聚卡牌...'; 
-      btn.style.pointerEvents = 'none'; 
-      btn.style.opacity = '0.7'; 
-      // 注入初雪海盐蓝极简美学
-      btn.style.background = '#eef4fa';
-      btn.style.color = '#5c7094';
-      btn.style.border = '1px solid #dce5f0';
-    }
+    const btn = document.getElementById('pfGenerateBtn');
+    btn.innerHTML = '脑电波接入中...'; btn.style.pointerEvents = 'none';
 
     try {
-      const cardData = {
-        spec: "chara_card_v2",
-        spec_version: "2.0",
-        data: { name: c.name, description: c.persona, first_mes: "", avatar: c.avatar }
-      };
-      
-      const jsonStr = JSON.stringify(cardData);
-      const utf8Bytes = new TextEncoder().encode(jsonStr);
-      
-      let binary = '';
-      const len = utf8Bytes.byteLength;
-      for (let i = 0; i < len; i++) {
-        binary += String.fromCharCode(utf8Bytes[i]);
+      let wbText = '';
+      if(window._forgeWbIds.size > 0 && window.getWbBooks) {
+        const allBooks = await window.getWbBooks();
+        allBooks.forEach(b => { (b.entries || []).forEach(e => { if(window._forgeWbIds.has(e.id)) wbText += \`[\${e.keys}] \${e.content}\\n\`; }); });
       }
-      const base64Data = btoa(binary);
 
-      const img = new Image();
-      img.crossOrigin = "Anonymous";
-      const fallbackSrc = \`https://api.dicebear.com/7.x/initials/svg?seed=\${encodeURIComponent(c.name)}&backgroundColor=eef4fa&textColor=5c7094\`;
+      const sysPrompt = \`你是一个顶级的角色设定师。请根据用户给出的关键词，以及提供的世界观法则，生成一份极度详尽、有血有肉的角色档案。
+【必须包含的模块】：基础档案、世界观背景、原生家庭、成长轨迹、职业与能力、细化外貌、真实性格与内核、三观、身心干净设定、对玩家(我)的态度与双向关系、社交关系地图、冲突与和解模式、秘密与雷点、萌点与小癖好。
+【要求】：排版清晰，条理分明，语言富有张力和苏感。不要写多余的废话，直接输出档案内容。
+\${wbText ? '\\n【绑定的世界书设定(必须融合进角色背景中)】：\\n' + wbText : ''}\`;
+
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '关键词：' + kw }]);
+      document.getElementById('pfResultArea').value = out.trim();
+    } catch(e) {
+      alert('锻造失败：' + e.message);
+    } finally {
+      btn.innerHTML = '✨ 注入灵魂 (AI 生成)'; btn.style.pointerEvents = 'auto';
+    }
+  };
+
+  window._applyPersona = function() {
+    const text = document.getElementById('pfResultArea').value.trim();
+    if(!text) return alert('档案还是空的哦！');
+    if(window._forgeTarget === 'new') {
+      document.getElementById('newPersona').value = text;
+    } else {
+      document.getElementById('rolePersonaInput').value = text;
+    }
+    document.getElementById('personaForgeModal').classList.remove('active');
+    alert('✨ 档案已成功应用！');
+  };
+
+  // 🎨 初雪海盐蓝高定 Canvas 导出引擎
+  window._exportPersonaPng = function() {
+    const text = document.getElementById('pfResultArea').value.trim();
+    if(!text) return alert('档案是空的，没法洗相片哦！');
+
+    let avatarSrc = 'https://via.placeholder.com/150';
+    let name = '未知角色';
+    if(window._forgeTarget === 'new') {
+      avatarSrc = document.getElementById('newAvatarPreview').src || avatarSrc;
+      name = document.getElementById('newName').value.trim() || name;
+    } else {
+      avatarSrc = document.getElementById('roleAvatarPreview').src || avatarSrc;
+      name = document.getElementById('roleNameInput').value.trim() || name;
+    }
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    const width = 800;
+    const padding = 40;
+    const fontSize = 22;
+    const lineHeight = 36;
+    
+    // 预计算文字高度
+    ctx.font = \`\${fontSize}px -apple-system, "PingFang SC", sans-serif\`;
+    const paragraphs = text.split('\\n');
+    let lines = [];
+    paragraphs.forEach(p => {
+      let currentLine = '';
+      for(let i=0; i<p.length; i++) {
+        const testLine = currentLine + p[i];
+        if(ctx.measureText(testLine).width > width - padding * 2) {
+          lines.push(currentLine);
+          currentLine = p[i];
+        } else {
+          currentLine = testLine;
+        }
+      }
+      lines.push(currentLine);
+    });
+
+    const headerHeight = 280;
+    const height = headerHeight + lines.length * lineHeight + padding * 2;
+    canvas.width = width;
+    canvas.height = height;
+
+    // 绘制初雪海盐蓝渐变底色
+    const grd = ctx.createLinearGradient(0, 0, 0, height);
+    grd.addColorStop(0, '#eef4fa');
+    grd.addColorStop(1, '#f8fafc');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, width, height);
+
+    // 绘制边框
+    ctx.strokeStyle = '#dce5f0';
+    ctx.lineWidth = 12;
+    ctx.strokeRect(6, 6, width-12, height-12);
+
+    // 绘制头像
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.onload = () => {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(width/2, 120, 70, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(img, width/2 - 70, 50, 140, 140);
+      ctx.restore();
       
-      await new Promise((res, rej) => {
-        img.onload = res;
-        img.onerror = () => { 
-          img.onload = res; 
-          img.onerror = rej; 
-          img.src = fallbackSrc; 
-        };
-        img.src = c.avatar || fallbackSrc;
+      // 头像边框
+      ctx.beginPath();
+      ctx.arc(width/2, 120, 70, 0, Math.PI * 2);
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+
+      // 绘制名字
+      ctx.fillStyle = '#3d4a6a';
+      ctx.font = 'bold 36px "STZhongsong", "KaiTi", serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(name, width/2, 230);
+
+      // 绘制分割线
+      ctx.strokeStyle = '#cdd7e8';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(padding, headerHeight - 20);
+      ctx.lineTo(width - padding, headerHeight - 20);
+      ctx.stroke();
+
+      // 绘制正文
+      ctx.fillStyle = '#5c7094';
+      ctx.font = \`\${fontSize}px -apple-system, "PingFang SC", sans-serif\`;
+      ctx.textAlign = 'left';
+      let y = headerHeight + 20;
+      lines.forEach(l => {
+        if(l.includes('【') || l.startsWith('-')) {
+          ctx.fillStyle = '#3d4a6a';
+          ctx.font = \`bold \${fontSize}px -apple-system, "PingFang SC", sans-serif\`;
+        } else {
+          ctx.fillStyle = '#5c7094';
+          ctx.font = \`\${fontSize}px -apple-system, "PingFang SC", sans-serif\`;
+        }
+        ctx.fillText(l, padding, y);
+        y += lineHeight;
       });
-      
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width || 400; 
-      canvas.height = img.height || 400;
-      const ctx = canvas.getContext('2d');
-      // ✦ 使用我们的初雪海盐蓝作为兜底底色
-      ctx.fillStyle = '#eef4fa'; 
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      
-      let dataUrl;
-      try {
-        dataUrl = canvas.toDataURL('image/png');
-      } catch(canvasErr) {
-        throw new Error("头像图片被跨域结界挡住了，请重新上传一张本地图片作为头像再导出哦！");
-      }
 
-      const base64 = dataUrl.split(',')[1];
-      const binaryString = atob(base64);
-      const binLen = binaryString.length;
-      const bytes = new Uint8Array(binLen);
-      for (let i = 0; i < binLen; i++) { bytes[i] = binaryString.charCodeAt(i); }
-
-      const keyword = "chara";
-      const textData = keyword + '\\0' + base64Data;
-      const textBytes = new TextEncoder().encode(textData);
-      
-      const crcTable = new Uint32Array(256);
-      for(let i=0; i<256; i++){
-          let crc = i;
-          for(let k=0; k<8; k++){ crc = ((crc & 1) ? (0xEDB88320 ^ (crc >>> 1)) : (crc >>> 1)); }
-          crcTable[i] = crc;
-      }
-      const crc32 = (arr, offset, length) => {
-          let crc = 0xFFFFFFFF;
-          for(let i=offset; i<offset+length; i++){ crc = crcTable[(crc ^ arr[i]) & 0xFF] ^ (crc >>> 8); }
-          return (crc ^ 0xFFFFFFFF) >>> 0;
-      };
-
-      const chunkLen = textBytes.length;
-      const chunk = new Uint8Array(4 + 4 + chunkLen + 4);
-      const view = new DataView(chunk.buffer);
-      view.setUint32(0, chunkLen);
-      chunk.set(new TextEncoder().encode("tEXt"), 4);
-      chunk.set(textBytes, 8);
-      view.setUint32(8 + chunkLen, crc32(chunk, 4, 4 + chunkLen));
-
-      const insertPos = 8 + 25;
-      const finalBytes = new Uint8Array(bytes.length + chunk.length);
-      finalBytes.set(bytes.subarray(0, insertPos), 0);
-      finalBytes.set(chunk, insertPos);
-      finalBytes.set(bytes.subarray(insertPos), insertPos + chunk.length);
-
-      const blob = new Blob([finalBytes], { type: 'image/png' });
-      const url = URL.createObjectURL(blob);
+      // 导出下载
       const a = document.createElement('a');
-      a.href = url;
-      a.download = \`\${c.name}_灵魂卡牌.png\`;
-      document.body.appendChild(a); 
+      a.href = canvas.toDataURL('image/png', 1.0);
+      a.download = \`\${name}_绝美档案.png\`;
       a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      alert('✦ 灵魂卡牌封装成功！\\n这是一张携带完整人设的高清 PNG 图片，快发给朋友，让她在微信右上角点导入吧！');
-
-    } catch(e) {
-      alert('封印卡牌失败啦宝宝：' + e.message);
-    } finally {
-      if(btn) { 
-        btn.textContent = oldText; 
-        btn.style.pointerEvents = 'auto'; 
-        btn.style.opacity = '1';
-      }
-    }
+    };
+    img.src = avatarSrc.includes('via.placeholder') ? 'https://api.dicebear.com/7.x/initials/svg?seed=' + encodeURIComponent(name) + '&backgroundColor=eef4fa&textColor=5c7094' : avatarSrc;
   };
-
 })();
 </script>
 </body>
