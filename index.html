@@ -2129,12 +2129,76 @@ body {
 .holo-option { background: rgba(250,252,255,0.7); border: 1px solid #dce5f0; border-radius: 12px; padding: 14px 16px; font-size: 14px; color: #3d4a6a; margin-bottom: 12px; cursor: pointer; transition: background 0.2s; text-align: center; font-weight: bold; }
 .holo-option:active { background: #eef4fa; transform: scale(0.98); }
 .holo-voice-wave { display: inline-block; width: 4px; height: 12px; background: #a5cfff; margin: 0 2px; border-radius: 2px; animation: blueBlink 1s infinite; }
+/* 🌟 蓝色高定：NEXUS 频段解析与造梦舱 */
+#nexusTerminal .page { background: linear-gradient(180deg, #f4f6fb, #eef4fa); padding: 16px; }
+.nexus-card {
+  background: rgba(250, 252, 255, 0.85); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border: 1px solid #dce5f0; border-radius: 16px; padding: 20px;
+  box-shadow: 0 8px 32px rgba(92, 112, 148, 0.05); margin-bottom: 16px; transition: transform 0.2s;
+}
+.nexus-title {
+  font-size: 14px; font-weight: 800; color: #5c7094; letter-spacing: 1px;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.nexus-input {
+  width: 100%; background: #f8fafc; border: 1px solid #dce5f0; color: #5c7094;
+  border-radius: 10px; padding: 12px 14px; font-size: 13px; font-weight: bold;
+  outline: none; margin-bottom: 16px; box-sizing: border-box; transition: border-color 0.2s;
+}
+.nexus-input:focus { border-color: #a5cfff; background: #fff; }
+.nexus-btn {
+  width: 100%; background: linear-gradient(135deg, #eef4fa, #dce5f0); color: #5c7094;
+  border: 1px solid #cdd7e8; border-radius: 12px; padding: 14px 0; font-size: 14px;
+  font-weight: bold; letter-spacing: 1px; box-shadow: 0 4px 12px rgba(92, 112, 148, 0.1);
+  cursor: pointer; transition: transform 0.1s; display: flex; justify-content: center; align-items: center; gap: 6px;
+}
+.nexus-btn:active { transform: scale(0.97); }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
 </head>
 <body>
 <div id="app">
+  <section id="nexusTerminal" class="screen">
+  <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
+    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px;">‹ 桌面</button>
+    <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">时空信号塔</b>
+    <div style="width:56px;"></div>
+  </div>
+  
+  <div class="page">
+    <!-- 模块 A：AI 灵魂重塑 -->
+    <div class="nexus-card">
+      <div class="nexus-title">
+        <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
+        AI 灵魂重塑舱
+      </div>
+      <div style="font-size:11px; color:#7a86a8; margin-bottom:16px; line-height:1.5;">输入几个关键词，大模型将为你精准演算出一张绝美的角色数据卡，并直接刻录入你的本地宇宙。</div>
+      <input id="nexusAiKeywords" class="nexus-input" placeholder="例：清冷医生, 占有欲极强, 银色半框眼镜">
+      <button id="nexusAiBtn" class="nexus-btn" onclick="window._generateNexusRole()">
+        <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        [ 注入关键词 · 唤醒灵魂 ]
+      </button>
+    </div>
+
+    <!-- 模块 B：频段解析 (为以后的好友分享打地基) -->
+    <div class="nexus-card">
+      <div class="nexus-title">
+        <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        波段解析接收器
+      </div>
+      <div style="font-size:11px; color:#7a86a8; margin-bottom:16px; line-height:1.5;">输入朋友发给你的频段密钥，捕获来自其他维度的数据胶囊。默认测试频段：NEXUS-001</div>
+      <input id="nexusSyncKey" class="nexus-input" placeholder="输入波段密钥，如 NEXUS-001" value="NEXUS-001">
+      <button id="nexusSyncBtn" class="nexus-btn" onclick="window._fetchNexusCloud()">
+        <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        [ 解析波段 · 捕获胶囊 ]
+      </button>
+    </div>
+
+    <!-- 结果展示光幕 -->
+    <div id="nexusResultBox" style="display:flex; flex-direction:column; gap:12px; padding-bottom:40px;"></div>
+  </div>
+  </section>
   <section id="iconSetupScreen" style="display: none;">
   <div class="icon-setup-card">
     <div style="font-size:12px; color:#a5cfff; font-weight:800; letter-spacing:2px; margin-bottom:8px; font-family:ui-monospace, monospace;">WELCOME</div>
@@ -16800,7 +16864,145 @@ ${ecoRules}
       }
     } catch(e) { console.log('回音捕获失败', e); }
   };
+// 3. 【JS 部分】：核心解析与生成引擎，请贴在原本 JS 的末尾
+window._generateNexusRole = async function() {
+  const kw = document.getElementById('nexusAiKeywords').value.trim();
+  if(!kw) return alert('宝宝，不输入关键词的话，AI 没法为你编织梦境哦！');
+  
+  const btn = document.getElementById('nexusAiBtn');
+  const box = document.getElementById('nexusResultBox');
+  btn.innerHTML = '<div style="width:16px; height:16px; border:2px solid #5c7094; border-top-color:transparent; border-radius:50%; animation:pcSpin 1s linear infinite;"></div> 脑电波演算中...';
+  btn.style.pointerEvents = 'none';
+  box.innerHTML = '';
 
+  const sysPrompt = `你是一个顶级的小说角色设定师。玩家提供的关键词是：“${kw}”。
+请你根据关键词，扩写并生成一个拥有极致魅力、有血有肉的角色。
+【绝对铁律】：必须严格返回 JSON 格式！不要带任何多余的文字或 markdown 符号！
+{
+  "name": "角色全名",
+  "persona": "详细的性格、身份背景、对玩家的态度（300字左右，极具张力）",
+  "greeting": "一句符合人设的绝美开场白"
+}`;
+
+  try {
+    const out = await window.callApi([
+      { role: 'system', content: sysPrompt },
+      { role: 'user', content: '立刻进行灵魂重塑！' }
+    ]);
+    
+    // 暴力清洗模型吐出来的多余标记
+    const cleaned = out.replace(/```json|```/g, '').trim();
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    if(!match) throw new Error("AI 时空乱流，未能捕获正确格式！");
+    
+    const data = JSON.parse(match[0]);
+    // 调用开源头像库，根据名字自动生成一个有辨识度的初始头像
+    const avatarUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(data.name)}&backgroundColor=eef4fa&textColor=5c7094`;
+
+    window._renderNexusCard(data.name, data.persona, avatarUrl, data.greeting);
+
+  } catch(e) {
+    box.innerHTML = `<div style="text-align:center; color:#b57b7b; font-size:12px;">演算失败：${e.message}</div>`;
+  } finally {
+    btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>[ 注入关键词 · 唤醒灵魂 ]';
+    btn.style.pointerEvents = 'auto';
+  }
+};
+
+window._fetchNexusCloud = function() {
+  const key = document.getElementById('nexusSyncKey').value.trim();
+  if(!key) return alert('请输入频段密钥哦！');
+  
+  const btn = document.getElementById('nexusSyncBtn');
+  const box = document.getElementById('nexusResultBox');
+  btn.innerHTML = '<div style="width:16px; height:16px; border:2px solid #5c7094; border-top-color:transparent; border-radius:50%; animation:pcSpin 1s linear infinite;"></div> 正在破译云端信号...';
+  btn.style.pointerEvents = 'none';
+
+  // 模拟从云端 (API) 获取数据的网络延迟
+  setTimeout(() => {
+    if(key === 'NEXUS-001') {
+      window._renderNexusCard(
+        '林霁尘', 
+        '表面上是温文尔雅、医术高超的外科主治医师，实际上掌控欲极强，是个斯文败类。唯独对你有着不可救药的偏执与温柔。', 
+        'https://api.dicebear.com/7.x/initials/svg?seed=林霁尘&backgroundColor=eef4fa&textColor=5c7094',
+        '怎么又把自己弄伤了？过来，我帮你包扎。'
+      );
+    } else {
+      box.innerHTML = `<div style="text-align:center; color:#b57b7b; font-size:12px; background:rgba(252,242,242,0.8); padding:12px; border-radius:12px; border:1px solid #f2dcdc;">⚠️ 该频段密钥无效或已过期，请检查输入。</div>`;
+    }
+    btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>[ 解析波段 · 捕获胶囊 ]';
+    btn.style.pointerEvents = 'auto';
+  }, 1200);
+};
+
+// 渲染极具高级感的数据胶囊卡片
+window._renderNexusCard = function(name, persona, avatar, greeting) {
+  const box = document.getElementById('nexusResultBox');
+  // 把数据临时挂在 window 上，方便后续保存
+  window._tempNexusData = { name, persona, avatar };
+
+  box.innerHTML = `
+    <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border:1px solid #a5cfff; border-radius:16px; padding:20px; box-shadow:0 12px 40px rgba(165,207,255,0.15); animation: floatMenuPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);">
+      <div style="font-size:10px; color:#a5cfff; font-weight:900; letter-spacing:2px; font-family:ui-monospace, monospace; margin-bottom:12px; display:flex; align-items:center; gap:4px;">
+        <span style="display:inline-block; width:6px; height:6px; background:#a5cfff; border-radius:50%; animation:blueBlink 1.5s infinite;"></span>
+        SIGNAL DECRYPTED
+      </div>
+      <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
+        <img src="${avatar}" style="width:64px; height:64px; border-radius:16px; border:2px solid #fff; box-shadow:0 4px 16px rgba(92,112,148,0.1); object-fit:cover;">
+        <div>
+          <div style="font-size:18px; font-weight:900; color:#3d4a6a; margin-bottom:4px;">${safeEsc(name)}</div>
+          <div style="font-size:11px; color:#7a86a8;">数据完整度：100%</div>
+        </div>
+      </div>
+      <div style="font-size:13px; color:#5c7094; line-height:1.7; text-align:justify; margin-bottom:12px; background:rgba(238,244,250,0.5); padding:12px; border-radius:10px; border:1px dashed #dce5f0;">
+        <b>档案卷宗：</b>${safeEsc(persona)}
+      </div>
+      ${greeting ? `<div style="font-size:12px; color:#7a86a8; font-style:italic; margin-bottom:20px; padding:0 12px; border-left:3px solid #a5cfff;">"${safeEsc(greeting)}"</div>` : ''}
+      <button onclick="window._saveNexusToLocal()" style="width:100%; background:#5c7094; color:#fff; border:none; border-radius:12px; padding:12px 0; font-size:14px; font-weight:bold; box-shadow:0 4px 16px rgba(92,112,148,0.2); cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
+        刻录至本地宇宙
+      </button>
+    </div>
+  `;
+};
+// 核心底牌：一键死死写入外挂硬盘！
+window._saveNexusToLocal = async function() {
+  if(!window._tempNexusData) return;
+  const { name, persona, avatar } = window._tempNexusData;
+  const contacts = window.getContacts ? window.getContacts() : [];
+  
+  // 生成独一无二的灵魂编码
+  const newId = 'c_' + Date.now() + '_' + Math.floor(Math.random() * 9999);
+  
+  // 把胶囊里的数据解包，塞进通讯录的数组最前面
+  contacts.unshift({
+    id: newId,
+    name: name,
+    note: '云端共振',
+    avatar: avatar,
+    preview: '新的灵魂已接入本地宇宙...',
+    time: window.fmtTs ? window.fmtTs(Date.now()) : '',
+    persona: persona,
+    settings: { ...DEFAULT_CHAT_SETTINGS }
+  });
+  
+  try {
+    // 🔪 暴力写回内存，永远不丢！
+    if(window.setContacts) window.setContacts(contacts);
+    
+    // 清空控制台，准备迎接下一个信号
+    document.getElementById('nexusResultBox').innerHTML = ''; 
+    window._tempNexusData = null;
+    
+    // 瞬间刷新背后的微信列表，无需刷新网页！
+    if(window.renderContacts && document.getElementById('searchInput')) {
+      window.renderContacts(document.getElementById('searchInput').value || '');
+    }
+    
+    alert('✨ 刻录成功！这缕灵魂已经死死锁进你的本地宇宙了！快去微信列表找TA聊天吧！');
+  } catch(e) {
+    alert('刻录失败了宝宝：' + e.message);
+  }
+};
 })();
 
 </script>
