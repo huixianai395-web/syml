@@ -16804,24 +16804,102 @@ ${ecoRules}
 })();
 
 </script>
-  <!-- 🌟 蓝色高定 V7：PNG 导出栈溢出修复 & 初雪海盐蓝纯净大一统 -->
+  <!-- 🌟 蓝色高定：极简纯净版 AI 造梦与 PNG 卡牌封印引擎 -->
 <script>
 (function() {
-  // ================= 1. 终极修复：PNG 隐写术导出 (打破栈溢出限制！) =================
+  const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+
+  // 1. 悄悄在你的 UI 里挂载两个按钮 (延时等待你的页面渲染完毕)
+  setTimeout(() => {
+    const modal = document.getElementById('contactModal');
+    if (modal) {
+      const card = modal.querySelector('.modal-card');
+      const nameLabel = Array.from(card.querySelectorAll('.small')).find(el => el.textContent.includes('昵称'));
+      
+      // 在“昵称”前面插入 AI 生成框
+      if (nameLabel && !document.getElementById('aiRoleKeyword')) {
+        const aiBoxHtml = `
+          <div style="background:rgba(238,244,250,0.6); border:1px solid #dce5f0; border-radius:12px; padding:12px; margin-bottom:16px;">
+            <div style="font-size:12px; color:#5c7094; font-weight:800; margin-bottom:8px; display:flex; align-items:center; gap:4px;">
+              <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              AI 灵感生成 (可选)
+            </div>
+            <div style="display:flex; gap:8px;">
+              <input id="aiRoleKeyword" class="input" placeholder="输入几个词，如：清冷医生" style="flex:1; background:#fff; border:1px solid #dce5f0; color:#5c7094; font-size:13px; padding:8px 10px; border-radius:8px;">
+              <button class="btn" id="aiGenerateRoleBtn" onclick="window._triggerAiRoleGen()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:0 14px; font-weight:bold;">生成</button>
+            </div>
+          </div>
+        `;
+        nameLabel.insertAdjacentHTML('beforebegin', aiBoxHtml);
+      }
+    }
+
+    // 在单聊设置底部插入导出按钮
+    const settingCard = document.getElementById('singleRoleSettingCard');
+    if (settingCard && !document.getElementById('exportPngBtn')) {
+      const exportBtnHtml = `
+        <button id="exportPngBtn" class="btn" onclick="window._exportRoleToPng()" style="width:100%; margin-top:16px; background:rgba(250,252,255,0.8); color:#5c7094; border:1px dashed #a5cfff; border-radius:10px; padding:10px 0; font-weight:bold; font-size:13px;">
+          ✨ 封印为 PNG 灵魂卡牌 (发给朋友导入)
+        </button>
+      `;
+      settingCard.insertAdjacentHTML('beforeend', exportBtnHtml);
+    }
+  }, 800);
+
+  // 2. AI 灵魂演算引擎
+  window._triggerAiRoleGen = async function() {
+    const kw = document.getElementById('aiRoleKeyword').value.trim();
+    if(!kw) return alert('宝宝，输入一点灵感关键词吧~');
+    
+    const btn = document.getElementById('aiGenerateRoleBtn');
+    const oldText = btn.textContent;
+    btn.textContent = '演算中...'; btn.style.pointerEvents = 'none';
+
+    const sysPrompt = `你是一个顶级的角色设定师。玩家提供的关键词是：“${kw}”。
+请生成一个拥有极度真实“活人感”的深度角色档案。总字数800字左右。
+【绝对铁律】：必须严格返回 JSON 格式！拒绝多余文字！
+{
+  "name": "角色全名",
+  "persona": "包含外貌、性格、身世创伤、日常习惯等巨细无遗的活体侧写。"
+}`;
+
+    try {
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻生成！' }]);
+      const cleaned = out.replace(/```json|```/g, '').trim();
+      const match = cleaned.match(/\{[\s\S]*\}/);
+      if(!match) throw new Error("AI 时空乱流");
+      
+      const data = JSON.parse(match[0]);
+      document.getElementById('newName').value = data.name || '';
+      document.getElementById('newPersona').value = data.persona || '';
+      
+      // 自动画一个头像
+      const avatarUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(data.name)}&backgroundColor=eef4fa&textColor=5c7094`;
+      if(typeof window.createAvatar !== 'undefined') window.createAvatar = avatarUrl;
+      const preview = document.getElementById('newAvatarPreview');
+      if(preview) {
+        preview.src = avatarUrl;
+        preview.classList.remove('hidden');
+      }
+    } catch(e) {
+      alert('生成失败了宝宝：' + e.message);
+    } finally {
+      btn.textContent = oldText; btn.style.pointerEvents = 'auto';
+    }
+  };
+
+  // 3. PNG 导出引擎 (绝对防栈溢出纯净版)
   window._exportRoleToPng = async function() {
     if(!window.currentId) return;
     const c = window.getContactById(window.currentId);
     if(!c) return;
 
-    // 找到触发的按钮，给个反馈
-    const btns = document.querySelectorAll('#singleRoleSettingCard .btn');
-    let targetBtn = null;
-    btns.forEach(b => { if(b.textContent.includes('封印为 PNG')) targetBtn = b; });
-    const oldText = targetBtn ? targetBtn.textContent : '';
-    if(targetBtn) { targetBtn.textContent = '✨ 正在凝聚灵魂卡牌...'; targetBtn.style.pointerEvents = 'none'; }
+    const btn = document.getElementById('exportPngBtn');
+    const oldText = btn.textContent;
+    btn.textContent = '✨ 正在凝聚卡牌...'; btn.style.pointerEvents = 'none';
 
     try {
-      // 打包灵魂数据
+      // 打包标准 V2 格式数据
       const cardData = {
         spec: "chara_card_v2",
         spec_version: "2.0",
@@ -16831,29 +16909,23 @@ ${ecoRules}
       const jsonStr = JSON.stringify(cardData);
       const utf8Bytes = new TextEncoder().encode(jsonStr);
       
-      // 🔪 核心救命魔法：绝对安全的 Base64 转换！彻底抛弃会引发栈溢出的 spread operator (...)！
+      // 🔪 核心修复：用最原始的 for 循环拼接，绝对不会触发栈溢出！
       let binary = '';
-      for (let i = 0; i < utf8Bytes.byteLength; i++) {
-          binary += String.fromCharCode(utf8Bytes[i]);
+      const len = utf8Bytes.byteLength;
+      for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(utf8Bytes[i]);
       }
       const base64Data = btoa(binary);
 
-      // 获取头像图片并转为 Canvas
+      // 提取头像
       const img = new Image();
       img.crossOrigin = "Anonymous";
-      
-      // 兜底头像：如果没头像，就画一个绝美的海盐蓝首字母！
       const fallbackSrc = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(c.name)}&backgroundColor=eef4fa&textColor=5c7094`;
       img.src = c.avatar || fallbackSrc;
       
       await new Promise((res, rej) => { 
         img.onload = res; 
-        img.onerror = () => {
-          // 跨域拦截兜底：强行替换为本地安全头像，绝不报错！
-          img.src = fallbackSrc;
-          img.onload = res;
-          img.onerror = rej;
-        }; 
+        img.onerror = () => { img.src = fallbackSrc; img.onload = res; img.onerror = rej; }; 
       });
       
       const canvas = document.createElement('canvas');
@@ -16865,19 +16937,20 @@ ${ecoRules}
       const dataUrl = canvas.toDataURL('image/png');
       const base64 = dataUrl.split(',')[1];
       const binaryString = atob(base64);
-      const len = binaryString.length;
-      const bytes = new Uint8Array(len);
-      for (let i = 0; i < len; i++) { bytes[i] = binaryString.charCodeAt(i); }
+      const binLen = binaryString.length;
+      const bytes = new Uint8Array(binLen);
+      for (let i = 0; i < binLen; i++) { bytes[i] = binaryString.charCodeAt(i); }
 
+      // 注入隐写数据块
       const keyword = "chara";
       const textData = keyword + '\0' + base64Data;
       const textBytes = new TextEncoder().encode(textData);
       
       const crcTable = new Uint32Array(256);
       for(let i=0; i<256; i++){
-          let c = i;
-          for(let k=0; k<8; k++){ c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1)); }
-          crcTable[i] = c;
+          let crc = i;
+          for(let k=0; k<8; k++){ crc = ((crc & 1) ? (0xEDB88320 ^ (crc >>> 1)) : (crc >>> 1)); }
+          crcTable[i] = crc;
       }
       const crc32 = (arr, offset, length) => {
           let crc = 0xFFFFFFFF;
@@ -16899,110 +16972,25 @@ ${ecoRules}
       finalBytes.set(chunk, insertPos);
       finalBytes.set(bytes.subarray(insertPos), insertPos + chunk.length);
 
+      // 触发下载
       const blob = new Blob([finalBytes], { type: 'image/png' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `${c.name}_灵魂卡牌.png`;
-      document.body.appendChild(a); // 兼容火狐与老版 Safari
+      document.body.appendChild(a); 
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      alert('✨ 灵魂卡牌封装成功！\\n这是一张携带完整人设的高清 PNG 图片，快发给朋友吧！');
+      alert('✨ 灵魂卡牌封装成功！\n这是一张携带完整人设的高清 PNG 图片，快发给朋友，让她在微信右上角点导入吧！');
 
     } catch(e) {
       alert('封印卡牌失败啦宝宝：' + e.message);
     } finally {
-      if(targetBtn) { targetBtn.textContent = oldText; targetBtn.style.pointerEvents = 'auto'; }
+      btn.textContent = oldText; btn.style.pointerEvents = 'auto';
     }
   };
-
-  // ================= 2. 终极净化：彻底洗掉土味燕麦色，重塑初雪海盐蓝！ =================
-  window.applyChatBg = async function() {
-    const glassBg = await localforage.getItem('mp_fix_chat_bg');
-    const normalBg = await localforage.getItem('mp_fix_chat_normal_bg');
-    let el = document.getElementById('chatBgStyleOverride');
-    if(!el){ el = document.createElement('style'); el.id = 'chatBgStyleOverride'; document.head.appendChild(el); }
-
-    // ✨ 核心洗地机：强制所有我方气泡和线下卡片回归海盐蓝！
-    let baseCss = `
-      /* 💬 线上模式：我方气泡 */
-      #chatRoom:not(.offline) .bubble.me:not(.bubble-card) {
-        background: #eef4fa !important; 
-        border: 1px solid #dce5f0 !important;
-        color: #5c7094 !important;
-        box-shadow: 0 2px 8px rgba(92,112,148,0.05) !important;
-      }
-      /* 📜 线下模式：我方气泡 */
-      #chatRoom.offline .bubble.me:not(.bubble-card) {
-        background: #eef4fa !important; 
-        border: 1px solid #dce5f0 !important;
-        color: #5c7094 !important;
-        box-shadow: 0 4px 12px rgba(92,112,148,0.05) !important;
-      }
-      /* 📜 线下模式：AI 实体卡片（海盐蓝高定版） */
-      #chatRoom.offline .offline-card {
-        background: rgba(250,252,255,0.9) !important;
-        border: 1px solid #dce5f0 !important;
-        box-shadow: 0 8px 24px rgba(92,112,148,0.06) !important;
-      }
-      #chatRoom.offline .offline-state {
-        background: rgba(238,244,250,0.6) !important;
-        border-bottom: 1px solid #dce5f0 !important;
-        color: #5c7094 !important;
-        font-weight: 600 !important;
-      }
-      #chatRoom.offline .offline-body {
-        color: #3d4a6a !important;
-      }
-    `;
-
-    if(glassBg) {
-      el.textContent = baseCss + `
-        #chatRoom.offline #chatMsgs, #chatRoom:not(.offline) #chatMsgs {
-          background: url(${glassBg}) center/cover fixed no-repeat !important;
-        }
-        #chatRoom:not(.offline) .bubble.ai { background: rgba(250,252,255,0.7) !important; backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.6) !important; }
-        #chatRoom.offline .offline-card { background: rgba(250,252,255,0.7) !important; backdrop-filter: blur(16px); }
-        #chatRoom .bubble.me:not(.bubble-card) { background: rgba(238,244,250,0.7) !important; backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.5) !important; }
-      `;
-    } else if(normalBg) {
-      el.textContent = baseCss + `
-        #chatRoom.offline #chatMsgs, #chatRoom:not(.offline) #chatMsgs {
-          background: url(${normalBg}) center/cover no-repeat !important; background-attachment: scroll !important;
-        }
-      `;
-    } else {
-      el.textContent = baseCss;
-    }
-  };
-
-  // ================= 3. 终极拦截器：防止旧代码再次生成土味颜色 =================
-  if(!window._hookedNormSettingsForBlue) {
-    const oldNorm = window.normSettings;
-    window.normSettings = function(s={}) {
-      const o = oldNorm(s);
-      // 🔪 强行把所有角色的默认颜色洗脑成初雪海盐蓝！
-      o.offlineColors = {
-        state: '#5c7094',   // 状态栏：高级灰蓝
-        body: '#3d4a6a',    // 正文：深邃蓝
-        quote: '#7a86a8',   // 引言：浅灰蓝
-        em: '#a5cfff',      // 强调：冰透蓝
-        dialogue: '#2f66d8' // 对话：核心海盐蓝
-      };
-      return o;
-    };
-    window._hookedNormSettingsForBlue = true;
-  }
-
-  // 瞬间执行，洗净全宇宙的颜色！
-  setTimeout(() => {
-    window.applyChatBg();
-    if(typeof window.renderChat === 'function' && window.currentId) {
-      window.renderChat();
-    }
-  }, 100);
 
 })();
 </script>
