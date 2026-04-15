@@ -2201,6 +2201,7 @@ body {
     <input type="file" id="up_icon_if" accept="image/*" class="hidden">
     <input type="file" id="up_icon_xhs" accept="image/*" class="hidden">
     <input type="file" id="up_icon_shop" accept="image/*" class="hidden">
+    <input type="file" id="up_icon_dream" accept="image/*" class="hidden">
 
     <div class="home-slider" id="homeSlider">
       <div class="home-page">
@@ -2394,6 +2395,15 @@ body {
               <svg viewBox="0 0 24 24" style="width:22px; height:22px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
             </div>
             <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">答案之书</span>
+          </div>
+          <!-- 潜意识捕梦网入口 -->
+          <div class="ios-icon" onclick="show('dreamApp'); if(window._initDreamApp) window._initDreamApp();">
+            <div class="ibg" id="icon_dream" style="background-color:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
+              <svg viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+            </div>
+            <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">捕梦网</span>
           </div>
     </div> <!-- 🌟 补回这扇网格大门！图标完美归位！ -->
   </div> <!-- 第二页的大门关上！ -->
@@ -18040,6 +18050,49 @@ ${wbText ? '\n【绑定的世界书设定(必须完美融合进角色背景中)�
 
 })();
 </script>
+  <!-- 🌟 蓝色高定：潜意识捕梦网 (解梦App) -->
+<section id="dreamApp" class="screen">
+  <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
+    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; transition:transform 0.1s;">‹ 桌面</button>
+    <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">潜意识捕梦网</b>
+    <div onclick="window._openDreamArchive()" style="width:32px; height:32px; display:grid; place-items:center; cursor:pointer; color:#a5cfff; font-size:18px; transition:color 0.2s;" onmouseover="this.style.color='#5c7094'" onmouseout="this.style.color='#a5cfff'" title="潜意识档案馆">☾</div>
+  </div>
+  
+  <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:20px; overflow-y:auto;">
+    <div style="font-size:12px; color:#7a86a8; font-weight:800; margin-bottom:8px; text-align:center;">选择为你守夜的人</div>
+    <select id="dreamRoleSelect" class="select" style="background:rgba(255,255,255,0.8); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; font-size:14px; padding:10px; width:100%; outline:none; font-weight:bold; text-align:center; margin-bottom:20px;"></select>
+
+    <textarea id="dreamInput" class="ta" placeholder="闭上眼睛，回忆昨晚的梦境细节...（如：梦见在一片深海里一直往下沉）" style="width:100%; min-height:120px; background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:16px; padding:16px; font-size:14px; color:#5c7094; line-height:1.6; resize:vertical; outline:none; box-shadow:inset 0 2px 6px rgba(92,112,148,0.02); margin-bottom:16px;"></textarea>
+    
+    <button class="btn p" id="dreamBtn" onclick="window._analyzeDream()" style="width:100%; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:16px; padding:14px 0; font-size:14px; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.1); letter-spacing:2px;">✦ 潜入梦境解析</button>
+
+    <div id="dreamResultBox" style="display:none; margin-top:24px; background:rgba(250,252,255,0.85); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(92,112,148,0.04);">
+      <div style="padding:20px; border-bottom:1px dashed #dce5f0;">
+        <div style="font-size:11px; color:#a5cfff; font-weight:900; letter-spacing:2px; margin-bottom:12px; font-family:ui-monospace, monospace;">// PSYCHOANALYSIS</div>
+        <div id="dreamProfText" style="font-size:14px; color:#3d4a6a; line-height:1.8; text-align:justify;"></div>
+      </div>
+      <div style="padding:20px; background:rgba(238,244,250,0.4); position:relative;">
+        <div style="font-size:11px; color:#7a86a8; font-weight:900; letter-spacing:2px; margin-bottom:12px; font-family:ui-monospace, monospace;">// TA'S ECHO</div>
+        <div id="dreamCharText" style="font-size:14px; color:#5c7094; font-style:italic; line-height:1.6; font-weight:bold;"></div>
+        <div onclick="window._saveDreamToArchive()" style="position:absolute; bottom:16px; right:20px; color:#a5cfff; cursor:pointer; font-size:18px; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'" title="收录进潜意识档案馆">✦</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 🌟 隐秘的梦境档案馆弹窗 -->
+<div id="dreamArchiveModal" class="modal" style="z-index: 10005;">
+  <div class="modal-card" style="width:90%; max-width:400px; max-height:85dvh; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; display:flex; flex-direction:column; padding:0; overflow:hidden;">
+    <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
+      <b style="color:#5c7094; font-size:15px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
+        <span style="color:#a5cfff;">☾</span> 潜意识档案馆
+      </b>
+      <button class="btn" onclick="document.getElementById('dreamArchiveModal').classList.remove('active')" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:28px; height:28px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0;">×</button>
+    </div>
+    <div id="dreamArchiveTabs" style="display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; padding:12px 16px; background:#f4f6fb; border-bottom:1px solid #dce5f0; flex-shrink:0;"></div>
+    <div id="dreamArchiveList" style="flex:1; overflow-y:auto; padding:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; flex-direction:column; gap:12px;"></div>
+  </div>
+</div>
   <!-- 🌟 蓝色高定：全局角色卡导出与聊天记录搜索补丁 -->
 <script>
 (function(){
@@ -18674,6 +18727,152 @@ ${wbText ? '\n【绑定的世界书设定(必须完美融合进角色背景中)�
   };
 })();
 </script>
-  
+  <script>
+(function(){
+  const K_DREAMS = 'mp_fix_dream_archive_v1';
+  window._tempDreamData = null;
+  window._currentDreamTab = 'All';
+  const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+
+  // 绑定入口下拉框和桌面图标自定义
+  window._initDreamApp = function() {
+    const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
+    const sel = document.getElementById('dreamRoleSelect');
+    if(sel) sel.innerHTML = contacts.map(c => `<option value="${c.id}">${safeEsc(c.name)}</option>`).join('');
+    
+    // 重置状态
+    document.getElementById('dreamResultBox').style.display = 'none';
+    document.getElementById('dreamInput').value = '';
+    window._tempDreamData = null;
+  };
+
+  // 绑定桌面图标长按上传
+  setTimeout(() => {
+    const iconBg = document.getElementById('icon_dream');
+    const input = document.getElementById('up_icon_dream');
+    if(iconBg && input) {
+      localforage.getItem('mp_icon_dream').then(res => { if(res) iconBg.style.backgroundImage = `url(${res})`; });
+      input.addEventListener('change', async (e) => {
+        const f = e.target.files?.[0]; if(!f) return;
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          iconBg.style.backgroundImage = `url(${ev.target.result})`;
+          await localforage.setItem('mp_icon_dream', ev.target.result);
+        };
+        reader.readAsDataURL(f);
+      });
+    }
+  }, 1500);
+
+  window._analyzeDream = async function() {
+    const roleId = document.getElementById('dreamRoleSelect').value;
+    const text = document.getElementById('dreamInput').value.trim();
+    if(!roleId || !text) return alert('宝宝，要把梦境写下来才能解析哦！');
+
+    const c = window.getContactById(roleId);
+    if(!c) return;
+
+    const btn = document.getElementById('dreamBtn');
+    btn.textContent = '脑电波潜入中...'; btn.style.pointerEvents = 'none';
+
+    const sysPrompt = `你是一个拥有顶级心理学知识（如荣格/弗洛伊德潜意识理论）的解梦师，同时你也要扮演角色【${c.name}】（人设：${c.persona}）。
+玩家刚刚做了一个梦：“${text}”。
+【必须严格返回JSON格式】：
+{
+  "professional": "用专业的心理学、潜意识投射或神秘学角度，客观深刻地解析这个梦境反映了玩家怎样的现实心理状态。（100字左右，客观、温柔、有深度，不要提及男主）",
+  "character_echo": "完全代入【${c.name}】的人设，在听完玩家的梦境后，给出他最真实的第一人称反应。（比如心疼、调侃、霸道地安慰等，绝对不要带名字前缀，极具活人感，50字左右）"
+}`;
+
+    try {
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '请解析我的梦境。' }]);
+      const match = out.replace(/\`\`\`json|\`\`\`/g, '').trim().match(/\{[\s\S]*\}/);
+      if(!match) throw new Error('时空乱流干扰了梦境');
+      const data = JSON.parse(match[0]);
+
+      document.getElementById('dreamProfText').textContent = data.professional;
+      document.getElementById('dreamCharText').textContent = `"${data.character_echo}"`;
+      document.getElementById('dreamResultBox').style.display = 'block';
+
+      // 暂存，等老婆按星星收藏
+      window._tempDreamData = {
+        id: 'drm_' + Date.now(),
+        roleName: c.name,
+        dream: text,
+        prof: data.professional,
+        echo: data.character_echo,
+        time: Date.now()
+      };
+    } catch(e) {
+      alert('解梦失败了宝宝：' + e.message);
+    } finally {
+      btn.textContent = '✦ 潜入梦境解析'; btn.style.pointerEvents = 'auto';
+    }
+  };
+
+  window._saveDreamToArchive = async function() {
+    if(!window._tempDreamData) return alert('这段梦境已经收录过啦！');
+    let list = await localforage.getItem(K_DREAMS) || [];
+    list.unshift(window._tempDreamData);
+    await localforage.setItem(K_DREAMS, list);
+    alert('✦ 梦境已悄悄收录进潜意识档案馆！');
+    window._tempDreamData = null; // 存完清空防重复
+  };
+
+  window._openDreamArchive = async function() {
+    window._currentDreamTab = 'All';
+    await window._renderDreamArchive();
+    document.getElementById('dreamArchiveModal').classList.add('active');
+  };
+
+  window._switchDreamTab = function(tabName) {
+    window._currentDreamTab = tabName;
+    window._renderDreamArchive();
+  };
+
+  window._renderDreamArchive = async function() {
+    const list = await localforage.getItem(K_DREAMS) || [];
+    const box = document.getElementById('dreamArchiveList');
+    const tabsBox = document.getElementById('dreamArchiveTabs');
+    if(!box || !tabsBox) return;
+
+    const roleNames = [...new Set(list.map(item => item.roleName))];
+    
+    let tabsHtml = `<div onclick="window._switchDreamTab('All')" style="padding:6px 16px; border-radius:999px; font-size:12px; font-weight:bold; cursor:pointer; white-space:nowrap; flex-shrink:0; transition:all 0.2s; ${window._currentDreamTab === 'All' ? 'background:#5c7094; color:#fff; box-shadow:0 2px 8px rgba(92,112,148,0.2);' : 'background:transparent; color:#7a86a8; border:1px solid #dce5f0;'}">全部梦境</div>`;
+    roleNames.forEach(name => {
+      const isSel = window._currentDreamTab === name;
+      tabsHtml += `<div onclick="window._switchDreamTab('${safeEsc(name)}')" style="padding:6px 16px; border-radius:999px; font-size:12px; font-weight:bold; cursor:pointer; white-space:nowrap; flex-shrink:0; transition:all 0.2s; ${isSel ? 'background:#5c7094; color:#fff; box-shadow:0 2px 8px rgba(92,112,148,0.2);' : 'background:transparent; color:#7a86a8; border:1px solid #dce5f0;'}">${safeEsc(name)}</div>`;
+    });
+    tabsBox.innerHTML = tabsHtml;
+
+    const filteredList = window._currentDreamTab === 'All' ? list : list.filter(item => item.roleName === window._currentDreamTab);
+
+    if(filteredList.length === 0) {
+      box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:12px;">档案馆里空空如也~</div>`;
+      return;
+    }
+
+    box.innerHTML = filteredList.map(item => `
+      <div style="background:rgba(250,252,255,0.85); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:16px; padding:16px; box-shadow:0 4px 16px rgba(92,112,148,0.03); position:relative;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px dashed #eef4fa; padding-bottom:8px;">
+          <div style="font-size:11px; color:#a5cfff; font-weight:800; display:flex; align-items:center; gap:4px;">☾ ${new Date(item.time).toLocaleString()}</div>
+          <button class="btn d" onclick="window._delDreamArchive('${item.id}')" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:8px; padding:4px 10px; font-size:11px; font-weight:bold; box-shadow:none;">销毁</button>
+        </div>
+        <div style="font-size:13px; color:#7a86a8; margin-bottom:8px; font-weight:bold;">💭 梦境：${safeEsc(item.dream)}</div>
+        <div style="font-size:12px; color:#5c7094; line-height:1.6; border-left:2px solid #dce5f0; padding-left:10px; margin-bottom:8px; text-align:justify;">${safeEsc(item.prof)}</div>
+        <div style="font-size:13px; color:#3d4a6a; font-weight:bold; font-style:italic;">"${safeEsc(item.echo)}"</div>
+        <div style="font-size:10px; color:#a0aaba; text-align:right; margin-top:8px;">—— 守夜人：${safeEsc(item.roleName)}</div>
+      </div>
+    `).join('');
+  };
+
+  window._delDreamArchive = async function(id) {
+    if(!confirm('确定要销毁这段梦境档案吗？')) return;
+    let list = await localforage.getItem(K_DREAMS);
+    list = list.filter(x => x.id !== id);
+    await localforage.setItem(K_DREAMS, list);
+    window._renderDreamArchive();
+  };
+})();
+</script>
 </body>
   </html>
