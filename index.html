@@ -19829,5 +19829,171 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
 
 })();
 </script>
+  <!-- 🌟 蓝色高定：深夜极致细节打磨补丁 (贴在 </body> 前) -->
+<script>
+(function() {
+  // ================= 1. 强迫症治愈：把【测试连接】按钮移回正确的位置！ =================
+  setTimeout(() => {
+    const testBtnCard = document.getElementById('testApiBtn')?.closest('.card');
+    const apiModelCard = document.getElementById('apiModel')?.closest('.card');
+    if(testBtnCard && apiModelCard) {
+      // 把它插在模型选择卡片的正下方！
+      apiModelCard.parentNode.insertBefore(testBtnCard, apiModelCard.nextSibling);
+    }
+  }, 800);
+
+  // ================= 2. 苹果克星：强行破解所有密码框的复制限制！ =================
+  setTimeout(() => {
+    // 找出所有可能藏密钥的密码框
+    const keyIds = ['apiKey', 'mmGroupId', 'mmApiKey', 'apiTtsKey', 'fishApiKey'];
+    
+    keyIds.forEach(id => {
+      const el = document.getElementById(id);
+      if(el && !el.dataset.hooked) {
+        el.dataset.hooked = '1';
+        
+        // 给它套个外壳
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'position:relative; display:flex; align-items:center; margin-bottom:16px;';
+        el.parentNode.insertBefore(wrap, el);
+        el.style.marginBottom = '0'; 
+        wrap.appendChild(el);
+        
+        // 🌟 注入绝美的高级灰蓝小工具：显示/隐藏 + 暴力复制
+        const tools = document.createElement('div');
+        tools.style.cssText = 'position:absolute; right:12px; display:flex; gap:14px; font-size:15px;';
+        tools.innerHTML = `
+          <div onclick="const i=document.getElementById('${id}'); i.type=i.type==='password'?'text':'password'; this.style.opacity=i.type==='password'?0.5:1;" style="cursor:pointer; opacity:0.5; transition:opacity 0.2s;" title="显示/隐藏">👁️</div>
+          <div onclick="const i=document.getElementById('${id}'); const old=i.type; i.type='text'; i.select(); document.execCommand('copy'); i.type=old; alert('✨ 密钥已强行突破拦截，成功复制到剪贴板！');" style="cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'" title="复制密钥">📋</div>
+        `;
+        wrap.appendChild(tools);
+      }
+    });
+  }, 1000);
+
+  // ================= 3. 线下模式视觉重塑：居中绝美大头像 & 数据胶囊面板 =================
+  
+  // 注入线下模式专属的高级 CSS 排版
+  const offlineStyle = document.createElement('style');
+  offlineStyle.innerHTML = `
+    /* 强行让消息区块居中 */
+    #chatRoom.offline .msg-block { 
+      align-items: center !important; 
+      width: 100% !important; 
+      margin-top: 10px !important;
+    }
+    
+    /* 🌟 绝美超大居中头像 */
+    #chatRoom.offline .chat-avatar { 
+      width: 96px !important; 
+      height: 96px !important; 
+      border-radius: 50% !important; 
+      margin: 0 auto 16px auto !important; 
+      border: 3px solid #fff !important; 
+      box-shadow: 0 8px 24px rgba(92,112,148,0.15) !important; 
+      object-fit: cover !important;
+      background: #eef4fa !important;
+    }
+    
+    /* 卡片宽度限制与居中 */
+    #chatRoom.offline .bubble-wrap { 
+      align-items: center !important; 
+      width: 100% !important; 
+    }
+    #chatRoom.offline .offline-card { 
+      width: 100% !important; 
+      max-width: 400px !important; 
+      margin: 0 auto !important; 
+    }
+  `;
+  document.head.appendChild(offlineStyle);
+
+  // 🌟 核心拦截：重写 renderChat，把数据排版改成悬浮胶囊！
+  const oldRenderChat = window.renderChat;
+  window.renderChat = function() {
+    const c = window.getContactById(window.currentId);
+    const st = window.normSettings(c?.settings);
+    
+    // 如果是线上模式，乖乖走老路
+    if(st.mode !== 'offline') {
+      return oldRenderChat();
+    }
+
+    // 🌟 如果是线下模式，启动高级排版引擎！
+    const globalMe = window.getMe ? window.getMe() : {};
+    const pref = window.getPref ? window.getPref() : {showTs:false};
+    const me = { name: st.meName||globalMe.name||'我', avatar: st.meAvatar||globalMe.avatar||'' };
+    const roleAvatar = c?.avatar || 'https://via.placeholder.com/64x64?text=TA';
+    const meAvatar = me.avatar || 'https://via.placeholder.com/64x64?text=我';
+    const arr = window.getChatArr(window.currentId);
+
+    const blockBanner = document.getElementById('blockByMeBanner');
+    if(blockBanner) {
+      if(st.isBlockedByMe && !c?.isGroup) {
+        blockBanner.classList.remove('hidden');
+        document.getElementById('chatInput').style.display = 'none';
+        document.querySelector('.left-tools').style.display = 'none';
+        document.querySelector('.send-actions').style.display = 'none';
+      } else {
+        blockBanner.classList.add('hidden');
+        document.getElementById('chatInput').style.display = '';
+        document.querySelector('.left-tools').style.display = 'flex';
+        document.querySelector('.send-actions').style.display = 'flex';
+      }
+    }
+
+    document.getElementById('chatMsgs').innerHTML = arr.map((m, index) => {
+      const floorNum = index + 1;
+      const wordCount = (m.text || '').replace(/<[^>]*>/g, '').length;
+      const isMe = m.role === 'user';
+      const genTime = isMe ? '0.0' : (m.genTime || '0.0');
+
+      // ✨ 极其高级的数据胶囊排版！
+      const metaHtml = `
+        <div class="rp-meta-box" style="display:flex; justify-content:center; align-items:center; gap:12px; margin-bottom:20px; width:100%;">
+          <div style="background:rgba(250,252,255,0.85); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:14px; padding:8px 16px; display:flex; flex-direction:column; align-items:center; min-width:56px; box-shadow:0 4px 12px rgba(92,112,148,0.04);">
+            <span style="font-size:10px; color:#a0aaba; font-weight:bold; margin-bottom:4px; letter-spacing:1px;">楼层</span>
+            <b style="font-size:14px; color:#5c7094; font-family:ui-monospace, monospace; font-weight:900;">#${floorNum}</b>
+          </div>
+          <div style="background:rgba(250,252,255,0.85); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:14px; padding:8px 16px; display:flex; flex-direction:column; align-items:center; min-width:56px; box-shadow:0 4px 12px rgba(92,112,148,0.04);">
+            <span style="font-size:10px; color:#a0aaba; font-weight:bold; margin-bottom:4px; letter-spacing:1px;">耗时</span>
+            <b style="font-size:14px; color:#5c7094; font-family:ui-monospace, monospace; font-weight:900;" id="timer_${m.id}">${genTime}s</b>
+          </div>
+          <div style="background:rgba(250,252,255,0.85); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:14px; padding:8px 16px; display:flex; flex-direction:column; align-items:center; min-width:56px; box-shadow:0 4px 12px rgba(92,112,148,0.04);">
+            <span style="font-size:10px; color:#a0aaba; font-weight:bold; margin-bottom:4px; letter-spacing:1px;">字数</span>
+            <b style="font-size:14px; color:#5c7094; font-family:ui-monospace, monospace; font-weight:900;" id="words_${m.id}">${wordCount}t</b>
+          </div>
+        </div>
+      `;
+
+      const cls = isMe ? 'me' : 'ai'; 
+      const av = isMe ? meAvatar : roleAvatar; 
+      const selected = window.selectedIds ? window.selectedIds.has(m.id) : false;
+      const sCls = window.selectMode ? ' selecting' : ''; 
+      const cHtml = window.selectMode ? `<div class="msg-check">✓</div>` : '';
+      
+      if(isMe) {
+        return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}">${metaHtml}<div class="bubble-wrap me">${window.renderBubbleContent(m,true,pref)}</div></div></div>`;
+      }
+      return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}">${metaHtml}${window.renderOfflineAssistant(m.text,m.time,pref,m)}</div></div>`;
+    }).join('');
+
+    document.getElementById('chatRoom').classList.toggle('select-mode', window.selectMode);
+    const multiBar = document.getElementById('multiSelectBar');
+    if(multiBar) multiBar.classList.toggle('hidden', !window.selectMode);
+    const multiCount = document.getElementById('multiCount');
+    if(multiCount && window.selectedIds) multiCount.textContent = `已选 ${window.selectedIds.size} 项`;
+    
+    const _msgs = document.getElementById('chatMsgs');
+    if(!window.selectMode){
+      requestAnimationFrame(() => {
+        _msgs.style.scrollBehavior = 'smooth'; 
+        _msgs.scrollTop = _msgs.scrollHeight;
+      });
+    }
+  };
+
+})();
+</script>
 </body>
   </html>
