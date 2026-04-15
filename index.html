@@ -2380,6 +2380,21 @@ body {
   </div>
   <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">回音海</span>
 </div>
+          <!-- 漫游画廊入口 -->
+          <div class="ios-icon" onclick="show('mangaApp'); if(window._renderMangaBooks) window._renderMangaBooks();">
+            <div class="ibg" style="background-color:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
+              <svg viewBox="0 0 24 24" style="width:22px; height:22px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+            </div>
+            <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">漫游画廊</span>
+          </div>
+
+          <!-- 助眠舱入口 -->
+          <div class="ios-icon" onclick="show('sleepCabinApp'); if(window._initSleepApp) window._initSleepApp();">
+            <div class="ibg" style="background-color:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
+              <svg viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            </div>
+            <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">助眠舱</span>
+          </div>
     </div> <!-- 🌟 补回这扇网格大门！图标完美归位！ -->
   </div> <!-- 第二页的大门关上！ -->
 
@@ -9929,7 +9944,7 @@ window.renderNotesList = function(){
               <div style="font-size:12px; color:#5a6a8f; text-align:justify; line-height:1.6;">
                 <b>关于触发机制：</b>只要在角色的聊天设置里<b>打勾</b>，该设定就会被内存】在每次聊天时<b>100%强行注入</b>到AI的脑海中！<br>
                 <div style="height:6px;"></div>
-                <b>关于触发词：</b>这里的"触发词"其实是<b>标题/标签</b>（比如可以写"破限指令"或"背景设定"），方便老婆随时查找修改。不需要在聊天中刻意提及，它也会全局生效哦！最适合线下RP啦！
+                <b>关于触发词：</b>这里的"触发词"其实是<b>标题/标签</b>（比如可以写"破限指令"或"背景设定"），方便宝宝随时查找修改。不需要在聊天中刻意提及，它也会全局生效哦！最适合线下RP啦！
               </div>
             </div>
 
@@ -17131,6 +17146,263 @@ ${wbText ? '\n【绑定的世界书设定(必须完美融合进角色背景中)�
     return 'data:image/png;base64,' + btoa(binary);
   }
 
+})();
+</script>
+  <!-- 🌟 蓝色高定：漫游画廊 (本地漫画阅读器) -->
+<section id="mangaApp" class="screen">
+  <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
+    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 桌面</button>
+    <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">漫游画廊</b>
+    <div style="display:flex; gap:6px;">
+      <button class="btn p" onclick="document.getElementById('mangaImportInput').click()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">+ 导入</button>
+    </div>
+    <input type="file" id="mangaImportInput" accept="image/*,application/pdf" multiple class="hidden" onchange="window._importMangaImages(event)">
+  </div>
+  <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px;">
+    <div id="mangaBookList" style="display:flex; flex-direction:column; gap:12px;"></div>
+  </div>
+</section>
+
+<!-- 漫画阅读器全屏浮层 -->
+<div id="mangaReaderModal" class="modal" style="z-index: 10005; padding:0; background:#0f121a;">
+  <div class="modal-card" style="width:100%; height:100%; max-width:430px; margin:0 auto; border-radius:0; background:transparent; box-shadow:none; padding:0; display:flex; flex-direction:column; overflow:hidden;">
+    <div id="mangaReaderHeader" style="padding:calc(12px + var(--safe-top)) 16px 12px; display:flex; justify-content:space-between; align-items:center; background:rgba(15,18,26,0.85); backdrop-filter:blur(12px); z-index:10;">
+      <button class="btn" onclick="document.getElementById('mangaReaderModal').classList.remove('active')" style="background:rgba(255,255,255,0.1); color:#dbe4ff; border:1px solid rgba(255,255,255,0.2); border-radius:50%; width:32px; height:32px; padding:0; display:grid; place-items:center; font-size:18px;">‹</button>
+      <b id="mangaReaderTitle" style="color:#a5cfff; font-size:14px; letter-spacing:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60%;">阅读中</b>
+      <div style="font-size:11px; color:#5c7094; font-family:ui-monospace, monospace;"><span id="mangaProgress">0</span> / <span id="mangaTotal">0</span></div>
+    </div>
+    <div id="mangaScrollArea" style="flex:1; overflow-y:auto; overflow-x:hidden; background:#0f121a; scroll-behavior:smooth;" onscroll="window._updateMangaProgress()">
+      <div id="mangaImagesContainer" style="display:flex; flex-direction:column; width:100%;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 🌟 蓝色高定：深海白噪音助眠舱 -->
+<section id="sleepCabinApp" class="screen">
+  <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
+    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 桌面</button>
+    <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">深海助眠舱</b>
+    <div style="width:56px;"></div>
+  </div>
+  
+  <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:20px; display:flex; flex-direction:column; align-items:center;">
+    <div style="font-size:12px; color:#7a86a8; font-weight:800; margin-bottom:20px; letter-spacing:1px;">请选择今夜哄你入睡的人</div>
+    <select id="sleepRoleSelect" class="select" style="background:rgba(255,255,255,0.8); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; font-size:14px; padding:10px; width:100%; max-width:300px; outline:none; font-weight:bold; text-align:center; margin-bottom:40px;"></select>
+
+    <div style="position:relative; width:160px; height:160px; display:flex; justify-content:center; align-items:center; margin-bottom:40px;">
+      <style>
+        @keyframes deepBreath { 0%, 100% { transform: scale(0.8); box-shadow: 0 0 20px rgba(165,207,255,0.2); opacity: 0.6; } 50% { transform: scale(1.2); box-shadow: 0 0 60px rgba(165,207,255,0.6); opacity: 1; } }
+      </style>
+      <div style="position:absolute; width:100%; height:100%; border-radius:50%; background:radial-gradient(circle, #eef4fa, #a5cfff); animation:deepBreath 8s ease-in-out infinite;"></div>
+      <div style="position:relative; z-index:2; font-size:13px; color:#5c7094; font-weight:bold; letter-spacing:2px;">跟随频率呼吸</div>
+    </div>
+
+    <div id="sleepStoryBox" style="width:100%; flex:1; background:rgba(255,255,255,0.6); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:20px; padding:20px; box-sizing:border-box; font-size:14px; color:#5c7094; line-height:1.8; text-align:justify; overflow-y:auto; margin-bottom:20px; box-shadow:inset 0 2px 10px rgba(165,207,255,0.1);">
+      点击下方按钮，让 TA 给你讲一个简短的睡前故事，或是几句温柔的晚安呢喃...
+    </div>
+
+    <button class="btn p" onclick="window._askForSleepStory()" id="sleepBtn" style="width:100%; max-width:300px; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:16px; padding:16px 0; font-size:15px; font-weight:bold; box-shadow:0 8px 24px rgba(92,112,148,0.15); letter-spacing:1px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">🌙 索要专属哄睡电波</button>
+  </div>
+</section>
+
+<script>
+(function(){
+  // ================= 助眠舱逻辑 =================
+  window._initSleepApp = function() {
+    const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
+    const sel = document.getElementById('sleepRoleSelect');
+    if(sel) sel.innerHTML = contacts.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  };
+
+  window._askForSleepStory = async function() {
+    const roleId = document.getElementById('sleepRoleSelect').value;
+    if(!roleId) return alert('宝宝，先选一个人来陪你吧！');
+    const c = window.getContactById ? window.getContactById(roleId) : null;
+    if(!c) return;
+
+    const me = window.getMe ? window.getMe() : {name: '我'};
+    const btn = document.getElementById('sleepBtn');
+    const box = document.getElementById('sleepStoryBox');
+    
+    btn.textContent = '电波连接中...';
+    btn.style.pointerEvents = 'none';
+    box.innerHTML = '<div style="text-align:center; margin-top:40px; animation:blueBlink 1.5s infinite;">正在酝酿哄你的话语...</div>';
+
+    const sysPrompt = `你现在是：${c.name}。人设：${c.persona}。
+现在是深夜，玩家(${me.name||'我'})睡不着，躲在深海助眠舱里向你索要一段哄睡语音。
+【核心指令】：
+1. 完全代入人设，以第一人称视角，用极度温柔、或符合性格的方式哄她睡觉。
+2. 可以讲微型睡前故事，或是晚安呢喃。
+3. 字数200字左右。分段排版舒适。
+4. 纯文本输出，绝不带名字前缀，绝不用JSON！`;
+
+    try {
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '我睡不着，哄哄我好不好？' }]);
+      box.innerHTML = String(out).replace(/```json|```/g, '').replace(/\n/g, '<br><br>').trim();
+      
+      if(window._playVoiceClone) {
+        const dummyEl = document.createElement('div');
+        window._playVoiceClone(dummyEl, box.innerText, roleId);
+      }
+    } catch(e) {
+      box.innerHTML = '<div style="color:#b57b7b; text-align:center;">时空电波被干扰了，TA 没能收到信号...<br>' + e.message + '</div>';
+    } finally {
+      btn.textContent = '🌙 索要专属哄睡电波';
+      btn.style.pointerEvents = 'auto';
+    }
+  };
+
+  // ================= 漫游画廊逻辑 (动态注入 PDF 破壁机) =================
+  const K_MANGA_BOOKS = 'mp_fix_manga_books_v1';
+
+  async function getMangaBooks() { return (await localforage.getItem(K_MANGA_BOOKS)) || []; }
+  async function setMangaBooks(data) { await localforage.setItem(K_MANGA_BOOKS, data); }
+
+  window._renderMangaBooks = async function() {
+    const books = await getMangaBooks();
+    const box = document.getElementById('mangaBookList');
+    if(!box) return;
+
+    if(books.length === 0) {
+      box.innerHTML = `<div style="text-align:center; padding:60px 0; color:#a0aaba; font-size:13px; letter-spacing:1px; line-height:1.6;">画廊空空如也<br>点击右上角导入你的漫画吧</div>`;
+      return;
+    }
+
+    box.innerHTML = books.map(b => {
+      const cover = b.images[0] || 'https://via.placeholder.com/100';
+      return `
+      <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border:1px solid #dce5f0; border-radius:16px; padding:12px; display:flex; align-items:center; gap:12px; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+        <div style="width:60px; height:80px; border-radius:8px; overflow:hidden; border:1px solid #cdd7e8; flex-shrink:0; cursor:pointer;" onclick="window._openMangaReader('${b.id}')">
+          <img src="${cover}" style="width:100%; height:100%; object-fit:cover;">
+        </div>
+        <div style="flex:1; min-width:0; cursor:pointer;" onclick="window._openMangaReader('${b.id}')">
+          <div style="font-size:15px; font-weight:800; color:#3d4a6a; margin-bottom:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${b.title}</div>
+          <div style="font-size:11px; color:#7a86a8;">共 ${b.images.length} 页 · ${new Date(b.time).toLocaleDateString()}</div>
+        </div>
+        <button class="btn d" onclick="window._delMangaBook('${b.id}')" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; padding:6px 12px; font-weight:bold; font-size:12px;">删除</button>
+      </div>
+      `;
+    }).join('');
+  };
+
+  // 动态加载 PDF.js，绝对不阻塞页面！
+  async function ensurePdfJs() {
+    if (window.pdfjsLib) return;
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      script.onload = () => {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        resolve();
+      };
+      script.onerror = () => reject(new Error('PDF解析引擎加载失败，请检查网络'));
+      document.head.appendChild(script);
+    });
+  }
+
+  window._importMangaImages = async function(e) {
+    const files = Array.from(e.target.files || []);
+    if(files.length === 0) return;
+
+    const title = prompt(`请给这本漫画起个名字：`, files[0].name.replace(/\.[^/.]+$/, ""));
+    if(!title) { e.target.value = ''; return; }
+
+    const btn = document.querySelector('#mangaApp .header .btn.p');
+    const oldText = btn.textContent;
+    btn.textContent = '破壁装订中...'; 
+    btn.style.pointerEvents = 'none';
+
+    try {
+      const base64Images = [];
+      const compFn = window._fiCompressImage || window.compressImage;
+
+      for(let i=0; i<files.length; i++) {
+        const file = files[i];
+        
+        if (file.type === 'application/pdf') {
+          btn.textContent = '唤醒破壁机...';
+          await ensurePdfJs(); // 动态按需加载！
+          
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+          
+          for(let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            btn.textContent = `解析 PDF (${pageNum}/${pdf.numPages})...`;
+            const page = await pdf.getPage(pageNum);
+            const viewport = page.getViewport({ scale: 2.0 }); 
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = viewport.width; canvas.height = viewport.height;
+            
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+            base64Images.push(canvas.toDataURL('image/jpeg', 0.85));
+          }
+        } else {
+          const b64 = await compFn(file);
+          base64Images.push(b64);
+        }
+      }
+
+      if(base64Images.length === 0) throw new Error("没有提取到任何有效画面哦！");
+
+      let books = await getMangaBooks();
+      books.unshift({ id: 'mg_' + Date.now(), title: title.trim(), images: base64Images, time: Date.now() });
+      await setMangaBooks(books);
+      
+      window._renderMangaBooks();
+      alert(`✨ 漫画装订成功！共提取了 ${base64Images.length} 页！`);
+    } catch(err) {
+      alert('导入失败啦宝宝：' + err.message);
+    } finally {
+      btn.textContent = oldText; 
+      btn.style.pointerEvents = 'auto';
+      e.target.value = '';
+    }
+  };
+
+  window._delMangaBook = async function(id) {
+    if(!confirm('确定要删除这本漫画吗？')) return;
+    let books = await getMangaBooks();
+    books = books.filter(b => b.id !== id);
+    await setMangaBooks(books);
+    window._renderMangaBooks();
+  };
+
+  window._openMangaReader = async function(id) {
+    const books = await getMangaBooks();
+    const book = books.find(b => b.id === id);
+    if(!book) return;
+
+    document.getElementById('mangaReaderTitle').textContent = book.title;
+    document.getElementById('mangaTotal').textContent = book.images.length;
+    document.getElementById('mangaProgress').textContent = '1';
+
+    const container = document.getElementById('mangaImagesContainer');
+    container.innerHTML = book.images.map((src, idx) => `
+      <img class="manga-page-img" data-idx="${idx + 1}" src="${src}" style="width:100%; display:block; object-fit:contain; border-bottom:1px solid #1a1d26;">
+    `).join('');
+
+    document.getElementById('mangaReaderModal').classList.add('active');
+    document.getElementById('mangaScrollArea').scrollTop = 0;
+  };
+
+  let scrollTimer = null;
+  window._updateMangaProgress = function() {
+    if(scrollTimer) clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => {
+      const area = document.getElementById('mangaScrollArea');
+      const imgs = document.querySelectorAll('.manga-page-img');
+      let currentIdx = 1;
+      for(let img of imgs) {
+        const rect = img.getBoundingClientRect();
+        if(rect.top >= 0 || rect.bottom >= area.clientHeight / 2) {
+          currentIdx = img.dataset.idx; break;
+        }
+      }
+      document.getElementById('mangaProgress').textContent = currentIdx;
+    }, 100);
+  };
 })();
 </script>
 </body>
