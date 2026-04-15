@@ -2550,6 +2550,50 @@ body {
     <button class="btn p" onclick="document.getElementById('accSoundModal').classList.remove('active')" style="width:100%; background:#eef4fa; color:#5c7094; border-radius:10px; padding:8px 0; font-weight:bold;">完成</button>
   </div>
 </div>
+  <!-- 🌟 蓝色高定：深夜哄睡舱 (沉浸式呼吸美学版) -->
+<style>
+  @keyframes lullabyBreathe {
+    0%, 100% { background-color: #eef4fa; }
+    50% { background-color: #dce5f0; }
+  }
+  @keyframes textFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .lullaby-bg {
+    animation: lullabyBreathe 8s ease-in-out infinite;
+    transition: all 1s ease;
+  }
+</style>
+
+<section id="lullabyApp" class="screen lullaby-bg">
+  <!-- 极简透明导航 -->
+  <div style="padding:calc(12px + var(--safe-top)) 20px 12px; display:flex; justify-content:space-between; align-items:center; z-index:10;">
+    <button class="btn" onclick="window._exitLullaby()" style="background:rgba(255,255,255,0.4); color:#5c7094; border:1px solid rgba(255,255,255,0.6); border-radius:50%; width:36px; height:36px; padding:0; display:grid; place-items:center; backdrop-filter:blur(12px); transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
+      <svg viewBox="0 0 24 24" style="width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <div style="width:36px;"></div> <!-- 占位平衡 -->
+  </div>
+
+  <div class="page" style="padding:40px 30px; display:flex; flex-direction:column; align-items:center; justify-content:center; height:calc(100% - 80px);">
+    
+    <!-- 沉浸式文本显影区 -->
+    <div id="lullabyTextDisplay" style="flex:1; width:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; font-size:16px; color:#5c7094; line-height:2.2; letter-spacing:2px; text-align:center; font-family:'STZhongsong', 'KaiTi', serif; font-weight:bold; text-shadow:0 2px 10px rgba(255,255,255,0.8); transition:opacity 0.5s;">
+      <span style="opacity:0.6; font-size:13px; font-family:-apple-system, sans-serif; font-weight:normal; letter-spacing:1px;">夜深了，想听谁的声音入梦？</span>
+    </div>
+
+    <!-- 隐形控制台 -->
+    <div id="lullabyControls" style="width:100%; max-width:300px; background:rgba(255,255,255,0.3); border:1px solid rgba(255,255,255,0.5); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-radius:24px; padding:20px; box-shadow:0 8px 32px rgba(92,112,148,0.05); transition:opacity 0.5s;">
+      
+      <div style="font-size:11px; color:#7a86a8; font-weight:bold; margin-bottom:8px; text-align:center; letter-spacing:1px;">呼叫守夜人</div>
+      <select id="lullabyRoleSelect" class="select" style="width:100%; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; padding:12px; margin-bottom:16px; font-weight:bold; outline:none; text-align:center; appearance:none;"></select>
+      
+      <button class="btn p" id="startLullabyBtn" onclick="window._startLullaby()" style="width:100%; background:linear-gradient(135deg, #ffffff, #eef4fa); color:#5c7094; border:1px solid #dce5f0; border-radius:16px; padding:14px 0; font-size:14px; font-weight:900; letter-spacing:2px; box-shadow:0 4px 16px rgba(92,112,148,0.08); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
+        <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vertical-align:-3px; margin-right:6px;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>潜入梦境
+      </button>
+    </div>
+  </div>
+</section>
 <!-- ================= 🌟 蓝色高定：时光邮局 ================= -->
   <section id="timePostOffice" class="screen">
     <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
@@ -19222,6 +19266,89 @@ ${wbText ? '\n【绑定的世界书设定(必须完美融合进角色背景中)�
     list = list.filter(x => x.id !== id);
     await localforage.setItem(K_ACCOUNT, list);
     window._renderAccountList();
+  };
+})();
+</script>
+  <script>
+(function(){
+  const K_LULLABY_MEM = 'mp_fix_lullaby_memory';
+
+  // 初始化下拉框
+  setTimeout(() => {
+    const sel = document.getElementById('lullabyRoleSelect');
+    if(sel && window.getContacts) {
+      const contacts = window.getContacts().filter(c => !c.isGroup);
+      sel.innerHTML = contacts.map(c => `<option value="${c.id}">${String(c.name).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]))}</option>`).join('');
+    }
+  }, 1500);
+
+  window._startLullaby = async function() {
+    const roleId = document.getElementById('lullabyRoleSelect').value;
+    if(!roleId) return alert('宝宝，请先在通讯录里建一个角色哦！');
+    
+    const c = window.getContactById(roleId);
+    if(!c) return;
+
+    const btn = document.getElementById('startLullabyBtn');
+    const controls = document.getElementById('lullabyControls');
+    const display = document.getElementById('lullabyTextDisplay');
+    
+    btn.innerHTML = '<span style="animation:blueBlink 1.5s infinite;">连接脑电波中...</span>';
+    btn.style.pointerEvents = 'none';
+
+    try {
+      const sysPrompt = `你现在是：${c.name}。人设：${c.persona}。
+现在是深夜，玩家（你的爱人）失眠了，正在使用“深夜哄睡舱”听着白噪音准备入睡。
+请以【第一人称视角】对她说一段极其温柔、细腻、让人安心的哄睡低语。
+要求：
+1. 极具活人感，语气轻柔，符合你的人设（比如傲娇的人会别扭地关心，温柔的人会极致包容）。
+2. 字数在 50-100 字左右，分 2-3 个短句。
+3. 绝对不要带任何动作描写括号！绝对不要带名字前缀！直接输出纯粹的对话文本。`;
+
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '我睡不着，哄哄我好不好...' }]);
+      const whisper = out.replace(/\`\`\`json|\`\`\`/g, '').replace(/^["'「”]+|["'」”]+$/g, '').trim();
+
+      // 存入外挂内存
+      await localforage.setItem(K_LULLABY_MEM, { role: c.name, text: whisper, time: Date.now() });
+
+      // 隐藏控制台，进入沉浸模式
+      controls.style.opacity = '0';
+      setTimeout(() => { controls.style.display = 'none'; }, 500);
+
+      // 打字机显影特效
+      display.innerHTML = '';
+      const sentences = whisper.split(/(?<=[。！？!?…])/).filter(Boolean);
+      
+      let delayAcc = 0;
+      sentences.forEach((s, idx) => {
+        const span = document.createElement('div');
+        span.textContent = s.trim();
+        span.style.opacity = '0';
+        span.style.animation = `textFadeIn 2s ease forwards ${delayAcc}s`;
+        display.appendChild(span);
+        delayAcc += (s.length * 0.2 + 1); // 根据字数计算下一句的延迟
+      });
+
+    } catch(e) {
+      alert('脑电波连接失败啦：' + e.message);
+      btn.innerHTML = '潜入梦境';
+      btn.style.pointerEvents = 'auto';
+    }
+  };
+
+  window._exitLullaby = function() {
+    document.getElementById('lullabyApp').classList.remove('active');
+    document.getElementById('home').classList.add('active');
+    // 恢复控制台
+    const controls = document.getElementById('lullabyControls');
+    const btn = document.getElementById('startLullabyBtn');
+    const display = document.getElementById('lullabyTextDisplay');
+    
+    controls.style.display = 'block';
+    setTimeout(() => { controls.style.opacity = '1'; }, 50);
+    btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vertical-align:-3px; margin-right:6px;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>潜入梦境';
+    btn.style.pointerEvents = 'auto';
+    display.innerHTML = '<span style="opacity:0.6; font-size:13px; font-family:-apple-system, sans-serif; font-weight:normal; letter-spacing:1px;">夜深了，想听谁的声音入梦？</span>';
   };
 })();
 </script>
