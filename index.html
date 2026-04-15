@@ -2388,13 +2388,7 @@ body {
             <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">漫游画廊</span>
           </div>
 
-          <!-- 助眠舱入口 -->
-          <div class="ios-icon" onclick="show('sleepCabinApp'); if(window._initSleepApp) window._initSleepApp();">
-            <div class="ibg" style="background-color:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
-              <svg viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-            </div>
-            <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">助眠舱</span>
-          </div>
+          
     </div> <!-- 🌟 补回这扇网格大门！图标完美归位！ -->
   </div> <!-- 第二页的大门关上！ -->
 
@@ -17148,7 +17142,7 @@ ${wbText ? '\n【绑定的世界书设定(必须完美融合进角色背景中)�
 
 })();
 </script>
-  <!-- 🌟 蓝色高定：漫游画廊 (本地漫画阅读器 - 真·翻页版) -->
+ <!-- 🌟 蓝色高定：漫游画廊 (本地漫画阅读器 - 真·3D 沉浸翻页版) -->
 <section id="mangaApp" class="screen">
   <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
     <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 桌面</button>
@@ -17163,21 +17157,25 @@ ${wbText ? '\n【绑定的世界书设定(必须完美融合进角色背景中)�
   </div>
 </section>
 
-<!-- 🌟 漫画阅读器全屏浮层 (沉浸式三分区触控版) -->
+<!-- 🌟 漫画阅读器全屏浮层 (真·3D 物理引擎版) -->
 <div id="mangaReaderModal" class="modal" style="z-index: 10005; padding:0; background:#0f121a;">
   <div class="modal-card" style="width:100%; height:100%; max-width:430px; margin:0 auto; border-radius:0; background:transparent; box-shadow:none; padding:0; display:flex; flex-direction:column; overflow:hidden; position:relative;">
     
-    <!-- 顶部导航条 (点击中间可隐藏/显示) -->
+    <!-- 顶部导航条 -->
     <div id="mangaReaderHeader" style="position:absolute; top:0; left:0; right:0; padding:calc(12px + var(--safe-top)) 16px 12px; display:flex; justify-content:space-between; align-items:center; background:rgba(15,18,26,0.85); backdrop-filter:blur(12px); z-index:20; transition:transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
       <button class="btn" onclick="document.getElementById('mangaReaderModal').classList.remove('active')" style="background:rgba(255,255,255,0.1); color:#dbe4ff; border:1px solid rgba(255,255,255,0.2); border-radius:50%; width:32px; height:32px; padding:0; display:grid; place-items:center; font-size:18px;">‹</button>
       <b id="mangaReaderTitle" style="color:#a5cfff; font-size:14px; letter-spacing:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60%;">阅读中</b>
       <div style="font-size:11px; color:#5c7094; font-family:ui-monospace, monospace;"><span id="mangaProgress">0</span> / <span id="mangaTotal">0</span></div>
     </div>
 
-    <!-- 漫画显示区与触控层 -->
-    <div style="flex:1; position:relative; background:#0f121a; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-      <img id="mangaSingleImg" src="" style="max-width:100%; max-height:100%; object-fit:contain; transition:opacity 0.2s;">
+    <!-- 3D 漫画显示区与触控层 -->
+    <div style="flex:1; position:relative; background:#0f121a; display:flex; align-items:center; justify-content:center; overflow:hidden; perspective: 2500px;">
       
+      <!-- 物理翻页的三层画板 -->
+      <img id="mangaPageStatic" src="" style="position:absolute; max-width:100%; max-height:100%; object-fit:contain; z-index:1;">
+      <img id="mangaPageUnder" src="" style="position:absolute; max-width:100%; max-height:100%; object-fit:contain; z-index:2; display:none;">
+      <img id="mangaPageTurn" src="" style="position:absolute; max-width:100%; max-height:100%; object-fit:contain; z-index:3; display:none; backface-visibility:hidden; transform-style:preserve-3d;">
+
       <!-- 三分区触控魔法 -->
       <div onclick="window._mangaFlip(-1)" style="position:absolute; left:0; top:0; bottom:0; width:35%; z-index:10; cursor:pointer;" title="上一页"></div>
       <div onclick="window._mangaToggleHeader()" style="position:absolute; left:35%; right:35%; top:0; bottom:0; z-index:10; cursor:pointer;" title="菜单"></div>
@@ -17186,86 +17184,11 @@ ${wbText ? '\n【绑定的世界书设定(必须完美融合进角色背景中)�
   </div>
 </div>
 
-<!-- 🌟 蓝色高定：深海白噪音助眠舱 (彻底修复触控穿透Bug) -->
-<section id="sleepCabinApp" class="screen">
-  <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
-    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 桌面</button>
-    <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">深海助眠舱</b>
-    <div style="width:56px;"></div>
-  </div>
-  
-  <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:20px; display:flex; flex-direction:column; align-items:center;">
-    <div style="font-size:12px; color:#7a86a8; font-weight:800; margin-bottom:20px; letter-spacing:1px;">请选择今夜哄你入睡的人</div>
-    <select id="sleepRoleSelect" class="select" style="background:rgba(255,255,255,0.8); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; font-size:14px; padding:10px; width:100%; max-width:300px; outline:none; font-weight:bold; text-align:center; margin-bottom:40px;"></select>
-
-    <!-- 修复点：添加 pointer-events: none 彻底防止动画圆环阻挡点击 -->
-    <div style="position:relative; width:160px; height:160px; display:flex; justify-content:center; align-items:center; margin-bottom:40px; pointer-events:none;">
-      <style>
-        @keyframes deepBreath { 0%, 100% { transform: scale(0.8); box-shadow: 0 0 20px rgba(165,207,255,0.2); opacity: 0.6; } 50% { transform: scale(1.2); box-shadow: 0 0 60px rgba(165,207,255,0.6); opacity: 1; } }
-      </style>
-      <div style="position:absolute; width:100%; height:100%; border-radius:50%; background:radial-gradient(circle, #eef4fa, #a5cfff); animation:deepBreath 8s ease-in-out infinite;"></div>
-      <div style="position:relative; z-index:2; font-size:13px; color:#5c7094; font-weight:bold; letter-spacing:2px;">跟随频率呼吸</div>
-    </div>
-
-    <div id="sleepStoryBox" style="width:100%; flex:1; background:rgba(255,255,255,0.6); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:20px; padding:20px; box-sizing:border-box; font-size:14px; color:#5c7094; line-height:1.8; text-align:justify; overflow-y:auto; margin-bottom:20px; box-shadow:inset 0 2px 10px rgba(165,207,255,0.1);">
-      点击下方按钮，让 TA 给你讲一个简短的睡前故事，或是几句温柔的晚安呢喃...
-    </div>
-
-    <!-- 修复点：将 z-index 提至最高，确保绝对可点击 -->
-    <button class="btn p" onclick="window._askForSleepStory()" id="sleepBtn" style="position:relative; z-index:50; width:100%; max-width:300px; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:16px; padding:16px 0; font-size:15px; font-weight:bold; box-shadow:0 8px 24px rgba(92,112,148,0.15); letter-spacing:1px; transition:transform 0.1s; cursor:pointer;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">🌙 索要专属哄睡电波</button>
-  </div>
-</section>
-
 <script>
 (function(){
-  // ================= 助眠舱核心逻辑 =================
-  window._initSleepApp = function() {
-    const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
-    const sel = document.getElementById('sleepRoleSelect');
-    if(sel) sel.innerHTML = contacts.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-  };
-
-  window._askForSleepStory = async function() {
-    const roleId = document.getElementById('sleepRoleSelect').value;
-    if(!roleId) return alert('宝宝，先选一个人来陪你吧！');
-    const c = window.getContactById ? window.getContactById(roleId) : null;
-    if(!c) return;
-
-    const me = window.getMe ? window.getMe() : {name: '我'};
-    const btn = document.getElementById('sleepBtn');
-    const box = document.getElementById('sleepStoryBox');
-    
-    btn.textContent = '电波连接中...';
-    btn.style.pointerEvents = 'none';
-    box.innerHTML = '<div style="text-align:center; margin-top:40px; animation:blueBlink 1.5s infinite;">正在酝酿哄你的话语...</div>';
-
-    const sysPrompt = `你现在是：${c.name}。人设：${c.persona}。
-现在是深夜，玩家(${me.name||'我'})睡不着，躲在深海助眠舱里向你索要一段哄睡语音。
-【核心指令】：
-1. 完全代入人设，以第一人称视角，用极度温柔、或符合性格的方式哄她睡觉，绝对禁止油腻！！
-2. 可以讲微型睡前故事，或是晚安呢喃。
-3. 字数200字左右。分段排版舒适。
-4. 纯文本输出，绝不带名字前缀，绝不用JSON！`;
-
-    try {
-      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '我睡不着，哄哄我好不好？' }]);
-      box.innerHTML = String(out).replace(/```json|```/g, '').replace(/\n/g, '<br><br>').trim();
-      
-      if(window._playVoiceClone) {
-        const dummyEl = document.createElement('div');
-        window._playVoiceClone(dummyEl, box.innerText, roleId);
-      }
-    } catch(e) {
-      box.innerHTML = '<div style="color:#b57b7b; text-align:center;">时空电波被干扰了，TA 没能收到信号...<br>' + e.message + '</div>';
-    } finally {
-      btn.textContent = '🌙 索要专属哄睡电波';
-      btn.style.pointerEvents = 'auto';
-    }
-  };
-
-  // ================= 漫游画廊：真·翻页阅读引擎 =================
+  // ================= 漫游画廊：真·3D 翻页阅读引擎 =================
   const K_MANGA_BOOKS = 'mp_fix_manga_books_v1';
-  window._mangaState = { book: null, page: 0 };
+  window._mangaState = { book: null, page: 0, turning: false };
 
   async function getMangaBooks() { return (await localforage.getItem(K_MANGA_BOOKS)) || []; }
   async function setMangaBooks(data) { await localforage.setItem(K_MANGA_BOOKS, data); }
@@ -17376,7 +17299,7 @@ ${wbText ? '\n【绑定的世界书设定(必须完美融合进角色背景中)�
     window._renderMangaBooks();
   };
 
-  // 🌟 沉浸式翻页阅读核心逻辑
+  // 🌟 核心：3D 物理翻页逻辑
   window._openMangaReader = async function(id) {
     const books = await getMangaBooks();
     const book = books.find(b => b.id === id);
@@ -17384,11 +17307,11 @@ ${wbText ? '\n【绑定的世界书设定(必须完美融合进角色背景中)�
 
     window._mangaState.book = book;
     window._mangaState.page = 0;
+    window._mangaState.turning = false;
 
     document.getElementById('mangaReaderTitle').textContent = book.title;
     document.getElementById('mangaTotal').textContent = book.images.length;
     
-    // 初始化显示第一页和导航条
     document.getElementById('mangaReaderHeader').style.transform = 'translateY(0)';
     window._mangaRenderPage();
 
@@ -17398,31 +17321,62 @@ ${wbText ? '\n【绑定的世界书设定(必须完美融合进角色背景中)�
   window._mangaRenderPage = function() {
     const state = window._mangaState;
     if(!state.book) return;
-    
-    const imgEl = document.getElementById('mangaSingleImg');
-    // 添加一点淡入淡出动画，让翻页更柔和
-    imgEl.style.opacity = '0';
-    setTimeout(() => {
-      imgEl.src = state.book.images[state.page];
-      imgEl.style.opacity = '1';
-    }, 50);
-    
+    document.getElementById('mangaPageStatic').src = state.book.images[state.page];
     document.getElementById('mangaProgress').textContent = state.page + 1;
   };
 
   window._mangaFlip = function(dir) {
     const state = window._mangaState;
-    if(!state.book) return;
+    if(!state.book || state.turning) return;
     
-    const newPage = state.page + dir;
-    if(newPage >= 0 && newPage < state.book.images.length) {
-      state.page = newPage;
-      window._mangaRenderPage();
-    } else if (newPage >= state.book.images.length) {
-      alert('宝宝，已经是最后一页啦！');
-    } else {
-      alert('宝宝，这已经是第一页了哦！');
+    const from = state.page;
+    const to = from + dir;
+    
+    if(to < 0) return alert('宝宝，这已经是第一页了哦！');
+    if(to >= state.book.images.length) return alert('宝宝，已经是最后一页啦！');
+
+    state.turning = true;
+    const turn = document.getElementById('mangaPageTurn');
+    const under = document.getElementById('mangaPageUnder');
+    const staticImg = document.getElementById('mangaPageStatic');
+
+    turn.src = state.book.images[from];
+    under.src = state.book.images[to];
+
+    turn.style.display = 'block';
+    under.style.display = 'block';
+    turn.style.transformOrigin = dir === 1 ? 'left center' : 'right center';
+
+    const dur = 500; // 500毫秒的丝滑翻转
+    const start = performance.now();
+
+    function frame(t) {
+      const p = Math.min(1, (t - start) / dur);
+      // 缓动算法：让翻页有一种纸张的物理惯性
+      const ease = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      const angle = (dir === 1 ? -1 : 1) * (180 * ease);
+
+      turn.style.transform = `rotateY(${angle}deg)`;
+      
+      // 翻转时的轻微阴影，增加立体感但不闪瞎眼
+      const shadow = 0.4 * Math.sin(Math.PI * p);
+      turn.style.filter = `brightness(${1 - shadow})`;
+
+      if(p < 1) {
+        requestAnimationFrame(frame);
+      } else {
+        staticImg.src = state.book.images[to];
+        turn.style.display = 'none';
+        under.style.display = 'none';
+        turn.style.transform = 'none';
+        turn.style.filter = 'none';
+        
+        state.page = to;
+        document.getElementById('mangaProgress').textContent = to + 1;
+        state.turning = false;
+      }
     }
+    requestAnimationFrame(frame);
   };
 
   window._mangaToggleHeader = function() {
@@ -17435,6 +17389,6 @@ ${wbText ? '\n【绑定的世界书设定(必须完美融合进角色背景中)�
   };
 
 })();
-</script>
+</script> 
 </body>
   </html>
