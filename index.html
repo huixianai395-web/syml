@@ -2143,6 +2143,13 @@ body {
 .holo-option { background: rgba(250,252,255,0.7); border: 1px solid #dce5f0; border-radius: 12px; padding: 14px 16px; font-size: 14px; color: #3d4a6a; margin-bottom: 12px; cursor: pointer; transition: background 0.2s; text-align: center; font-weight: bold; }
 .holo-option:active { background: #eef4fa; transform: scale(0.98); }
 .holo-voice-wave { display: inline-block; width: 4px; height: 12px; background: #a5cfff; margin: 0 2px; border-radius: 2px; animation: blueBlink 1s infinite; }
+/* 🌟 蓝色高定：修复第三页排版，恢复正常瀑布流上下滑动 */
+.home-page:nth-child(3) {
+  justify-content: flex-start !important; 
+  align-items: flex-start !important;
+  flex-direction: column !important; 
+  gap: 0 !important;
+}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
@@ -2400,7 +2407,10 @@ body {
   </div> <!-- 第二页的大门关上！ -->
           <!-- 🌟 第三页 (home-page) 开始 -->
       <div class="home-page">
-        <!-- 漫游画廊入口 -->
+        <!-- 🌟 核心修复：加上 ios-grid 网格容器，让图标乖乖排队！ -->
+        <div class="ios-grid">
+          
+          <!-- 漫游画廊入口 -->
           <div class="ios-icon" onclick="show('mangaApp'); if(window._renderMangaBooks) window._renderMangaBooks();">
             <div class="ibg" style="background-color:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
               <svg viewBox="0 0 24 24" style="width:22px; height:22px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
@@ -2436,7 +2446,7 @@ body {
             <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">碎银流转</span>
           </div> 
 
-          <!-- 🌟 蓝色高定新增：深夜哄睡舱入口 -->
+          <!-- 深夜哄睡舱入口 -->
           <div class="ios-icon" onclick="show('lullabyApp')">
             <div class="ibg" id="icon_lullaby" style="background-color:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
               <svg class="default-svg" viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;">
@@ -2446,19 +2456,34 @@ body {
             </div>
             <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">深夜哄睡</span>
           </div>
+          
+        </div> <!-- 🌟 核心修复：网格容器在这里完美闭合！ -->
 
-          <!-- 🌟 隐形换衣间与就地绑定魔法：让新图标也能长按换图！ -->
-          <input type="file" id="up_icon_lullaby" accept="image/*" class="hidden">
-          <script>
-            setTimeout(() => {
-              if(window.bindIconUpload) window.bindIconUpload('icon_lullaby', 'up_icon_lullaby', 'mp_icon_lullaby');
-            }, 1500);
-          </script>
+        <!-- 隐形换衣间与就地绑定魔法 -->
+        <input type="file" id="up_icon_lullaby" accept="image/*" class="hidden">
+        <script>
+          setTimeout(() => {
+            if(window.bindIconUpload) window.bindIconUpload('icon_lullaby', 'up_icon_lullaby', 'mp_icon_lullaby');
+          }, 1500);
+        </script>
       </div>
       <!-- 🌟 第三页 (home-page) 结束 -->
-      </div>
 
     </div> <!-- ⚠️ 滑动总管 (home-slider) 的大门在这里关上！ -->
+    
+    <div class="page-dots">
+      <div class="dot active" id="dot1"></div>
+      <div class="dot" id="dot2"></div>
+      <div class="dot" id="dot3"></div>
+    </div>
+
+    <!-- 🌟 微信、世界书、书房终于被关回了桌面里！ -->
+    <div class="ios-dock">
+      <div class="ios-icon" data-nav="wechat"><div class="ibg" id="icon_wx"><svg class="default-svg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div><span>微信</span></div>
+      <div class="ios-icon" onclick="show('worldbook'); if(window._renderGlobalWb) window._renderGlobalWb();"><div class="ibg" id="icon_wb"><svg class="default-svg" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></div><span>世界书</span></div>
+      <div class="ios-icon" onclick="show('study');renderStudyHome();"><div class="ibg" id="icon_study"><svg class="default-svg" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div><span>书房</span></div>
+    </div>
+  </section>
       
 
     <div class="page-dots">
