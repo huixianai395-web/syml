@@ -2463,13 +2463,16 @@ body {
     
     <!-- 资产总览金库 -->
     <div style="background:linear-gradient(135deg, #eef4fa, #dce5f0); border:1px solid #cdd7e8; border-radius:20px; padding:20px; box-shadow:0 8px 24px rgba(92,112,148,0.06); margin-bottom:24px; position:relative; overflow:hidden;">
-      <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%); opacity:0.5;"></div>
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+      <!-- 🌟 核心修复：加上 pointer-events:none，彻底砸碎挡路的隐形玻璃！ -->
+      <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%); opacity:0.5; pointer-events:none;"></div>
+      
+      <!-- 🌟 核心修复：把整块内容提拔到最上层 z-index:2 -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; position:relative; z-index:2;">
         <div style="font-size:12px; color:#7a86a8; font-weight:800;">净资产 (元)</div>
         <div onclick="window._editInitBalance()" style="font-size:11px; color:#5c7094; cursor:pointer; background:rgba(255,255,255,0.5); padding:4px 10px; border-radius:8px; font-weight:bold; border:1px solid rgba(255,255,255,0.8); box-shadow:0 2px 6px rgba(92,112,148,0.05); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">校准余额 ✏️</div>
       </div>
-      <div id="accTotalBalance" style="font-size:36px; font-weight:900; color:#3d4a6a; font-family:ui-monospace, monospace; letter-spacing:-1px; margin-bottom:16px;">0.00</div>
-      <div style="display:flex; justify-content:space-between; border-top:1px dashed #cdd7e8; padding-top:12px;">
+      <div id="accTotalBalance" style="font-size:36px; font-weight:900; color:#3d4a6a; font-family:ui-monospace, monospace; letter-spacing:-1px; margin-bottom:16px; position:relative; z-index:2;">0.00</div>
+      <div style="display:flex; justify-content:space-between; border-top:1px dashed #cdd7e8; padding-top:12px; position:relative; z-index:2;">
         <div><div style="font-size:10px; color:#7a86a8; font-weight:bold;">本月进账</div><div id="accMonthIn" style="font-size:14px; font-weight:900; color:#5c7094; font-family:ui-monospace, monospace;">+0.00</div></div>
         <div style="text-align:right;"><div style="font-size:10px; color:#7a86a8; font-weight:bold;">本月碎银</div><div id="accMonthOut" style="font-size:14px; font-weight:900; color:#b57b7b; font-family:ui-monospace, monospace;">-0.00</div></div>
       </div>
