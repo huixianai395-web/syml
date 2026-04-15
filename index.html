@@ -18418,5 +18418,189 @@ ${wbText ? '\n【绑定的世界书设定(必须完美融合进角色背景中)�
 
 })();
 </script>
+  <!-- 🌟 蓝色高定：选择性全局导出补丁 (含图标、壁纸、App 视觉资产) -->
+<div id="selectiveExportModal" class="modal" style="z-index: 10006;">
+  <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:24px; padding:0; display:flex; flex-direction:column; max-height:85dvh; max-width:400px; box-shadow:0 12px 40px rgba(92,112,148,0.15); overflow:hidden;">
+    <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
+      <b style="color:#5c7094; font-size:16px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
+        <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        时空胶囊清单
+      </b>
+      <button class="btn" onclick="document.getElementById('selectiveExportModal').classList.remove('active')" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:28px; height:28px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0;">×</button>
+    </div>
+
+    <div style="flex:1; overflow-y:auto; padding:20px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; flex-direction:column; gap:12px;">
+      <div style="font-size:11px; color:#7a86a8; text-align:center; margin-bottom:8px; letter-spacing:1px;">— 请挑选需要封存的记忆与皮囊 —</div>
+      
+      <!-- 选项列表 -->
+      <div id="exportChecklist" style="display:flex; flex-direction:column; gap:10px;">
+        <!-- 动态生成 -->
+      </div>
+    </div>
+
+    <div style="padding:16px 20px; background:rgba(255,255,255,0.8); border-top:1px solid #dce5f0; backdrop-filter:blur(12px);">
+      <button class="btn p" id="runExportBtn" onclick="window._runSelectiveExport()" style="width:100%; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:12px; padding:12px 0; font-size:14px; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.1);">开始封存并下载</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+
+  // 1. 劫持原有的导出按钮
+  setTimeout(() => {
+    const oldBtn = document.getElementById('globalExportBtn');
+    if(oldBtn) {
+      oldBtn.onclick = () => window._openSelectiveExport();
+    }
+  }, 1500);
+
+  const EXPORT_CONFIG = [
+    { id: 'contacts', label: '通讯录 & 群聊', icon: '👥', desc: '包含所有男主、路人及群聊成员设定' },
+    { id: 'chats', label: '卷宗记忆 (聊天记录)', icon: '💬', desc: '包含数千条文字、图片、语音及通话回响' },
+    { id: 'api', label: 'API 密钥通道', icon: '🔑', desc: 'BaseURL、Key及模型配置信息' },
+    { id: 'me', label: '我方多重预设', icon: '👤', desc: '你的所有马甲、头像及个人设定' },
+    { id: 'visuals', label: '视觉资产 (图标壁纸)', icon: '🎨', desc: '桌面图标、壁纸、App封面、自定义气泡' },
+    { id: 'books', label: '书房 & 漫游画廊', icon: '📚', desc: '本地导入的所有书籍及漫画内容' },
+    { id: 'archives', label: '档案馆 & 答案之书', icon: '🕰️', desc: '时光日记、答案收录、遗物标本' }
+  ];
+
+  window._openSelectiveExport = function() {
+    const box = document.getElementById('exportChecklist');
+    box.innerHTML = EXPORT_CONFIG.map(item => `
+      <label style="display:flex; align-items:center; gap:12px; padding:14px; background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:16px; cursor:pointer; transition:all 0.2s;">
+        <input type="checkbox" name="exportItem" value="${item.id}" checked style="width:20px; height:20px; accent-color:#5c7094;">
+        <div style="font-size:20px;">${item.icon}</div>
+        <div style="flex:1;">
+          <div style="font-size:14px; font-weight:bold; color:#3d4a6a;">${item.label}</div>
+          <div style="font-size:10px; color:#7a86a8; margin-top:2px;">${item.desc}</div>
+        </div>
+      </label>
+    `).join('');
+    document.getElementById('selectiveExportModal').classList.add('active');
+  };
+
+  window._runSelectiveExport = async function() {
+    const btn = document.getElementById('runExportBtn');
+    const originalText = btn.textContent;
+    btn.textContent = '正在深度扫描内存...';
+    btn.style.pointerEvents = 'none';
+
+    const selected = Array.from(document.querySelectorAll('input[name="exportItem"]:checked')).map(el => el.value);
+    if(selected.length === 0) return alert('宝宝，至少选一个要打包的项目呀！');
+
+    try {
+      const data = { isSelectiveMilo: true, version: '2.0', timestamp: Date.now(), parts: selected };
+
+      // 1. 基础灵魂数据
+      if(selected.includes('contacts')) {
+        data.contacts = window.getContacts ? window.getContacts() : [];
+        data.groups = window.getGroups ? window.getGroups() : [];
+      }
+      if(selected.includes('chats')) data.chats = window.getChats ? window.getChats() : {};
+      if(selected.includes('api')) data.api = window.getApiState ? window.getApiState() : null;
+      if(selected.includes('me')) {
+        data.me = window.getMe ? window.getMe() : null;
+        data.mePresets = await localforage.getItem('mp_fix_me_presets_list');
+      }
+
+      // 2. 核心：视觉资产深度打捞 (Icons & Wallpapers)
+      if(selected.includes('visuals')) {
+        btn.textContent = '正在打捞视觉资产...';
+        data.visuals = {
+          main_icon: await localforage.getItem('mp_fix_app_icon_v1'),
+          custom_bg: await localforage.getItem('mp_fix_custom_bg'),
+          chat_bg: await localforage.getItem('mp_fix_chat_bg'),
+          chat_normal_bg: await localforage.getItem('mp_fix_chat_normal_bg'),
+          app_icons: {}
+        };
+        // 循环打捞所有 App 覆盖图标
+        const iconKeys = ['api', 'font', 'phone', 'theme', 'wx', 'wb', 'study', 'if', 'xhs', 'shop', 'post', 'projector', 'journal', 'manga', 'answer'];
+        for(const k of iconKeys) {
+          data.visuals.app_icons[k] = await localforage.getItem('mp_icon_' + k);
+        }
+        data.pref = window.getPref ? window.getPref() : null;
+        data.themeLab = await localforage.getItem('mp_fix_theme_lab_v1');
+      }
+
+      // 3. 扩展内容
+      if(selected.includes('books')) {
+        btn.textContent = '正在搬运书籍与画廊...';
+        data.study = await localforage.getItem('mp_fix_study_books');
+        data.manga = await localforage.getItem('mp_fix_manga_books_v1');
+        data.realmIf = await localforage.getItem('mp_fix_if_books');
+      }
+      if(selected.includes('archives')) {
+        btn.textContent = '正在整理档案馆...';
+        data.memories = await localforage.getItem('mp_fix_chat_memories');
+        data.relics = await localforage.getItem('mp_fix_time_relics');
+        data.answers = await localforage.getItem('mp_fix_answer_archive_v1');
+      }
+
+      // 4. 导出
+      const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
+      const a = document.createElement('a');
+      const timeStr = new Date().toISOString().slice(0,10);
+      a.href = URL.createObjectURL(blob);
+      a.download = `Milo_Capsule_${timeStr}.json`;
+      a.click();
+
+      document.getElementById('selectiveExportModal').classList.remove('active');
+      alert('✨ 时空胶囊封存成功！图标、壁纸和记忆全都在里面啦！');
+    } catch(e) {
+      alert('封存失败：' + e.message);
+    } finally {
+      btn.textContent = originalText;
+      btn.style.pointerEvents = 'auto';
+    }
+  };
+
+  // 5. 🌟 对应的选择性恢复引擎 (劫持原有的导入按钮)
+  setTimeout(() => {
+    const oldImportFile = document.getElementById('globalImportFile');
+    if(oldImportFile) {
+      oldImportFile.onchange = async (e) => {
+        const f = e.target.files?.[0]; if(!f) return;
+        try {
+          const j = JSON.parse(await f.text());
+          if(!confirm('检测到时空胶囊，是否开始恢复选中的数据？(现有冲突数据将被覆盖)')) return;
+
+          // 恢复逻辑 (带视觉资产)
+          if(j.contacts) await localforage.setItem('mp_fix_contacts', j.contacts);
+          if(j.groups) await localforage.setItem('mp_fix_groups', j.groups);
+          if(j.chats) await localforage.setItem('mp_fix_chats', j.chats);
+          if(j.api) await localforage.setItem('mp_fix_api', j.api);
+          if(j.me) await localforage.setItem('mp_fix_me', j.me);
+          if(j.mePresets) await localforage.setItem('mp_fix_me_presets_list', j.mePresets);
+          
+          if(j.visuals) {
+            if(j.visuals.main_icon) await localforage.setItem('mp_fix_app_icon_v1', j.visuals.main_icon);
+            if(j.visuals.custom_bg) await localforage.setItem('mp_fix_custom_bg', j.visuals.custom_bg);
+            if(j.visuals.chat_bg) await localforage.setItem('mp_fix_chat_bg', j.visuals.chat_bg);
+            if(j.visuals.chat_normal_bg) await localforage.setItem('mp_fix_chat_normal_bg', j.visuals.chat_normal_bg);
+            for(let k in j.visuals.app_icons) {
+              if(j.visuals.app_icons[k]) await localforage.setItem('mp_icon_' + k, j.visuals.app_icons[k]);
+            }
+          }
+          if(j.pref) await localforage.setItem('mp_fix_pref', j.pref);
+          if(j.themeLab) await localforage.setItem('mp_fix_theme_lab_v1', j.themeLab);
+          if(j.study) await localforage.setItem('mp_fix_study_books', j.study);
+          if(j.manga) await localforage.setItem('mp_fix_manga_books_v1', j.manga);
+          if(j.realmIf) await localforage.setItem('mp_fix_if_books', j.realmIf);
+          if(j.memories) await localforage.setItem('mp_fix_chat_memories', j.memories);
+          if(j.relics) await localforage.setItem('mp_fix_time_relics', j.relics);
+          if(j.answers) await localforage.setItem('mp_fix_answer_archive_v1', j.answers);
+
+          alert('✨ 时空恢复成功！皮囊与灵魂已完美归位，即将刷新页面。');
+          setTimeout(() => location.reload(), 500);
+        } catch(err) { alert('恢复失败：' + err.message); }
+        finally { e.target.value = ''; }
+      };
+    }
+  }, 1500);
+
+})();
+</script>
 </body>
   </html>
