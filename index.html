@@ -19829,179 +19829,23 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
 
 })();
 </script>
-  <!-- 🌟 蓝色高定：深夜极致细节打磨补丁 (贴在 </body> 前) -->
-<script>
+  <script>
 (function() {
-  // ================= 1. 强迫症治愈：把【测试连接】按钮移回正确的位置！ =================
+  // ================= 1. 治愈强迫症：API测试按钮归位 =================
   setTimeout(() => {
     const testBtnCard = document.getElementById('testApiBtn')?.closest('.card');
     const apiModelCard = document.getElementById('apiModel')?.closest('.card');
     if(testBtnCard && apiModelCard) {
-      // 把它插在模型选择卡片的正下方！
+      // 强行把它从错误的地方拔出来，放到模型选择卡片的下面！
       apiModelCard.parentNode.insertBefore(testBtnCard, apiModelCard.nextSibling);
     }
   }, 800);
 
-  // ================= 2. 苹果克星：强行破解所有密码框的复制限制！ =================
-  setTimeout(() => {
-    // 找出所有可能藏密钥的密码框
-    const keyIds = ['apiKey', 'mmGroupId', 'mmApiKey', 'apiTtsKey', 'fishApiKey'];
-    
-    keyIds.forEach(id => {
-      const el = document.getElementById(id);
-      if(el && !el.dataset.hooked) {
-        el.dataset.hooked = '1';
-        
-        // 给它套个外壳
-        const wrap = document.createElement('div');
-        wrap.style.cssText = 'position:relative; display:flex; align-items:center; margin-bottom:16px;';
-        el.parentNode.insertBefore(wrap, el);
-        el.style.marginBottom = '0'; 
-        wrap.appendChild(el);
-        
-        // 🌟 注入绝美的高级灰蓝小工具：显示/隐藏 + 暴力复制
-        const tools = document.createElement('div');
-        tools.style.cssText = 'position:absolute; right:12px; display:flex; gap:14px; font-size:15px;';
-        tools.innerHTML = `
-          <div onclick="const i=document.getElementById('${id}'); i.type=i.type==='password'?'text':'password'; this.style.opacity=i.type==='password'?0.5:1;" style="cursor:pointer; opacity:0.5; transition:opacity 0.2s;" title="显示/隐藏">👁️</div>
-          <div onclick="const i=document.getElementById('${id}'); const old=i.type; i.type='text'; i.select(); document.execCommand('copy'); i.type=old; alert('✨ 密钥已强行突破拦截，成功复制到剪贴板！');" style="cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'" title="复制密钥">📋</div>
-        `;
-        wrap.appendChild(tools);
-      }
-    });
-  }, 1000);
-
-  // ================= 3. 线下模式视觉重塑：居中绝美大头像 & 数据胶囊面板 =================
-  
-  // 注入线下模式专属的高级 CSS 排版
-  const offlineStyle = document.createElement('style');
-  offlineStyle.innerHTML = `
-    /* 强行让消息区块居中 */
-    #chatRoom.offline .msg-block { 
-      align-items: center !important; 
-      width: 100% !important; 
-      margin-top: 10px !important;
-    }
-    
-    /* 🌟 绝美超大居中头像 */
-    #chatRoom.offline .chat-avatar { 
-      width: 96px !important; 
-      height: 96px !important; 
-      border-radius: 50% !important; 
-      margin: 0 auto 16px auto !important; 
-      border: 3px solid #fff !important; 
-      box-shadow: 0 8px 24px rgba(92,112,148,0.15) !important; 
-      object-fit: cover !important;
-      background: #eef4fa !important;
-    }
-    
-    /* 卡片宽度限制与居中 */
-    #chatRoom.offline .bubble-wrap { 
-      align-items: center !important; 
-      width: 100% !important; 
-    }
-    #chatRoom.offline .offline-card { 
-      width: 100% !important; 
-      max-width: 400px !important; 
-      margin: 0 auto !important; 
-    }
-  `;
-  document.head.appendChild(offlineStyle);
-
-  // 🌟 核心拦截：重写 renderChat，把数据排版改成悬浮胶囊！
-  const oldRenderChat = window.renderChat;
-  window.renderChat = function() {
-    const c = window.getContactById(window.currentId);
-    const st = window.normSettings(c?.settings);
-    
-    // 如果是线上模式，乖乖走老路
-    if(st.mode !== 'offline') {
-      return oldRenderChat();
-    }
-
-    // 🌟 如果是线下模式，启动高级排版引擎！
-    const globalMe = window.getMe ? window.getMe() : {};
-    const pref = window.getPref ? window.getPref() : {showTs:false};
-    const me = { name: st.meName||globalMe.name||'我', avatar: st.meAvatar||globalMe.avatar||'' };
-    const roleAvatar = c?.avatar || 'https://via.placeholder.com/64x64?text=TA';
-    const meAvatar = me.avatar || 'https://via.placeholder.com/64x64?text=我';
-    const arr = window.getChatArr(window.currentId);
-
-    const blockBanner = document.getElementById('blockByMeBanner');
-    if(blockBanner) {
-      if(st.isBlockedByMe && !c?.isGroup) {
-        blockBanner.classList.remove('hidden');
-        document.getElementById('chatInput').style.display = 'none';
-        document.querySelector('.left-tools').style.display = 'none';
-        document.querySelector('.send-actions').style.display = 'none';
-      } else {
-        blockBanner.classList.add('hidden');
-        document.getElementById('chatInput').style.display = '';
-        document.querySelector('.left-tools').style.display = 'flex';
-        document.querySelector('.send-actions').style.display = 'flex';
-      }
-    }
-
-    document.getElementById('chatMsgs').innerHTML = arr.map((m, index) => {
-      const floorNum = index + 1;
-      const wordCount = (m.text || '').replace(/<[^>]*>/g, '').length;
-      const isMe = m.role === 'user';
-      const genTime = isMe ? '0.0' : (m.genTime || '0.0');
-
-      // ✨ 极其高级的数据胶囊排版！
-      const metaHtml = `
-        <div class="rp-meta-box" style="display:flex; justify-content:center; align-items:center; gap:12px; margin-bottom:20px; width:100%;">
-          <div style="background:rgba(250,252,255,0.85); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:14px; padding:8px 16px; display:flex; flex-direction:column; align-items:center; min-width:56px; box-shadow:0 4px 12px rgba(92,112,148,0.04);">
-            <span style="font-size:10px; color:#a0aaba; font-weight:bold; margin-bottom:4px; letter-spacing:1px;">楼层</span>
-            <b style="font-size:14px; color:#5c7094; font-family:ui-monospace, monospace; font-weight:900;">#${floorNum}</b>
-          </div>
-          <div style="background:rgba(250,252,255,0.85); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:14px; padding:8px 16px; display:flex; flex-direction:column; align-items:center; min-width:56px; box-shadow:0 4px 12px rgba(92,112,148,0.04);">
-            <span style="font-size:10px; color:#a0aaba; font-weight:bold; margin-bottom:4px; letter-spacing:1px;">耗时</span>
-            <b style="font-size:14px; color:#5c7094; font-family:ui-monospace, monospace; font-weight:900;" id="timer_${m.id}">${genTime}s</b>
-          </div>
-          <div style="background:rgba(250,252,255,0.85); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:14px; padding:8px 16px; display:flex; flex-direction:column; align-items:center; min-width:56px; box-shadow:0 4px 12px rgba(92,112,148,0.04);">
-            <span style="font-size:10px; color:#a0aaba; font-weight:bold; margin-bottom:4px; letter-spacing:1px;">字数</span>
-            <b style="font-size:14px; color:#5c7094; font-family:ui-monospace, monospace; font-weight:900;" id="words_${m.id}">${wordCount}t</b>
-          </div>
-        </div>
-      `;
-
-      const cls = isMe ? 'me' : 'ai'; 
-      const av = isMe ? meAvatar : roleAvatar; 
-      const selected = window.selectedIds ? window.selectedIds.has(m.id) : false;
-      const sCls = window.selectMode ? ' selecting' : ''; 
-      const cHtml = window.selectMode ? `<div class="msg-check">✓</div>` : '';
-      
-      if(isMe) {
-        return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}">${metaHtml}<div class="bubble-wrap me">${window.renderBubbleContent(m,true,pref)}</div></div></div>`;
-      }
-      return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-block ${cls}"><img class="chat-avatar" src="${av}">${metaHtml}${window.renderOfflineAssistant(m.text,m.time,pref,m)}</div></div>`;
-    }).join('');
-
-    document.getElementById('chatRoom').classList.toggle('select-mode', window.selectMode);
-    const multiBar = document.getElementById('multiSelectBar');
-    if(multiBar) multiBar.classList.toggle('hidden', !window.selectMode);
-    const multiCount = document.getElementById('multiCount');
-    if(multiCount && window.selectedIds) multiCount.textContent = `已选 ${window.selectedIds.size} 项`;
-    
-    const _msgs = document.getElementById('chatMsgs');
-    if(!window.selectMode){
-      requestAnimationFrame(() => {
-        _msgs.style.scrollBehavior = 'smooth'; 
-        _msgs.scrollTop = _msgs.scrollHeight;
-      });
-    }
-  };
-
-})();
-</script>
-  <script>
-(function() {
-  // ================= 1. 苹果克星：纯净 SVG 图标 + 防文字遮挡护盾 =================
+  // ================= 2. 苹果克星：高级线性SVG与防遮挡复制引擎 =================
   setTimeout(() => {
     const keyIds = ['apiKey', 'mmGroupId', 'mmApiKey', 'apiTtsKey', 'fishApiKey'];
     
-    // 绝美的高级线性 SVG 图标
+    // 绝美的高级线性 SVG 图标，彻底抛弃惊悚 Emoji
     const svgEye = `<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#5c7094;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
     const svgCopy = `<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#5c7094;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
 
@@ -20010,7 +19854,7 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
       if(el && !el.dataset.blueHooked) {
         el.dataset.blueHooked = '1';
         
-        // 🔪 核心修复：给输入框右边强行撑开 60px 的安全区，绝对不让文字被图标挡住！
+        // 🔪 核心护盾：给输入框右边强行撑开 60px 的安全区，文字绝对不会被挡住！
         el.style.paddingRight = '60px';
         el.style.marginBottom = '0'; 
         
@@ -20019,7 +19863,6 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
         el.parentNode.insertBefore(wrap, el);
         wrap.appendChild(el);
         
-        // 注入纯净的 SVG 工具栏
         const tools = document.createElement('div');
         tools.style.cssText = 'position:absolute; right:12px; display:flex; gap:12px; align-items:center;';
         tools.innerHTML = `
@@ -20031,49 +19874,39 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
     });
   }, 1000);
 
-  // ================= 2. 线下视觉重塑：复古相框大头像 & 等宽气泡 =================
+  // ================= 3. 线下视觉重塑：复古相纸大头像 & 等宽气泡 & 数据标签 =================
   const offlineStyle = document.createElement('style');
   offlineStyle.innerHTML = `
-    /* 强行让消息区块居中，并打破之前的狭窄限制 */
-    #chatRoom.offline .msg-block { 
-      align-items: center !important; 
-      width: 100% !important; 
-      margin-top: 10px !important;
-    }
+    /* 强制居中与全宽对齐状态栏 */
+    #chatRoom.offline .msg-block { align-items: center !important; width: 100% !important; margin-top: 10px !important; }
+    #chatRoom.offline .bubble-wrap { align-items: center !important; width: 100% !important; }
+    #chatRoom.offline .offline-card { width: 100% !important; max-width: 100% !important; margin: 0 !important; }
     
-    /* 🌟 极致复古美学：带相框的方形大头像 */
+    /* 🌟 绝美方形复古相纸大头像 */
     #chatRoom.offline .chat-avatar { 
       width: 110px !important; 
       height: 110px !important; 
-      border-radius: 20px !important; /* 微微的圆角，绝不生硬 */
+      border-radius: 16px !important; /* 微微的圆角，接近方形，更符合复古感 */
       margin: 0 auto 16px auto !important; 
-      border: 2px solid #e8dccb !important; /* 复古牛皮纸边框 */
-      padding: 4px !important; /* 留出相纸的白边 */
-      background: #fffdf9 !important; /* 泛黄的底色 */
-      box-shadow: 0 6px 20px rgba(110,78,42,0.08), inset 0 2px 4px rgba(0,0,0,0.02) !important; 
+      border: 1px solid #e8dccb !important; 
+      padding: 6px !important; /* 留出相纸的泛黄白边 */
+      background: #fffdf9 !important; 
+      box-shadow: 0 8px 24px rgba(110,78,42,0.06), inset 0 2px 4px rgba(0,0,0,0.02) !important; 
       object-fit: cover !important;
-    }
-    
-    /* 🔪 核心修复：把气泡宽度释放，和状态栏绝对对齐！ */
-    #chatRoom.offline .bubble-wrap { 
-      align-items: center !important; 
-      width: 100% !important; 
-    }
-    #chatRoom.offline .offline-card { 
-      width: 100% !important; 
-      max-width: 100% !important; /* 打破 400px 的封印 */
-      margin: 0 !important; 
     }
   `;
   document.head.appendChild(offlineStyle);
 
-  // ================= 3. 复古标签注入引擎 =================
-  const oldRenderChat = window.renderChat;
+  // 🌟 劫持渲染引擎注入复古标签 (防止污染其他逻辑，采用纯净劫持法)
+  if(!window._originalRenderChatBeforeBlue) {
+    window._originalRenderChatBeforeBlue = window.renderChat;
+  }
+  
   window.renderChat = function() {
     const c = window.getContactById(window.currentId);
     const st = window.normSettings(c?.settings);
     
-    if(st.mode !== 'offline') return oldRenderChat(); // 线上模式乖乖走老路
+    if(st.mode !== 'offline') return window._originalRenderChatBeforeBlue(); // 线上模式乖乖走老路
 
     const globalMe = window.getMe ? window.getMe() : {};
     const pref = window.getPref ? window.getPref() : {showTs:false};
