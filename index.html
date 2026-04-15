@@ -18602,5 +18602,77 @@ ${wbText ? '\n【绑定的世界书设定(必须完美融合进角色背景中)�
 
 })();
 </script>
+  <!-- 🌟 蓝色高定：答案之书·魔法粒子围绕补丁 -->
+<style>
+  /* 魔法粒子动画 */
+  @keyframes particleFloat {
+    0% { transform: translate(0, 0) scale(1); opacity: 0; }
+    20% { opacity: 0.8; }
+    80% { opacity: 0.8; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(0.5); opacity: 0; }
+  }
+  .magic-particle {
+    position: absolute; width: 4px; height: 4px; background: #a5cfff;
+    border-radius: 50%; pointer-events: none; z-index: 1;
+    box-shadow: 0 0 8px #fff, 0 0 12px #a5cfff;
+    opacity: 0;
+  }
+  /* 翻开时的整体发光 */
+  .book-magic-glow {
+    box-shadow: 0 0 50px rgba(165, 207, 255, 0.5), inset 0 0 20px rgba(255,255,255,0.2) !important;
+  }
+</style>
+
+<script>
+(function(){
+  // 🌟 注入魔法粒子生成器
+  window._createParticles = function() {
+    const book = document.getElementById('theMagicBook');
+    if(!book) return;
+    
+    for(let i=0; i<15; i++) {
+      const p = document.createElement('div');
+      p.className = 'magic-particle';
+      // 随机散射角度和距离
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 80 + Math.random() * 100;
+      p.style.setProperty('--dx', (Math.cos(angle) * dist) + 'px');
+      p.style.setProperty('--dy', (Math.sin(angle) * dist) + 'px');
+      
+      // 随机位置（在书本四周）
+      p.style.left = '50%';
+      p.style.top = '50%';
+      
+      p.style.animation = `particleFloat ${1 + Math.random() * 1.5}s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`;
+      book.appendChild(p);
+      setTimeout(() => p.remove(), 2500);
+    }
+  };
+
+  // 🌟 劫持原有的 _askMagicBook 函数，注入视觉魔法
+  const oldAsk = window._askMagicBook;
+  window._askMagicBook = async function() {
+    const cover = document.getElementById('bookCover');
+    const book = document.getElementById('theMagicBook');
+    
+    // 如果是准备翻开（即当前是合上的）
+    if(!window._bookIsOpen) {
+      const roleId = document.getElementById('answerRoleSelect').value;
+      const question = document.getElementById('answerQuestionInput').value.trim();
+      if(roleId && question) {
+        // 触发粒子爆发！
+        window._createParticles();
+        if(book) book.classList.add('book-magic-glow');
+      }
+    } else {
+      // 合上时移除发光
+      if(book) book.classList.remove('book-magic-glow');
+    }
+    
+    // 执行原逻辑
+    if(oldAsk) await oldAsk();
+  };
+})();
+</script>
 </body>
   </html>
