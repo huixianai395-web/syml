@@ -2143,13 +2143,6 @@ body {
 .holo-option { background: rgba(250,252,255,0.7); border: 1px solid #dce5f0; border-radius: 12px; padding: 14px 16px; font-size: 14px; color: #3d4a6a; margin-bottom: 12px; cursor: pointer; transition: background 0.2s; text-align: center; font-weight: bold; }
 .holo-option:active { background: #eef4fa; transform: scale(0.98); }
 .holo-voice-wave { display: inline-block; width: 4px; height: 12px; background: #a5cfff; margin: 0 2px; border-radius: 2px; animation: blueBlink 1s infinite; }
-/* 🌟 蓝色高定：修复第三页排版，恢复正常瀑布流上下滑动 */
-.home-page:nth-child(3) {
-  justify-content: flex-start !important; 
-  align-items: flex-start !important;
-  flex-direction: column !important; 
-  gap: 0 !important;
-}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
@@ -2405,12 +2398,8 @@ body {
           
     </div> <!-- 🌟 补回这扇网格大门！图标完美归位！ -->
   </div> <!-- 第二页的大门关上！ -->
-          <!-- 🌟 第三页 (home-page) 开始 -->
       <div class="home-page">
-        <!-- 🌟 核心修复：加上 ios-grid 网格容器，让图标乖乖排队！ -->
-        <div class="ios-grid">
-          
-          <!-- 漫游画廊入口 -->
+        <!-- 漫游画廊入口 -->
           <div class="ios-icon" onclick="show('mangaApp'); if(window._renderMangaBooks) window._renderMangaBooks();">
             <div class="ibg" style="background-color:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
               <svg viewBox="0 0 24 24" style="width:22px; height:22px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
@@ -2425,7 +2414,6 @@ body {
             </div>
             <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">答案之书</span>
           </div>
-
           <!-- 潜意识捕梦网入口 -->
           <div class="ios-icon" onclick="show('dreamApp'); if(window._initDreamApp) window._initDreamApp();">
             <div class="ibg" id="icon_dream" style="background-color:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
@@ -2435,8 +2423,7 @@ body {
             </div>
             <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">捕梦网</span>
           </div>
-
-          <!-- 碎银流转 (记账) 入口 -->
+       <!-- 碎银流转 (记账) 入口 -->
           <div class="ios-icon" onclick="show('accountApp'); if(window._initAccountApp) window._initAccountApp();">
             <div class="ibg" style="background-color:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
               <svg viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;">
@@ -2445,45 +2432,9 @@ body {
             </div>
             <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">碎银流转</span>
           </div> 
-
-          <!-- 深夜哄睡舱入口 -->
-          <div class="ios-icon" onclick="show('lullabyApp')">
-            <div class="ibg" id="icon_lullaby" style="background-color:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
-              <svg class="default-svg" viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                <line x1="9" y1="15" x2="15" y2="15"></line>
-              </svg>
-            </div>
-            <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">深夜哄睡</span>
-          </div>
-          
-        </div> <!-- 🌟 核心修复：网格容器在这里完美闭合！ -->
-
-        <!-- 隐形换衣间与就地绑定魔法 -->
-        <input type="file" id="up_icon_lullaby" accept="image/*" class="hidden">
-        <script>
-          setTimeout(() => {
-            if(window.bindIconUpload) window.bindIconUpload('icon_lullaby', 'up_icon_lullaby', 'mp_icon_lullaby');
-          }, 1500);
-        </script>
       </div>
-      <!-- 🌟 第三页 (home-page) 结束 -->
 
     </div> <!-- ⚠️ 滑动总管 (home-slider) 的大门在这里关上！ -->
-    
-    <div class="page-dots">
-      <div class="dot active" id="dot1"></div>
-      <div class="dot" id="dot2"></div>
-      <div class="dot" id="dot3"></div>
-    </div>
-
-    <!-- 🌟 微信、世界书、书房终于被关回了桌面里！ -->
-    <div class="ios-dock">
-      <div class="ios-icon" data-nav="wechat"><div class="ibg" id="icon_wx"><svg class="default-svg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div><span>微信</span></div>
-      <div class="ios-icon" onclick="show('worldbook'); if(window._renderGlobalWb) window._renderGlobalWb();"><div class="ibg" id="icon_wb"><svg class="default-svg" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></div><span>世界书</span></div>
-      <div class="ios-icon" onclick="show('study');renderStudyHome();"><div class="ibg" id="icon_study"><svg class="default-svg" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div><span>书房</span></div>
-    </div>
-  </section>
       
 
     <div class="page-dots">
@@ -2599,50 +2550,6 @@ body {
     <button class="btn p" onclick="document.getElementById('accSoundModal').classList.remove('active')" style="width:100%; background:#eef4fa; color:#5c7094; border-radius:10px; padding:8px 0; font-weight:bold;">完成</button>
   </div>
 </div>
-  <!-- 🌟 蓝色高定：深夜哄睡舱 (沉浸式呼吸美学版) -->
-<style>
-  @keyframes lullabyBreathe {
-    0%, 100% { background-color: #eef4fa; }
-    50% { background-color: #dce5f0; }
-  }
-  @keyframes textFadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .lullaby-bg {
-    animation: lullabyBreathe 8s ease-in-out infinite;
-    transition: all 1s ease;
-  }
-</style>
-
-<section id="lullabyApp" class="screen lullaby-bg">
-  <!-- 极简透明导航 -->
-  <div style="padding:calc(12px + var(--safe-top)) 20px 12px; display:flex; justify-content:space-between; align-items:center; z-index:10;">
-    <button class="btn" onclick="window._exitLullaby()" style="background:rgba(255,255,255,0.4); color:#5c7094; border:1px solid rgba(255,255,255,0.6); border-radius:50%; width:36px; height:36px; padding:0; display:grid; place-items:center; backdrop-filter:blur(12px); transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
-      <svg viewBox="0 0 24 24" style="width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><polyline points="15 18 9 12 15 6"></polyline></svg>
-    </button>
-    <div style="width:36px;"></div> <!-- 占位平衡 -->
-  </div>
-
-  <div class="page" style="padding:40px 30px; display:flex; flex-direction:column; align-items:center; justify-content:center; height:calc(100% - 80px);">
-    
-    <!-- 沉浸式文本显影区 -->
-    <div id="lullabyTextDisplay" style="flex:1; width:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; font-size:16px; color:#5c7094; line-height:2.2; letter-spacing:2px; text-align:center; font-family:'STZhongsong', 'KaiTi', serif; font-weight:bold; text-shadow:0 2px 10px rgba(255,255,255,0.8); transition:opacity 0.5s;">
-      <span style="opacity:0.6; font-size:13px; font-family:-apple-system, sans-serif; font-weight:normal; letter-spacing:1px;">夜深了，想听谁的声音入梦？</span>
-    </div>
-
-    <!-- 隐形控制台 -->
-    <div id="lullabyControls" style="width:100%; max-width:300px; background:rgba(255,255,255,0.3); border:1px solid rgba(255,255,255,0.5); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-radius:24px; padding:20px; box-shadow:0 8px 32px rgba(92,112,148,0.05); transition:opacity 0.5s;">
-      
-      <div style="font-size:11px; color:#7a86a8; font-weight:bold; margin-bottom:8px; text-align:center; letter-spacing:1px;">呼叫守夜人</div>
-      <select id="lullabyRoleSelect" class="select" style="width:100%; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; padding:12px; margin-bottom:16px; font-weight:bold; outline:none; text-align:center; appearance:none;"></select>
-      
-      <button class="btn p" id="startLullabyBtn" onclick="window._startLullaby()" style="width:100%; background:linear-gradient(135deg, #ffffff, #eef4fa); color:#5c7094; border:1px solid #dce5f0; border-radius:16px; padding:14px 0; font-size:14px; font-weight:900; letter-spacing:2px; box-shadow:0 4px 16px rgba(92,112,148,0.08); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
-        <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vertical-align:-3px; margin-right:6px;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>潜入梦境
-      </button>
-    </div>
-  </div>
-</section>
 <!-- ================= 🌟 蓝色高定：时光邮局 ================= -->
   <section id="timePostOffice" class="screen">
     <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
@@ -19315,89 +19222,6 @@ ${wbText ? '\n【绑定的世界书设定(必须完美融合进角色背景中)�
     list = list.filter(x => x.id !== id);
     await localforage.setItem(K_ACCOUNT, list);
     window._renderAccountList();
-  };
-})();
-</script>
-  <script>
-(function(){
-  const K_LULLABY_MEM = 'mp_fix_lullaby_memory';
-
-  // 初始化下拉框
-  setTimeout(() => {
-    const sel = document.getElementById('lullabyRoleSelect');
-    if(sel && window.getContacts) {
-      const contacts = window.getContacts().filter(c => !c.isGroup);
-      sel.innerHTML = contacts.map(c => `<option value="${c.id}">${String(c.name).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]))}</option>`).join('');
-    }
-  }, 1500);
-
-  window._startLullaby = async function() {
-    const roleId = document.getElementById('lullabyRoleSelect').value;
-    if(!roleId) return alert('宝宝，请先在通讯录里建一个角色哦！');
-    
-    const c = window.getContactById(roleId);
-    if(!c) return;
-
-    const btn = document.getElementById('startLullabyBtn');
-    const controls = document.getElementById('lullabyControls');
-    const display = document.getElementById('lullabyTextDisplay');
-    
-    btn.innerHTML = '<span style="animation:blueBlink 1.5s infinite;">连接脑电波中...</span>';
-    btn.style.pointerEvents = 'none';
-
-    try {
-      const sysPrompt = `你现在是：${c.name}。人设：${c.persona}。
-现在是深夜，玩家（你的爱人）失眠了，正在使用“深夜哄睡舱”听着白噪音准备入睡。
-请以【第一人称视角】对她说一段极其温柔、细腻、让人安心的哄睡低语。
-要求：
-1. 极具活人感，语气轻柔，符合你的人设（比如傲娇的人会别扭地关心，温柔的人会极致包容）。
-2. 字数在 50-100 字左右，分 2-3 个短句。
-3. 绝对不要带任何动作描写括号！绝对不要带名字前缀！直接输出纯粹的对话文本。`;
-
-      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '我睡不着，哄哄我好不好...' }]);
-      const whisper = out.replace(/\`\`\`json|\`\`\`/g, '').replace(/^["'「”]+|["'」”]+$/g, '').trim();
-
-      // 存入外挂内存
-      await localforage.setItem(K_LULLABY_MEM, { role: c.name, text: whisper, time: Date.now() });
-
-      // 隐藏控制台，进入沉浸模式
-      controls.style.opacity = '0';
-      setTimeout(() => { controls.style.display = 'none'; }, 500);
-
-      // 打字机显影特效
-      display.innerHTML = '';
-      const sentences = whisper.split(/(?<=[。！？!?…])/).filter(Boolean);
-      
-      let delayAcc = 0;
-      sentences.forEach((s, idx) => {
-        const span = document.createElement('div');
-        span.textContent = s.trim();
-        span.style.opacity = '0';
-        span.style.animation = `textFadeIn 2s ease forwards ${delayAcc}s`;
-        display.appendChild(span);
-        delayAcc += (s.length * 0.2 + 1); // 根据字数计算下一句的延迟
-      });
-
-    } catch(e) {
-      alert('脑电波连接失败啦：' + e.message);
-      btn.innerHTML = '潜入梦境';
-      btn.style.pointerEvents = 'auto';
-    }
-  };
-
-  window._exitLullaby = function() {
-    document.getElementById('lullabyApp').classList.remove('active');
-    document.getElementById('home').classList.add('active');
-    // 恢复控制台
-    const controls = document.getElementById('lullabyControls');
-    const btn = document.getElementById('startLullabyBtn');
-    const display = document.getElementById('lullabyTextDisplay');
-    
-    controls.style.display = 'block';
-    setTimeout(() => { controls.style.opacity = '1'; }, 50);
-    btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vertical-align:-3px; margin-right:6px;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>潜入梦境';
-    btn.style.pointerEvents = 'auto';
-    display.innerHTML = '<span style="opacity:0.6; font-size:13px; font-family:-apple-system, sans-serif; font-weight:normal; letter-spacing:1px;">夜深了，想听谁的声音入梦？</span>';
   };
 })();
 </script>
