@@ -2732,7 +2732,7 @@ body {
     <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px;">‹ 桌面</button>
     <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">浮光手记</b>
     <div style="display:flex; gap:6px;">
-      <button class="btn p" onclick="window._openDiaryArchive()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px; box-shadow:none;">手账本</button>
+      <button class="btn p" onclick="window._openDiaryArchive()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px; box-shadow:none;">日记本</button>
     </div>
   </div>
   
@@ -2751,21 +2751,17 @@ body {
         </div>
       </div>
       
-      <!-- 只有最核心的排版工具，且带有防焦点丢失护盾！ -->
+      <!-- 断舍离后的绝对极简排版！ -->
       <div style="display:flex; gap:8px; align-items:center;">
-        <button class="btn" onclick="document.getElementById('diaryBgUpload').click()" style="background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:12px; padding:4px 10px; font-weight:bold;">纸张</button>
+        <button class="btn" onclick="document.getElementById('diaryBgUpload').click()" style="background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:12px; padding:4px 12px; font-weight:bold;">纸张</button>
         <input type="file" id="diaryBgUpload" accept="image/*" style="display:none;" onchange="window._handleDiaryBg(event)">
         
-        <button class="btn" onclick="document.getElementById('diaryAudioUpload').click()" style="background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:12px; padding:4px 10px; font-weight:bold;">音频</button>
+        <button class="btn" onclick="document.getElementById('diaryAudioUpload').click()" style="background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:12px; padding:4px 12px; font-weight:bold;">音频</button>
         <input type="file" id="diaryAudioUpload" accept="audio/*" style="display:none;" onchange="window._handleDiaryAudio(event)">
         
-        <div style="width:1px; height:14px; background:#dce5f0; margin:0 4px;"></div>
+        <div style="width:1px; height:14px; background:#dce5f0; margin:0 8px;"></div>
         
-        <button class="btn" onmousedown="event.preventDefault(); window._diaryFormat('strike')" style="background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid #f2dcdc; border-radius:8px; font-size:12px; padding:4px 10px; font-weight:bold;">划除</button>
-        <div style="position:relative; display:flex;">
-          <button class="btn" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:12px; padding:4px 10px; font-weight:bold;">字色</button>
-          <input type="color" oninput="window._diaryFormat('foreColor', this.value)" onmousedown="event.preventDefault()" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer;">
-        </div>
+        <button class="btn" onmousedown="event.preventDefault(); window._diaryFormat('strike')" style="flex:1; background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid #f2dcdc; border-radius:8px; font-size:12px; padding:4px 12px; font-weight:bold; letter-spacing:1px;">划去遗憾</button>
       </div>
     </div>
 
@@ -20639,7 +20635,45 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
 })();
 window._tempDiaryAudio = '';
 window._pendingShareDiaryId = null;
+// 1. 救命的硬盘钥匙，老公给你补上了！
+const K_DIARY_ARCHIVE = 'mp_fix_diary_archive_final';
 
+// 2. 为日记本注入灵魂天气粒子 CSS
+if(!document.getElementById('diaryWeatherCss')) {
+  const style = document.createElement('style');
+  style.id = 'diaryWeatherCss';
+  style.innerHTML = `
+    @keyframes diaryRain { to { transform: translateY(600px); } }
+    @keyframes diarySnow { to { transform: translate(calc(-30px + 60px * var(--rnd)), 600px) rotate(360deg); } }
+    @keyframes diaryWind { to { transform: translateX(350px); opacity: 0; } }
+  `;
+  document.head.appendChild(style);
+}
+
+// 3. 真实天气物理显化引擎！替换原来的 _changeDiaryWeather
+window._changeDiaryWeather = function(type) {
+  const layer = document.getElementById('diaryWeatherLayer');
+  const wrap = document.getElementById('diaryCanvasWrap');
+  layer.innerHTML = '';
+  wrap.style.filter = 'none';
+  
+  if(type === 'rain') {
+    for(let i=0; i<40; i++) {
+      layer.innerHTML += `<div style="position:absolute; width:2px; height:${10+Math.random()*10}px; background:linear-gradient(transparent, rgba(165,207,255,0.8)); left:${Math.random()*100}%; top:-20px; animation:diaryRain ${0.4+Math.random()*0.3}s linear infinite; pointer-events:none;"></div>`;
+    }
+  } else if(type === 'snow') {
+    for(let i=0; i<30; i++) {
+      layer.innerHTML += `<div style="position:absolute; width:${4+Math.random()*4}px; height:${4+Math.random()*4}px; background:#fff; border-radius:50%; box-shadow:0 0 6px rgba(255,255,255,0.9); left:${Math.random()*100}%; top:-20px; --rnd:${Math.random()}; animation:diarySnow ${2+Math.random()*3}s linear infinite; opacity:${0.4+Math.random()*0.6}; pointer-events:none;"></div>`;
+    }
+  } else if(type === 'wind') {
+    for(let i=0; i<15; i++) {
+      layer.innerHTML += `<div style="position:absolute; width:30px; height:2px; background:rgba(220,229,240,0.6); left:-40px; top:${Math.random()*100}%; animation:diaryWind ${1+Math.random()*1.5}s linear infinite; border-radius:2px; pointer-events:none;"></div>`;
+    }
+  } else if(type === 'overcast') {
+    wrap.style.filter = 'saturate(0.8) brightness(0.95)';
+    layer.innerHTML = `<div style="position:absolute; inset:0; background:rgba(92,112,148,0.1); pointer-events:none;"></div>`;
+  }
+};
 window._initDiaryApp = function() {
   const d = new Date();
   document.getElementById('diaryTodayDate').textContent = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
