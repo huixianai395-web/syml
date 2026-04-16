@@ -2736,32 +2736,44 @@ body {
     </div>
   </div>
   <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px; overflow:hidden; display:flex; flex-direction:column;">
-    <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:16px; padding:12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; z-index:10; box-shadow:0 4px 12px rgba(92,112,148,0.03);">
-      <select id="diaryWeather" class="select" onchange="window._changeDiaryWeather(this.value)" style="width:100px; background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:8px; font-size:12px; padding:6px; font-weight:bold; outline:none;">
+    <!-- 1. 替换刚才的 UI，加入字体颜色、音频和完整天气 -->
+<div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:16px; padding:12px; margin-bottom:12px; z-index:10; box-shadow:0 4px 12px rgba(92,112,148,0.03);">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+    <div id="diaryTodayDate" style="font-size:14px; color:#5c7094; font-family:'STZhongsong', 'KaiTi', serif; font-weight:900; letter-spacing:1px;"></div>
+    <div style="display:flex; gap:6px;">
+      <input id="diaryMood" class="input" placeholder="今日心情" style="width:72px; background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:8px; font-size:12px; padding:4px; text-align:center;">
+      <select id="diaryWeather" class="select" onchange="window._changeDiaryWeather(this.value)" style="width:80px; background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:8px; font-size:12px; padding:4px; outline:none;">
         <option value="none">晴朗 ☀️</option><option value="rain">落雨 🌧️</option><option value="snow">初雪 ❄️</option>
+        <option value="wind">起风 🍃</option><option value="cloudy">多云 ⛅</option><option value="overcast">阴天 ☁️</option>
       </select>
-      <div style="font-size:12px; color:#a0aaba; font-family:ui-monospace, monospace; font-weight:bold;" id="diaryTodayDate"></div>
-      <input id="diaryMood" class="input" placeholder="今日心情..." style="width:100px; background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:8px; font-size:12px; padding:6px; font-weight:bold; outline:none; text-align:center;">
     </div>
-    <div style="display:flex; gap:8px; margin-bottom:12px; z-index:10;">
-      <button class="btn" onclick="document.getElementById('diaryBgUpload').click()" style="flex:1; background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-size:11px; font-weight:bold;">换纸张</button>
-      <input type="file" id="diaryBgUpload" accept="image/*" style="display:none;" onchange="window._handleDiaryBg(event)">
-      <button class="btn" onclick="document.getElementById('diaryStickerUpload').click()" style="flex:1; background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-size:11px; font-weight:bold;">+ 贴纸</button>
-      <input type="file" id="diaryStickerUpload" accept="image/*" style="display:none;" onchange="window._addDiarySticker(event)">
-      <button class="btn" onclick="window._diaryFormat('strike')" style="flex:1; background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; font-size:11px; font-weight:bold;">划掉写错的</button>
-      <div style="position:relative; flex:1; display:flex;">
-        <button class="btn" onclick="window._diaryFormat('highlight')" style="width:100%; background:rgba(255,250,230,0.8); color:#b38b22; border:1px solid #f0e6c8; border-radius:10px; font-size:11px; font-weight:bold;">高亮笔</button>
-        <input type="color" id="diaryHiColor" value="#f0e6c8" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer;">
-      </div>
-    </div>
-    <div id="diaryCanvasWrap" style="flex:1; position:relative; border-radius:16px; overflow:hidden; box-shadow:0 8px 32px rgba(92,112,148,0.08); border:1px solid #dce5f0; background:#fdfaf3;">
-      <div id="diaryWeatherLayer" style="position:absolute; inset:0; pointer-events:none; z-index:5; overflow:hidden;"></div>
-      <div id="diaryBgLayer" style="position:absolute; inset:0; background-size:cover; background-position:center; opacity:0.8; z-index:1;"></div>
-      <div id="diaryEditor" contenteditable="true" style="position:absolute; inset:0; z-index:2; padding:24px; font-size:15px; color:#5c4a3a; line-height:1.8; font-family:'STZhongsong', 'KaiTi', serif; outline:none; overflow-y:auto; white-space:pre-wrap; text-align:justify;"></div>
-      <div id="diaryStickerLayer" style="position:absolute; inset:0; z-index:3; pointer-events:none; overflow:hidden;"></div>
-    </div>
-    <button class="btn p" onclick="window._saveDiary()" style="width:100%; margin-top:16px; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:14px; padding:14px 0; font-size:14px; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.1); letter-spacing:1px; flex-shrink:0;">✨ 封存入库</button>
   </div>
+  
+  <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+    <button class="btn" onclick="document.getElementById('diaryAudioUpload').click()" style="background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:11px; padding:4px 10px; font-weight:bold;">🎵 传音频</button>
+    <input type="file" id="diaryAudioUpload" accept="audio/*" style="display:none;" onchange="window._handleDiaryAudio(event)">
+    <button class="btn" onclick="document.getElementById('diaryStickerUpload').click()" style="background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:11px; padding:4px 10px; font-weight:bold;">贴纸</button>
+    
+    <div style="width:1px; height:14px; background:#dce5f0; margin:0 4px;"></div>
+    
+    <button class="btn" onclick="window._diaryFormat('strike')" style="background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid #f2dcdc; border-radius:8px; font-size:11px; padding:4px 8px;">划除</button>
+    <div style="position:relative; display:flex;">
+      <button class="btn" style="background:rgba(255,250,230,0.8); color:#b38b22; border:1px solid #f0e6c8; border-radius:8px; font-size:11px; padding:4px 8px;">高亮</button>
+      <input type="color" oninput="window._diaryFormat('highlight', this.value)" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer;">
+    </div>
+    <div style="position:relative; display:flex;">
+      <button class="btn" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:11px; padding:4px 8px;">字色</button>
+      <input type="color" oninput="window._diaryFormat('foreColor', this.value)" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer;">
+    </div>
+  </div>
+</div>
+
+<div id="diaryAudioCapsule" style="display:none; background:rgba(250,252,255,0.8); border:1px solid #a5cfff; border-radius:999px; padding:6px 12px; margin-bottom:12px; align-items:center; gap:8px; width:max-content; box-shadow:0 4px 12px rgba(165,207,255,0.2); z-index:10; position:relative;">
+  <div onclick="window._toggleDiaryAudio()" id="diaryAudioPlayBtn" style="width:24px; height:24px; border-radius:50%; background:#5c7094; color:#fff; display:grid; place-items:center; cursor:pointer; font-size:10px;">▶</div>
+  <div style="font-size:11px; color:#5c7094; font-weight:bold; letter-spacing:1px;">今日声音记忆...</div>
+  <div onclick="window._removeDiaryAudio()" style="color:#b57b7b; font-size:16px; cursor:pointer; margin-left:8px;">×</div>
+  <audio id="diaryAudioPlayer" src=""></audio>
+</div>
   </section>
 
   <!-- 专属世界书模态框 -->
@@ -20601,6 +20613,88 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
   };
 
 })();
+  // 2. 核心 JS 引擎
+window._tempDiaryAudio = '';
+window._tempStickers = [];
+
+window._initDiaryApp = function() {
+  const d = new Date();
+  document.getElementById('diaryTodayDate').textContent = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+  document.getElementById('diaryEditor').innerHTML = '';
+  document.getElementById('diaryStickerLayer').innerHTML = '';
+  document.getElementById('diaryAudioCapsule').style.display = 'none';
+  window._tempDiaryAudio = '';
+  window._tempStickers = [];
+};
+
+// 音频处理引擎
+window._handleDiaryAudio = async function(e) {
+  const f = e.target.files?.[0]; if(!f) return;
+  if(f.size > 5 * 1024 * 1024) return alert('音频太大啦，存进日记本会很重的哦！');
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    window._tempDiaryAudio = ev.target.result;
+    document.getElementById('diaryAudioPlayer').src = window._tempDiaryAudio;
+    document.getElementById('diaryAudioCapsule').style.display = 'flex';
+  };
+  reader.readAsDataURL(f);
+  e.target.value = '';
+};
+
+window._toggleDiaryAudio = function() {
+  const audio = document.getElementById('diaryAudioPlayer');
+  const btn = document.getElementById('diaryAudioPlayBtn');
+  if(audio.paused) { audio.play(); btn.textContent = '||'; } 
+  else { audio.pause(); btn.textContent = '▶'; }
+};
+
+window._removeDiaryAudio = function() {
+  window._tempDiaryAudio = '';
+  document.getElementById('diaryAudioPlayer').src = '';
+  document.getElementById('diaryAudioCapsule').style.display = 'none';
+};
+
+// 格式化富文本引擎
+window._diaryFormat = function(cmd, val) {
+  document.getElementById('diaryEditor').focus();
+  if(cmd === 'strike') document.execCommand('strikeThrough', false, null);
+  else if(cmd === 'highlight') document.execCommand('hiliteColor', false, val || '#f0e6c8');
+  else if(cmd === 'foreColor') document.execCommand('foreColor', false, val || '#5c7094');
+};
+
+// 天气特效粒子引擎
+window._changeDiaryWeather = function(type) {
+  const layer = document.getElementById('diaryWeatherLayer');
+  const wrap = document.getElementById('diaryCanvasWrap');
+  layer.innerHTML = '';
+  wrap.style.filter = 'none';
+  
+  if(type === 'rain') {
+    for(let i=0; i<30; i++) {
+      layer.innerHTML += `<div style="position:absolute; width:2px; height:15px; background:linear-gradient(transparent, rgba(165,207,255,0.6)); left:${Math.random()*100}%; top:-20px; animation:rainDrop ${0.5+Math.random()}s linear infinite;"></div>`;
+    }
+  } else if(type === 'snow') {
+    for(let i=0; i<20; i++) {
+      layer.innerHTML += `<div style="position:absolute; width:6px; height:6px; background:#fff; border-radius:50%; box-shadow:0 0 4px rgba(255,255,255,0.8); left:${Math.random()*100}%; top:-10px; animation:snowFall ${2+Math.random()*3}s linear infinite; opacity:${Math.random()};"></div>`;
+    }
+  } else if(type === 'wind') {
+    for(let i=0; i<10; i++) {
+      layer.innerHTML += `<div style="position:absolute; width:20px; height:2px; background:rgba(220,229,240,0.5); left:-30px; top:${Math.random()*100}%; animation:windBlow ${1+Math.random()*2}s linear infinite;"></div>`;
+    }
+  } else if(type === 'overcast') {
+    wrap.style.filter = 'saturate(0.7) brightness(0.9)';
+    layer.innerHTML = `<div style="position:absolute; inset:0; background:rgba(92,112,148,0.15);"></div>`;
+  }
+};
+
+// 动画注入
+const style = document.createElement('style');
+style.innerHTML = `
+  @keyframes rainDrop { to { transform: translateY(500px); } }
+  @keyframes snowFall { to { transform: translate(${Math.random()*50-25}px, 500px); } }
+  @keyframes windBlow { to { transform: translateX(400px); } }
+`;
+document.head.appendChild(style);
 </script>
 </body>
   </html>
