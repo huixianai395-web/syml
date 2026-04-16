@@ -20298,5 +20298,140 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
 
 })();
 </script>
+  <style>
+  /* 🌟 注入对话专属的 CSS 变量 */
+  #ifReaderContent div[id^="if_chap_text_"] .if-dialogue-text {
+    color: var(--if-dialogue-color, #a5cfff) !important;
+    font-weight: bold;
+    transition: color 0.3s ease;
+  }
+</style>
+
+<script>
+(function(){
+  const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+
+  // ================= 1. 拯救憋屈的输入框 =================
+  // 强行把原本 60px 的高度拉长到 180px，并允许自由拉伸
+  setTimeout(() => {
+    const personaInput = document.getElementById('ifNewCardPersona');
+    if(personaInput) {
+      personaInput.style.minHeight = '180px';
+    }
+  }, 1000);
+
+
+  // ================= 2. 重塑美学调色盘，加入“对话颜色” =================
+  setTimeout(() => {
+    const oldPanel = document.getElementById('ifColorPanel');
+    if(oldPanel) {
+      // 找到背景图上传的那个虚线分割线
+      const divider = oldPanel.querySelector('div[style*="border-top:1px dashed"]');
+      if(divider && !document.getElementById('ifColorDialogue')) {
+        // 插入对话颜色选择器
+        const dialogueColorHtml = `
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; color:#5c7094; font-weight:bold;">
+            <span>对话台词颜色</span>
+            <div style="position:relative; width:24px; height:24px; border-radius:6px; border:1px solid #cdd7e8; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+              <input type="color" id="ifColorDialogue" oninput="window._applyIfAesthetics('dialogueColor', this.value)" style="position:absolute; inset:-10px; width:200%; height:200%; cursor:pointer;" value="#a5cfff">
+            </div>
+          </div>
+        `;
+        divider.insertAdjacentHTML('beforebegin', dialogueColorHtml);
+      }
+    }
+  }, 1500);
+
+  // 劫持并升级外挂内存的读取与保存逻辑
+  const oldApplyIfAesthetics = window._applyIfAesthetics;
+  window._applyIfAesthetics = async function(key, val) {
+    if(!window._currentIfBookId) return;
+    
+    const page = document.querySelector('#ifReader .page');
+    if(key === 'dialogueColor') {
+      page.style.setProperty('--if-dialogue-color', val);
+    }
+    
+    // 继续执行原本的颜色保存逻辑
+    if(oldApplyIfAesthetics) await oldApplyIfAesthetics(key, val);
+
+    // 额外存入对话颜色
+    const books = await localforage.getItem('mp_fix_if_books') || [];
+    const book = books.find(b => b.id === window._currentIfBookId);
+    if(book && key === 'dialogueColor') {
+      book.dialogueColor = val;
+      await localforage.setItem('mp_fix_if_books', books);
+    }
+  };
+
+  const oldToggleIfColorPanel = window._toggleIfColorPanel;
+  window._toggleIfColorPanel = async function() {
+    // 拦截并在打开前读取对话颜色
+    const panel = document.getElementById('ifColorPanel');
+    if (panel && panel.style.display === 'none') {
+      const books = await localforage.getItem('mp_fix_if_books') || [];
+      const book = books.find(b => b.id === window._currentIfBookId);
+      if(book) {
+        const dColorInput = document.getElementById('ifColorDialogue');
+        if(dColorInput) dColorInput.value = book.dialogueColor || '#a5cfff';
+      }
+    }
+    if(oldToggleIfColorPanel) await oldToggleIfColorPanel();
+  };
+
+
+  // ================= 3. 拦截阅读器渲染：激活对话高亮与羁绊值 =================
+  if(window._originalRenderIfReaderBeforeAesthetic) {
+    // 咱们之前已经劫持过一次了，现在要在它的基础上再包一层！
+    const baseRender = window._renderIfReader;
+    
+    window._renderIfReader = async function() {
+      // 先跑完之前的逻辑
+      await baseRender();
+      
+      const books = await localforage.getItem('mp_fix_if_books') || [];
+      const book = books.find(b => b.id === window._currentIfBookId);
+      if(!book) return;
+
+      // 🪄 魔法 1：激活羁绊值引擎！
+      // 算法：初始 10%，每推演一章增加 8%，最高 100%
+      const bondValue = Math.min(100, 10 + (book.chapters.length - 1) * 8);
+      
+      // 寻找顶部状态栏并替换羁绊值
+      const topStatusBar = document.querySelector('#ifReader .page > div:first-child');
+      if(topStatusBar) {
+        const bondSpan = topStatusBar.querySelector('span:last-child');
+        if(bondSpan) {
+          bondSpan.innerHTML = `羁绊值: <span style="color:#a5cfff; font-family:ui-monospace, monospace; font-size:14px;">${bondValue}%</span>`;
+        }
+      }
+
+      // 🪄 魔法 2：正则表达式剥离对话并上色！
+      // 遍历所有章节的内容框
+      const contentBox = document.getElementById('ifReaderContent');
+      if(contentBox) {
+        const textDivs = contentBox.querySelectorAll('div[id^="if_chap_text_"]');
+        textDivs.forEach(div => {
+          let html = div.innerHTML;
+          
+          // 匹配中文双引号 “”、英文双引号 ""、以及直角引号 「」
+          // 并将它们包裹在我们专属的 span 里面
+          const regex = /([“"「][^”"」]+[”"」])/g;
+          html = html.replace(regex, '<span class="if-dialogue-text">$1</span>');
+          
+          div.innerHTML = html;
+        });
+      }
+
+      // 🪄 魔法 3：确保读取了外挂内存中的对话颜色
+      const page = document.querySelector('#ifReader .page');
+      if(page) {
+        page.style.setProperty('--if-dialogue-color', book.dialogueColor || '#a5cfff');
+      }
+    };
+  }
+
+})();
+</script>
 </body>
   </html>
