@@ -21582,13 +21582,6 @@ if(!window._originalCallApiBeforeMoon) {
   </div>
 </div>
   <script>
-// 🌟 蓝色独家：情绪水族箱核心生态引擎 (七彩琉璃进化版)
-const K_AQUARIUM = 'mp_fix_aquarium_v2'; // 更新了缓存库，防止旧的破数据捣乱
-
-window._openAquariumApp = async function() {
-  document.getElementById('aquariumModal').classList.add('active');
-  await window._renderAquariumOcean();
-};
 // 🌟 蓝色独家：情绪水族箱核心生态引擎 (SVG 冰透雕刻 + 选人放生版)
 const K_AQUARIUM = 'mp_fix_aquarium_v3'; 
 window._currentJellyId = null;
@@ -21605,6 +21598,11 @@ function getJellySvgHtml() {
     </svg>
   `;
 }
+
+window._openAquariumApp = async function() {
+  document.getElementById('aquariumModal').classList.add('active');
+  await window._renderAquariumOcean();
+};
 
 window._renderAquariumOcean = async function() {
   const pool = await localforage.getItem(K_AQUARIUM) ||[];
@@ -21665,7 +21663,7 @@ window._deleteJellyfish = async function() {
   await localforage.setItem(K_AQUARIUM, pool);
   
   document.getElementById('jellyActionModal').classList.remove('active');
-  window._renderAquariumOcean(); // 瞬间重绘，水母消失！
+  window._renderAquariumOcean(); 
 };
 
 // 选人发送逻辑
@@ -21704,7 +21702,6 @@ window._sendJellyToTarget = async function(targetId) {
     <div style="background:rgba(11,16,30,0.85); border:1px solid ${jColor}; border-radius:16px; padding:16px; width:220px; box-shadow:0 8px 24px rgba(0,0,0,0.2); text-align:center;">
       <div style="font-size:10px; color:${jColor}; font-weight:900; letter-spacing:1px; margin-bottom:12px; font-family:ui-monospace, monospace;">// DEEP SEA ECHO //</div>
       <div style="margin-bottom:12px; display:flex; justify-content:center; filter:drop-shadow(0 0 10px ${jColor});">
-        <!-- 直接把我们高定的 SVG 画进卡片里！ -->
         <div style="width:40px; height:50px; fill:${jColor}; opacity:0.8; stroke:rgba(255,255,255,0.8); stroke-width:2px;">
            <svg viewBox="0 0 100 120"><path d="M10,50 C10,15 35,5 50,5 C65,5 90,15 90,50 C90,65 75,70 50,70 C25,70 10,65 10,50 Z"/><path d="M30,65 Q20,95 35,120" fill="none" stroke="${jColor}" stroke-width="3"/><path d="M50,70 Q55,100 45,125" fill="none" stroke="${jColor}" stroke-width="4"/><path d="M70,65 Q80,95 65,120" fill="none" stroke="${jColor}" stroke-width="3"/></svg>
         </div>
@@ -21714,20 +21711,17 @@ window._sendJellyToTarget = async function(targetId) {
     </div>
   `;
 
-  // 跨空投递！
   const arr = window.getChatArr(targetId) ||[];
   arr.push({ id: 'm_' + Date.now(), role: 'user', text: cardHtml, time: Date.now(), stored: true });
   window.setChatArr(targetId, arr);
   
-  // 清理 UI，回到主页或跳转到目标聊天室
   document.getElementById('jellyContactModal').classList.remove('active');
   document.getElementById('jellyActionModal').classList.remove('active');
   document.getElementById('aquariumModal').classList.remove('active');
   
-  window.openChat(targetId); // ✨ 自动带你飞到 TA 的聊天室！
+  window.openChat(targetId); 
   alert('✨ 承载着情绪的水母已成功潜入 TA 的聊天海域！');
   
-  // 🚨 核武器级强制触发！
   const hiddenPrompt = `【系统最高级别强制指令：深海情绪雷达触发！】
 玩家（我）刚刚在深海情绪水族箱里，向你发送了一只代表她情绪的琉璃水母。
 她的情绪是：【${moodMap[target.mood]}】。她当时写下的话是：“${target.text}”。
