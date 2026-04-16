@@ -20927,6 +20927,165 @@ window._handleDiaryBg = function(e) {
   reader.readAsDataURL(f);
   e.target.value = '';
 };
+  // 1. 修复音频上传：加上循环播放属性
+window._handleDiaryAudio = function(e) {
+  const f = e.target.files?.[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    window._tempDiaryAudio = ev.target.result;
+    const player = document.getElementById('diaryAudioPlayer');
+    player.src = window._tempDiaryAudio;
+    player.loop = true; // ✨ 洗脑循环开启！
+    document.getElementById('diaryAudioCapsule').style.display = 'flex';
+  };
+  reader.readAsDataURL(f);
+  e.target.value = '';
+};
+
+// 2. 剥离通用的天气渲染器 (为了让展厅也能1:1下雨！)
+window._renderWeatherToLayer = function(type, layerId, wrapId) {
+  const layer = document.getElementById(layerId);
+  const wrap = document.getElementById(wrapId);
+  if(!layer) return;
+  layer.innerHTML = '';
+  if(wrap) wrap.style.filter = 'none';
+  
+  if(type === 'rain') {
+    for(let i=0; i<40; i++) {
+      layer.innerHTML += `<div style="position:absolute; width:2px; height:${10+Math.random()*10}px; background:linear-gradient(transparent, rgba(165,207,255,0.8)); left:${Math.random()*100}%; top:-20px; animation:diaryRain ${0.4+Math.random()*0.3}s linear infinite; pointer-events:none;"></div>`;
+    }
+  } else if(type === 'snow') {
+    for(let i=0; i<30; i++) {
+      layer.innerHTML += `<div style="position:absolute; width:${4+Math.random()*4}px; height:${4+Math.random()*4}px; background:#fff; border-radius:50%; box-shadow:0 0 6px rgba(255,255,255,0.9); left:${Math.random()*100}%; top:-20px; --rnd:${Math.random()}; animation:diarySnow ${2+Math.random()*3}s linear infinite; opacity:${0.4+Math.random()*0.6}; pointer-events:none;"></div>`;
+    }
+  } else if(type === 'wind') {
+    for(let i=0; i<15; i++) {
+      layer.innerHTML += `<div style="position:absolute; width:30px; height:2px; background:rgba(220,229,240,0.6); left:-40px; top:${Math.random()*100}%; animation:diaryWind ${1+Math.random()*1.5}s linear infinite; border-radius:2px; pointer-events:none;"></div>`;
+    }
+  } else if(type === 'overcast') {
+    if(wrap) wrap.style.filter = 'saturate(0.8) brightness(0.95)';
+    layer.innerHTML = `<div style="position:absolute; inset:0; background:rgba(92,112,148,0.1); pointer-events:none;"></div>`;
+  }
+};
+
+// 3. 覆盖旧的天气触发器
+window._changeDiaryWeather = function(type) {
+  window._renderWeatherToLayer(type, 'diaryWeatherLayer', 'diaryCanvasWrap');
+};
+
+// 4. 🌟 核心：沉浸式岁月展厅播放器！
+window._openDiaryDetail = async function(id) {
+  const archive = await localforage.getItem(K_DIARY_ARCHIVE) ||[];
+  const d = archive.find(x => x.id === id);
+  if(!d) return alert('这段记忆好像走丢了呢~');
+  
+  // 1:1 还原文字与背景
+  document.getElementById('diaryReadDate').textContent = d.date + (d.mood ? ` · ${d.mood}` : '');
+  const bgLayer = document.getElementById('diaryReadBg');
+  bgLayer.style.backgroundImage = d.bg || '';
+  bgLayer.style.backgroundColor = '#fdfaf3'; // 兜底的复古纸张色
+  document.getElementById('diaryReadContent').innerHTML = d.contentHtml;
+  
+  // 1:1 还原天气
+  window._renderWeatherToLayer(d.weather, 'diaryReadWeather', 'diaryReadContentWrap');
+  
+  // 1:1 还原音乐
+  const audioCap = document.getElementById('diaryReadAudioCapsule');
+  const audioPlr = document.getElementById('diaryReadAudio');
+  const audioBtn = document.getElementById('diaryReadAudioBtn');
+  if(d.audio) {
+    audioPlr.src = d.audio;
+    audioCap.style.display = 'flex';
+    audioBtn.textContent = '▶';
+  } else {
+    audioPlr.src = '';
+    audioCap.style.display = 'none';
+  }
+  
+  document.getElementById('diaryReadModal').classList.add('active');
+};
+
+window._closeDiaryDetail = function() {
+  const audioPlr = document.getElementById('diaryReadAudio');
+  if(audioPlr) { audioPlr.pause(); audioPlr.src = ''; }
+  document.getElementById('diaryReadModal').classList.remove('active');
+};
+
+window._toggleReadAudio = function() {
+  const a = document.getElementById('diaryReadAudio');
+  const b = document.getElementById('diaryReadAudioBtn');
+  if(a.paused) { a.play(); b.textContent = '||'; }
+  else { a.pause(); b.textContent = '▶'; }
+};
+
+// 5. 🌟 给旧的档案馆列表和聊天分享卡片，注入点击唤醒魔法！
+const old_openDiaryArchive_render = window._openDiaryArchive;
+window._openDiaryArchive = async function() {
+  await old_openDiaryArchive_render();
+  const box = document.getElementById('diaryArchiveList');
+  if(!box.innerHTML.includes('空空如也')) {
+    // 把每一块日记的卡片加上点击展开事件，并且阻止按钮的冒泡！
+    box.querySelectorAll('div[style*="min-height:80px"]').forEach(el => {
+       const parentDiv = el.parentElement;
+       const shareBtn = parentDiv.querySelector('button[onclick*="_prepareShareDiary"]');
+       const delBtn = parentDiv.querySelector('button[onclick*="_delDiaryArchive"]');
+       
+       parentDiv.style.cursor = 'pointer';
+       parentDiv.onclick = () => {
+         const idMatch = delBtn.getAttribute('onclick').match(/'([^']+)'/);
+         if(idMatch && idMatch[1]) window._openDiaryDetail(idMatch[1]);
+       };
+       if(shareBtn) shareBtn.onclick = (e) => { e.stopPropagation(); eval(shareBtn.getAttribute('onclick')); };
+       if(delBtn) delBtn.onclick = (e) => { e.stopPropagation(); eval(delBtn.getAttribute('onclick')); };
+    });
+  }
+};
+
+const old_executeShareDiary = window._executeShareDiary;
+window._executeShareDiary = async function(targetId) {
+  // 劫持分享逻辑，让聊天室里的卡片也能点击全屏！
+  window._pendingShareDiaryId_temp = window._pendingShareDiaryId;
+  await old_executeShareDiary(targetId);
+  
+  // 替换最后一条消息（刚刚发出的分享卡片），给它加上 onclick 属性！
+  const arr = window.getChatArr(targetId);
+  const lastMsg = arr[arr.length - 1];
+  if(lastMsg && lastMsg.text.includes('card-diary-share')) {
+     lastMsg.text = lastMsg.text.replace('class="card-diary-share"', `class="card-diary-share" onclick="window._openDiaryDetail('${window._pendingShareDiaryId_temp}')"`);
+     window.setChatArr(targetId, arr);
+     if(typeof window.renderChat === 'function') window.renderChat();
+  }
+};
 </script>
+  <!-- 🌟 蓝色高定：沉浸式日记展厅 (1:1 完美还原阅读器) -->
+<div id="diaryReadModal" class="modal" style="z-index: 10015; padding:0;">
+  <div class="modal-card" style="width:100%; height:100%; max-width:430px; margin:0 auto; border-radius:0; padding:0; display:flex; flex-direction:column; overflow:hidden; position:relative; box-shadow:none; border:none;">
+    
+    <!-- 顶部悬浮导航 -->
+    <div style="position:absolute; top:0; left:0; right:0; padding:calc(12px + var(--safe-top)) 16px 12px; display:flex; justify-content:space-between; align-items:center; z-index:20; background:rgba(250,252,255,0.6); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid rgba(220,229,240,0.5);">
+      <button class="btn" onclick="window._closeDiaryDetail()" style="background:rgba(255,255,255,0.8); color:#5c7094; border-radius:50%; width:32px; height:32px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0; font-size:18px; box-shadow:0 2px 8px rgba(92,112,148,0.1);">‹</button>
+      <b id="diaryReadDate" style="color:#3d4a6a; font-size:15px; font-family:'STZhongsong', 'KaiTi', serif; letter-spacing:1px; text-shadow:0 1px 2px rgba(255,255,255,0.8);"></b>
+      <div style="width:32px;"></div>
+    </div>
+    
+    <!-- 1:1 还原底层背景与天气粒子 -->
+    <div id="diaryReadBg" style="position:absolute; inset:0; background-size:cover; background-position:center; z-index:1;"></div>
+    <div id="diaryReadWeather" style="position:absolute; inset:0; z-index:5; pointer-events:none; overflow:hidden;"></div>
+    
+    <!-- 沉浸式正文滚动区 -->
+    <div id="diaryReadContentWrap" style="position:relative; z-index:10; flex:1; overflow-y:auto; padding:calc(60px + var(--safe-top)) 24px 60px; font-size:15px; color:#5c4a3a; line-height:1.8; font-family:'STZhongsong', 'KaiTi', serif; text-align:justify; white-space:pre-wrap;">
+       <div id="diaryReadContent"></div>
+       
+       <!-- 专属音乐胶囊 -->
+       <div id="diaryReadAudioCapsule" style="display:none; margin-top:30px; background:rgba(250,252,255,0.85); backdrop-filter:blur(12px); border:1px solid #a5cfff; border-radius:999px; padding:6px 16px; align-items:center; gap:10px; width:max-content; box-shadow:0 4px 16px rgba(165,207,255,0.25);">
+         <div onclick="window._toggleReadAudio()" id="diaryReadAudioBtn" style="width:28px; height:28px; border-radius:50%; background:#5c7094; color:#fff; display:grid; place-items:center; cursor:pointer; font-size:10px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">▶</div>
+         <div style="font-size:12px; color:#5c7094; font-weight:bold; letter-spacing:1px;">那天的旋律...</div>
+         <!-- ✨ 蓝色的洗脑循环锁死在这里！ -->
+         <audio id="diaryReadAudio" loop></audio> 
+       </div>
+    </div>
+    
+  </div>
+</div>
 </body>
   </html>
