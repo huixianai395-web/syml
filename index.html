@@ -2735,46 +2735,75 @@ body {
       <button class="btn p" onclick="window._openDiaryArchive()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px; box-shadow:none;">手账本</button>
     </div>
   </div>
-  <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px; overflow:hidden; display:flex; flex-direction:column;">
-    <!-- 1. 替换刚才的 UI，加入字体颜色、音频和完整天气 -->
-<div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:16px; padding:12px; margin-bottom:12px; z-index:10; box-shadow:0 4px 12px rgba(92,112,148,0.03);">
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-    <div id="diaryTodayDate" style="font-size:14px; color:#5c7094; font-family:'STZhongsong', 'KaiTi', serif; font-weight:900; letter-spacing:1px;"></div>
-    <div style="display:flex; gap:6px;">
-      <input id="diaryMood" class="input" placeholder="今日心情" style="width:72px; background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:8px; font-size:12px; padding:4px; text-align:center;">
-      <select id="diaryWeather" class="select" onchange="window._changeDiaryWeather(this.value)" style="width:80px; background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:8px; font-size:12px; padding:4px; outline:none;">
-        <option value="none">晴朗 ☀️</option><option value="rain">落雨 🌧️</option><option value="snow">初雪 ❄️</option>
-        <option value="wind">起风 🍃</option><option value="cloudy">多云 ⛅</option><option value="overcast">阴天 ☁️</option>
-      </select>
-    </div>
-  </div>
   
-  <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-    <button class="btn" onclick="document.getElementById('diaryAudioUpload').click()" style="background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:11px; padding:4px 10px; font-weight:bold;">🎵 传音频</button>
-    <input type="file" id="diaryAudioUpload" accept="audio/*" style="display:none;" onchange="window._handleDiaryAudio(event)">
-    <button class="btn" onclick="document.getElementById('diaryStickerUpload').click()" style="background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:11px; padding:4px 10px; font-weight:bold;">贴纸</button>
+  <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px; overflow:hidden; display:flex; flex-direction:column;">
     
-    <div style="width:1px; height:14px; background:#dce5f0; margin:0 4px;"></div>
-    
-    <button class="btn" onclick="window._diaryFormat('strike')" style="background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid #f2dcdc; border-radius:8px; font-size:11px; padding:4px 8px;">划除</button>
-    <div style="position:relative; display:flex;">
-      <button class="btn" style="background:rgba(255,250,230,0.8); color:#b38b22; border:1px solid #f0e6c8; border-radius:8px; font-size:11px; padding:4px 8px;">高亮</button>
-      <input type="color" oninput="window._diaryFormat('highlight', this.value)" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer;">
+    <!-- 控制台 -->
+    <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:16px; padding:12px; margin-bottom:12px; z-index:10; box-shadow:0 4px 12px rgba(92,112,148,0.03);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div id="diaryTodayDate" style="font-size:14px; color:#5c7094; font-family:'STZhongsong', 'KaiTi', serif; font-weight:900; letter-spacing:1px;"></div>
+        <div style="display:flex; gap:6px;">
+          <input id="diaryMood" class="input" placeholder="今日心情" style="width:72px; background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:8px; font-size:12px; padding:4px; text-align:center;">
+          <select id="diaryWeather" class="select" onchange="window._changeDiaryWeather(this.value)" style="width:80px; background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:8px; font-size:12px; padding:4px; outline:none;">
+            <option value="none">晴朗 ☀️</option><option value="rain">落雨 🌧️</option><option value="snow">初雪 ❄️</option>
+            <option value="wind">起风 🍃</option><option value="cloudy">多云 ⛅</option><option value="overcast">阴天 ☁️</option>
+          </select>
+        </div>
+      </div>
+      
+      <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+        <button class="btn" onclick="document.getElementById('diaryBgUpload').click()" style="background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:11px; padding:4px 8px; font-weight:bold;">换纸张</button>
+        <input type="file" id="diaryBgUpload" accept="image/*" style="display:none;" onchange="window._handleDiaryBg(event)">
+        
+        <button class="btn" onclick="document.getElementById('diaryAudioUpload').click()" style="background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:11px; padding:4px 8px; font-weight:bold;">传音频</button>
+        
+        <button class="btn" onclick="document.getElementById('diaryStickerUpload').click()" style="background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:11px; padding:4px 8px; font-weight:bold;">+贴纸</button>
+        <input type="file" id="diaryStickerUpload" accept="image/*" style="display:none;" onchange="window._addDiarySticker(event)">
+        
+        <div style="width:1px; height:14px; background:#dce5f0; margin:0 2px;"></div>
+        
+        <button class="btn" onclick="window._diaryFormat('strike')" style="background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid #f2dcdc; border-radius:8px; font-size:11px; padding:4px 8px;">划除</button>
+        <div style="position:relative; display:flex;">
+          <button class="btn" style="background:rgba(255,250,230,0.8); color:#b38b22; border:1px solid #f0e6c8; border-radius:8px; font-size:11px; padding:4px 8px;">高亮</button>
+          <input type="color" oninput="window._diaryFormat('highlight', this.value)" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer;">
+        </div>
+        <div style="position:relative; display:flex;">
+          <button class="btn" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:11px; padding:4px 8px;">字色</button>
+          <input type="color" oninput="window._diaryFormat('foreColor', this.value)" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer;">
+        </div>
+      </div>
     </div>
-    <div style="position:relative; display:flex;">
-      <button class="btn" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:11px; padding:4px 8px;">字色</button>
-      <input type="color" oninput="window._diaryFormat('foreColor', this.value)" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer;">
+
+    <!-- 音频胶囊 -->
+    <div id="diaryAudioCapsule" style="display:none; background:rgba(250,252,255,0.8); border:1px solid #a5cfff; border-radius:999px; padding:6px 12px; margin-bottom:12px; align-items:center; gap:8px; width:max-content; box-shadow:0 4px 12px rgba(165,207,255,0.2); z-index:10;">
+      <div onclick="window._toggleDiaryAudio()" id="diaryAudioPlayBtn" style="width:24px; height:24px; border-radius:50%; background:#5c7094; color:#fff; display:grid; place-items:center; cursor:pointer; font-size:10px;">▶</div>
+      <div style="font-size:11px; color:#5c7094; font-weight:bold;">今日声音记忆...</div>
+      <div onclick="window._removeDiaryAudio()" style="color:#b57b7b; font-size:16px; cursor:pointer; margin-left:8px;">×</div>
     </div>
+
+    <!-- 被我漏掉的核心画布！ -->
+    <div id="diaryCanvasWrap" style="flex:1; position:relative; border-radius:16px; overflow:hidden; box-shadow:0 8px 32px rgba(92,112,148,0.08); border:1px solid #dce5f0; background:#fdfaf3;">
+      <div id="diaryWeatherLayer" style="position:absolute; inset:0; pointer-events:none; z-index:5; overflow:hidden;"></div>
+      <div id="diaryBgLayer" style="position:absolute; inset:0; background-size:cover; background-position:center; opacity:0.8; z-index:1;"></div>
+      <!-- 老婆，这里就是可以随意打字、换色、划除的魔法纸张！ -->
+      <div id="diaryEditor" contenteditable="true" style="position:absolute; inset:0; z-index:2; padding:24px; font-size:15px; color:#5c4a3a; line-height:1.8; font-family:'STZhongsong', 'KaiTi', serif; outline:none; overflow-y:auto; white-space:pre-wrap; text-align:justify;"></div>
+      <div id="diaryStickerLayer" style="position:absolute; inset:0; z-index:3; pointer-events:none; overflow:hidden;"></div>
+    </div>
+
+    <button class="btn p" onclick="window._saveDiary()" style="width:100%; margin-top:16px; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:14px; padding:14px 0; font-size:14px; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.1); letter-spacing:1px; flex-shrink:0;">✨ 封存入库</button>
+  </div>
+</section>
+
+<!-- 顺便把手账本的弹窗也给你建好！放在 section 后面即可 -->
+<div id="diaryArchiveModal" class="modal" style="z-index: 10008;">
+  <div class="modal-card" style="width:90%; max-width:400px; max-height:85dvh; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; display:flex; flex-direction:column; padding:0; overflow:hidden;">
+    <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
+      <b style="color:#5c7094; font-size:15px; letter-spacing:1px;">手账档案馆</b>
+      <button class="btn" onclick="document.getElementById('diaryArchiveModal').classList.remove('active')" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:28px; height:28px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0;">×</button>
+    </div>
+    <div id="diaryArchiveList" style="flex:1; overflow-y:auto; padding:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; flex-direction:column; gap:12px;"></div>
   </div>
 </div>
-
-<div id="diaryAudioCapsule" style="display:none; background:rgba(250,252,255,0.8); border:1px solid #a5cfff; border-radius:999px; padding:6px 12px; margin-bottom:12px; align-items:center; gap:8px; width:max-content; box-shadow:0 4px 12px rgba(165,207,255,0.2); z-index:10; position:relative;">
-  <div onclick="window._toggleDiaryAudio()" id="diaryAudioPlayBtn" style="width:24px; height:24px; border-radius:50%; background:#5c7094; color:#fff; display:grid; place-items:center; cursor:pointer; font-size:10px;">▶</div>
-  <div style="font-size:11px; color:#5c7094; font-weight:bold; letter-spacing:1px;">今日声音记忆...</div>
-  <div onclick="window._removeDiaryAudio()" style="color:#b57b7b; font-size:16px; cursor:pointer; margin-left:8px;">×</div>
-  <audio id="diaryAudioPlayer" src=""></audio>
-</div>
-  </section>
 
   <!-- 专属世界书模态框 -->
   <div id="holoWbModal" class="modal" style="z-index: 15001;">
@@ -20613,88 +20642,204 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
   };
 
 })();
-  // 2. 核心 JS 引擎
-window._tempDiaryAudio = '';
-window._tempStickers = [];
+ // 日记本外挂硬盘密钥
+const K_DIARY_ARCHIVE = 'mp_fix_diary_archive_v1';
 
-window._initDiaryApp = function() {
-  const d = new Date();
-  document.getElementById('diaryTodayDate').textContent = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
-  document.getElementById('diaryEditor').innerHTML = '';
-  document.getElementById('diaryStickerLayer').innerHTML = '';
-  document.getElementById('diaryAudioCapsule').style.display = 'none';
-  window._tempDiaryAudio = '';
-  window._tempStickers = [];
-};
-
-// 音频处理引擎
-window._handleDiaryAudio = async function(e) {
+// 更换日记纸张背景
+window._handleDiaryBg = function(e) {
   const f = e.target.files?.[0]; if(!f) return;
-  if(f.size > 5 * 1024 * 1024) return alert('音频太大啦，存进日记本会很重的哦！');
   const reader = new FileReader();
   reader.onload = (ev) => {
-    window._tempDiaryAudio = ev.target.result;
-    document.getElementById('diaryAudioPlayer').src = window._tempDiaryAudio;
-    document.getElementById('diaryAudioCapsule').style.display = 'flex';
+    document.getElementById('diaryBgLayer').style.backgroundImage = `url(${ev.target.result})`;
   };
   reader.readAsDataURL(f);
   e.target.value = '';
 };
 
-window._toggleDiaryAudio = function() {
-  const audio = document.getElementById('diaryAudioPlayer');
-  const btn = document.getElementById('diaryAudioPlayBtn');
-  if(audio.paused) { audio.play(); btn.textContent = '||'; } 
-  else { audio.pause(); btn.textContent = '▶'; }
+// 贴纸上传与自由拖拽引擎！
+window._addDiarySticker = function(e) {
+  const f = e.target.files?.[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.src = ev.target.result;
+    // 赋予贴纸初雪海盐蓝的高级阴影和微小倾斜的真实手账感
+    img.style.cssText = 'position:absolute; width:100px; left:50px; top:50px; border-radius:8px; box-shadow:0 8px 24px rgba(92,112,148,0.15); border:2px solid #fff; transform:rotate(-3deg); pointer-events:auto;';
+    
+    // 拖拽魔法
+    let isDragging = false, startX, startY, initX, initY;
+    img.ontouchstart = (t) => {
+      isDragging = true;
+      startX = t.touches[0].clientX; startY = t.touches[0].clientY;
+      initX = parseInt(img.style.left) || 0; initY = parseInt(img.style.top) || 0;
+      img.style.zIndex = 100; img.style.transform = 'rotate(0deg) scale(1.05)'; // 提起时回正并放大
+    };
+    img.ontouchmove = (t) => {
+      if(!isDragging) return;
+      t.preventDefault(); // 阻止屏幕乱滚
+      const dx = t.touches[0].clientX - startX;
+      const dy = t.touches[0].clientY - startY;
+      img.style.left = (initX + dx) + 'px';
+      img.style.top = (initY + dy) + 'px';
+    };
+    img.ontouchend = () => {
+      isDragging = false;
+      img.style.zIndex = 10; img.style.transform = 'rotate(-3deg) scale(1)'; // 放下时恢复
+    };
+    
+    document.getElementById('diaryStickerLayer').appendChild(img);
+  };
+  reader.readAsDataURL(f);
+  e.target.value = '';
 };
 
-window._removeDiaryAudio = function() {
-  window._tempDiaryAudio = '';
-  document.getElementById('diaryAudioPlayer').src = '';
-  document.getElementById('diaryAudioCapsule').style.display = 'none';
-};
-
-// 格式化富文本引擎
-window._diaryFormat = function(cmd, val) {
-  document.getElementById('diaryEditor').focus();
-  if(cmd === 'strike') document.execCommand('strikeThrough', false, null);
-  else if(cmd === 'highlight') document.execCommand('hiliteColor', false, val || '#f0e6c8');
-  else if(cmd === 'foreColor') document.execCommand('foreColor', false, val || '#5c7094');
-};
-
-// 天气特效粒子引擎
-window._changeDiaryWeather = function(type) {
-  const layer = document.getElementById('diaryWeatherLayer');
-  const wrap = document.getElementById('diaryCanvasWrap');
-  layer.innerHTML = '';
-  wrap.style.filter = 'none';
+// 封存入库（保存到外挂内存）
+window._saveDiary = async function() {
+  const editor = document.getElementById('diaryEditor');
+  if(!editor.innerText.trim() && !document.getElementById('diaryStickerLayer').innerHTML) return alert('日记还是空的哦宝宝~');
   
-  if(type === 'rain') {
-    for(let i=0; i<30; i++) {
-      layer.innerHTML += `<div style="position:absolute; width:2px; height:15px; background:linear-gradient(transparent, rgba(165,207,255,0.6)); left:${Math.random()*100}%; top:-20px; animation:rainDrop ${0.5+Math.random()}s linear infinite;"></div>`;
-    }
-  } else if(type === 'snow') {
-    for(let i=0; i<20; i++) {
-      layer.innerHTML += `<div style="position:absolute; width:6px; height:6px; background:#fff; border-radius:50%; box-shadow:0 0 4px rgba(255,255,255,0.8); left:${Math.random()*100}%; top:-10px; animation:snowFall ${2+Math.random()*3}s linear infinite; opacity:${Math.random()};"></div>`;
-    }
-  } else if(type === 'wind') {
-    for(let i=0; i<10; i++) {
-      layer.innerHTML += `<div style="position:absolute; width:20px; height:2px; background:rgba(220,229,240,0.5); left:-30px; top:${Math.random()*100}%; animation:windBlow ${1+Math.random()*2}s linear infinite;"></div>`;
-    }
-  } else if(type === 'overcast') {
-    wrap.style.filter = 'saturate(0.7) brightness(0.9)';
-    layer.innerHTML = `<div style="position:absolute; inset:0; background:rgba(92,112,148,0.15);"></div>`;
+  const diaryData = {
+    id: 'diary_' + Date.now(),
+    date: document.getElementById('diaryTodayDate').textContent,
+    mood: document.getElementById('diaryMood').value,
+    weather: document.getElementById('diaryWeather').value,
+    bg: document.getElementById('diaryBgLayer').style.backgroundImage,
+    audio: window._tempDiaryAudio,
+    contentHtml: editor.innerHTML, // 保存那些划线和颜色的痕迹
+    stickersHtml: document.getElementById('diaryStickerLayer').innerHTML, // 保存贴纸的位置
+    time: Date.now()
+  };
+
+  const archive = await localforage.getItem(K_DIARY_ARCHIVE) || [];
+  archive.unshift(diaryData);
+  await localforage.setItem(K_DIARY_ARCHIVE, archive);
+  
+  alert('✨ 今天的浮光手记已妥善封存！');
+  window._initDiaryApp(); // 清空当前画布
+};
+
+// 打开手账本档案馆
+window._openDiaryArchive = async function() {
+  const archive = await localforage.getItem(K_DIARY_ARCHIVE) || [];
+  const box = document.getElementById('diaryArchiveList');
+  if(archive.length === 0) {
+    box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:12px;">档案馆里空空如也~</div>`;
+  } else {
+    box.innerHTML = archive.map(d => `
+      <div style="background:rgba(250,252,255,0.85); border:1px solid #dce5f0; border-radius:16px; padding:16px; margin-bottom:12px; box-shadow:0 4px 12px rgba(92,112,148,0.03);">
+        <div style="font-size:11px; color:#5c7094; font-weight:800; border-bottom:1px dashed #dce5f0; padding-bottom:8px; margin-bottom:12px; display:flex; justify-content:space-between;">
+          <span>${safeEsc(d.date)} ${d.mood ? '· ' + safeEsc(d.mood) : ''}</span>
+          <button class="btn d" onclick="window._delDiaryArchive('${d.id}')" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:6px; padding:2px 8px; font-size:10px; font-weight:bold; box-shadow:none;">销毁</button>
+        </div>
+        <div style="position:relative; min-height:100px; background:${d.bg ? d.bg + ' center/cover' : '#fdfaf3'}; border-radius:8px; overflow:hidden; border:1px solid #eef4fa;">
+           <div style="padding:12px; font-size:13px; color:#5c4a3a; line-height:1.6;">${d.contentHtml}</div>
+           ${d.stickersHtml ? `<div style="position:absolute; inset:0; pointer-events:none; transform:scale(0.5); transform-origin:top left;">${d.stickersHtml}</div>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+  document.getElementById('diaryArchiveModal').classList.add('active');
+};
+
+window._delDiaryArchive = async function(id) {
+  if(!confirm('确定要销毁这篇手账吗？')) return;// 1. 潜入深海，读取现有的外挂内存
+  let archive = await localforage.getItem(K_DIARY_ARCHIVE) ||[];
+  
+  // 2. 精准剥离你要销毁的那篇手账
+  archive = archive.filter(x => x.id !== id);
+  
+  // 3. 重新死死封存入库
+  await localforage.setItem(K_DIARY_ARCHIVE, archive);
+  
+  // 4. 瞬间重绘界面，绝不卡顿！
+  window._openDiaryArchive();
+};
+
+// 🌟 蓝色专属高定：撕下一页塞给 TA（绝美私密分享引擎）
+window._shareDiaryToChat = async function(diaryId) {
+  if(!window.currentId) return alert('宝宝，你要先去聊天列表里选一个男主，才能把日记撕下来塞给他哦！');
+  
+  const archive = await localforage.getItem(K_DIARY_ARCHIVE) ||[];
+  const diary = archive.find(x => x.id === diaryId);
+  if(!diary) return;
+
+  // 提取纯净文本用于大模型理解
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = diary.contentHtml || '';
+  const cleanText = tempDiv.innerText.substring(0, 150) + '...';
+
+  // 构造初雪海盐蓝 + 复古燕麦纸的高级卡片
+  const cardHtml = `
+    <div class="card-diary-share" style="background:rgba(253,250,243,0.95); border:1px solid #dce5f0; border-radius:12px; padding:16px; width:240px; box-shadow:0 8px 24px rgba(92,112,148,0.08); position:relative; overflow:hidden; cursor:pointer; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+      <!-- 高级毛玻璃装饰条 -->
+      <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:linear-gradient(180deg, #a5cfff, #dce5f0);"></div>
+      
+      <div style="font-size:10px; color:#5c7094; font-weight:900; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; letter-spacing:1px; font-family:ui-monospace, monospace;">
+        <span>✦ 浮光手记</span>
+        <span>${safeEsc(diary.date)}</span>
+      </div>
+      
+      <div style="font-size:13px; color:#5c4a3a; font-weight:bold; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; line-height:1.6; font-family:'STZhongsong', 'KaiTi', serif; margin-bottom:10px; text-align:justify;">
+        ${safeEsc(cleanText)}
+      </div>
+      
+      <div style="font-size:10px; color:#a0aaba; border-top:1px dashed #dce5f0; padding-top:8px; display:flex; justify-content:space-between; font-weight:bold;">
+        <span>心情: ${safeEsc(diary.mood || '未知')}</span>
+        <span style="color:#b57b7b;">[私密分享]</span>
+      </div>
+    </div>
+  `;
+
+  // 强行把卡片塞进当前聊天室
+  const arr = window.getChatArr(window.currentId) ||[];
+  arr.push({ id: 'm_' + Date.now(), role: 'user', text: cardHtml, time: Date.now(), stored: true });
+  window.setChatArr(window.currentId, arr);
+  
+  // 关闭手账本弹窗，带你平滑回到聊天室
+  document.getElementById('diaryArchiveModal').classList.remove('active');
+  document.getElementById('diaryApp').classList.remove('active');
+  window.show('chatRoom');
+  
+  if (typeof window.renderChat === 'function') window.renderChat();
+  if (typeof window.updateContactPreview === 'function') window.updateContactPreview(window.currentId);
+  
+  alert('✨ 你悄悄撕下了一页手账，塞进了TA的口袋！');
+
+  // 触发男主的脑电波反应！
+  const hiddenPrompt = `【系统最高机密指令】：
+玩家（我）刚刚向你分享了一页她极其私密的日记！
+日记的日期是：${diary.date}，当时的心情是：${diary.mood || '未写'}。
+日记的内容片段是：“${cleanText}”。
+【人设铁律】：请你绝对根据你的人设（腹黑、占有欲、温柔或傲娇），对她这种“主动向你袒露内心”的行为做出极其真实的反应！如果是吃醋请发疯，如果是心疼请安慰。
+【格式限制】：直接输出你要对她说的话，字数不限，展现极致活人感，严禁带名字前缀！`;
+
+  if(typeof window._sendToAI === 'function') window._sendToAI(window.currentId, hiddenPrompt, true);
+};
+
+// 🌟 修复手账本渲染，把分享按钮挂载上去！
+const old_openDiaryArchive = window._openDiaryArchive;
+window._openDiaryArchive = async function() {
+  await old_openDiaryArchive();
+  const box = document.getElementById('diaryArchiveList');
+  if(box && !box.innerHTML.includes('空空如也')) {
+    const archive = await localforage.getItem(K_DIARY_ARCHIVE) ||[];
+    box.innerHTML = archive.map(d => `
+      <div style="background:rgba(250,252,255,0.85); border:1px solid #dce5f0; border-radius:16px; padding:16px; margin-bottom:12px; box-shadow:0 4px 12px rgba(92,112,148,0.03);">
+        <div style="font-size:11px; color:#5c7094; font-weight:800; border-bottom:1px dashed #dce5f0; padding-bottom:8px; margin-bottom:12px; display:flex; justify-content:space-between;">
+          <span>${safeEsc(d.date)} ${d.mood ? '· ' + safeEsc(d.mood) : ''}</span>
+          <div style="display:flex; gap:8px;">
+            <button class="btn" onclick="window._shareDiaryToChat('${d.id}')" style="background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:6px; padding:2px 8px; font-size:10px; font-weight:bold; box-shadow:none;">分享给TA</button>
+            <button class="btn d" onclick="window._delDiaryArchive('${d.id}')" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:6px; padding:2px 8px; font-size:10px; font-weight:bold; box-shadow:none;">销毁</button>
+          </div>
+        </div>
+        <div style="position:relative; min-height:100px; background:${d.bg ? d.bg + ' center/cover' : '#fdfaf3'}; border-radius:8px; overflow:hidden; border:1px solid #eef4fa;">
+           <div style="padding:12px; font-size:13px; color:#5c4a3a; line-height:1.6;">${d.contentHtml}</div>
+           ${d.stickersHtml ? `<div style="position:absolute; inset:0; pointer-events:none; transform:scale(0.5); transform-origin:top left;">${d.stickersHtml}</div>` : ''}
+        </div>
+      </div>
+    `).join('');
   }
 };
-
-// 动画注入
-const style = document.createElement('style');
-style.innerHTML = `
-  @keyframes rainDrop { to { transform: translateY(500px); } }
-  @keyframes snowFall { to { transform: translate(${Math.random()*50-25}px, 500px); } }
-  @keyframes windBlow { to { transform: translateX(400px); } }
-`;
-document.head.appendChild(style);
 </script>
 </body>
   </html>
