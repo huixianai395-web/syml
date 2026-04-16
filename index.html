@@ -21340,101 +21340,7 @@ if(!window._originalCallApiBeforeMoon) {
     return window._originalCallApiBeforeMoon(messages);
   };
 }
-  // 🌟 蓝色独家：情绪水族箱核心生态引擎
-const K_AQUARIUM = 'mp_fix_aquarium_v1';
-
-window._openAquariumApp = async function() {
-  document.getElementById('aquariumModal').classList.add('active');
-  await window._renderAquariumOcean();
-};
-
-window._releaseJellyfish = async function() {
-  const text = document.getElementById('aquaInput').value.trim();
-  const mood = document.getElementById('aquaMoodSel').value;
-  if(!text) return alert('宝宝，要写下心情才能凝结成水母哦！');
-
-  const pool = await localforage.getItem(K_AQUARIUM) ||[];
   
-  // 随机生成水母的出生坐标和游动参数
-  const newJelly = {
-    id: 'jelly_' + Date.now(),
-    text: text,
-    mood: mood,
-    time: Date.now(),
-    top: 15 + Math.random() * 55, // 避开顶部和底部
-    left: 10 + Math.random() * 60,
-    animDur: 4 + Math.random() * 4,
-    animDelay: Math.random() * -5
-  };
-
-  pool.push(newJelly);
-  // 为了防止屏幕太挤，最多保留 30 只水母
-  if(pool.length > 30) pool.shift(); 
-  
-  await localforage.setItem(K_AQUARIUM, pool);
-  document.getElementById('aquaInput').value = '';
-  
-  window._renderAquariumOcean();
-};
-
-window._renderAquariumOcean = async function() {
-  const pool = await localforage.getItem(K_AQUARIUM) ||[];
-  const ocean = document.getElementById('aquariumOcean');
-  
-  ocean.innerHTML = pool.map(j => {
-    return `<div class="jellyfish-node jelly-${j.mood}" 
-                 style="top:${j.top}%; left:${j.left}%; animation: floatJelly ${j.animDur}s ease-in-out ${j.animDelay}s infinite alternate;"
-                 onclick="window._pokeJellyfish('${j.id}')">
-              ${safeEsc(j.text)}
-            </div>`;
-  }).join('');
-};
-
-// 戳一戳水母，触发全网声纳！
-window._pokeJellyfish = async function(id) {
-  const pool = await localforage.getItem(K_AQUARIUM) ||[];
-  const target = pool.find(x => x.id === id);
-  if(!target) return;
-
-  const moodMap = { 'happy':'开心', 'sad':'难过', 'angry':'暴躁', 'calm':'平静' };
-  
-  if(confirm(`你要把这只承载着【${moodMap[target.mood]}】记忆的水母，发送给 TA 吗？`)) {
-    // 强制关闭水族箱，退回主屏幕或聊天室
-    document.getElementById('aquariumModal').classList.remove('active');
-    
-    // 如果你在聊天室里，直接发给他；如果不在，系统会随机抓一个或者提示你进聊天室
-    let cid = window.currentId;
-    if(!cid) return alert('宝宝，请先点进你想发送给的那个TA的聊天室，再打开水族箱戳水母哦！');
-
-    const cardHtml = `
-      <div style="background:rgba(26,43,76,0.85); border:1px solid #a5cfff; border-radius:16px; padding:16px; width:220px; box-shadow:0 8px 24px rgba(165,207,255,0.15); text-align:center;">
-        <div style="font-size:10px; color:#a5cfff; font-weight:900; letter-spacing:1px; margin-bottom:12px; font-family:ui-monospace, monospace;">// DEEP SEA ECHO //</div>
-        <div style="font-size:24px; filter:drop-shadow(0 0 10px rgba(165,207,255,0.8)); margin-bottom:8px;">🪼</div>
-        <div style="font-size:14px; font-weight:800; color:#dbe4ff; margin-bottom:8px;">一只散发着微光的水母游了过来</div>
-        <div style="font-size:12px; color:#a5cfff; font-weight:bold; background:rgba(255,255,255,0.1); padding:8px; border-radius:8px; border:1px dashed rgba(165,207,255,0.3); text-align:justify; line-height:1.5;">"${safeEsc(target.text)}"</div>
-      </div>
-    `;
-
-    const arr = window.getChatArr(cid) ||[];
-    arr.push({ id: 'm_' + Date.now(), role: 'user', text: cardHtml, time: Date.now(), stored: true });
-    window.setChatArr(cid, arr);
-    
-    if (typeof window.renderChat === 'function') window.renderChat();
-    
-    // 🚨 核武器级强制触发！
-    const hiddenPrompt = `【系统最高级别强制指令：深海情绪雷达触发！】
-玩家（我）刚刚在深海情绪水族箱里，向你发送了一只代表她情绪的水母。
-她的情绪是：【${moodMap[target.mood]}】。她当时写下的话是：“${target.text}”。
-【绝对执行铁律】：
-1. 绝对不许像复读机一样重复她说的话！
-2. 必须立刻针对她的情绪做出极度护短、极其符合你人设的真实反应。
-3. 如果是难过/暴躁，你必须化身行动派去哄她或替她出气；如果是开心，请和她一起分享喜悦。
-4. 绝对不要带名字前缀，直接输出你的动作或对话！`;
-
-    if (typeof window._sendToAI === 'function') window._sendToAI(cid, hiddenPrompt, true);
-  }
-};
-```
 </script>
   <!-- 🌟 蓝色高定：沉浸式日记展厅 (彻底焊死屏幕宽度版) -->
 <div id="diaryReadModal" class="modal" style="z-index: 10015; padding:0; box-sizing:border-box;">
@@ -21504,64 +21410,184 @@ window._pokeJellyfish = async function(id) {
     </div>
   </div>
 </div>
- <!-- 🌟 蓝色高定：情绪水族箱深海沉浸舱 -->
+ <!-- 🌟 蓝色高定：情绪水族箱深海沉浸舱 (3D琉璃水母进化版) -->
 <style>
   @keyframes floatJelly {
-    0%, 100% { transform: translateY(0) translateX(0) scale(1); }
-    33% { transform: translateY(-15px) translateX(8px) scale(1.02); }
-    66% { transform: translateY(10px) translateX(-12px) scale(0.98); }
+    0%, 100% { transform: translateY(0) translateX(0) scale(1) rotate(0deg); }
+    33% { transform: translateY(-20px) translateX(10px) scale(1.05) rotate(3deg); }
+    66% { transform: translateY(15px) translateX(-15px) scale(0.95) rotate(-3deg); }
+  }
+  @keyframes jellyBreathe {
+    0%, 100% { opacity: 0.8; filter: brightness(1); }
+    50% { opacity: 1; filter: brightness(1.2); }
   }
   .jellyfish-node {
-    position: absolute;
-    padding: 8px 14px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: bold;
-    color: #fff;
-    cursor: pointer;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    transition: transform 0.2s, box-shadow 0.2s;
-    white-space: nowrap;
-    max-width: 120px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    position: absolute; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    cursor: pointer; transition: transform 0.2s; z-index: 10;
   }
-  .jellyfish-node:active { transform: scale(0.9) !important; }
+  .jellyfish-node:active { transform: scale(0.85) !important; }
+
+  /* 🌟 极致美学的玻璃水母身体 */
+  .jelly-body {
+    width: 44px; height: 44px; border-radius: 50% 50% 12px 12px;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.5);
+    box-shadow: inset 0 4px 12px rgba(255,255,255,0.6), 0 0 20px var(--j-glow);
+    position: relative; background: linear-gradient(135deg, var(--j-color), transparent);
+    animation: jellyBreathe 3s ease-in-out infinite;
+  }
+  .jelly-body::after {
+    content: ''; position: absolute; bottom: -12px; left: 10%; right: 10%; height: 16px;
+    background: radial-gradient(circle at 50% 0, var(--j-color) 20%, transparent 21%);
+    background-size: 8px 16px; opacity: 0.7;
+  }
   
-  .jelly-happy { background: rgba(255, 209, 220, 0.4); border: 1px solid rgba(255, 209, 220, 0.8); box-shadow: 0 0 20px rgba(255, 209, 220, 0.5); }
-  .jelly-sad { background: rgba(165, 207, 255, 0.4); border: 1px solid rgba(165, 207, 255, 0.8); box-shadow: 0 0 20px rgba(165, 207, 255, 0.5); }
-  .jelly-angry { background: rgba(209, 196, 233, 0.4); border: 1px solid rgba(209, 196, 233, 0.8); box-shadow: 0 0 20px rgba(209, 196, 233, 0.5); }
-  .jelly-calm { background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
+  /* 悬浮文字铭牌 */
+  .jelly-text {
+    background: rgba(15,23,42,0.5); backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.2); color: #dbe4ff; font-size: 10px;
+    padding: 4px 10px; border-radius: 12px; white-space: nowrap; max-width: 100px;
+    overflow: hidden; text-overflow: ellipsis; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    font-family: "PingFang SC", sans-serif; font-weight: 600; letter-spacing: 0.5px;
+  }
+
+  /* 7 种情绪的高定调色盘 */
+  .jelly-happy { --j-color: rgba(255, 182, 193, 0.8); --j-glow: rgba(255, 182, 193, 0.5); }  
+  .jelly-sad { --j-color: rgba(165, 207, 255, 0.8); --j-glow: rgba(165, 207, 255, 0.5); }     
+  .jelly-angry { --j-color: rgba(255, 107, 107, 0.8); --j-glow: rgba(255, 107, 107, 0.5); }   
+  .jelly-calm { --j-color: rgba(255, 255, 255, 0.9); --j-glow: rgba(255, 255, 255, 0.4); }    
+  .jelly-aggrieved { --j-color: rgba(209, 196, 233, 0.9); --j-glow: rgba(209, 196, 233, 0.6); }
+  .jelly-miss { --j-color: rgba(255, 213, 113, 0.8); --j-glow: rgba(255, 213, 113, 0.5); }    
+  .jelly-tired { --j-color: rgba(156, 163, 175, 0.9); --j-glow: rgba(156, 163, 175, 0.5); }    
 </style>
 
 <div id="aquariumModal" class="modal" style="z-index: 10012; padding:0;">
-  <div class="modal-card" style="width:100vw; height:100dvh; max-width:430px; margin:0 auto; border-radius:0; padding:0; display:flex; flex-direction:column; overflow:hidden; position:relative; background:linear-gradient(180deg, #1a2b4c, #0f172a); border:none;">
+  <div class="modal-card" style="width:100vw; height:100dvh; max-width:430px; margin:0 auto; border-radius:0; padding:0; display:flex; flex-direction:column; overflow:hidden; position:relative; background:linear-gradient(180deg, #0b101e, #1a2b4c); border:none;">
     
-    <!-- 顶部极简导航 -->
     <div style="position:absolute; top:0; left:0; right:0; padding:calc(12px + var(--safe-top)) 16px 12px; display:flex; justify-content:space-between; align-items:center; z-index:20;">
       <button class="btn" onclick="document.getElementById('aquariumModal').classList.remove('active')" style="background:rgba(255,255,255,0.1); color:#a5cfff; border-radius:50%; width:32px; height:32px; padding:0; display:grid; place-items:center; border:1px solid rgba(165,207,255,0.3); font-size:18px; backdrop-filter:blur(8px);">‹</button>
-      <b style="color:#a5cfff; font-size:15px; letter-spacing:2px; font-family:ui-monospace, monospace; text-shadow:0 0 10px rgba(165,207,255,0.5);">MOOD AQUARIUM</b>
+      <b style="color:#a5cfff; font-size:15px; letter-spacing:2px; font-family:ui-monospace, monospace; text-shadow:0 0 10px rgba(165,207,255,0.5);">DEEP SEA AQUARIUM</b>
       <div style="width:32px;"></div>
     </div>
 
-    <!-- 深海游动区 -->
     <div id="aquariumOcean" style="position:absolute; inset:0; z-index:5; overflow:hidden; pointer-events:auto;"></div>
 
-    <!-- 底部放生控制台 -->
-    <div style="position:absolute; bottom:0; left:0; right:0; padding:20px 16px calc(20px + var(--safe-bottom)); background:linear-gradient(0deg, rgba(15,23,42,0.95), transparent); z-index:20; display:flex; flex-direction:column; gap:12px;">
+    <div style="position:absolute; bottom:0; left:0; right:0; padding:20px 16px calc(20px + var(--safe-bottom)); background:linear-gradient(0deg, rgba(11,16,30,0.95), transparent); z-index:20; display:flex; flex-direction:column; gap:12px;">
       <div style="display:flex; gap:8px;">
-        <select id="aquaMoodSel" class="select" style="width:80px; background:rgba(255,255,255,0.1); border:1px solid rgba(165,207,255,0.3); color:#a5cfff; border-radius:12px; outline:none; font-size:13px; font-weight:bold; backdrop-filter:blur(8px);">
-          <option value="happy">开心</option>
-          <option value="sad">难过</option>
-          <option value="angry">暴躁</option>
-          <option value="calm">平静</option>
+        <select id="aquaMoodSel" class="select" style="width:90px; background:rgba(255,255,255,0.1); border:1px solid rgba(165,207,255,0.3); color:#a5cfff; border-radius:12px; outline:none; font-size:13px; font-weight:bold; backdrop-filter:blur(8px);">
+          <option value="happy">开心 🌸</option>
+          <option value="sad">难过 💧</option>
+          <option value="angry">暴躁 🔥</option>
+          <option value="aggrieved">委屈 🥺</option>
+          <option value="miss">想念 🌙</option>
+          <option value="tired">疲惫 💤</option>
+          <option value="calm">平静 ❄️</option>
         </select>
         <input id="aquaInput" class="input" placeholder="将此刻的心情化作水母放生..." style="flex:1; background:rgba(255,255,255,0.1); border:1px solid rgba(165,207,255,0.3); color:#fff; border-radius:12px; font-size:13px; padding:10px 14px; outline:none; backdrop-filter:blur(8px);">
       </div>
-      <button class="btn p" onclick="window._releaseJellyfish()" style="width:100%; background:rgba(165,207,255,0.2); color:#a5cfff; border:1px solid rgba(165,207,255,0.5); border-radius:12px; padding:12px 0; font-size:14px; font-weight:bold; box-shadow:0 0 15px rgba(165,207,255,0.2); backdrop-filter:blur(8px); letter-spacing:1px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">✦ 放生至深海 ✦</button>
+      <button class="btn p" onclick="window._releaseJellyfish()" style="width:100%; background:linear-gradient(135deg, rgba(165,207,255,0.2), rgba(255,255,255,0.1)); color:#a5cfff; border:1px solid rgba(165,207,255,0.5); border-radius:12px; padding:12px 0; font-size:14px; font-weight:bold; box-shadow:0 0 15px rgba(165,207,255,0.2); backdrop-filter:blur(8px); letter-spacing:1px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">✦ 凝结成水母 · 放生至深海 ✦</button>
     </div>
   </div>
-</div> 
+</div><script>
+// 🌟 蓝色独家：情绪水族箱核心生态引擎 (七彩琉璃进化版)
+const K_AQUARIUM = 'mp_fix_aquarium_v2'; // 更新了缓存库，防止旧的破数据捣乱
+
+window._openAquariumApp = async function() {
+  document.getElementById('aquariumModal').classList.add('active');
+  await window._renderAquariumOcean();
+};
+
+window._releaseJellyfish = async function() {
+  const text = document.getElementById('aquaInput').value.trim();
+  const mood = document.getElementById('aquaMoodSel').value;
+  if(!text) return alert('宝宝，要写下心情才能凝结成水母哦！');
+
+  const pool = await localforage.getItem(K_AQUARIUM) ||[];
+  
+  const newJelly = {
+    id: 'jelly_' + Date.now(),
+    text: text,
+    mood: mood,
+    time: Date.now(),
+    top: 15 + Math.random() * 55, 
+    left: 10 + Math.random() * 65,
+    animDur: 4 + Math.random() * 4,
+    animDelay: Math.random() * -5
+  };
+
+  pool.push(newJelly);
+  if(pool.length > 30) pool.shift(); 
+  
+  await localforage.setItem(K_AQUARIUM, pool);
+  document.getElementById('aquaInput').value = '';
+  
+  window._renderAquariumOcean();
+};
+
+window._renderAquariumOcean = async function() {
+  const pool = await localforage.getItem(K_AQUARIUM) ||[];
+  const ocean = document.getElementById('aquariumOcean');
+  
+  ocean.innerHTML = pool.map(j => {
+    return `
+    <div class="jellyfish-node jelly-${j.mood}" 
+         style="top:${j.top}%; left:${j.left}%; animation: floatJelly ${j.animDur}s ease-in-out ${j.animDelay}s infinite alternate;"
+         onclick="window._pokeJellyfish('${j.id}')">
+      <div class="jelly-body"></div>
+      <div class="jelly-text">${safeEsc(j.text)}</div>
+    </div>`;
+  }).join('');
+};
+
+window._pokeJellyfish = async function(id) {
+  const pool = await localforage.getItem(K_AQUARIUM) ||[];
+  const target = pool.find(x => x.id === id);
+  if(!target) return;
+
+  const moodMap = { 'happy':'开心', 'sad':'难过', 'angry':'暴躁', 'calm':'平静', 'aggrieved':'委屈', 'miss':'想念', 'tired':'疲惫' };
+  
+  if(confirm(`你要把这只承载着【${moodMap[target.mood]}】记忆的琉璃水母，发送给 TA 吗？`)) {
+    document.getElementById('aquariumModal').classList.remove('active');
+    
+    let cid = window.currentId;
+    if(!cid) return alert('宝宝，请先点进你想发送给的那个男主的聊天室，再打开水族箱戳水母哦！');
+
+    // 发到聊天界面的同款情绪色！
+    const colorMap = {
+      'happy': '#ffb6c1', 'sad': '#a5cfff', 'angry': '#ff6b6b', 
+      'calm': '#ffffff', 'aggrieved': '#d1c4e9', 'miss': '#ffd571', 'tired': '#9ca3af'
+    };
+    const jColor = colorMap[target.mood] || '#a5cfff';
+
+    const cardHtml = `
+      <div style="background:rgba(11,16,30,0.85); border:1px solid ${jColor}; border-radius:16px; padding:16px; width:220px; box-shadow:0 8px 24px rgba(0,0,0,0.2); text-align:center;">
+        <div style="font-size:10px; color:${jColor}; font-weight:900; letter-spacing:1px; margin-bottom:12px; font-family:ui-monospace, monospace;">// DEEP SEA ECHO //</div>
+        <div style="margin-bottom:12px; display:flex; justify-content:center;">
+          <div style="width:36px; height:36px; border-radius:50% 50% 10px 10px; background:linear-gradient(135deg, ${jColor}, transparent); border:1px solid rgba(255,255,255,0.6); box-shadow:0 0 15px ${jColor}; opacity:0.9;"></div>
+        </div>
+        <div style="font-size:13px; font-weight:800; color:#dbe4ff; margin-bottom:8px;">一只散发着微光的水母游了过来</div>
+        <div style="font-size:12px; color:${jColor}; font-weight:bold; background:rgba(255,255,255,0.1); padding:8px; border-radius:8px; border:1px dashed ${jColor}; text-align:justify; line-height:1.5;">"${safeEsc(target.text)}"</div>
+      </div>
+    `;
+
+    const arr = window.getChatArr(cid) ||[];
+    arr.push({ id: 'm_' + Date.now(), role: 'user', text: cardHtml, time: Date.now(), stored: true });
+    window.setChatArr(cid, arr);
+    
+    if (typeof window.renderChat === 'function') window.renderChat();
+    
+    const hiddenPrompt = `【系统最高级别强制指令：深海情绪雷达触发！】
+玩家（我）刚刚在深海情绪水族箱里，向你发送了一只代表她情绪的琉璃水母。
+她的情绪是：【${moodMap[target.mood]}】。她当时写下的话是：“${target.text}”。
+【绝对执行铁律】：
+1. 绝对不许像复读机一样重复她说的话！
+2. 必须立刻针对她的情绪做出极度护短、极其符合你人设的真实反应。
+3. 如果是委屈/疲惫/难过，你必须化身行动派去哄她、抱抱她或霸道地护着她；如果是暴躁，请替她出气；如果是开心/想念，请给出宠溺或傲娇的回应。
+4. 绝对不要带名字前缀，直接输出你的动作或对话！`;
+
+    if (typeof window._sendToAI === 'function') window._sendToAI(cid, hiddenPrompt, true);
+  }
+};
+</script>
 </body>
   </html>
