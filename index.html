@@ -20566,12 +20566,13 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
       });
     }
   };
-<!-- 🌟 蓝色高定：微光余温 (ID绝对隔离防冲突，终极满血复活版) -->
+<!-- 🌟 蓝色高定：微光余温 (ID与神经元绝对隔离防冲突，终极满血复活版) -->
 <script>
 (function(){
-  const K_DIARY = 'mp_fix_diary_archive_v4';
-  const K_DRAFT = 'mp_fix_diary_draft_v4';
-  window._diaryAudioData = '';
+  // 🌟 换用全新的外挂内存轨道，彻底抛弃旧数据纠缠！
+  const K_DIARY_V5 = 'mp_fix_diary_archive_v5';
+  const K_DRAFT_V5 = 'mp_fix_diary_draft_v5';
+  window._diaryAudioData_v5 = '';
 
   // 🚜 蓝色的“终极推土机”：开机瞬间，炸掉所有旧版残留，只留最新版！
   setTimeout(() => {
@@ -20600,14 +20601,20 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
     }
   }, 50);
 
+  // 🛡️ 蓝色绝对防御塔：每秒钟巡逻一次，强行拦截桌面图标的点击事件！
+  // 就算旧代码在后面加载覆盖了 _initDiaryApp，我也会把它抢回来！
+  setInterval(() => {
+    window._initDiaryApp = window._initDiaryApp_v5;
+  }, 500);
+
   // 1. 初始化与自动载入 (外挂硬盘直连)
-  window._initDiaryApp = async function() {
+  window._initDiaryApp_v5 = async function() {
     try {
       const now = new Date();
       const dateInp = document.getElementById('diaryDate_v5');
       if(dateInp) dateInp.value = now.toISOString().split('T')[0];
       
-      const draft = await localforage.getItem(K_DRAFT);
+      const draft = await localforage.getItem(K_DRAFT_V5);
       if(draft) {
         if(document.getElementById('diaryTitle_v5')) document.getElementById('diaryTitle_v5').value = draft.title || '';
         if(document.getElementById('diaryContent_v5')) document.getElementById('diaryContent_v5').value = draft.content || '';
@@ -20618,26 +20625,26 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
         if(document.getElementById('diaryContent_v5')) document.getElementById('diaryContent_v5').style.color = draft.color || '#5c7094';
         if(document.getElementById('diaryCanvas_v5')) document.getElementById('diaryCanvas_v5').innerHTML = '';
         if(draft.stickers) {
-          draft.stickers.forEach(stk => window._createStickerElement(stk.src, stk.x, stk.y, stk.rot, stk.id));
+          draft.stickers.forEach(stk => window._createStickerElement_v5(stk.src, stk.x, stk.y, stk.rot, stk.id));
         }
       }
     } catch(e) { console.log('日记本初始化失败:', e); }
   };
 
   // 2. 贴纸引擎与防爆雷达
-  window._handleDiarySticker = async function(e) {
+  window._handleDiarySticker_v5 = async function(e) {
     try {
       const f = e.target.files[0]; if(!f) return;
       const compFn = window._fiCompressImage || window.compressImage;
       if(!compFn) throw new Error("压缩引擎未就绪");
       const data = await compFn(f);
-      window._createStickerElement(data);
-      window._autoSaveDraft();
+      window._createStickerElement_v5(data);
+      window._autoSaveDraft_v5();
     } catch(err) { alert('贴碎片失败啦：' + err.message); }
     finally { e.target.value = ''; }
   };
 
-  window._createStickerElement = function(src, x=50, y=50, rot=0, id=null) {
+  window._createStickerElement_v5 = function(src, x=50, y=50, rot=0, id=null) {
     const sid = id || 'stk_' + Date.now() + Math.random();
     const div = document.createElement('div');
     div.id = sid;
@@ -20645,7 +20652,7 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
     div.style.cssText = `position:absolute; left:${x}px; top:${y}px; width:120px; z-index:10; pointer-events:auto; cursor:move; transform:rotate(${rot}deg);`;
     div.innerHTML = `
       <img src="${src}" style="width:100%; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.15); border:2px solid #fff; pointer-events:none;">
-      <div style="position:absolute; top:-10px; right:-10px; background:#fcf2f2; color:#b57b7b; width:22px; height:22px; border-radius:50%; display:grid; place-items:center; font-size:12px; border:1px solid #f2dcdc; cursor:pointer; z-index:20;" onclick="this.parentElement.remove(); window._autoSaveDraft();">×</div>
+      <div style="position:absolute; top:-10px; right:-10px; background:#fcf2f2; color:#b57b7b; width:22px; height:22px; border-radius:50%; display:grid; place-items:center; font-size:12px; border:1px solid #f2dcdc; cursor:pointer; z-index:20;" onclick="this.parentElement.remove(); window._autoSaveDraft_v5();">×</div>
     `;
     
     let isDown = false, sx, sy;
@@ -20659,7 +20666,7 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
       div.style.top = (ev.clientY - sy) + 'px'; 
     });
     document.addEventListener('mouseup', () => { 
-      if(isDown) { isDown = false; div.style.zIndex = 10; window._autoSaveDraft(); }
+      if(isDown) { isDown = false; div.style.zIndex = 10; window._autoSaveDraft_v5(); }
     });
     
     div.onwheel = (ev) => {
@@ -20668,37 +20675,37 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
       const currentRot = match ? parseInt(match[1]) : 0;
       const nextRot = currentRot + (ev.deltaY > 0 ? 15 : -15);
       div.style.transform = `rotate(${nextRot}deg)`;
-      window._autoSaveDraft();
+      window._autoSaveDraft_v5();
     };
     const canvas = document.getElementById('diaryCanvas_v5');
     if(canvas) canvas.appendChild(div);
   };
 
   // 3. 换底图引擎
-  window._handleDiaryBg = async function(e) {
+  window._handleDiaryBg_v5 = async function(e) {
     try {
       const f = e.target.files[0]; if(!f) return;
       const compFn = window._fiCompressImage || window.compressImage;
       const data = await compFn(f, true);
       const bgLayer = document.getElementById('diaryBgLayer_v5');
       if(bgLayer) bgLayer.style.backgroundImage = `url(${data})`;
-      window._autoSaveDraft();
+      window._autoSaveDraft_v5();
     } catch(err) { alert('换底图失败啦：' + err.message); }
     finally { e.target.value = ''; }
   };
 
-  window._resetDiaryBg = function() {
+  window._resetDiaryBg_v5 = function() {
     const bgLayer = document.getElementById('diaryBgLayer_v5');
     if(bgLayer) bgLayer.style.backgroundImage = '';
-    window._autoSaveDraft();
+    window._autoSaveDraft_v5();
   };
 
   // 4. 音频修复与极简图标
-  window._handleDiaryAudio = function(e) {
+  window._handleDiaryAudio_v5 = function(e) {
     const f = e.target.files[0]; if(!f) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
-      window._diaryAudioData = ev.target.result;
+      window._diaryAudioData_v5 = ev.target.result;
       const player = document.getElementById('diaryPlayer_v5');
       if(player) {
         player.src = ev.target.result;
@@ -20708,13 +20715,13 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
           alert('✨ 听觉记忆已装载并开始播放...');
         }).catch(err => alert('音频播放被浏览器拦截啦，点一下音符图标试试~'));
       }
-      window._autoSaveDraft();
+      window._autoSaveDraft_v5();
     };
     reader.readAsDataURL(f);
     e.target.value = '';
   };
 
-  window._scribbleDiary = function() {
+  window._scribbleDiary_v5 = function() {
     const ta = document.getElementById('diaryContent_v5');
     if(!ta) return;
     const start = ta.selectionStart;
@@ -20724,16 +20731,16 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
     const selected = text.substring(start, end);
     const scribbled = selected.split('').map(char => char + '\u0336').join('');
     ta.value = text.substring(0, start) + scribbled + text.substring(end);
-    window._autoSaveDraft();
+    window._autoSaveDraft_v5();
   };
 
   // 5. 核心保存与外挂硬盘直连
-  window._saveDiaryPage = async function() {
+  window._saveDiaryPage_v5 = async function() {
     try {
       const titleInp = document.getElementById('diaryTitle_v5');
       const title = titleInp ? titleInp.value.trim() || '无题' : '无题';
       
-      const stickers = Array.from(document.querySelectorAll('.diary-sticker-item')).map(el => {
+      const stickers = Array.from(document.querySelectorAll('#diaryCanvas_v5 .diary-sticker-item')).map(el => {
         const match = el.style.transform.match(/rotate\((.*)deg\)/);
         return {
           src: el.querySelector('img').src, x: el.offsetLeft, y: el.offsetTop,
@@ -20749,21 +20756,21 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
         mood: document.getElementById('diaryMood_v5')?.value || '平静',
         bg: document.getElementById('diaryBgLayer_v5')?.style.backgroundImage || '',
         color: document.getElementById('diaryFontColor_v5')?.value || '#5c7094',
-        audio: window._diaryAudioData,
+        audio: window._diaryAudioData_v5,
         stickers, time: Date.now()
       };
       
-      let archive = await localforage.getItem(K_DIARY) || [];
+      let archive = await localforage.getItem(K_DIARY_V5) || [];
       archive.unshift(pageData);
-      await localforage.setItem(K_DIARY, archive);
+      await localforage.setItem(K_DIARY_V5, archive);
       alert('✨ 这一页的余温已安全锁入外挂内存册子！');
-      window._clearDiaryDraft(true);
+      window._clearDiaryDraft_v5(true);
     } catch(e) { alert('落印失败了宝宝：' + e.message); }
   };
 
-  window._openDiaryArchive = async function() {
+  window._openDiaryArchive_v5 = async function() {
     try {
-      const archive = await localforage.getItem(K_DIARY) || [];
+      const archive = await localforage.getItem(K_DIARY_V5) || [];
       const list = document.getElementById('diaryArchiveList_v5');
       const modal = document.getElementById('diaryArchiveModal_v5');
       if(modal) modal.classList.add('active');
@@ -20777,16 +20784,16 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
               <span style="font-size:11px; color:#a0aaba; font-family:ui-monospace, monospace;">${safeEsc(pg.date)}</span>
             </div>
             <div style="display:flex; justify-content:flex-end; gap:8px;">
-              <button class="btn d" onclick="window._delArchivePage('${pg.id}')" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:8px; padding:4px 12px; font-weight:bold; font-size:11px; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">撕掉</button>
-              <button class="btn p" onclick="window._loadArchivePage('${pg.id}')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:4px 12px; font-weight:bold; font-size:11px; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">翻阅</button>
+              <button class="btn d" onclick="window._delArchivePage_v5('${pg.id}')" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:8px; padding:4px 12px; font-weight:bold; font-size:11px; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">撕掉</button>
+              <button class="btn p" onclick="window._loadArchivePage_v5('${pg.id}')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:4px 12px; font-weight:bold; font-size:11px; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">翻阅</button>
             </div>
           </div>
         `).join('');
     } catch(e) { alert('打开册子失败：' + e.message); }
   };
 
-  window._loadArchivePage = async function(id) {
-    const archive = await localforage.getItem(K_DIARY) || [];
+  window._loadArchivePage_v5 = async function(id) {
+    const archive = await localforage.getItem(K_DIARY_V5) || [];
     const pg = archive.find(p => p.id === id);
     if(pg) {
       if(document.getElementById('diaryTitle_v5')) document.getElementById('diaryTitle_v5').value = pg.title;
@@ -20799,11 +20806,11 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
       if(document.getElementById('diaryContent_v5')) document.getElementById('diaryContent_v5').style.color = pg.color || '#5c7094';
       if(document.getElementById('diaryCanvas_v5')) document.getElementById('diaryCanvas_v5').innerHTML = '';
       
-      if(pg.stickers) pg.stickers.forEach(stk => window._createStickerElement(stk.src, stk.x, stk.y, stk.rot, stk.id));
+      if(pg.stickers) pg.stickers.forEach(stk => window._createStickerElement_v5(stk.src, stk.x, stk.y, stk.rot, stk.id));
       if(pg.audio) { 
         const player = document.getElementById('diaryPlayer_v5');
         if(player) player.src = pg.audio; 
-        window._diaryAudioData = pg.audio; 
+        window._diaryAudioData_v5 = pg.audio; 
         const ind = document.getElementById('audioIndicator_v5');
         if(ind) ind.innerHTML = '<svg viewBox="0 0 24 24" style="width:20px; height:20px; stroke:#a5cfff; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>';
       }
@@ -20812,15 +20819,15 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
     }
   };
 
-  window._delArchivePage = async function(id) {
+  window._delArchivePage_v5 = async function(id) {
     if(!confirm('确定要从册子里撕掉这一页吗？')) return;
-    let archive = await localforage.getItem(K_DIARY) || [];
+    let archive = await localforage.getItem(K_DIARY_V5) || [];
     archive = archive.filter(p => p.id !== id);
-    await localforage.setItem(K_DIARY, archive);
-    window._openDiaryArchive();
+    await localforage.setItem(K_DIARY_V5, archive);
+    window._openDiaryArchive_v5();
   };
 
-  window._autoSaveDraft = async function() {
+  window._autoSaveDraft_v5 = async function() {
     try {
       const draft = {
         title: document.getElementById('diaryTitle_v5')?.value || '',
@@ -20829,25 +20836,25 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
         mood: document.getElementById('diaryMood_v5')?.value || '平静',
         bg: document.getElementById('diaryBgLayer_v5')?.style.backgroundImage || '',
         color: document.getElementById('diaryFontColor_v5')?.value || '#5c7094',
-        stickers: Array.from(document.querySelectorAll('.diary-sticker-item')).map(el => {
+        stickers: Array.from(document.querySelectorAll('#diaryCanvas_v5 .diary-sticker-item')).map(el => {
           const match = el.style.transform.match(/rotate\((.*)deg\)/);
           return { src: el.querySelector('img').src, x: el.offsetLeft, y: el.offsetTop, rot: match ? parseInt(match[1]) : 0, id: el.id };
         })
       };
-      await localforage.setItem(K_DRAFT, draft);
+      await localforage.setItem(K_DRAFT_V5, draft);
     } catch(e) {}
   };
 
-  window._clearDiaryDraft = async function(force = false) {
+  window._clearDiaryDraft_v5 = async function(force = false) {
     if(!force && !confirm('确定要清空当前页吗？')) return;
     if(document.getElementById('diaryTitle_v5')) document.getElementById('diaryTitle_v5').value = '';
     if(document.getElementById('diaryContent_v5')) document.getElementById('diaryContent_v5').value = '';
     if(document.getElementById('diaryCanvas_v5')) document.getElementById('diaryCanvas_v5').innerHTML = '';
     if(document.getElementById('diaryBgLayer_v5')) document.getElementById('diaryBgLayer_v5').style.backgroundImage = '';
-    window._diaryAudioData = '';
+    window._diaryAudioData_v5 = '';
     const ind = document.getElementById('audioIndicator_v5');
     if(ind) ind.innerHTML = '<svg viewBox="0 0 24 24" style="width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>';
-    await localforage.removeItem(K_DRAFT);
+    await localforage.removeItem(K_DRAFT_V5);
   };
 
   function safeEsc(s) { return String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m])); }
@@ -20861,8 +20868,8 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
     <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 桌面</button>
     <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">微光余温</b>
     <div style="display:flex; gap:6px;">
-      <button class="btn" onclick="window._openDiaryArchive()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">册子</button>
-      <button class="btn p" onclick="window._saveDiaryPage()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">落印</button>
+      <button class="btn" onclick="window._openDiaryArchive_v5()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">册子</button>
+      <button class="btn p" onclick="window._saveDiaryPage_v5()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">落印</button>
     </div>
   </div>
   
@@ -20888,28 +20895,28 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
         </select>
         <div style="flex:1;"></div>
         <div style="display:flex; gap:8px; align-items:center;">
-          <input type="color" id="diaryFontColor_v5" value="#5c7094" onchange="document.getElementById('diaryContent_v5').style.color=this.value; window._autoSaveDraft();" style="width:20px; height:20px; border:none; background:transparent; cursor:pointer;">
+          <input type="color" id="diaryFontColor_v5" value="#5c7094" onchange="document.getElementById('diaryContent_v5').style.color=this.value; window._autoSaveDraft_v5();" style="width:20px; height:20px; border:none; background:transparent; cursor:pointer;">
           <div onclick="document.getElementById('diaryAudioFile_v5').click()" style="cursor:pointer; color:#5c7094; display:grid; place-items:center;" id="audioIndicator_v5" title="添加听觉记忆">
             <svg viewBox="0 0 24 24" style="width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
           </div>
-          <input type="file" id="diaryAudioFile_v5" accept="audio/*" class="hidden" onchange="window._handleDiaryAudio(event)">
+          <input type="file" id="diaryAudioFile_v5" accept="audio/*" class="hidden" onchange="window._handleDiaryAudio_v5(event)">
         </div>
       </div>
 
-      <input id="diaryTitle_v5" placeholder="给这一页起个名字..." oninput="window._autoSaveDraft()" style="background:transparent; border:none; color:#3d4a6a; font-size:20px; font-weight:900; outline:none; width:100%; margin-bottom:10px; flex-shrink:0;">
+      <input id="diaryTitle_v5" placeholder="给这一页起个名字..." oninput="window._autoSaveDraft_v5()" style="background:transparent; border:none; color:#3d4a6a; font-size:20px; font-weight:900; outline:none; width:100%; margin-bottom:10px; flex-shrink:0;">
       
-      <textarea id="diaryContent_v5" class="ta" oninput="window._autoSaveDraft()" style="flex:1; background:transparent; border:none; font-size:16px; line-height:1.8; color:#5c7094; resize:none; outline:none;" placeholder="写下此刻的余温..."></textarea>
+      <textarea id="diaryContent_v5" class="ta" oninput="window._autoSaveDraft_v5()" style="flex:1; background:transparent; border:none; font-size:16px; line-height:1.8; color:#5c7094; resize:none; outline:none;" placeholder="写下此刻的余温..."></textarea>
     </div>
 
     <!-- 5. 工具栏 (安全隔离区) -->
     <div style="position:relative; z-index:1001; padding:12px; background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-top:1px solid #dce5f0; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; flex-shrink:0;">
       <button class="btn" onclick="document.getElementById('diaryBgFile_v5').click()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">换底图</button>
-      <button class="btn" onclick="window._resetDiaryBg()" style="background:rgba(255,255,255,0.6); color:#7a86a8; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">复原</button>
+      <button class="btn" onclick="window._resetDiaryBg_v5()" style="background:rgba(255,255,255,0.6); color:#7a86a8; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">复原</button>
       <button class="btn" onclick="document.getElementById('diaryStickerFile_v5').click()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">贴碎片</button>
-      <button class="btn" onclick="window._scribbleDiary()" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">涂鸦改</button>
-      <button class="btn d" onclick="window._clearDiaryDraft()" style="background:rgba(252,242,242,0.6); color:#b57b7b; border:1px dashed #f2dcdc; border-radius:10px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">清空</button>
-      <input type="file" id="diaryBgFile_v5" accept="image/*" class="hidden" onchange="window._handleDiaryBg(event)">
-      <input type="file" id="diaryStickerFile_v5" accept="image/*" class="hidden" onchange="window._handleDiarySticker(event)">
+      <button class="btn" onclick="window._scribbleDiary_v5()" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">涂鸦改</button>
+      <button class="btn d" onclick="window._clearDiaryDraft_v5()" style="background:rgba(252,242,242,0.6); color:#b57b7b; border:1px dashed #f2dcdc; border-radius:10px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">清空</button>
+      <input type="file" id="diaryBgFile_v5" accept="image/*" class="hidden" onchange="window._handleDiaryBg_v5(event)">
+      <input type="file" id="diaryStickerFile_v5" accept="image/*" class="hidden" onchange="window._handleDiarySticker_v5(event)">
     </div>
   </div>
   <audio id="diaryPlayer_v5" loop></audio>
