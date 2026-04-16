@@ -20040,5 +20040,263 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
     display: inline-block !important;
   }
 </style>
+  <style>
+  /* 🌟 配合美学调色盘的 CSS 变量劫持系统 */
+  #ifReader .page {
+    background-size: cover !important;
+    background-position: center !important;
+    background-attachment: fixed !important;
+    transition: background 0.3s ease;
+  }
+  /* 强制接管正文颜色 */
+  #ifReaderContent div[id^="if_chap_text_"] {
+    color: var(--if-text-color, #3d4a6a) !important;
+    transition: color 0.3s ease;
+  }
+  /* 强制接管潜意识框的颜色 */
+  #ifReaderContent div[style*="border-left:3px solid"] {
+    color: var(--if-mind-color, #5c7094) !important;
+    border-left-color: var(--if-mind-color, #a5cfff) !important;
+    background: var(--if-mind-bg, rgba(250,252,255,0.7)) !important;
+    transition: all 0.3s ease;
+  }
+</style>
+
+<script>
+(function(){
+  const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  
+  // ================= 1. 灵魂卡牌库：注入单卡导入引擎 =================
+  setTimeout(() => {
+    const cardModalHeader = document.querySelector('#ifCardModal .modal-card > div:first-child');
+    if(cardModalHeader && !document.getElementById('ifSingleCardImportBtn')) {
+      const btnHtml = `
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button class="btn" id="ifSingleCardImportBtn" onclick="document.getElementById('ifSingleCardFile').click()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:4px 10px; font-size:12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">导入角色卡</button>
+          <input type="file" id="ifSingleCardFile" accept=".json,.png" style="display:none;" onchange="window._handleIfSingleCardImport(event)">
+        </div>
+      `;
+      // 把原来的关闭按钮拿出来，和新按钮拼在一起放回右边
+      const closeBtn = cardModalHeader.querySelector('button');
+      if(closeBtn) {
+        closeBtn.remove();
+        const rightWrap = document.createElement('div');
+        rightWrap.style.cssText = 'display:flex; align-items:center; gap:8px;';
+        rightWrap.innerHTML = btnHtml;
+        rightWrap.appendChild(closeBtn);
+        cardModalHeader.appendChild(rightWrap);
+      }
+    }
+  }, 1000);
+
+  // 🌟 单张角色卡解析炼金术 (兼容 PNG tEXt 和 JSON)
+  window._handleIfSingleCardImport = async function(e) {
+    const file = e.target.files?.[0];
+    if(!file) return;
+
+    const btn = document.getElementById('ifSingleCardImportBtn');
+    const oldText = btn.textContent;
+    btn.textContent = '解析中...';
+    btn.style.pointerEvents = 'none';
+
+    try {
+      let cardData = null;
+      if (file.name.endsWith('.json')) {
+        cardData = JSON.parse(await file.text());
+      } else if (file.name.endsWith('.png')) {
+        const buffer = await file.arrayBuffer();
+        const dataView = new DataView(buffer);
+        let offset = 8;
+        while (offset < dataView.byteLength) {
+          const length = dataView.getUint32(offset);
+          const type = String.fromCharCode(dataView.getUint8(offset+4), dataView.getUint8(offset+5), dataView.getUint8(offset+6), dataView.getUint8(offset+7));
+          if (type === 'tEXt') {
+            const keywordData = new Uint8Array(buffer, offset + 8, length);
+            const text = new TextDecoder('utf-8').decode(keywordData);
+            const nullIdx = text.indexOf('\0');
+            const keyword = text.substring(0, nullIdx);
+            if (keyword === 'chara') {
+              const base64 = text.substring(nullIdx + 1);
+              cardData = JSON.parse(decodeURIComponent(escape(atob(base64))));
+              break;
+            }
+          }
+          offset += 12 + length;
+        }
+      }
+
+      if(!cardData) throw new Error("没有在这张卡里找到灵魂数据哦！");
+
+      const name = cardData.data?.name || cardData.name || '未知灵魂';
+      const persona = cardData.data?.description || cardData.description || cardData.data?.system_prompt || '';
+
+      const cards = await localforage.getItem('mp_fix_if_cards') || [];
+      const newId = 'ifc_' + Date.now();
+      cards.unshift({ id: newId, name: name, persona: persona });
+      await localforage.setItem('mp_fix_if_cards', cards);
+      
+      if(typeof window._renderIfCardList === 'function') window._renderIfCardList();
+      alert(`✨ 成功将灵魂【${name}】接入境·IF！`);
+
+    } catch (err) {
+      alert("导入失败了宝宝：" + err.message);
+    } finally {
+      btn.textContent = oldText;
+      btn.style.pointerEvents = 'auto';
+      e.target.value = '';
+    }
+  };
+
+  // ================= 2. 阅读器：注入美学调色盘 =================
+  setTimeout(() => {
+    const readerHeaderRight = document.querySelector('#ifReader .header > div:last-child');
+    if(readerHeaderRight && !document.getElementById('ifColorPaletteBtn')) {
+      const paletteBtn = document.createElement('button');
+      paletteBtn.id = 'ifColorPaletteBtn';
+      paletteBtn.className = 'btn';
+      paletteBtn.style.cssText = 'background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px; display:flex; align-items:center; gap:4px;';
+      paletteBtn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>美学';
+      paletteBtn.onclick = () => window._toggleIfColorPanel();
+      // 插在最前面
+      readerHeaderRight.insertBefore(paletteBtn, readerHeaderRight.firstChild);
+    }
+
+    // 注入调色盘面板 (初雪海盐蓝悬浮舱)
+    if(!document.getElementById('ifColorPanel')) {
+      const panelHtml = `
+      <div id="ifColorPanel" style="display:none; position:absolute; top:calc(52px + var(--safe-top)); right:16px; z-index:150; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:16px; padding:16px; box-shadow:0 12px 40px rgba(92,112,148,0.15); width:240px; flex-direction:column; gap:12px; transform-origin:top right; animation:bootTextIn 0.2s ease forwards;">
+        
+        <div style="font-size:12px; color:#7a86a8; font-weight:800; border-bottom:1px dashed #dce5f0; padding-bottom:8px; margin-bottom:4px;">🎨 专属氛围调色盘</div>
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; color:#5c7094; font-weight:bold;">
+          <span>正文文字颜色</span>
+          <div style="position:relative; width:24px; height:24px; border-radius:6px; border:1px solid #cdd7e8; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+            <input type="color" id="ifColorText" oninput="window._applyIfAesthetics('textColor', this.value)" style="position:absolute; inset:-10px; width:200%; height:200%; cursor:pointer;">
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; color:#5c7094; font-weight:bold;">
+          <span>潜意识高亮色</span>
+          <div style="position:relative; width:24px; height:24px; border-radius:6px; border:1px solid #cdd7e8; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+            <input type="color" id="ifColorMind" oninput="window._applyIfAesthetics('mindColor', this.value)" style="position:absolute; inset:-10px; width:200%; height:200%; cursor:pointer;">
+          </div>
+        </div>
+
+        <div style="border-top:1px dashed #dce5f0; padding-top:12px; margin-top:4px;">
+          <input type="file" id="ifBgUpload" accept="image/*" style="display:none;" onchange="window._handleIfBgUpload(event)">
+          <button class="btn" onclick="document.getElementById('ifBgUpload').click()" style="width:100%; background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:8px 0; font-weight:bold; font-size:12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">上传高清背景图</button>
+          <button class="btn d" onclick="window._clearIfBg()" style="width:100%; background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; padding:8px 0; font-weight:bold; font-size:12px; margin-top:8px; box-shadow:none;">清除背景</button>
+        </div>
+      </div>
+      `;
+      document.getElementById('ifReader').insertAdjacentHTML('beforeend', panelHtml);
+    }
+  }, 1200);
+
+  window._toggleIfColorPanel = async function() {
+    const panel = document.getElementById('ifColorPanel');
+    if (panel.style.display === 'none') {
+      // 打开时，从外挂内存读取当前书本的配置回填
+      const books = await localforage.getItem('mp_fix_if_books') || [];
+      const book = books.find(b => b.id === window._currentIfBookId);
+      if(book) {
+        document.getElementById('ifColorText').value = book.textColor || '#3d4a6a';
+        document.getElementById('ifColorMind').value = book.mindColor || '#5c7094';
+      }
+      panel.style.display = 'flex';
+    } else {
+      panel.style.display = 'none';
+    }
+  };
+
+  // 🌟 核心：实时渲染并写入外挂硬盘
+  window._applyIfAesthetics = async function(key, val) {
+    if(!window._currentIfBookId) return;
+    
+    // 1. 实时修改 CSS 变量，瞬间生效无延迟
+    const page = document.querySelector('#ifReader .page');
+    if(key === 'textColor') {
+      page.style.setProperty('--if-text-color', val);
+    } else if(key === 'mindColor') {
+      page.style.setProperty('--if-mind-color', val);
+      // 潜意识背景色自动调浅
+      page.style.setProperty('--if-mind-bg', val + '1A'); // 10% 透明度
+    } else if(key === 'bgUrl') {
+      if(val) {
+        page.style.background = `url(${val})`;
+      } else {
+        page.style.background = '#f4f6fb'; // 恢复默认
+      }
+    }
+
+    // 2. 静默存入当前小说的专属内存
+    const books = await localforage.getItem('mp_fix_if_books') || [];
+    const book = books.find(b => b.id === window._currentIfBookId);
+    if(book) {
+      if(key === 'textColor') book.textColor = val;
+      if(key === 'mindColor') book.mindColor = val;
+      if(key === 'bgUrl') book.customBg = val;
+      await localforage.setItem('mp_fix_if_books', books);
+    }
+  };
+
+  // 🌟 处理背景图上传
+  window._handleIfBgUpload = async function(e) {
+    const f = e.target.files?.[0];
+    if(!f) return;
+    try {
+      const compFn = window._fiCompressImage || window.compressImage;
+      const imgData = await compFn(f, true); // 使用高清压缩
+      await window._applyIfAesthetics('bgUrl', imgData);
+      alert('✨ 绝美背景已铺设完毕！');
+    } catch(err) {
+      alert('背景上传失败啦：' + err.message);
+    } finally {
+      e.target.value = '';
+    }
+  };
+
+  window._clearIfBg = async function() {
+    await window._applyIfAesthetics('bgUrl', '');
+  };
+
+  // 🌟 劫持渲染引擎：每次打开阅读器时，自动刷上专属颜色！
+  if(!window._originalRenderIfReaderBeforeAesthetic) {
+    window._originalRenderIfReaderBeforeAesthetic = window._renderIfReader;
+    
+    window._renderIfReader = async function() {
+      // 先跑原来的渲染逻辑
+      await window._originalRenderIfReaderBeforeAesthetic();
+      
+      // 然后偷偷刷上颜色！
+      const books = await localforage.getItem('mp_fix_if_books') || [];
+      const book = books.find(b => b.id === window._currentIfBookId);
+      if(book) {
+        const page = document.querySelector('#ifReader .page');
+        if(page) {
+          if(book.customBg) page.style.background = `url(${book.customBg})`;
+          else page.style.background = '#f4f6fb';
+          
+          page.style.setProperty('--if-text-color', book.textColor || '#3d4a6a');
+          page.style.setProperty('--if-mind-color', book.mindColor || '#5c7094');
+          page.style.setProperty('--if-mind-bg', (book.mindColor || '#5c7094') + '1A');
+        }
+      }
+    };
+  }
+
+  // 点击空白处关闭调色盘
+  document.addEventListener('click', (e) => {
+    const panel = document.getElementById('ifColorPanel');
+    const btn = document.getElementById('ifColorPaletteBtn');
+    if(panel && panel.style.display !== 'none') {
+      if(!panel.contains(e.target) && !btn.contains(e.target)) {
+        panel.style.display = 'none';
+      }
+    }
+  });
+
+})();
+</script>
 </body>
   </html>
