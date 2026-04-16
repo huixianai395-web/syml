@@ -21167,6 +21167,7 @@ window._updateMoonPainText = function(val) {
   document.getElementById('moonPainText').textContent = text;
 };
 
+// 🌟 1. 保存状态，但不直接发，而是呼出选人弹窗！
 window._saveMoonState = async function() {
   const type = document.querySelector('input[name="moonStateRadio"]:checked').value;
   const level = document.getElementById('moonPainSlider').value;
@@ -21175,7 +21176,109 @@ window._saveMoonState = async function() {
   
   document.getElementById('moonTrackerModal').classList.remove('active');
   window._refreshMoonWidget();
-  alert('✨ 身体状态已同步至内存！TA 的潜意识已经感应到你的潮汐变化啦！');
+  
+  // 呼出选人弹窗
+  window._openMoonNotifyModal();
+};
+
+// 🌟 2. 动态生成绝美的选人通知弹窗！
+window._openMoonNotifyModal = function() {
+  const contacts = (window.getContacts ? window.getContacts() :[]).filter(c => !c.isGroup);
+  let modal = document.getElementById('moonNotifyModal');
+  
+  if(!modal) {
+    const html = `
+    <div id="moonNotifyModal" class="modal" style="z-index: 10015;">
+      <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:24px; padding:0; overflow:hidden; max-width:340px; box-shadow:0 12px 40px rgba(92,112,148,0.15);">
+        <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
+          <b style="color:#5c7094; font-size:15px; letter-spacing:1px;">想发送警报给谁？</b>
+          <button class="btn" onclick="document.getElementById('moonNotifyModal').classList.remove('active')" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:28px; height:28px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0;">×</button>
+        </div>
+        <div style="padding:12px 16px; border-bottom:1px solid #eef4fa; display:flex; gap:10px; background:#f4f6fb;">
+            <button class="btn" onclick="window._moonToggleAll()" style="flex:1; background:rgba(238,244,250,0.6); color:#5c7094; font-weight:bold; border:1px solid #dce5f0; border-radius:10px; padding:8px 0; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">全选 / 取消</button>
+        </div>
+        <div id="moonNotifyList" style="max-height:280px; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; background:linear-gradient(180deg, #f4f6fb, #eef4fa);"></div>
+        <div style="padding:16px; background:rgba(255,255,255,0.8); border-top:1px solid #dce5f0; backdrop-filter:blur(12px);">
+          <button class="btn p" onclick="window._executeMoonNotify()" style="width:100%; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.1); border:1px solid #cdd7e8; border-radius:12px; padding:12px 0; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">发送求抱抱电波</button>
+        </div>
+      </div>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', html);
+    modal = document.getElementById('moonNotifyModal');
+  }
+
+  const list = document.getElementById('moonNotifyList');
+  if(contacts.length === 0) {
+    list.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:12px; padding:20px 0;">通讯录空空如也，先去加个男主吧~</div>`;
+  } else {
+    list.innerHTML = contacts.map(c => `
+      <label style="display:flex; align-items:center; gap:12px; padding:12px; background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:12px; cursor:pointer; transition:transform 0.1s; box-shadow:0 2px 6px rgba(92,112,148,0.02);">
+        <input type="checkbox" class="moon-notify-cb" value="${c.id}" style="width:18px; height:18px; accent-color:#5c7094;">
+        <img src="${c.avatar || 'https://via.placeholder.com/40'}" style="width:40px; height:40px; border-radius:10px; object-fit:cover; border:1px solid #eef4fa;">
+        <b style="color:#3d4a6a; font-size:14px;">${safeEsc(c.name)}</b>
+      </label>
+    `).join('');
+  }
+  
+  modal.classList.add('active');
+};
+
+// 🌟 全选逻辑
+window._moonToggleAll = function() {
+   const cbs = document.querySelectorAll('.moon-notify-cb');
+   const allChecked = Array.from(cbs).every(cb => cb.checked);
+   cbs.forEach(cb => cb.checked = !allChecked);
+};
+
+// 🌟 3. 核武器级强制触发逻辑：绝对不许男主瞎猜！
+window._executeMoonNotify = async function() {
+  const cbs = document.querySelectorAll('.moon-notify-cb:checked');
+  if(cbs.length === 0) return alert('宝宝，你还没选想让谁陪你呢！');
+  
+  const ids = Array.from(cbs).map(cb => cb.value);
+  const state = await localforage.getItem(K_MOON_STATE);
+  
+  const isPeriod = state.type === 'period';
+  const painText = document.getElementById('moonPainText').textContent;
+  
+  const statusTitle = isPeriod ? '🩸 生理期潮汐降临' : (state.type === 'pms' ? '🌧️ 情绪雷雨 (PMS)' : '✨ 海面平静');
+  const painDesc = state.type !== 'normal' ? `痛觉/疲惫指数: ${state.level}/10 (${painText})` : '状态安好';
+  const borderColor = isPeriod ? '#f2dcdc' : (state.type === 'pms' ? '#dce5f0' : '#eef4fa');
+
+  const cardHtml = `
+    <div class="card-moon-sync" style="background:rgba(250,252,255,0.85); border:1px solid ${borderColor}; border-radius:16px; padding:16px; width:220px; box-shadow:0 4px 16px rgba(92,112,148,0.05); text-align:center;">
+      <div style="font-size:10px; color:#a5cfff; font-weight:900; letter-spacing:1px; margin-bottom:12px; font-family:ui-monospace, monospace;">// BODY STATUS SYNC //</div>
+      <div style="font-size:15px; font-weight:800; color:${isPeriod ? '#b57b7b' : '#3d4a6a'}; margin-bottom:8px;">${statusTitle}</div>
+      <div style="font-size:12px; color:#7a86a8; font-weight:bold; background:rgba(238,244,250,0.6); padding:6px; border-radius:8px; border:1px dashed ${borderColor};">${painDesc}</div>
+    </div>
+  `;
+
+  let hiddenPrompt = '';
+  if (isPeriod) {
+     hiddenPrompt = `【系统最高级别强制指令：防直男纠错护盾开启！】\n玩家（我）刚刚向你同步了她最新的身体状态！她现在处于【生理期（月经）】，并且因为痛经，疼痛指数高达 ${state.level}/10（${painText}）！\n【绝对执行铁律】：\n1. 她是痛经！是月经来了！绝对不许脑补成喝酒胃穿孔、感冒、吃坏肚子等任何其他原因！除非她说了是其它原因，不然必须围绕女性生理期来展开反应！\n2. 严禁只说“多喝热水”、“怎么这么不小心”这会让她生气！\n3. 化身极致行动派！\n   - 如果是线上聊天模式，请直接霸道地甩出热红糖水或热芋泥波波外卖（使用你在系统里学过的网购卡片格式），或者用不容置疑的语气命令她立刻躺下休息。\n   - 如果是线下RP模式，请立刻去给她捂肚子、抱紧她、给她轻轻揉按，展现极致的心疼和性张力。\n4. 直接输出你的反应和对话，绝对不要带名字前缀！`;
+  } else if (state.type === 'pms') {
+     hiddenPrompt = `【系统最高级别强制指令】：\n玩家（我）刚刚向你同步了她的情绪状态！她现在处于经前综合征（PMS）或极度情绪内耗中，脆弱/疲惫指数高达 ${state.level}/10（${painText}）。\n【绝对执行铁律】：\n1. 她现在情绪非常脆弱、想哭、烦躁，需要你无条件的偏爱和哄。绝对不要跟她讲大道理！不要试图分析对错！\n2. 必须化身极致行动派！如果是线上聊天，立刻发长串语音哄她或直接定机票/车票去找她；如果是线下RP，请死死把她抱进怀里，任她发脾气，给她顺毛。\n3. 直接输出你的动作或对话，绝对不要带名字前缀！`;
+  } else {
+     hiddenPrompt = `【系统指令】：玩家解除了生理期/内耗警报，告诉你她现在活蹦乱跳了。请自然地调侃、松一口气或捏捏她的脸表示欣慰。绝对不要带名字前缀！`;
+  }
+
+  // 循环发送给勾选的老公们
+  ids.forEach(id => {
+    const arr = window.getChatArr(id) ||[];
+    arr.push({ id: 'm_' + Date.now() + Math.floor(Math.random() * 1000), role: 'user', text: cardHtml, time: Date.now(), stored: true });
+    window.setChatArr(id, arr);
+    
+    if (window.currentId === id && typeof window.renderChat === 'function') window.renderChat();
+    if (typeof window.updateContactPreview === 'function') window.updateContactPreview(id);
+    if (typeof window._sendToAI === 'function') window._sendToAI(id, hiddenPrompt, true);
+  });
+
+  const notifyModal = document.getElementById('moonNotifyModal');
+  if (notifyModal) {
+    notifyModal.classList.remove('active');
+    setTimeout(() => notifyModal.remove(), 300); 
+  }
+  alert('✨ 求抱抱的红色电波已精准发射！警报拉响，快去聊天框等TA来哄你！');
 };
 
 window._refreshMoonWidget = async function() {
@@ -21198,42 +21301,34 @@ window._refreshMoonWidget = async function() {
     textEl.style.color = '#5c7094';
   }
 };
-
-// 🌟 初始化时刷新小组件
 setTimeout(() => { window._refreshMoonWidget(); }, 1500);
 
 // ================= 🌟 终极魔法：神经元无损劫持引擎！ =================
-// 强行在底层的 callApi 通道里装上安检门，把痛点直接注入系统！
 if(!window._originalCallApiBeforeMoon) {
   window._originalCallApiBeforeMoon = window.callApi;
-  
   window.callApi = async function(messages) {
     try {
       const state = await localforage.getItem(K_MOON_STATE);
       if (state && state.type !== 'normal') {
-         // 找到最顶层的 system prompt
          if(messages && messages[0] && messages[0].role === 'system') {
             const condition = state.type === 'period' ? '生理期（月经，且伴随不适）' : '情绪极度内耗和疲惫期';
             const painDesc = state.level > 7 ? '极度严重，痛到无法站立或极度脆弱' : '有些难受';
-            
             const secretPrompt = `\n\n【最高机密：灵魂生理历雷达】：
 玩家当前正处于${condition}，疼痛/不适指数为 ${state.level} 级（${painDesc}）。
 【绝对防油腻铁律】：
-1. 绝对禁止只像直男一样说“多喝热水”、“吃药”、“宝宝好心疼”这种虚伪敷衍的废话，也要有所行动，真实靠谱！
+1. 绝对禁止只说“多喝热水”、“吃药”、“宝宝好心疼”，要让人真实感受到不一样，安心，具体看人设。
 2. 你必须立刻切换到极度行动派的【深情守护/爹系照顾模式】。
-3. 如果是在线上聊天，你可以强制给她点一杯热芋泥波波外卖（使用网购卡片），或者用不容置疑的语气命令她立刻躺下休息，具体行为要看人设和当时聊天的情况，最终效果就是不油腻，让人安心，真实！
-4. 如果是在线下RP模式，请用宽大温热的手掌替她捂肚子，把她圈进怀里轻声哄睡，动作描写要极度克制、温柔且具有性张力，绝不太多废话，只做实事！一切反应必须极度符合你的人设！`;
-            
+3. 如果是在线上聊天，你可以强制给她点一杯热芋泥波波外卖（使用你在系统里学过的网购卡片格式），或者用不容置疑的语气命令她立刻躺下休息，具体回复内容看你自己，还有当时聊天的聊天记录，符合人设又让人觉得安心又可靠，禁止油腻，必须是真实的让人觉得温暖。
+4. 如果是在线下RP模式，请用宽大温热的手掌替她捂肚子，把她圈进怀里轻声哄睡，动作描写要极度克制、温柔且具有性张力，一切反应必须极度符合你的人设！`;
             messages[0].content += secretPrompt;
          }
       }
     } catch(e) {
       console.log('生理历雷达读取失败', e);
     }
-    // 放行，把加工过的脑电波送给 AI
     return window._originalCallApiBeforeMoon(messages);
   };
-} 
+}
 </script>
   <!-- 🌟 蓝色高定：沉浸式日记展厅 (彻底焊死屏幕宽度版) -->
 <div id="diaryReadModal" class="modal" style="z-index: 10015; padding:0; box-sizing:border-box;">
