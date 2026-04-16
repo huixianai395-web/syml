@@ -2418,6 +2418,17 @@ body {
   </div> <!-- 第二页的大门关上！ -->
     
       <div class="home-page">
+         <!-- 🌟 蓝色高定：月相生理历 (极简横向毛玻璃组件) -->
+        <div onclick="window._openMoonTracker()" style="width:100%; margin-top:24px; padding:0 16px; box-sizing:border-box; cursor:pointer; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+          <div style="background:rgba(250,252,255,0.6); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:20px; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 8px 24px rgba(92,112,148,0.04);">
+            <div style="font-size:28px; filter:drop-shadow(0 0 10px rgba(165,207,255,0.8)); margin-right:16px;" id="moonPhaseIcon">🌒</div>
+            <div style="flex:1;">
+              <div style="font-size:15px; font-weight:800; color:#3d4a6a; letter-spacing:1px;">潮汐与月相</div>
+              <div id="moonStatusText" style="font-size:11px; color:#7a86a8; margin-top:4px; font-weight:bold;">身体私语 · 正在推算周期...</div>
+            </div>
+            <div style="color:#a5cfff; font-size:20px; font-weight:bold;">›</div>
+          </div>
+        </div>
         <!-- 🌟 核心护盾：ios-grid 网格容器，完美控制 4x4 换行！ -->
         <div class="ios-grid">
           
@@ -21124,6 +21135,105 @@ window._toggleReadAudio = function() {
   if(a.paused) { a.play(); b.textContent = '||'; }
   else { a.pause(); b.textContent = '▶'; }
 };
+ // 🌟 蓝色独家：月相生理历外挂内存引擎
+const K_MOON_STATE = 'mp_fix_moon_state_v1';
+
+window._openMoonTracker = async function() {
+  const state = await localforage.getItem(K_MOON_STATE) || { type: 'normal', level: 3 };
+  
+  document.querySelectorAll('input[name="moonStateRadio"]').forEach(r => {
+    r.checked = (r.value === state.type);
+  });
+  document.getElementById('moonPainSlider').value = state.level || 3;
+  window._updateMoonPainText(state.level || 3);
+  
+  // 监听单选框变化，控制滑动条显示
+  document.querySelectorAll('input[name="moonStateRadio"]').forEach(r => {
+    r.addEventListener('change', (e) => {
+      document.getElementById('moonPainLevelBox').style.display = e.target.value !== 'normal' ? 'block' : 'none';
+    });
+  });
+  
+  document.getElementById('moonPainLevelBox').style.display = state.type !== 'normal' ? 'block' : 'none';
+  document.getElementById('moonTrackerModal').classList.add('active');
+};
+
+window._updateMoonPainText = function(val) {
+  const v = parseInt(val);
+  let text = '轻微';
+  if(v > 3 && v <= 6) text = '难受';
+  if(v > 6 && v <= 8) text = '很痛';
+  if(v > 8) text = '要在床上打滚了 😭';
+  document.getElementById('moonPainText').textContent = text;
+};
+
+window._saveMoonState = async function() {
+  const type = document.querySelector('input[name="moonStateRadio"]:checked').value;
+  const level = document.getElementById('moonPainSlider').value;
+  
+  await localforage.setItem(K_MOON_STATE, { type, level: parseInt(level), time: Date.now() });
+  
+  document.getElementById('moonTrackerModal').classList.remove('active');
+  window._refreshMoonWidget();
+  alert('✨ 身体状态已同步至内存！TA 的潜意识已经感应到你的潮汐变化啦！');
+};
+
+window._refreshMoonWidget = async function() {
+  const state = await localforage.getItem(K_MOON_STATE);
+  const iconEl = document.getElementById('moonPhaseIcon');
+  const textEl = document.getElementById('moonStatusText');
+  if(!iconEl || !textEl) return;
+
+  if(!state || state.type === 'normal') {
+    iconEl.textContent = '🌒';
+    textEl.textContent = '身体私语 · 海面平静，一切安好';
+    textEl.style.color = '#7a86a8';
+  } else if (state.type === 'period') {
+    iconEl.textContent = '🌕';
+    textEl.textContent = `身体私语 · 潮汐降临 (痛觉指数 ${state.level})`;
+    textEl.style.color = '#b57b7b';
+  } else {
+    iconEl.textContent = '🌖';
+    textEl.textContent = `身体私语 · 情绪雷雨 (疲惫指数 ${state.level})`;
+    textEl.style.color = '#5c7094';
+  }
+};
+
+// 🌟 初始化时刷新小组件
+setTimeout(() => { window._refreshMoonWidget(); }, 1500);
+
+// ================= 🌟 终极魔法：神经元无损劫持引擎！ =================
+// 强行在底层的 callApi 通道里装上安检门，把痛点直接注入系统！
+if(!window._originalCallApiBeforeMoon) {
+  window._originalCallApiBeforeMoon = window.callApi;
+  
+  window.callApi = async function(messages) {
+    try {
+      const state = await localforage.getItem(K_MOON_STATE);
+      if (state && state.type !== 'normal') {
+         // 找到最顶层的 system prompt
+         if(messages && messages[0] && messages[0].role === 'system') {
+            const condition = state.type === 'period' ? '生理期（月经，且伴随不适）' : '情绪极度内耗和疲惫期';
+            const painDesc = state.level > 7 ? '极度严重，痛到无法站立或极度脆弱' : '有些难受';
+            
+            const secretPrompt = `\n\n【最高机密：灵魂生理历雷达】：
+玩家当前正处于${condition}，疼痛/不适指数为 ${state.level} 级（${painDesc}）。
+【绝对防油腻铁律】：
+1. 绝对禁止只像直男一样说“多喝热水”、“吃药”、“宝宝好心疼”这种虚伪敷衍的废话，也要有所行动，真实靠谱！
+2. 你必须立刻切换到极度行动派的【深情守护/爹系照顾模式】。
+3. 如果是在线上聊天，你可以强制给她点一杯热芋泥波波外卖（使用网购卡片），或者用不容置疑的语气命令她立刻躺下休息，具体行为要看人设和当时聊天的情况，最终效果就是不油腻，让人安心，真实！
+4. 如果是在线下RP模式，请用宽大温热的手掌替她捂肚子，把她圈进怀里轻声哄睡，动作描写要极度克制、温柔且具有性张力，绝不太多废话，只做实事！一切反应必须极度符合你的人设！`;
+            
+            messages[0].content += secretPrompt;
+         }
+      }
+    } catch(e) {
+      console.log('生理历雷达读取失败', e);
+    }
+    // 放行，把加工过的脑电波送给 AI
+    return window._originalCallApiBeforeMoon(messages);
+  };
+} 
 </script>
   <!-- 🌟 蓝色高定：沉浸式日记展厅 (彻底焊死屏幕宽度版) -->
 <div id="diaryReadModal" class="modal" style="z-index: 10015; padding:0; box-sizing:border-box;">
@@ -21148,6 +21258,49 @@ window._toggleReadAudio = function() {
        <div id="diaryReadContent"></div>
     </div>
     
+  </div>
+</div>
+  <!-- 🌟 蓝色高定：月相生理历控制舱 -->
+<div id="moonTrackerModal" class="modal" style="z-index: 10010;">
+  <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; box-shadow:0 12px 40px rgba(92,112,148,0.12); display:flex; flex-direction:column; max-height:85dvh; max-width:380px; padding:0; overflow:hidden; border-radius:24px;">
+    
+    <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
+      <b style="color:#5c7094; font-size:16px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
+        <span style="font-size:18px;">🌙</span> 记录潮汐与身体
+      </b>
+      <button class="btn" onclick="document.getElementById('moonTrackerModal').classList.remove('active')" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:28px; height:28px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0;">×</button>
+    </div>
+
+    <div style="padding:24px 20px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); flex:1; overflow-y:auto;">
+      <div style="font-size:12px; color:#7a86a8; font-weight:800; margin-bottom:12px; letter-spacing:1px; text-align:center;">— 当前身体状态 —</div>
+      
+      <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:24px;">
+        <label style="display:flex; align-items:center; justify-content:space-between; padding:16px; background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:16px; cursor:pointer; box-shadow:0 2px 8px rgba(92,112,148,0.02);">
+          <div style="font-size:14px; font-weight:bold; color:#b57b7b;">🩸 潮汐降临 (生理期)</div>
+          <input type="radio" name="moonStateRadio" value="period" style="accent-color:#b57b7b; transform:scale(1.2);">
+        </label>
+        
+        <label style="display:flex; align-items:center; justify-content:space-between; padding:16px; background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:16px; cursor:pointer; box-shadow:0 2px 8px rgba(92,112,148,0.02);">
+          <div style="font-size:14px; font-weight:bold; color:#5c7094;">🌧️ 情绪雷雨 (内耗/PMS)</div>
+          <input type="radio" name="moonStateRadio" value="pms" style="accent-color:#5c7094; transform:scale(1.2);">
+        </label>
+        
+        <label style="display:flex; align-items:center; justify-content:space-between; padding:16px; background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:16px; cursor:pointer; box-shadow:0 2px 8px rgba(92,112,148,0.02);">
+          <div style="font-size:14px; font-weight:bold; color:#7a86a8;">✨ 海面平静 (无不适)</div>
+          <input type="radio" name="moonStateRadio" value="normal" checked style="accent-color:#a5cfff; transform:scale(1.2);">
+        </label>
+      </div>
+
+      <div id="moonPainLevelBox" style="display:none; background:rgba(252,242,242,0.6); border:1px dashed #f2dcdc; border-radius:16px; padding:16px; margin-bottom:24px;">
+        <div style="font-size:12px; color:#b57b7b; font-weight:bold; margin-bottom:12px; display:flex; justify-content:space-between;">
+          <span>痛觉/疲惫指数</span>
+          <span id="moonPainText" style="font-family:ui-monospace, monospace; font-size:14px; font-weight:900;">轻微</span>
+        </div>
+        <input type="range" id="moonPainSlider" min="1" max="10" value="3" style="width:100%; accent-color:#b57b7b;" oninput="window._updateMoonPainText(this.value)">
+      </div>
+
+      <button class="btn p" onclick="window._saveMoonState()" style="width:100%; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:14px; padding:14px 0; font-size:15px; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.1); letter-spacing:1px;">同步状态并通知他</button>
+    </div>
   </div>
 </div>
 </body>
