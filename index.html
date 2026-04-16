@@ -2475,7 +2475,15 @@ body {
             </div>
             <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">灵魂36问</span>
           </div>
-
+          
+<div class="ios-icon" onclick="show('diaryApp'); window._initDiaryApp();">
+  <div class="ibg" style="background-color:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
+    <svg viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path><path d="M12 8h4M12 12h4"></path>
+    </svg>
+  </div>
+  <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">浮光手记</span>
+</div>
           <!-- 隐形换衣间与就地绑定魔法 (用于长按更换图标) -->
           <input type="file" id="up_icon_soul" accept="image/*" class="hidden">
           <script>
@@ -2491,18 +2499,7 @@ body {
             if(window.bindIconUpload) window.bindIconUpload('icon_gacha', 'up_icon_gacha', 'mp_icon_gacha');
           }, 1500);
         </script>
-          <!-- 🌟 蓝色高定：微光余温 (日记本) 入口 -->
-<div class="ios-icon" onclick="show('diaryApp'); window._initDiaryApp();">
-  <div class="ibg" id="icon_diary" style="background-color:rgba(238,244,250,0.6); border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.05); display:grid; place-items:center;">
-    <svg viewBox="0 0 24 24" style="width:24px; height:24px; stroke:#5c7094; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;">
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-      <line x1="12" y1="6" x2="12" y2="12"></line>
-      <line x1="9" y1="9" x2="15" y2="9"></line>
-    </svg>
-  </div>
-  <span style="color:#1a1d26; font-weight:800; letter-spacing:0.5px;">微光余温</span>
-</div>
+          
         </div> <!-- 🌟 核心护盾：网格在这里完美闭合！ -->
         
       </div>
@@ -2729,6 +2726,42 @@ body {
         <button class="btn p" onclick="window._startHoloDate()" style="width:100%; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:12px; padding:14px 0; font-size:15px; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.1); letter-spacing:2px; transition:transform 0.1s;" id="holoStartBtn" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">撕开门票 · 潜入约会</button>
       </div>
     </div>
+  </section>
+  <section id="diaryApp" class="screen">
+  <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0; z-index:50;">
+    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px;">‹ 桌面</button>
+    <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">浮光手记</b>
+    <div style="display:flex; gap:6px;">
+      <button class="btn p" onclick="window._openDiaryArchive()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px; box-shadow:none;">手账本</button>
+    </div>
+  </div>
+  <div class="page" style="background:linear-gradient(180deg, #f4f6fb, #eef4fa); padding:16px; overflow:hidden; display:flex; flex-direction:column;">
+    <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:16px; padding:12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; z-index:10; box-shadow:0 4px 12px rgba(92,112,148,0.03);">
+      <select id="diaryWeather" class="select" onchange="window._changeDiaryWeather(this.value)" style="width:100px; background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:8px; font-size:12px; padding:6px; font-weight:bold; outline:none;">
+        <option value="none">晴朗 ☀️</option><option value="rain">落雨 🌧️</option><option value="snow">初雪 ❄️</option>
+      </select>
+      <div style="font-size:12px; color:#a0aaba; font-family:ui-monospace, monospace; font-weight:bold;" id="diaryTodayDate"></div>
+      <input id="diaryMood" class="input" placeholder="今日心情..." style="width:100px; background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:8px; font-size:12px; padding:6px; font-weight:bold; outline:none; text-align:center;">
+    </div>
+    <div style="display:flex; gap:8px; margin-bottom:12px; z-index:10;">
+      <button class="btn" onclick="document.getElementById('diaryBgUpload').click()" style="flex:1; background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-size:11px; font-weight:bold;">换纸张</button>
+      <input type="file" id="diaryBgUpload" accept="image/*" style="display:none;" onchange="window._handleDiaryBg(event)">
+      <button class="btn" onclick="document.getElementById('diaryStickerUpload').click()" style="flex:1; background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-size:11px; font-weight:bold;">+ 贴纸</button>
+      <input type="file" id="diaryStickerUpload" accept="image/*" style="display:none;" onchange="window._addDiarySticker(event)">
+      <button class="btn" onclick="window._diaryFormat('strike')" style="flex:1; background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; font-size:11px; font-weight:bold;">划掉写错的</button>
+      <div style="position:relative; flex:1; display:flex;">
+        <button class="btn" onclick="window._diaryFormat('highlight')" style="width:100%; background:rgba(255,250,230,0.8); color:#b38b22; border:1px solid #f0e6c8; border-radius:10px; font-size:11px; font-weight:bold;">高亮笔</button>
+        <input type="color" id="diaryHiColor" value="#f0e6c8" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer;">
+      </div>
+    </div>
+    <div id="diaryCanvasWrap" style="flex:1; position:relative; border-radius:16px; overflow:hidden; box-shadow:0 8px 32px rgba(92,112,148,0.08); border:1px solid #dce5f0; background:#fdfaf3;">
+      <div id="diaryWeatherLayer" style="position:absolute; inset:0; pointer-events:none; z-index:5; overflow:hidden;"></div>
+      <div id="diaryBgLayer" style="position:absolute; inset:0; background-size:cover; background-position:center; opacity:0.8; z-index:1;"></div>
+      <div id="diaryEditor" contenteditable="true" style="position:absolute; inset:0; z-index:2; padding:24px; font-size:15px; color:#5c4a3a; line-height:1.8; font-family:'STZhongsong', 'KaiTi', serif; outline:none; overflow-y:auto; white-space:pre-wrap; text-align:justify;"></div>
+      <div id="diaryStickerLayer" style="position:absolute; inset:0; z-index:3; pointer-events:none; overflow:hidden;"></div>
+    </div>
+    <button class="btn p" onclick="window._saveDiary()" style="width:100%; margin-top:16px; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:14px; padding:14px 0; font-size:14px; font-weight:bold; box-shadow:0 4px 12px rgba(92,112,148,0.1); letter-spacing:1px; flex-shrink:0;">✨ 封存入库</button>
+  </div>
   </section>
 
   <!-- 专属世界书模态框 -->
@@ -20566,371 +20599,8 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
       });
     }
   };
-<!-- 🌟 蓝色高定：微光余温 (ID与神经元绝对隔离防冲突，终极满血复活版) -->
-<script>
-(function(){
-  // 🌟 换用全新的外挂内存轨道，彻底抛弃旧数据纠缠！
-  const K_DIARY_V5 = 'mp_fix_diary_archive_v5';
-  const K_DRAFT_V5 = 'mp_fix_diary_draft_v5';
-  window._diaryAudioData_v5 = '';
-
-  // 🚜 蓝色的“终极推土机”：开机瞬间，炸掉所有旧版残留，只留最新版！
-  setTimeout(() => {
-    const apps = document.querySelectorAll('#diaryApp');
-    if (apps.length > 1) {
-      for (let i = 0; i < apps.length - 1; i++) apps[i].remove();
-    }
-    
-    // 把旧的模态框统统炸掉，只保留带 v5 烙印的！
-    const oldModals = document.querySelectorAll('#diaryArchiveModal');
-    if (oldModals.length > 0) {
-      for (let i = 0; i < oldModals.length; i++) oldModals[i].remove();
-    }
-    const newModals = document.querySelectorAll('#diaryArchiveModal_v5');
-    if (newModals.length > 1) {
-      for (let i = 0; i < newModals.length - 1; i++) newModals[i].remove();
-    }
-    
-    // 把唯一剩下的最新版抓回主屋
-    const app = document.getElementById('app');
-    const diaryApp = document.getElementById('diaryApp');
-    const diaryModal = document.getElementById('diaryArchiveModal_v5');
-    if (app) {
-      if (diaryApp && diaryApp.parentNode !== app) app.appendChild(diaryApp);
-      if (diaryModal && diaryModal.parentNode !== app) app.appendChild(diaryModal);
-    }
-  }, 50);
-
-  // 🛡️ 蓝色绝对防御塔：每秒钟巡逻一次，强行拦截桌面图标的点击事件！
-  // 就算旧代码在后面加载覆盖了 _initDiaryApp，我也会把它抢回来！
-  setInterval(() => {
-    window._initDiaryApp = window._initDiaryApp_v5;
-  }, 500);
-
-  // 1. 初始化与自动载入 (外挂硬盘直连)
-  window._initDiaryApp_v5 = async function() {
-    try {
-      const now = new Date();
-      const dateInp = document.getElementById('diaryDate_v5');
-      if(dateInp) dateInp.value = now.toISOString().split('T')[0];
-      
-      const draft = await localforage.getItem(K_DRAFT_V5);
-      if(draft) {
-        if(document.getElementById('diaryTitle_v5')) document.getElementById('diaryTitle_v5').value = draft.title || '';
-        if(document.getElementById('diaryContent_v5')) document.getElementById('diaryContent_v5').value = draft.content || '';
-        if(document.getElementById('diaryWeather_v5')) document.getElementById('diaryWeather_v5').value = draft.weather || '晴';
-        if(document.getElementById('diaryMood_v5')) document.getElementById('diaryMood_v5').value = draft.mood || '平静';
-        if(document.getElementById('diaryBgLayer_v5')) document.getElementById('diaryBgLayer_v5').style.backgroundImage = draft.bg || '';
-        if(document.getElementById('diaryFontColor_v5')) document.getElementById('diaryFontColor_v5').value = draft.color || '#5c7094';
-        if(document.getElementById('diaryContent_v5')) document.getElementById('diaryContent_v5').style.color = draft.color || '#5c7094';
-        if(document.getElementById('diaryCanvas_v5')) document.getElementById('diaryCanvas_v5').innerHTML = '';
-        if(draft.stickers) {
-          draft.stickers.forEach(stk => window._createStickerElement_v5(stk.src, stk.x, stk.y, stk.rot, stk.id));
-        }
-      }
-    } catch(e) { console.log('日记本初始化失败:', e); }
-  };
-
-  // 2. 贴纸引擎与防爆雷达
-  window._handleDiarySticker_v5 = async function(e) {
-    try {
-      const f = e.target.files[0]; if(!f) return;
-      const compFn = window._fiCompressImage || window.compressImage;
-      if(!compFn) throw new Error("压缩引擎未就绪");
-      const data = await compFn(f);
-      window._createStickerElement_v5(data);
-      window._autoSaveDraft_v5();
-    } catch(err) { alert('贴碎片失败啦：' + err.message); }
-    finally { e.target.value = ''; }
-  };
-
-  window._createStickerElement_v5 = function(src, x=50, y=50, rot=0, id=null) {
-    const sid = id || 'stk_' + Date.now() + Math.random();
-    const div = document.createElement('div');
-    div.id = sid;
-    div.className = 'diary-sticker-item';
-    div.style.cssText = `position:absolute; left:${x}px; top:${y}px; width:120px; z-index:10; pointer-events:auto; cursor:move; transform:rotate(${rot}deg);`;
-    div.innerHTML = `
-      <img src="${src}" style="width:100%; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.15); border:2px solid #fff; pointer-events:none;">
-      <div style="position:absolute; top:-10px; right:-10px; background:#fcf2f2; color:#b57b7b; width:22px; height:22px; border-radius:50%; display:grid; place-items:center; font-size:12px; border:1px solid #f2dcdc; cursor:pointer; z-index:20;" onclick="this.parentElement.remove(); window._autoSaveDraft_v5();">×</div>
-    `;
-    
-    let isDown = false, sx, sy;
-    div.onmousedown = (ev) => { 
-      isDown = true; sx = ev.clientX - div.offsetLeft; sy = ev.clientY - div.offsetTop;
-      div.style.zIndex = 2000; 
-    };
-    document.addEventListener('mousemove', (ev) => { 
-      if(!isDown) return; 
-      div.style.left = (ev.clientX - sx) + 'px'; 
-      div.style.top = (ev.clientY - sy) + 'px'; 
-    });
-    document.addEventListener('mouseup', () => { 
-      if(isDown) { isDown = false; div.style.zIndex = 10; window._autoSaveDraft_v5(); }
-    });
-    
-    div.onwheel = (ev) => {
-      ev.preventDefault();
-      const match = div.style.transform.match(/rotate\((.*)deg\)/);
-      const currentRot = match ? parseInt(match[1]) : 0;
-      const nextRot = currentRot + (ev.deltaY > 0 ? 15 : -15);
-      div.style.transform = `rotate(${nextRot}deg)`;
-      window._autoSaveDraft_v5();
-    };
-    const canvas = document.getElementById('diaryCanvas_v5');
-    if(canvas) canvas.appendChild(div);
-  };
-
-  // 3. 换底图引擎
-  window._handleDiaryBg_v5 = async function(e) {
-    try {
-      const f = e.target.files[0]; if(!f) return;
-      const compFn = window._fiCompressImage || window.compressImage;
-      const data = await compFn(f, true);
-      const bgLayer = document.getElementById('diaryBgLayer_v5');
-      if(bgLayer) bgLayer.style.backgroundImage = `url(${data})`;
-      window._autoSaveDraft_v5();
-    } catch(err) { alert('换底图失败啦：' + err.message); }
-    finally { e.target.value = ''; }
-  };
-
-  window._resetDiaryBg_v5 = function() {
-    const bgLayer = document.getElementById('diaryBgLayer_v5');
-    if(bgLayer) bgLayer.style.backgroundImage = '';
-    window._autoSaveDraft_v5();
-  };
-
-  // 4. 音频修复与极简图标
-  window._handleDiaryAudio_v5 = function(e) {
-    const f = e.target.files[0]; if(!f) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      window._diaryAudioData_v5 = ev.target.result;
-      const player = document.getElementById('diaryPlayer_v5');
-      if(player) {
-        player.src = ev.target.result;
-        player.play().then(() => {
-          const ind = document.getElementById('audioIndicator_v5');
-          if(ind) ind.innerHTML = '<svg viewBox="0 0 24 24" style="width:20px; height:20px; stroke:#a5cfff; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>';
-          alert('✨ 听觉记忆已装载并开始播放...');
-        }).catch(err => alert('音频播放被浏览器拦截啦，点一下音符图标试试~'));
-      }
-      window._autoSaveDraft_v5();
-    };
-    reader.readAsDataURL(f);
-    e.target.value = '';
-  };
-
-  window._scribbleDiary_v5 = function() {
-    const ta = document.getElementById('diaryContent_v5');
-    if(!ta) return;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
-    if(start === end) return alert('宝宝，先选一段你想“划掉”的字哦！');
-    const text = ta.value;
-    const selected = text.substring(start, end);
-    const scribbled = selected.split('').map(char => char + '\u0336').join('');
-    ta.value = text.substring(0, start) + scribbled + text.substring(end);
-    window._autoSaveDraft_v5();
-  };
-
-  // 5. 核心保存与外挂硬盘直连
-  window._saveDiaryPage_v5 = async function() {
-    try {
-      const titleInp = document.getElementById('diaryTitle_v5');
-      const title = titleInp ? titleInp.value.trim() || '无题' : '无题';
-      
-      const stickers = Array.from(document.querySelectorAll('#diaryCanvas_v5 .diary-sticker-item')).map(el => {
-        const match = el.style.transform.match(/rotate\((.*)deg\)/);
-        return {
-          src: el.querySelector('img').src, x: el.offsetLeft, y: el.offsetTop,
-          rot: match ? parseInt(match[1]) : 0, id: el.id
-        };
-      });
-      
-      const pageData = {
-        id: 'pg_' + Date.now(), title, 
-        content: document.getElementById('diaryContent_v5')?.value || '',
-        date: document.getElementById('diaryDate_v5')?.value || '',
-        weather: document.getElementById('diaryWeather_v5')?.value || '晴',
-        mood: document.getElementById('diaryMood_v5')?.value || '平静',
-        bg: document.getElementById('diaryBgLayer_v5')?.style.backgroundImage || '',
-        color: document.getElementById('diaryFontColor_v5')?.value || '#5c7094',
-        audio: window._diaryAudioData_v5,
-        stickers, time: Date.now()
-      };
-      
-      let archive = await localforage.getItem(K_DIARY_V5) || [];
-      archive.unshift(pageData);
-      await localforage.setItem(K_DIARY_V5, archive);
-      alert('✨ 这一页的余温已安全锁入外挂内存册子！');
-      window._clearDiaryDraft_v5(true);
-    } catch(e) { alert('落印失败了宝宝：' + e.message); }
-  };
-
-  window._openDiaryArchive_v5 = async function() {
-    try {
-      const archive = await localforage.getItem(K_DIARY_V5) || [];
-      const list = document.getElementById('diaryArchiveList_v5');
-      const modal = document.getElementById('diaryArchiveModal_v5');
-      if(modal) modal.classList.add('active');
-      if(!list) return;
-      
-      list.innerHTML = archive.length === 0 ? '<div style="text-align:center;color:#7a86a8;padding:40px 0;font-size:13px;">册子空空如也...<br>快去记录第一页吧</div>' : 
-        archive.map(pg => `
-          <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:16px; padding:16px; margin-bottom:12px; box-shadow:0 4px 12px rgba(92,112,148,0.03);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px dashed #eef4fa; padding-bottom:8px;">
-              <b style="color:#3d4a6a; font-size:15px;">${safeEsc(pg.title)}</b>
-              <span style="font-size:11px; color:#a0aaba; font-family:ui-monospace, monospace;">${safeEsc(pg.date)}</span>
-            </div>
-            <div style="display:flex; justify-content:flex-end; gap:8px;">
-              <button class="btn d" onclick="window._delArchivePage_v5('${pg.id}')" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:8px; padding:4px 12px; font-weight:bold; font-size:11px; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">撕掉</button>
-              <button class="btn p" onclick="window._loadArchivePage_v5('${pg.id}')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:4px 12px; font-weight:bold; font-size:11px; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">翻阅</button>
-            </div>
-          </div>
-        `).join('');
-    } catch(e) { alert('打开册子失败：' + e.message); }
-  };
-
-  window._loadArchivePage_v5 = async function(id) {
-    const archive = await localforage.getItem(K_DIARY_V5) || [];
-    const pg = archive.find(p => p.id === id);
-    if(pg) {
-      if(document.getElementById('diaryTitle_v5')) document.getElementById('diaryTitle_v5').value = pg.title;
-      if(document.getElementById('diaryContent_v5')) document.getElementById('diaryContent_v5').value = pg.content;
-      if(document.getElementById('diaryDate_v5')) document.getElementById('diaryDate_v5').value = pg.date;
-      if(document.getElementById('diaryWeather_v5')) document.getElementById('diaryWeather_v5').value = pg.weather;
-      if(document.getElementById('diaryMood_v5')) document.getElementById('diaryMood_v5').value = pg.mood;
-      if(document.getElementById('diaryBgLayer_v5')) document.getElementById('diaryBgLayer_v5').style.backgroundImage = pg.bg || '';
-      if(document.getElementById('diaryFontColor_v5')) document.getElementById('diaryFontColor_v5').value = pg.color || '#5c7094';
-      if(document.getElementById('diaryContent_v5')) document.getElementById('diaryContent_v5').style.color = pg.color || '#5c7094';
-      if(document.getElementById('diaryCanvas_v5')) document.getElementById('diaryCanvas_v5').innerHTML = '';
-      
-      if(pg.stickers) pg.stickers.forEach(stk => window._createStickerElement_v5(stk.src, stk.x, stk.y, stk.rot, stk.id));
-      if(pg.audio) { 
-        const player = document.getElementById('diaryPlayer_v5');
-        if(player) player.src = pg.audio; 
-        window._diaryAudioData_v5 = pg.audio; 
-        const ind = document.getElementById('audioIndicator_v5');
-        if(ind) ind.innerHTML = '<svg viewBox="0 0 24 24" style="width:20px; height:20px; stroke:#a5cfff; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>';
-      }
-      const modal = document.getElementById('diaryArchiveModal_v5');
-      if(modal) modal.classList.remove('active');
-    }
-  };
-
-  window._delArchivePage_v5 = async function(id) {
-    if(!confirm('确定要从册子里撕掉这一页吗？')) return;
-    let archive = await localforage.getItem(K_DIARY_V5) || [];
-    archive = archive.filter(p => p.id !== id);
-    await localforage.setItem(K_DIARY_V5, archive);
-    window._openDiaryArchive_v5();
-  };
-
-  window._autoSaveDraft_v5 = async function() {
-    try {
-      const draft = {
-        title: document.getElementById('diaryTitle_v5')?.value || '',
-        content: document.getElementById('diaryContent_v5')?.value || '',
-        weather: document.getElementById('diaryWeather_v5')?.value || '晴',
-        mood: document.getElementById('diaryMood_v5')?.value || '平静',
-        bg: document.getElementById('diaryBgLayer_v5')?.style.backgroundImage || '',
-        color: document.getElementById('diaryFontColor_v5')?.value || '#5c7094',
-        stickers: Array.from(document.querySelectorAll('#diaryCanvas_v5 .diary-sticker-item')).map(el => {
-          const match = el.style.transform.match(/rotate\((.*)deg\)/);
-          return { src: el.querySelector('img').src, x: el.offsetLeft, y: el.offsetTop, rot: match ? parseInt(match[1]) : 0, id: el.id };
-        })
-      };
-      await localforage.setItem(K_DRAFT_V5, draft);
-    } catch(e) {}
-  };
-
-  window._clearDiaryDraft_v5 = async function(force = false) {
-    if(!force && !confirm('确定要清空当前页吗？')) return;
-    if(document.getElementById('diaryTitle_v5')) document.getElementById('diaryTitle_v5').value = '';
-    if(document.getElementById('diaryContent_v5')) document.getElementById('diaryContent_v5').value = '';
-    if(document.getElementById('diaryCanvas_v5')) document.getElementById('diaryCanvas_v5').innerHTML = '';
-    if(document.getElementById('diaryBgLayer_v5')) document.getElementById('diaryBgLayer_v5').style.backgroundImage = '';
-    window._diaryAudioData_v5 = '';
-    const ind = document.getElementById('audioIndicator_v5');
-    if(ind) ind.innerHTML = '<svg viewBox="0 0 24 24" style="width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>';
-    await localforage.removeItem(K_DRAFT_V5);
-  };
-
-  function safeEsc(s) { return String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m])); }
 
 })();
 </script>
-
-<!-- 🌟 HTML UI (带 ID 物理隔离装甲) -->
-<section id="diaryApp" class="screen">
-  <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0; z-index:1001;">
-    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 桌面</button>
-    <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">微光余温</b>
-    <div style="display:flex; gap:6px;">
-      <button class="btn" onclick="window._openDiaryArchive_v5()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">册子</button>
-      <button class="btn p" onclick="window._saveDiaryPage_v5()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">落印</button>
-    </div>
-  </div>
-  
-  <div class="page" id="diaryPageBody_v5" style="background:#eef4fa; padding:0; position:relative; overflow:hidden; display:flex; flex-direction:column;">
-    <!-- 1. 背景层 -->
-    <div id="diaryBgLayer_v5" style="position:absolute; inset:0; background-size:cover; background-position:center; z-index:1;"></div>
-    
-    <!-- 2. 装饰层 (左侧装订线) -->
-    <div style="position:absolute; left:0; top:0; bottom:0; width:15px; background:linear-gradient(to right, rgba(0,0,0,0.05), transparent); border-right:1px dashed rgba(92,112,148,0.2); z-index:10; pointer-events:none;"></div>
-
-    <!-- 3. 贴纸画布层 -->
-    <div id="diaryCanvas_v5" style="position:absolute; inset:0; z-index:100; pointer-events:none;"></div>
-
-    <!-- 4. 内容编辑区 -->
-    <div style="position:relative; z-index:50; flex:1; display:flex; flex-direction:column; padding:20px 20px 20px 35px; overflow-y:auto;">
-      <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:16px; border-bottom:1px solid rgba(92,112,148,0.1); padding-bottom:12px; flex-shrink:0;">
-        <input type="date" id="diaryDate_v5" style="background:transparent; border:none; color:#5c7094; font-family:ui-monospace, monospace; font-size:14px; font-weight:bold; outline:none;">
-        <select id="diaryWeather_v5" style="background:transparent; border:none; color:#7a86a8; font-size:13px; outline:none; font-weight:bold;">
-          <option value="晴">晴空</option><option value="雨">细雨</option><option value="雪">初雪</option><option value="阴">浮云</option>
-        </select>
-        <select id="diaryMood_v5" style="background:transparent; border:none; color:#7a86a8; font-size:13px; outline:none; font-weight:bold;">
-          <option value="心动">心动</option><option value="平静">平静</option><option value="委屈">委屈</option><option value="期待">期待</option>
-        </select>
-        <div style="flex:1;"></div>
-        <div style="display:flex; gap:8px; align-items:center;">
-          <input type="color" id="diaryFontColor_v5" value="#5c7094" onchange="document.getElementById('diaryContent_v5').style.color=this.value; window._autoSaveDraft_v5();" style="width:20px; height:20px; border:none; background:transparent; cursor:pointer;">
-          <div onclick="document.getElementById('diaryAudioFile_v5').click()" style="cursor:pointer; color:#5c7094; display:grid; place-items:center;" id="audioIndicator_v5" title="添加听觉记忆">
-            <svg viewBox="0 0 24 24" style="width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-          </div>
-          <input type="file" id="diaryAudioFile_v5" accept="audio/*" class="hidden" onchange="window._handleDiaryAudio_v5(event)">
-        </div>
-      </div>
-
-      <input id="diaryTitle_v5" placeholder="给这一页起个名字..." oninput="window._autoSaveDraft_v5()" style="background:transparent; border:none; color:#3d4a6a; font-size:20px; font-weight:900; outline:none; width:100%; margin-bottom:10px; flex-shrink:0;">
-      
-      <textarea id="diaryContent_v5" class="ta" oninput="window._autoSaveDraft_v5()" style="flex:1; background:transparent; border:none; font-size:16px; line-height:1.8; color:#5c7094; resize:none; outline:none;" placeholder="写下此刻的余温..."></textarea>
-    </div>
-
-    <!-- 5. 工具栏 (安全隔离区) -->
-    <div style="position:relative; z-index:1001; padding:12px; background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-top:1px solid #dce5f0; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; flex-shrink:0;">
-      <button class="btn" onclick="document.getElementById('diaryBgFile_v5').click()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">换底图</button>
-      <button class="btn" onclick="window._resetDiaryBg_v5()" style="background:rgba(255,255,255,0.6); color:#7a86a8; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">复原</button>
-      <button class="btn" onclick="document.getElementById('diaryStickerFile_v5').click()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">贴碎片</button>
-      <button class="btn" onclick="window._scribbleDiary_v5()" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">涂鸦改</button>
-      <button class="btn d" onclick="window._clearDiaryDraft_v5()" style="background:rgba(252,242,242,0.6); color:#b57b7b; border:1px dashed #f2dcdc; border-radius:10px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">清空</button>
-      <input type="file" id="diaryBgFile_v5" accept="image/*" class="hidden" onchange="window._handleDiaryBg_v5(event)">
-      <input type="file" id="diaryStickerFile_v5" accept="image/*" class="hidden" onchange="window._handleDiarySticker_v5(event)">
-    </div>
-  </div>
-  <audio id="diaryPlayer_v5" loop></audio>
-</section>
-
-<!-- 🌟 册子(存档) 弹窗 -->
-<div id="diaryArchiveModal_v5" class="modal" style="z-index:11000;" onclick="if(event.target===this) this.classList.remove('active')">
-  <div class="modal-card" style="width:90%; max-width:400px; max-height:80dvh; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:24px; display:flex; flex-direction:column; padding:0; overflow:hidden; box-shadow:0 12px 40px rgba(92,112,148,0.15);">
-    <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
-      <b style="color:#5c7094; font-size:16px; letter-spacing:1px;">日记册子</b>
-      <span onclick="document.getElementById('diaryArchiveModal_v5').classList.remove('active')" style="cursor:pointer; font-size:26px; color:#7a86a8; line-height:1;">×</span>
-    </div>
-    <div id="diaryArchiveList_v5" style="flex:1; overflow-y:auto; padding:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; flex-direction:column; gap:12px;"></div>
-  </div>
-</div>
 </body>
   </html>
