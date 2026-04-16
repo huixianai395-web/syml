@@ -20689,10 +20689,20 @@ window._changeDiaryWeather = function(type) {
     layer.innerHTML = `<div style="position:absolute; inset:0; background:rgba(92,112,148,0.1); pointer-events:none;"></div>`;
   }
 };
+// 🌟 蓝色高定：封存后自动切断音乐的画板重置引擎
 window._initDiaryApp = function() {
   const d = new Date();
   document.getElementById('diaryTodayDate').textContent = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
   document.getElementById('diaryEditor').innerHTML = '';
+  
+  // 🔪 核心修复：强行掐断底层播放器的电源！绝对不让它在后台偷偷唱歌！
+  const audioPlr = document.getElementById('diaryAudioPlayer');
+  if(audioPlr) {
+    audioPlr.pause();
+    audioPlr.src = '';
+  }
+  
+  // 隐藏 UI 胶囊并清空内存
   document.getElementById('diaryAudioCapsule').style.display = 'none';
   window._tempDiaryAudio = '';
 };
