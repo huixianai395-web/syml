@@ -2795,7 +2795,16 @@ body {
     <div id="diaryShareContactList" style="max-height:300px; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; background:#f4f6fb;"></div>
   </div>
 </div>
-
+<!-- 🌟 补回来的日记本档案馆弹窗 -->
+<div id="diaryArchiveModal" class="modal" style="z-index: 10008;">
+  <div class="modal-card" style="width:90%; max-width:400px; max-height:85dvh; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; display:flex; flex-direction:column; padding:0; overflow:hidden;">
+    <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
+      <b style="color:#5c7094; font-size:15px; letter-spacing:1px;">浮光档案馆</b>
+      <button class="btn" onclick="document.getElementById('diaryArchiveModal').classList.remove('active')" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:28px; height:28px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0;">×</button>
+    </div>
+    <div id="diaryArchiveList" style="flex:1; overflow-y:auto; padding:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; flex-direction:column; gap:12px;"></div>
+  </div>
+</div>
   <!-- 专属世界书模态框 -->
   <div id="holoWbModal" class="modal" style="z-index: 15001;">
     <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; display:flex; flex-direction:column; max-height:70dvh; padding:0; overflow:hidden;">
@@ -20708,28 +20717,53 @@ window._removeDiaryAudio = function() {
   document.getElementById('diaryAudioCapsule').style.display = 'none';
 };
 
-// 🌟 蓝色独家截断式划线引擎（完美解决颜色冲突）
+// 🌟 蓝色独家截断式划线引擎（带防粘连护盾！）
 window._diaryFormat = function(cmd, val) {
   const editor = document.getElementById('diaryEditor');
-  if(cmd === 'foreColor') {
-    document.execCommand('foreColor', false, val || '#5c7094');
-  } else if(cmd === 'strike') {
+  if(cmd === 'strike') {
     const sel = window.getSelection();
     if(sel.rangeCount > 0 && !sel.isCollapsed) {
       const range = sel.getRangeAt(0);
       const span = document.createElement('span');
-      // 核心魔法：字原本的颜色不变，但加上粉色的波浪/实线划除痕迹！
       span.style.textDecoration = 'line-through';
       span.style.textDecorationColor = '#b57b7b';
       span.style.textDecorationThickness = '2px';
+      span.style.cursor = 'pointer';
+      span.title = '点击吃下后悔药，撤销划线';
       span.appendChild(range.extractContents());
       range.insertNode(span);
-      sel.removeAllRanges(); // 防止重复点击出错
+      const zwsp = document.createTextNode('\u200b');
+      span.parentNode.insertBefore(zwsp, span.nextSibling);
+      sel.removeAllRanges();
+      const newRange = document.createRange();
+      newRange.setStartAfter(zwsp);
+      newRange.collapse(true);
+      sel.addRange(newRange);
     } else {
-      alert('宝宝，你要先长按选中你想划掉的字，然后再点我哦！');
+      alert('宝宝，你要先长按选中你想划掉的字哦！');
     }
   }
 };
+
+// 💊 后悔药监听引擎
+setTimeout(() => {
+  const editor = document.getElementById('diaryEditor');
+  if(editor && !editor.dataset.hookedRegret) {
+    editor.dataset.hookedRegret = '1';
+    editor.addEventListener('click', function(e) {
+      const span = e.target.closest('span');
+      if(span && span.style.textDecoration.includes('line-through')) {
+        if(confirm('✨ 要吃下后悔药，恢复这句被划掉的话吗？')) {
+          const parent = span.parentNode;
+          while(span.firstChild) {
+            parent.insertBefore(span.firstChild, span);
+          }
+          parent.removeChild(span);
+        }
+      }
+    });
+  }
+}, 1500);
 
 // 分享联系人选择器引擎
 window._prepareShareDiary = function(diaryId) {
@@ -20848,28 +20882,38 @@ window._saveDiary = async function() {
   window._initDiaryApp(); // 清空当前画布
 };
 
-// 天气特效引擎（给极简画布增加一点氛围感）
+// 🌧️ 绝美真实天气粒子引擎
+if(!document.getElementById('blueDiaryWeatherCss')) {
+  const style = document.createElement('style');
+  style.id = 'blueDiaryWeatherCss';
+  style.innerHTML = `
+    @keyframes dRain { 0% { transform: translateY(-20px); opacity:0; } 10% { opacity:1; } 90% { opacity:1; } 100% { transform: translateY(600px); opacity:0; } }
+    @keyframes dSnow { 0% { transform: translate(0, -20px) rotate(0deg); opacity:0; } 10% { opacity:0.8; } 100% { transform: translate(calc(-40px + 80px * var(--rnd)), 600px) rotate(360deg); opacity:0; } }
+    @keyframes dWind { 0% { transform: translateX(-50px); opacity:0; } 20% { opacity:1; } 100% { transform: translateX(400px); opacity:0; } }
+  `;
+  document.head.appendChild(style);
+}
+
 window._changeDiaryWeather = function(type) {
   const layer = document.getElementById('diaryWeatherLayer');
   const wrap = document.getElementById('diaryCanvasWrap');
   layer.innerHTML = '';
   wrap.style.filter = 'none';
-  
   if(type === 'rain') {
     for(let i=0; i<30; i++) {
-      layer.innerHTML += `<div style="position:absolute; width:2px; height:15px; background:linear-gradient(transparent, rgba(165,207,255,0.6)); left:${Math.random()*100}%; top:-20px; animation:rainDrop ${0.5+Math.random()}s linear infinite;"></div>`;
+      layer.innerHTML += `<div style="position:absolute; width:2px; height:${10+Math.random()*10}px; background:linear-gradient(transparent, rgba(165,207,255,0.8)); left:${Math.random()*100}%; top:-20px; animation:dRain ${0.4+Math.random()*0.3}s linear infinite; pointer-events:none;"></div>`;
     }
   } else if(type === 'snow') {
-    for(let i=0; i<20; i++) {
-      layer.innerHTML += `<div style="position:absolute; width:6px; height:6px; background:#fff; border-radius:50%; box-shadow:0 0 4px rgba(255,255,255,0.8); left:${Math.random()*100}%; top:-10px; animation:snowFall ${2+Math.random()*3}s linear infinite; opacity:${Math.random()};"></div>`;
+    for(let i=0; i<25; i++) {
+      layer.innerHTML += `<div style="position:absolute; width:${4+Math.random()*4}px; height:${4+Math.random()*4}px; background:#fff; border-radius:50%; box-shadow:0 0 6px rgba(255,255,255,0.9); left:${Math.random()*100}%; top:-20px; --rnd:${Math.random()}; animation:dSnow ${2+Math.random()*3}s linear infinite; opacity:0; pointer-events:none;"></div>`;
     }
   } else if(type === 'wind') {
-    for(let i=0; i<10; i++) {
-      layer.innerHTML += `<div style="position:absolute; width:20px; height:2px; background:rgba(220,229,240,0.5); left:-30px; top:${Math.random()*100}%; animation:windBlow ${1+Math.random()*2}s linear infinite;"></div>`;
+    for(let i=0; i<15; i++) {
+      layer.innerHTML += `<div style="position:absolute; width:30px; height:2px; background:rgba(220,229,240,0.6); left:-40px; top:${Math.random()*100}%; animation:dWind ${1+Math.random()*1.5}s linear infinite; border-radius:2px; pointer-events:none; opacity:0;"></div>`;
     }
   } else if(type === 'overcast') {
-    wrap.style.filter = 'saturate(0.7) brightness(0.9)';
-    layer.innerHTML = `<div style="position:absolute; inset:0; background:rgba(92,112,148,0.15);"></div>`;
+    wrap.style.filter = 'saturate(0.8) brightness(0.95)';
+    layer.innerHTML = `<div style="position:absolute; inset:0; background:rgba(92,112,148,0.12); pointer-events:none;"></div>`;
   }
 };
 
