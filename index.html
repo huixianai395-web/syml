@@ -20566,7 +20566,8 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
       });
     }
   };
-// 🌟 蓝色高定：日记本核心驱动引擎 (强制全局挂载版)
+<!-- 🌟 蓝色高定：微光余温 (彻底修复语法崩溃与花哨Emoji，注入初雪海盐蓝美学) -->
+<script>
 (function(){
   const K_DIARY = 'mp_fix_diary_archive_v2';
   const K_DRAFT = 'mp_fix_diary_draft';
@@ -20594,7 +20595,7 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
   // 2. 贴纸引擎 (修复点击穿透)
   window._handleDiarySticker = async function(e) {
     const f = e.target.files[0]; if(!f) return;
-    const data = await window._fiCompressImage(f); // 调用全局压缩引擎
+    const data = await (window._fiCompressImage ? window._fiCompressImage(f) : window.compressImage(f));
     window._createStickerElement(data);
     window._autoSaveDraft();
     e.target.value = '';
@@ -20605,7 +20606,6 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
     const div = document.createElement('div');
     div.id = sid;
     div.className = 'diary-sticker-item';
-    // 🌟 核心修复：pointer-events: auto 保证贴纸能被点到
     div.style.cssText = `position:absolute; left:${x}px; top:${y}px; width:120px; z-index:10; pointer-events:auto; cursor:move; transform:rotate(${rot}deg);`;
     div.innerHTML = `
       <img src="${src}" style="width:100%; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.15); border:2px solid #fff; pointer-events:none;">
@@ -20615,7 +20615,7 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
     let isDown = false, sx, sy;
     div.onmousedown = (ev) => { 
       isDown = true; sx = ev.clientX - div.offsetLeft; sy = ev.clientY - div.offsetTop;
-      div.style.zIndex = 2000; // 拖拽时临时置顶
+      div.style.zIndex = 2000; 
     };
     document.addEventListener('mousemove', (ev) => { 
       if(!isDown) return; 
@@ -20639,7 +20639,7 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
   // 3. 背景处理
   window._handleDiaryBg = async function(e) {
     const f = e.target.files[0]; if(!f) return;
-    const data = await window._fiCompressImage(f, true);
+    const data = await (window._fiCompressImage ? window._fiCompressImage(f, true) : window.compressImage(f, true));
     document.getElementById('diaryBgLayer').style.backgroundImage = `url(${data})`;
     window._autoSaveDraft();
   };
@@ -20648,7 +20648,7 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
     window._autoSaveDraft();
   };
 
-  // 4. 音频修复 (增加播放状态反馈)
+  // 4. 音频修复 (增加播放状态反馈，替换Emoji为高级SVG)
   window._handleDiaryAudio = function(e) {
     const f = e.target.files[0]; if(!f) return;
     const reader = new FileReader();
@@ -20657,8 +20657,8 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
       const player = document.getElementById('diaryPlayer');
       player.src = ev.target.result;
       player.play().then(() => {
-        document.getElementById('audioIndicator').textContent = ''♪'';
-        alert('🎵 听觉记忆已装载并开始播放...');
+        document.getElementById('audioIndicator').innerHTML = '<svg viewBox="0 0 24 24" style="width:20px; height:20px; stroke:#a5cfff; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>';
+        alert('✨ 听觉记忆已装载并开始播放...');
       }).catch(err => alert('音频播放被浏览器拦截啦，点一下音符图标试试~'));
       window._autoSaveDraft();
     };
@@ -20673,13 +20673,12 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
     if(start === end) return alert('宝宝，先选一段你想“划掉”的字哦！');
     const text = ta.value;
     const selected = text.substring(start, end);
-    // 🌟 使用特殊的 unicode 结合字符，模拟粉色涂鸦感
     const scribbled = selected.split('').map(char => char + '\u0336').join('');
     ta.value = text.substring(0, start) + scribbled + text.substring(end);
     window._autoSaveDraft();
   };
 
-  // 6. 保存与册子逻辑
+  // 6. 保存与册子逻辑 (死死焊进外挂硬盘)
   window._saveDiaryPage = async function() {
     const title = document.getElementById('diaryTitle').value.trim() || '无题';
     const stickers = Array.from(document.querySelectorAll('.diary-sticker-item')).map(el => ({
@@ -20708,16 +20707,16 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
     const archive = await localforage.getItem(K_DIARY) || [];
     const list = document.getElementById('diaryArchiveList');
     document.getElementById('diaryArchiveModal').classList.add('active');
-    list.innerHTML = archive.length === 0 ? '<div style="text-align:center;color:#999;padding:40px 0;">册子空空如也...</div>' : 
+    list.innerHTML = archive.length === 0 ? '<div style="text-align:center;color:#7a86a8;padding:40px 0;font-size:13px;">册子空空如也...<br>快去记录第一页吧</div>' : 
       archive.map(pg => `
-        <div style="background:#fff; border:1px solid #dce5f0; border-radius:16px; padding:15px; margin-bottom:12px;">
-          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-            <b style="color:#3d4a6a;">${pg.title}</b>
-            <span style="font-size:10px; color:#999;">${pg.date}</span>
+        <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:16px; padding:16px; margin-bottom:12px; box-shadow:0 4px 12px rgba(92,112,148,0.03);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px dashed #eef4fa; padding-bottom:8px;">
+            <b style="color:#3d4a6a; font-size:15px;">${safeEsc(pg.title)}</b>
+            <span style="font-size:11px; color:#a0aaba; font-family:ui-monospace, monospace;">${safeEsc(pg.date)}</span>
           </div>
           <div style="display:flex; justify-content:flex-end; gap:8px;">
-            <button class="btn d" onclick="window._delArchivePage('${pg.id}')" style="font-size:10px;">撕掉</button>
-            <button class="btn" onclick="window._loadArchivePage('${pg.id}')" style="font-size:10px;">翻阅</button>
+            <button class="btn d" onclick="window._delArchivePage('${pg.id}')" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:8px; padding:4px 12px; font-weight:bold; font-size:11px; box-shadow:none;">撕掉</button>
+            <button class="btn p" onclick="window._loadArchivePage('${pg.id}')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:4px 12px; font-weight:bold; font-size:11px; box-shadow:none;">翻阅</button>
           </div>
         </div>
       `).join('');
@@ -20736,7 +20735,11 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
       document.getElementById('diaryContent').style.color = pg.color || '#5c7094';
       document.getElementById('diaryCanvas').innerHTML = '';
       if(pg.stickers) pg.stickers.forEach(stk => window._createStickerElement(stk.src, stk.x, stk.y, stk.rot, stk.id));
-      if(pg.audio) { document.getElementById('diaryPlayer').src = pg.audio; window._diaryAudioData = pg.audio; }
+      if(pg.audio) { 
+        document.getElementById('diaryPlayer').src = pg.audio; 
+        window._diaryAudioData = pg.audio; 
+        document.getElementById('audioIndicator').innerHTML = '<svg viewBox="0 0 24 24" style="width:20px; height:20px; stroke:#a5cfff; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>';
+      }
       document.getElementById('diaryArchiveModal').classList.remove('active');
     }
   };
@@ -20771,20 +20774,23 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
     document.getElementById('diaryCanvas').innerHTML = '';
     document.getElementById('diaryBgLayer').style.backgroundImage = '';
     window._diaryAudioData = '';
-    document.getElementById('audioIndicator').textContent = '🎵';
+    document.getElementById('audioIndicator').innerHTML = '<svg viewBox="0 0 24 24" style="width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>';
     await localforage.removeItem(K_DRAFT);
   };
+
+  // 内部辅助函数，防止依赖外部未加载的 safeEsc
+  function safeEsc(s) { return String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m])); }
+
 })();
-})();
+
 </script>
-  <!-- 🌟 蓝色高定：微光余温 (层级修正版) -->
-<section id="diaryApp" class="screen">
+  <section id="diaryApp" class="screen">
   <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0; z-index:1001;">
-    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px;">‹ 桌面</button>
+    <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">‹ 桌面</button>
     <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">微光余温</b>
     <div style="display:flex; gap:6px;">
       <button class="btn" onclick="window._openDiaryArchive()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px;">册子</button>
-      <button class="btn p" onclick="window._saveDiaryPage()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px;">落印</button>
+      <button class="btn p" onclick="window._saveDiaryPage()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; box-shadow:none;">落印</button>
     </div>
   </div>
   
@@ -20795,40 +20801,41 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
     <!-- 2. 装饰层 (左侧装订线) -->
     <div style="position:absolute; left:0; top:0; bottom:0; width:15px; background:linear-gradient(to right, rgba(0,0,0,0.05), transparent); border-right:1px dashed rgba(92,112,148,0.2); z-index:10; pointer-events:none;"></div>
 
-    <!-- 3. 贴纸画布层 (这是关键！提高到 z-index 100，并让它能够穿透点击) -->
+    <!-- 3. 贴纸画布层 (提高 z-index 并开启 pointer-events) -->
     <div id="diaryCanvas" style="position:absolute; inset:0; z-index:100; pointer-events:none;"></div>
 
     <!-- 4. 内容编辑区 -->
     <div style="position:relative; z-index:50; flex:1; display:flex; flex-direction:column; padding:20px 20px 20px 35px;">
       <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:16px; border-bottom:1px solid rgba(92,112,148,0.1); padding-bottom:12px;">
         <input type="date" id="diaryDate" style="background:transparent; border:none; color:#5c7094; font-family:ui-monospace, monospace; font-size:14px; font-weight:bold; outline:none;">
-        <select id="diaryWeather" style="background:transparent; border:none; color:#7a86a8; font-size:13px; outline:none;">
-          <option value="晴">☀️ 晴空</option><option value="雨">🌧️ 细雨</option><option value="雪">❄️ 初雪</option><option value="阴">☁️ 浮云</option>
+        <select id="diaryWeather" style="background:transparent; border:none; color:#7a86a8; font-size:13px; outline:none; font-weight:bold;">
+          <option value="晴">晴空</option><option value="雨">细雨</option><option value="雪">初雪</option><option value="阴">浮云</option>
         </select>
-        <select id="diaryMood" style="background:transparent; border:none; color:#7a86a8; font-size:13px; outline:none;">
-          <option value="心动">💗 心动</option><option value="平静">🌊 平静</option><option value="委屈">💧 委屈</option><option value="期待">✨ 期待</option>
+        <select id="diaryMood" style="background:transparent; border:none; color:#7a86a8; font-size:13px; outline:none; font-weight:bold;">
+          <option value="心动">心动</option><option value="平静">平静</option><option value="委屈">委屈</option><option value="期待">期待</option>
         </select>
         <div style="flex:1;"></div>
         <div style="display:flex; gap:8px; align-items:center;">
           <input type="color" id="diaryFontColor" value="#5c7094" style="width:20px; height:20px; border:none; background:transparent; cursor:pointer;">
-          <div onclick="document.getElementById('diaryAudioFile').click()" style="cursor:pointer; font-size:18px;" id="audioIndicator">🎵</div>
+          <div onclick="document.getElementById('diaryAudioFile').click()" style="cursor:pointer; color:#5c7094; display:grid; place-items:center;" id="audioIndicator" title="添加听觉记忆">
+            <svg viewBox="0 0 24 24" style="width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+          </div>
           <input type="file" id="diaryAudioFile" accept="audio/*" class="hidden" onchange="window._handleDiaryAudio(event)">
         </div>
       </div>
 
-      <input id="diaryTitle" placeholder="给这一页起个名字..." style="background:transparent; border:none; color:#3d4a6a; font-size:20px; font-weight:900; outline:none; width:100%; margin-bottom:10px;">
+      <input id="diaryTitle" placeholder="给这一页起个名字..." oninput="window._autoSaveDraft()" style="background:transparent; border:none; color:#3d4a6a; font-size:20px; font-weight:900; outline:none; width:100%; margin-bottom:10px;">
       
-      <!-- 编辑框 z-index 设为 50，低于贴纸层 -->
-      <textarea id="diaryContent" class="ta" style="flex:1; background:transparent; border:none; font-size:16px; line-height:1.8; color:#5c7094; resize:none; outline:none;" placeholder="写下此刻的余温..."></textarea>
+      <textarea id="diaryContent" class="ta" oninput="window._autoSaveDraft()" style="flex:1; background:transparent; border:none; font-size:16px; line-height:1.8; color:#5c7094; resize:none; outline:none;" placeholder="写下此刻的余温..."></textarea>
     </div>
 
-    <!-- 5. 工具栏 (提高 z-index 保证永远能点到) -->
-    <div style="position:relative; z-index:1001; padding:12px; background:rgba(255,255,255,0.7); backdrop-filter:blur(12px); border-top:1px solid #dce5f0; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
-      <button class="btn" onclick="document.getElementById('diaryBgFile').click()">换底图</button>
-      <button class="btn" onclick="window._resetDiaryBg()">复原</button>
-      <button class="btn" onclick="document.getElementById('diaryStickerFile').click()" style="background:#eef4fa;">贴碎片</button>
-      <button class="btn" onclick="window._scribbleDiary()" style="background:#fcf2f2; color:#b57b7b;">涂鸦改</button>
-      <button class="btn d" onclick="window._clearDiaryDraft()">清空</button>
+    <!-- 5. 工具栏 (初雪海盐蓝极简精装修) -->
+    <div style="position:relative; z-index:1001; padding:12px; background:rgba(250,252,255,0.75); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-top:1px solid #dce5f0; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <button class="btn" onclick="document.getElementById('diaryBgFile').click()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; box-shadow:none;">换底图</button>
+      <button class="btn" onclick="window._resetDiaryBg()" style="background:rgba(255,255,255,0.6); color:#7a86a8; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; box-shadow:none;">复原</button>
+      <button class="btn" onclick="document.getElementById('diaryStickerFile').click()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; box-shadow:none;">贴碎片</button>
+      <button class="btn" onclick="window._scribbleDiary()" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:10px; font-weight:bold; box-shadow:none;">涂鸦改</button>
+      <button class="btn d" onclick="window._clearDiaryDraft()" style="background:rgba(252,242,242,0.6); color:#b57b7b; border:1px dashed #f2dcdc; border-radius:10px; font-weight:bold; box-shadow:none;">清空</button>
       <input type="file" id="diaryBgFile" accept="image/*" class="hidden" onchange="window._handleDiaryBg(event)">
       <input type="file" id="diaryStickerFile" accept="image/*" class="hidden" onchange="window._handleDiarySticker(event)">
     </div>
@@ -20838,12 +20845,12 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
 
 <!-- 🌟 册子(存档) 弹窗 -->
 <div id="diaryArchiveModal" class="modal" style="z-index:11000;" onclick="if(event.target===this) this.classList.remove('active')">
-  <div class="modal-card" style="width:90%; max-width:400px; max-height:80dvh; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border-radius:24px; display:flex; flex-direction:column; padding:0; overflow:hidden;">
+  <div class="modal-card" style="width:90%; max-width:400px; max-height:80dvh; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:24px; display:flex; flex-direction:column; padding:0; overflow:hidden; box-shadow:0 12px 40px rgba(92,112,148,0.15);">
     <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
-      <b style="color:#5c7094; font-size:16px;">日记册子</b>
-      <span onclick="document.getElementById('diaryArchiveModal').classList.remove('active')" style="cursor:pointer; font-size:22px; color:#7a86a8;">×</span>
+      <b style="color:#5c7094; font-size:16px; letter-spacing:1px;">日记册子</b>
+      <span onclick="document.getElementById('diaryArchiveModal').classList.remove('active')" style="cursor:pointer; font-size:26px; color:#7a86a8; line-height:1;">×</span>
     </div>
-    <div id="diaryArchiveList" style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px;"></div>
+    <div id="diaryArchiveList" style="flex:1; overflow-y:auto; padding:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; flex-direction:column; gap:12px;"></div>
   </div>
 </div>
 </body>
