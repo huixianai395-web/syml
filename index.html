@@ -20433,5 +20433,154 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
 
 })();
 </script>
+  <style>
+  /* 确保对话颜色和字号的 CSS 变量生效 */
+  #ifReaderContent {
+    transition: font-size 0.2s ease;
+  }
+  #ifReaderContent div[id^="if_chap_text_"] .if-dialogue-text {
+    color: var(--if-dialogue-color, #a5cfff) !important;
+    font-weight: bold;
+    transition: color 0.3s ease;
+  }
+</style>
+
+<script>
+(function(){
+  const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+
+  // ================= 1. 注入字号调节拉杆 =================
+  setTimeout(() => {
+    const panel = document.getElementById('ifColorPanel');
+    if(panel && !document.getElementById('ifFontSize')) {
+      const fontHtml = `
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; color:#5c7094; font-weight:bold;">
+          <span>正文字号大小</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <input type="range" id="ifFontSize" min="12" max="28" step="1" value="16" oninput="window._applyIfAesthetics('fontSize', this.value)" style="width:80px; accent-color:#5c7094; cursor:pointer;">
+            <span id="ifFontSizeVal" style="width:24px; text-align:right; font-family:ui-monospace, monospace; color:#3d4a6a;">16</span>
+          </div>
+        </div>
+      `;
+      // 插入到调色盘的分割线前面
+      const divider = panel.querySelector('div[style*="border-top:1px dashed"]');
+      if(divider) divider.insertAdjacentHTML('beforebegin', fontHtml);
+    }
+  }, 1800);
+
+  // ================= 2. 升级美学应用引擎 (接管字号) =================
+  const oldApplyIfAesthetics = window._applyIfAesthetics;
+  window._applyIfAesthetics = async function(key, val) {
+    if(!window._currentIfBookId) return;
+    
+    // 实时生效
+    if(key === 'fontSize') {
+      const contentBox = document.getElementById('ifReaderContent');
+      if(contentBox) contentBox.style.fontSize = val + 'px';
+      const valDisplay = document.getElementById('ifFontSizeVal');
+      if(valDisplay) valDisplay.textContent = val;
+    } else if(key === 'dialogueColor') {
+      const page = document.querySelector('#ifReader .page');
+      if(page) page.style.setProperty('--if-dialogue-color', val);
+    }
+    
+    // 执行原有的颜色保存逻辑
+    if(oldApplyIfAesthetics) await oldApplyIfAesthetics(key, val);
+
+    // 存入外挂内存
+    const books = await localforage.getItem('mp_fix_if_books') || [];
+    const book = books.find(b => b.id === window._currentIfBookId);
+    if(book) {
+      if(key === 'fontSize') book.fontSize = val;
+      if(key === 'dialogueColor') book.dialogueColor = val;
+      await localforage.setItem('mp_fix_if_books', books);
+    }
+  };
+
+  // ================= 3. 升级调色盘回填逻辑 =================
+  const oldToggleIfColorPanel = window._toggleIfColorPanel;
+  window._toggleIfColorPanel = async function() {
+    const panel = document.getElementById('ifColorPanel');
+    if (panel && panel.style.display === 'none') {
+      const books = await localforage.getItem('mp_fix_if_books') || [];
+      const book = books.find(b => b.id === window._currentIfBookId);
+      if(book) {
+        const fsInput = document.getElementById('ifFontSize');
+        const fsVal = document.getElementById('ifFontSizeVal');
+        const dlgInput = document.getElementById('ifColorDialogue');
+        
+        if(fsInput) { 
+          fsInput.value = book.fontSize || 16; 
+          if(fsVal) fsVal.textContent = book.fontSize || 16; 
+        }
+        if(dlgInput) dlgInput.value = book.dialogueColor || '#a5cfff';
+      }
+    }
+    if(oldToggleIfColorPanel) await oldToggleIfColorPanel();
+  };
+
+  // ================= 4. 终极渲染拦截器 (修复羁绊值 + 渲染字号与对话) =================
+  // 绕开之前的多层嵌套，直接拦截最原始的渲染函数！
+  const baseRender = window._originalRenderIfReaderBeforeAesthetic || window._renderIfReader;
+  
+  window._renderIfReader = async function() {
+    // 1. 先让原系统把页面画出来
+    await baseRender(); 
+    
+    const books = await localforage.getItem('mp_fix_if_books') || [];
+    const book = books.find(b => b.id === window._currentIfBookId);
+    if(!book) return;
+
+    // 2. 🪄 羁绊值复活魔法！
+    // 算法：初始 10%，每多一章增加 8%，最高 100%
+    const bondValue = Math.min(100, 10 + (book.chapters.length - 1) * 8);
+    
+    // 精准狙击顶部状态栏
+    const topStatusBar = document.querySelector('#ifReader .page > div:first-child');
+    if(topStatusBar) {
+      const spans = topStatusBar.querySelectorAll('span');
+      spans.forEach(span => {
+        if(span.textContent.includes('羁绊值')) {
+          // 换上绝美的初雪海盐蓝高亮标签！
+          span.innerHTML = `羁绊值: <span style="color:#5c7094; font-family:ui-monospace, monospace; font-size:13px; font-weight:900; background:rgba(238,244,250,0.8); padding:2px 8px; border-radius:8px; border:1px solid #dce5f0; box-shadow:inset 0 1px 2px rgba(255,255,255,0.8); margin-left:4px;">${bondValue}%</span>`;
+        }
+      });
+    }
+
+    // 3. 🪄 应用字号
+    const contentBox = document.getElementById('ifReaderContent');
+    if(contentBox) {
+      contentBox.style.fontSize = (book.fontSize || 16) + 'px';
+    }
+
+    // 4. 🪄 应用美学颜色
+    const page = document.querySelector('#ifReader .page');
+    if(page) {
+      if(book.customBg) page.style.background = `url(${book.customBg})`;
+      else page.style.background = '#f4f6fb';
+      
+      page.style.setProperty('--if-text-color', book.textColor || '#3d4a6a');
+      page.style.setProperty('--if-mind-color', book.mindColor || '#5c7094');
+      page.style.setProperty('--if-mind-bg', (book.mindColor || '#5c7094') + '1A');
+      page.style.setProperty('--if-dialogue-color', book.dialogueColor || '#a5cfff');
+    }
+
+    // 5. 🪄 对话剥离与上色
+    if(contentBox) {
+      const textDivs = contentBox.querySelectorAll('div[id^="if_chap_text_"]');
+      textDivs.forEach(div => {
+        let html = div.innerHTML;
+        // 如果还没被剥离过，就执行正则替换
+        if(!html.includes('if-dialogue-text')) {
+          // 匹配中文双引号 “”、英文双引号 ""、直角引号 「」
+          const regex = /([“"「][^”"」]+[”"」])/g;
+          div.innerHTML = html.replace(regex, '<span class="if-dialogue-text">$1</span>');
+        }
+      });
+    }
+  };
+
+})();
+</script>
 </body>
   </html>
