@@ -2758,9 +2758,10 @@ body {
         <button class="btn" onclick="document.getElementById('diaryAudioUpload').click()" style="background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:12px; padding:4px 12px; font-weight:bold;">音频</button>
         <input type="file" id="diaryAudioUpload" accept="audio/*" style="display:none;" onchange="window._handleDiaryAudio(event)">
         
+        <!-- 🌟 替换原来的字色框：改为 onchange 避免手机调色盘闪退！ -->
         <div style="position:relative; display:flex;">
           <button class="btn" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:12px; padding:4px 12px; font-weight:bold;">字色</button>
-          <input type="color" oninput="window._diaryFormat('foreColor', this.value)" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer;">
+          <input type="color" onchange="window._diaryFormat('foreColor', this.value)" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer;">
         </div>
 
         <div style="width:1px; height:14px; background:#dce5f0; margin:0 4px;"></div>
@@ -20722,18 +20723,17 @@ window._removeDiaryAudio = function() {
   document.getElementById('diaryAudioCapsule').style.display = 'none';
 };
 
-// 🌟 蓝色独家截断式划线与高定调色引擎！
+// 🌟 蓝色独家：彻底修复 iOS 色盘闪退的染色引擎！
 window._diaryFormat = function(cmd, val) {
   const editor = document.getElementById('diaryEditor');
   if(!editor) return;
-  
-  // 强行抢回焦点，防止系统不知道颜色该染在哪个字上！
-  if(document.activeElement !== editor) editor.focus();
 
   if(cmd === 'foreColor') {
-    // 召唤系统原生的染色笔
+    // 🔪 绝对不能在这里加 editor.focus()，否则手机的原生调色盘会当场崩溃逃跑！
+    document.execCommand('styleWithCSS', false, true); 
     document.execCommand('foreColor', false, val);
   } else if(cmd === 'strike') {
+    if(document.activeElement !== editor) editor.focus();
     const sel = window.getSelection();
     if(sel.rangeCount > 0 && !sel.isCollapsed) {
       const range = sel.getRangeAt(0);
@@ -21101,16 +21101,29 @@ window._executeShareDiary = async function(targetId) {
   const hiddenPrompt = `【系统指令】：玩家向你分享了一页她极其私密的日记！日记内容片段是：“${cleanText}”。请绝对根据你的人设，对这种“主动袒露内心”的行为做出真实的反应！如果看到她抱怨或难过请安慰，如果看到开心就傲娇互动。不限字数，严禁带名字前缀！直接输出纯文本对话！`;
   if(typeof window._sendToAI === 'function') window._sendToAI(targetId, hiddenPrompt, true);
 };
+  // 🌟 找回失踪的退出键和播放键灵魂引擎！(贴在 script 标签里任意空白处)
+window._closeDiaryDetail = function() {
+  const audioPlr = document.getElementById('diaryReadAudio');
+  if(audioPlr) { audioPlr.pause(); audioPlr.src = ''; }
+  document.getElementById('diaryReadModal').classList.remove('active');
+};
+
+window._toggleReadAudio = function() {
+  const a = document.getElementById('diaryReadAudio');
+  const b = document.getElementById('diaryReadAudioBtn');
+  if(a.paused) { a.play(); b.textContent = '||'; }
+  else { a.pause(); b.textContent = '▶'; }
+};
 </script>
-  <!-- 🌟 蓝色高定：沉浸式日记展厅 (彻底修复超宽挤压Bug版) -->
+  <!-- 🌟 蓝色高定：沉浸式日记展厅 (彻底焊死屏幕宽度版) -->
 <div id="diaryReadModal" class="modal" style="z-index: 10015; padding:0; box-sizing:border-box;">
-  <!-- 强制限制宽高，绝对不会超出屏幕 -->
-  <div class="modal-card" style="width:100vw; height:100dvh; max-width:430px; margin:0 auto; border-radius:0; padding:0; display:flex; flex-direction:column; overflow:hidden; position:relative; box-shadow:none; border:none; box-sizing:border-box;">
+  <!-- 强制使用纯净样式约束，摆脱任何外部 CSS 的干扰 -->
+  <div style="width:100vw; height:100dvh; max-width:430px; margin:0 auto; background:#fdfaf3; display:flex; flex-direction:column; overflow:hidden; position:relative; box-sizing:border-box;">
     
     <div style="position:absolute; top:0; left:0; right:0; padding:calc(12px + var(--safe-top)) 16px 12px; display:flex; justify-content:space-between; align-items:center; z-index:20; background:rgba(250,252,255,0.6); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid rgba(220,229,240,0.5); box-sizing:border-box;">
       <button class="btn" onclick="window._closeDiaryDetail()" style="background:rgba(255,255,255,0.8); color:#5c7094; border-radius:50%; width:32px; height:32px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0; font-size:18px; box-shadow:0 2px 8px rgba(92,112,148,0.1); flex-shrink:0;">‹</button>
       
-      <b id="diaryReadDate" style="color:#3d4a6a; font-size:15px; font-family:'STZhongsong', 'KaiTi', serif; letter-spacing:1px; text-shadow:0 1px 2px rgba(255,255,255,0.8); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 10px;"></b>
+      <b id="diaryReadDate" style="color:#3d4a6a; font-size:15px; font-family:'STZhongsong', 'KaiTi', serif; letter-spacing:1px; text-shadow:0 1px 2px rgba(255,255,255,0.8); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 10px; flex:1; text-align:center;"></b>
       
       <div id="diaryReadAudioWrap" style="width:32px; height:32px; display:none; place-items:center; flex-shrink:0;">
          <div onclick="window._toggleReadAudio()" id="diaryReadAudioBtn" style="width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.8); color:#5c7094; border:1px solid #dce5f0; display:grid; place-items:center; cursor:pointer; font-size:12px; backdrop-filter:blur(8px); box-shadow:0 2px 8px rgba(92,112,148,0.1); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">▶</div>
