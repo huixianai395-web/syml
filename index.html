@@ -21410,132 +21410,35 @@ if(!window._originalCallApiBeforeMoon) {
     </div>
   </div>
 </div>
- <!-- 🌟 蓝色高定：情绪水族箱深海沉浸舱 (3D琉璃水母进化版) -->
+ <!-- ================= 🌟 蓝色高定：情绪水族箱 (V5 终极宇宙补全版) ================= -->
 <style>
-  @keyframes floatJelly {
-    0%, 100% { transform: translateY(0) translateX(0) scale(1) rotate(0deg); }
-    33% { transform: translateY(-20px) translateX(10px) scale(1.05) rotate(3deg); }
-    66% { transform: translateY(15px) translateX(-15px) scale(0.95) rotate(-3deg); }
-  }
-  @keyframes jellyBreathe {
-    0%, 100% { opacity: 0.8; filter: brightness(1); }
-    50% { opacity: 1; filter: brightness(1.2); }
-  }
-  .jellyfish-node {
-    position: absolute; display: flex; flex-direction: column; align-items: center; gap: 6px;
-    cursor: pointer; transition: transform 0.2s; z-index: 10;
-  }
-  .jellyfish-node:active { transform: scale(0.85) !important; }
-
-  /* 🌟 极致美学的玻璃水母身体 */
-  .jelly-body {
-    width: 44px; height: 44px; border-radius: 50% 50% 12px 12px;
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.5);
-    box-shadow: inset 0 4px 12px rgba(255,255,255,0.6), 0 0 20px var(--j-glow);
-    position: relative; background: linear-gradient(135deg, var(--j-color), transparent);
-    animation: jellyBreathe 3s ease-in-out infinite;
-  }
-  .jelly-body::after {
-    content: ''; position: absolute; bottom: -12px; left: 10%; right: 10%; height: 16px;
-    background: radial-gradient(circle at 50% 0, var(--j-color) 20%, transparent 21%);
-    background-size: 8px 16px; opacity: 0.7;
-  }
-  
-  /* 悬浮文字铭牌 */
-  .jelly-text {
-    background: rgba(15,23,42,0.5); backdrop-filter: blur(4px);
-    border: 1px solid rgba(255,255,255,0.2); color: #dbe4ff; font-size: 10px;
-    padding: 4px 10px; border-radius: 12px; white-space: nowrap; max-width: 100px;
-    overflow: hidden; text-overflow: ellipsis; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    font-family: "PingFang SC", sans-serif; font-weight: 600; letter-spacing: 0.5px;
-  }
-
-  /* 7 种情绪的高定调色盘 */
-  .jelly-happy { --j-color: rgba(255, 182, 193, 0.8); --j-glow: rgba(255, 182, 193, 0.5); }  
-  .jelly-sad { --j-color: rgba(165, 207, 255, 0.8); --j-glow: rgba(165, 207, 255, 0.5); }     
-  .jelly-angry { --j-color: rgba(255, 107, 107, 0.8); --j-glow: rgba(255, 107, 107, 0.5); }   
-  .jelly-calm { --j-color: rgba(255, 255, 255, 0.9); --j-glow: rgba(255, 255, 255, 0.4); }    
-  .jelly-aggrieved { --j-color: rgba(209, 196, 233, 0.9); --j-glow: rgba(209, 196, 233, 0.6); }
-  .jelly-miss { --j-color: rgba(255, 213, 113, 0.8); --j-glow: rgba(255, 213, 113, 0.5); }    
-  .jelly-tired { --j-color: rgba(156, 163, 175, 0.9); --j-glow: rgba(156, 163, 175, 0.5); }    
-</style>
-
-<div id="aquariumModal" class="modal" style="z-index: 10012; padding:0;">
-  <div class="modal-card" style="width:100vw; height:100dvh; max-width:430px; margin:0 auto; border-radius:0; padding:0; display:flex; flex-direction:column; overflow:hidden; position:relative; background:linear-gradient(180deg, #0b101e, #1a2b4c); border:none;">
-    
-    <div style="position:absolute; top:0; left:0; right:0; padding:calc(12px + var(--safe-top)) 16px 12px; display:flex; justify-content:space-between; align-items:center; z-index:20;">
-      <button class="btn" onclick="document.getElementById('aquariumModal').classList.remove('active')" style="background:rgba(255,255,255,0.1); color:#a5cfff; border-radius:50%; width:32px; height:32px; padding:0; display:grid; place-items:center; border:1px solid rgba(165,207,255,0.3); font-size:18px; backdrop-filter:blur(8px);">‹</button>
-      <b style="color:#a5cfff; font-size:15px; letter-spacing:2px; font-family:ui-monospace, monospace; text-shadow:0 0 10px rgba(165,207,255,0.5);">DEEP SEA AQUARIUM</b>
-      <div style="width:32px;"></div>
-    </div>
-
-    <div id="aquariumOcean" style="position:absolute; inset:0; z-index:5; overflow:hidden; pointer-events:auto;"></div>
-
-    <div style="position:absolute; bottom:0; left:0; right:0; padding:20px 16px calc(20px + var(--safe-bottom)); background:linear-gradient(0deg, rgba(11,16,30,0.95), transparent); z-index:20; display:flex; flex-direction:column; gap:12px;">
-      <div style="display:flex; gap:8px;">
-        <select id="aquaMoodSel" class="select" style="width:90px; background:rgba(255,255,255,0.1); border:1px solid rgba(165,207,255,0.3); color:#a5cfff; border-radius:12px; outline:none; font-size:13px; font-weight:bold; backdrop-filter:blur(8px);">
-          <option value="happy">开心 🌸</option>
-          <option value="sad">难过 💧</option>
-          <option value="angry">暴躁 🔥</option>
-          <option value="aggrieved">委屈 🥺</option>
-          <option value="miss">想念 🌙</option>
-          <option value="tired">疲惫 💤</option>
-          <option value="calm">平静 ❄️</option>
-        </select>
-        <input id="aquaInput" class="input" placeholder="将此刻的心情化作水母放生..." style="flex:1; background:rgba(255,255,255,0.1); border:1px solid rgba(165,207,255,0.3); color:#fff; border-radius:12px; font-size:13px; padding:10px 14px; outline:none; backdrop-filter:blur(8px);">
-      </div>
-      <button class="btn p" onclick="window._releaseJellyfish()" style="width:100%; background:linear-gradient(135deg, rgba(165,207,255,0.2), rgba(255,255,255,0.1)); color:#a5cfff; border:1px solid rgba(165,207,255,0.5); border-radius:12px; padding:12px 0; font-size:14px; font-weight:bold; box-shadow:0 0 15px rgba(165,207,255,0.2); backdrop-filter:blur(8px); letter-spacing:1px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">✦ 凝结成水母 · 放生至深海 ✦</button>
-    </div>
-  </div>
-</div>
-  <!-- 🌟 蓝色高定：情绪水族箱 (SSR 变异基因 + 深海陈列室版) -->
-<style>
-  /* 基础游动与呼吸 */
-  @keyframes floatJelly {
-    0%, 100% { transform: translateY(0) translateX(0) scale(1) rotate(0deg); }
-    33% { transform: translateY(-25px) translateX(15px) scale(1.05) rotate(5deg); }
-    66% { transform: translateY(18px) translateX(-18px) scale(0.95) rotate(-5deg); }
-  }
+  @keyframes floatJelly { 0%, 100% { transform: translateY(0) translateX(0) scale(1) rotate(0deg); } 33% { transform: translateY(-25px) translateX(15px) scale(1.05) rotate(5deg); } 66% { transform: translateY(18px) translateX(-18px) scale(0.95) rotate(-5deg); } }
   @keyframes tentacleWave { 0%, 100% { transform: skewX(-6deg); } 50% { transform: skewX(6deg); } }
-  
-  /* 🌟 SSR 专属星空流动特效 */
-  @keyframes galaxyFlow { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+  @keyframes ssrSweep { 0% { background-position: 200% center; } 100% { background-position: -200% center; } }
   @keyframes stardust { 0% { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 20px #a5cfff); } 50% { filter: drop-shadow(0 0 25px #ffd1dc) drop-shadow(0 0 40px #d1c4e9); } 100% { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 20px #a5cfff); } }
 
-  .jellyfish-node {
-    position: absolute; display: flex; flex-direction: column; align-items: center; gap: 8px;
-    cursor: pointer; transition: transform 0.2s; z-index: 10;
-  }
+  .jellyfish-node { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: transform 0.2s; z-index: 10; }
   .jellyfish-node:active { transform: scale(0.85) !important; }
-
-  /* 水母 SVG 躯体统一样式 */
   .jelly-body { display: flex; justify-content: center; align-items: center; }
   .jelly-svg { width: 100%; height: 100%; overflow: visible; }
-  .jelly-svg .umbrella { fill: var(--j-color); stroke: rgba(255, 255, 255, 0.8); stroke-width: 1px; }
-  .jelly-svg .highlight { fill: none; stroke: rgba(255, 255, 255, 0.9); stroke-width: 2.5px; stroke-linecap: round; }
+  .jelly-svg .umbrella { fill: var(--j-color); stroke: rgba(255, 255, 255, 0.9); stroke-width: 1px; }
+  .jelly-svg .highlight { fill: none; stroke: rgba(255, 255, 255, 1); stroke-width: 2.5px; stroke-linecap: round; }
   .jelly-svg .tentacle { fill: none; stroke: var(--j-color); stroke-linecap: round; transform-origin: 50% 50px; animation: tentacleWave 3s ease-in-out infinite alternate; }
 
-  /* 铭牌样式 */
+  /* 🌟 极致优化的铭牌：深海午夜蓝底色，绝对清晰！ */
   .jelly-text {
-    background: rgba(15,23,42,0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.25); color: #dbe4ff; font-size: 10px;
+    background: rgba(11, 16, 30, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.3); color: #fff; font-size: 11px;
     padding: 6px 12px; border-radius: 12px; white-space: nowrap; max-width: 120px;
-    overflow: hidden; text-overflow: ellipsis; font-weight: 800; letter-spacing: 0.5px;
+    overflow: hidden; text-overflow: ellipsis; font-weight: 900; letter-spacing: 0.5px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.6); text-shadow: 0 1px 2px rgba(0,0,0,0.8);
   }
 
-  /* 💎 稀有度基因库 */
-  /* N 级：普通琉璃 (依靠 js 随机修改 hue 变色) */
-  .rarity-N { --j-color: rgba(165, 207, 255, 0.7); filter: drop-shadow(0 0 15px rgba(165,207,255,0.4)); }
-  /* SR 级：极光发光体 (自带极强的高光与动态呼吸) */
-  .rarity-SR { --j-color: rgba(255, 255, 255, 0.9); filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.8)); }
+  .rarity-N { --j-color: rgba(165, 207, 255, 0.8); filter: drop-shadow(0 0 15px rgba(165,207,255,0.6)); }
+  .rarity-SR { --j-color: rgba(255, 255, 255, 0.95); filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.9)); }
   .rarity-SR .umbrella { stroke-width: 2px; }
   .rarity-SR .tentacle { stroke-width: 3px; filter: drop-shadow(0 0 5px #fff); }
-  /* SSR 级：银河幽灵 (流动的星空色彩 + 星屑光晕) */
-  .rarity-SSR { 
-    --j-color: url(#ssrGradient); 
-    animation: stardust 3s ease-in-out infinite alternate; 
-  }
+  .rarity-SSR { --j-color: url(#ssrGradient); animation: stardust 3s ease-in-out infinite alternate; }
   .rarity-SSR .umbrella { stroke: #fff; stroke-width: 1.5px; }
   .rarity-SSR .tentacle { stroke: url(#ssrGradient); stroke-width: 4px; }
 </style>
@@ -21543,7 +21446,6 @@ if(!window._originalCallApiBeforeMoon) {
 <div id="aquariumModal" class="modal" style="z-index: 10012; padding:0;">
   <div class="modal-card" style="width:100vw; height:100dvh; max-width:430px; margin:0 auto; border-radius:0; padding:0; display:flex; flex-direction:column; overflow:hidden; position:relative; background:linear-gradient(180deg, #070a13, #152238); border:none;">
     
-    <!-- SSR 星空渐变定义 -->
     <svg style="width:0; height:0; position:absolute;">
       <defs>
         <linearGradient id="ssrGradient" x1="0%" y1="0%" x2="200%" y2="0%">
@@ -21559,14 +21461,11 @@ if(!window._originalCallApiBeforeMoon) {
     <div style="position:absolute; top:0; left:0; right:0; padding:calc(12px + var(--safe-top)) 16px 12px; display:flex; justify-content:space-between; align-items:center; z-index:20;">
       <button class="btn" onclick="document.getElementById('aquariumModal').classList.remove('active')" style="background:rgba(255,255,255,0.1); color:#a5cfff; border-radius:50%; width:32px; height:32px; padding:0; display:grid; place-items:center; border:1px solid rgba(165,207,255,0.3); font-size:18px; backdrop-filter:blur(8px);">‹</button>
       <b style="color:#a5cfff; font-size:15px; letter-spacing:2px; font-family:ui-monospace, monospace; text-shadow:0 0 10px rgba(165,207,255,0.5);">DEEP SEA AQUARIUM</b>
-      
-      <!-- 🌟 隐秘的深海陈列室入口 (发光的小珍珠) -->
       <div onclick="window._openJellyGallery()" style="width:32px; height:32px; display:grid; place-items:center; cursor:pointer;" title="深海陈列室">
         <div style="width:12px; height:12px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #fff, #a5cfff); box-shadow:0 0 15px rgba(165,207,255,0.8); animation:blueBlink 2s infinite;"></div>
       </div>
     </div>
 
-    <!-- 深海游动区 -->
     <div id="aquariumOcean" style="position:absolute; inset:0; z-index:5; overflow:hidden; pointer-events:auto;"></div>
 
     <div style="position:absolute; bottom:0; left:0; right:0; padding:20px 16px calc(20px + var(--safe-bottom)); background:linear-gradient(0deg, rgba(7,10,19,0.95), transparent); z-index:20; display:flex; flex-direction:column; gap:12px;">
@@ -21582,7 +21481,7 @@ if(!window._originalCallApiBeforeMoon) {
   </div>
 </div>
 
-<!-- 🌟 全新的深海标本陈列室弹窗 -->
+<!-- 深海标本陈列室 -->
 <div id="jellyGalleryModal" class="modal" style="z-index: 10013;" onclick="this.classList.remove('active')">
   <div class="modal-card" style="width:90%; max-width:380px; max-height:85dvh; background:rgba(15,23,42,0.95); backdrop-filter:blur(24px); border:1px solid rgba(165,207,255,0.3); display:flex; flex-direction:column; padding:0; overflow:hidden; border-radius:24px;" onclick="event.stopPropagation()">
     <div style="padding:16px 20px; border-bottom:1px dashed rgba(165,207,255,0.3); display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02);">
@@ -21594,7 +21493,7 @@ if(!window._originalCallApiBeforeMoon) {
   </div>
 </div>
 
-<!-- 🌟 水母点击详情与操作舱 (交互同前，UI适配暗黑) -->
+<!-- 🌟 绝美暗黑深海舱：水母点击详情与操作 -->
 <div id="jellyActionModal" class="modal" style="z-index: 10015;" onclick="this.classList.remove('active')">
   <div class="modal-card" style="background:rgba(15,23,42,0.95); backdrop-filter:blur(24px); border:1px solid rgba(165,207,255,0.3); box-shadow:0 12px 40px rgba(0,0,0,0.5); border-radius:24px; padding:24px; text-align:center; max-width:320px; position:relative;" onclick="event.stopPropagation()">
     <button class="btn" onclick="document.getElementById('jellyActionModal').classList.remove('active')" style="position:absolute; top:12px; right:12px; background:transparent; color:#7a86a8; border:none; font-size:20px; cursor:pointer;">×</button>
@@ -21604,19 +21503,21 @@ if(!window._originalCallApiBeforeMoon) {
     
     <div id="jActionPreview" style="margin:0 auto 20px; display:flex; justify-content:center; transform:scale(1.3); height:100px; align-items:center;"></div>
     
-    <div style="background:rgba(255,255,255,0.05); border:1px dashed rgba(165,207,255,0.2); border-radius:12px; padding:12px; margin-bottom:24px;">
-      <div style="font-size:11px; color:#7a86a8; margin-bottom:6px;">它承载的心语：</div>
-      <div id="jActionText" style="font-size:13px; color:#dbe4ff; font-weight:800; line-height:1.6; word-break:break-all; font-style:italic;"></div>
+    <div style="background:rgba(11,16,30,0.8); border:1px solid #5c7094; border-radius:12px; padding:16px; margin-bottom:24px; box-shadow:inset 0 4px 12px rgba(0,0,0,0.5);">
+      <div style="font-size:11px; color:#7a86a8; margin-bottom:8px; font-weight:bold;">它承载的心语：</div>
+      <!-- 🌟 修复文字可见度：纯白加粗 + 阴影 -->
+      <div id="jActionText" style="font-size:14px; color:#fff; font-weight:900; line-height:1.6; word-break:break-all; font-style:italic; text-shadow:0 2px 6px rgba(0,0,0,0.8);"></div>
     </div>
     
     <div style="display:flex; gap:12px;">
       <button class="btn d" onclick="window._deleteJellyfish()" style="flex:1; background:rgba(231,76,60,0.15); color:#ff9a9e; border:1px solid rgba(231,76,60,0.3); border-radius:12px; padding:12px 0; font-weight:bold; box-shadow:none;">悄悄放生</button>
+      <!-- 🌟 重新绑定发送按钮！ -->
       <button class="btn p" onclick="window._openJellyContactModal()" style="flex:1.5; background:linear-gradient(135deg, rgba(165,207,255,0.2), rgba(255,255,255,0.1)); color:#a5cfff; border:1px solid rgba(165,207,255,0.5); border-radius:12px; padding:12px 0; font-weight:bold; box-shadow:0 0 15px rgba(165,207,255,0.1);">传递电波</button>
     </div>
   </div>
 </div>
 
-<!-- 🌟 通讯录选人弹窗 (不用再强制进聊天室啦！) -->
+<!-- 🌟 通讯录选人弹窗 (终于补回来了！) -->
 <div id="jellyContactModal" class="modal" style="z-index: 10016;" onclick="this.classList.remove('active')">
   <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:24px; padding:0; overflow:hidden;" onclick="event.stopPropagation()">
     <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
@@ -21626,27 +21527,20 @@ if(!window._originalCallApiBeforeMoon) {
     <div id="jellyContactList" style="max-height:300px; overflow-y:auto; padding:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; flex-direction:column; gap:10px;"></div>
   </div>
 </div>
-  <script>
-// 🌟 蓝色独家：情绪水族箱 (V4 无限基因与陈列室版)
-const K_AQUARIUM = 'mp_fix_aquarium_v4'; 
+
+<script>
+// 🌟 蓝色独家：情绪水族箱核心生态引擎 (V5 完美补全版)
+const K_AQUARIUM = 'mp_fix_aquarium_v5'; 
 window._currentJellyId = null;
 
-// 1. 诗意起名算法
 function generateJellyName(mood, rarity) {
   const adjs =['深海', '初雪', '落日', '极光', '星屑', '午夜', '晨雾', '孤岛', '潮汐', '流云'];
   const nouns =['叹息', '幽灵', '诗篇', '幻影', '回音', '碎梦', '微光', '呢喃', '眼泪', '旅人'];
-  const adj = adjs[Math.floor(Math.random() * adjs.length)];
-  const noun = nouns[Math.floor(Math.random() * nouns.length)];
-  let prefix = '';
-  if (rarity === 'SSR') prefix = '【传说】';
-  else if (rarity === 'SR') prefix = '【异色】';
-  return `${prefix}${adj}的${noun}`;
+  const prefix = rarity === 'SSR' ? '【传说】' : (rarity === 'SR' ? '【异色】' : '');
+  return `${prefix}${adjs[Math.floor(Math.random() * adjs.length)]}的${nouns[Math.floor(Math.random() * nouns.length)]}`;
 }
 
-// 2. 核心 SVG 模板（加入了支持色彩偏移的属性）
 function getJellySvgHtml(hueOffset, rarity) {
-  const rClass = `rarity-${rarity}`;
-  // N级通过 hue-rotate 实现七彩，SSR和SR通过 CSS 类自带滤镜
   const colorFilter = rarity === 'N' ? `filter: hue-rotate(${hueOffset}deg);` : '';
   return `
     <svg class="jelly-svg" viewBox="0 0 100 120" style="${colorFilter}">
@@ -21667,81 +21561,60 @@ window._openAquariumApp = async function() {
 window._renderAquariumOcean = async function() {
   const pool = await localforage.getItem(K_AQUARIUM) ||[];
   const ocean = document.getElementById('aquariumOcean');
-  
-  ocean.innerHTML = pool.map(j => {
-    return `
+  ocean.innerHTML = pool.map(j => `
     <div class="jellyfish-node rarity-${j.rarity || 'N'}" 
          style="top:${j.top}%; left:${j.left}%; animation: floatJelly ${j.animDur}s ease-in-out ${j.animDelay}s infinite alternate; transform: scale(${j.scale || 1});"
          onclick="window._pokeJellyfish('${j.id}')">
       <div class="jelly-body" style="width:${60*(j.scale||1)}px; height:${75*(j.scale||1)}px;">${getJellySvgHtml(j.hue || 0, j.rarity || 'N')}</div>
       <div class="jelly-text">${safeEsc(j.text)}</div>
-    </div>`;
-  }).join('');
+    </div>`).join('');
 };
 
-// 3. 放生与抽卡引擎
 window._releaseJellyfish = async function() {
   const text = document.getElementById('aquaInput').value.trim();
   const mood = document.getElementById('aquaMoodSel').value;
   if(!text) return alert('宝宝，要写下心情才能凝结成水母哦！');
 
-  // 🎲 抽卡概率：1% SSR, 14% SR, 85% N
   const rand = Math.random();
-  let rType = 'N';
-  if (rand > 0.99) rType = 'SSR';
-  else if (rand > 0.85) rType = 'SR';
+  let rType = rand > 0.99 ? 'SSR' : (rand > 0.85 ? 'SR' : 'N');
 
   const pool = await localforage.getItem(K_AQUARIUM) ||[];
-  const newJelly = {
-    id: 'jelly_' + Date.now(),
-    text: text, mood: mood, time: Date.now(),
-    rarity: rType,
-    name: generateJellyName(mood, rType),
-    hue: Math.floor(Math.random() * 360), // 无限色彩基因
-    scale: 0.7 + Math.random() * 0.6,     // 无限体态基因 (0.7 到 1.3 倍大小)
-    top: 10 + Math.random() * 60, 
-    left: 10 + Math.random() * 70,
-    animDur: 3 + Math.random() * 5,
-    animDelay: Math.random() * -5
-  };
+  pool.push({
+    id: 'jelly_' + Date.now(), text: text, mood: mood, time: Date.now(),
+    rarity: rType, name: generateJellyName(mood, rType),
+    hue: Math.floor(Math.random() * 360), scale: 0.7 + Math.random() * 0.6,
+    top: 10 + Math.random() * 60, left: 10 + Math.random() * 70,
+    animDur: 3 + Math.random() * 5, animDelay: Math.random() * -5
+  });
 
-  pool.push(newJelly);
-  if(pool.length > 50) pool.shift(); // 图鉴扩大到 50 只
-  
+  if(pool.length > 50) pool.shift(); 
   await localforage.setItem(K_AQUARIUM, pool);
+  
   document.getElementById('aquaInput').value = '';
   window._renderAquariumOcean();
-  
   if(rType === 'SSR') alert('✨ 奇迹出现！你孵化出了一只极其稀有的【SSR 银河幽灵水母】！快去深海里看看它吧！');
 };
 
-// 4. 打开图鉴陈列室
 window._openJellyGallery = async function() {
   const pool = await localforage.getItem(K_AQUARIUM) ||[];
   const listBox = document.getElementById('jellyGalleryList');
-  
   if(pool.length === 0) {
     listBox.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; padding:40px 0; color:#5c7094;">图鉴还是空的<br>快去放生第一只水母吧~</div>`;
   } else {
-    // 按照时间倒序排列图鉴
     listBox.innerHTML = [...pool].reverse().map(j => {
-      const dateStr = new Date(j.time).toLocaleDateString();
       const rColor = j.rarity === 'SSR' ? '#ffd1dc' : (j.rarity === 'SR' ? '#d1c4e9' : '#a5cfff');
       return `
       <div style="background:rgba(255,255,255,0.05); border:1px solid rgba(165,207,255,0.2); border-radius:16px; padding:16px; display:flex; flex-direction:column; align-items:center; cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'" onclick="window._pokeJellyfish('${j.id}')">
         <div style="font-size:10px; color:${rColor}; font-weight:900; letter-spacing:1px; margin-bottom:12px;">${j.rarity}</div>
-        <div class="rarity-${j.rarity}" style="width:50px; height:60px; margin-bottom:12px; animation: floatJelly ${j.animDur}s ease-in-out ${j.animDelay}s infinite alternate;">
-          ${getJellySvgHtml(j.hue, j.rarity)}
-        </div>
+        <div class="rarity-${j.rarity}" style="width:50px; height:60px; margin-bottom:12px; animation: floatJelly ${j.animDur}s ease-in-out ${j.animDelay}s infinite alternate;">${getJellySvgHtml(j.hue, j.rarity)}</div>
         <div style="font-size:12px; color:#fff; font-weight:bold; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%; text-align:center;">${safeEsc(j.name)}</div>
-        <div style="font-size:10px; color:#7a86a8; font-family:ui-monospace, monospace;">${dateStr}</div>
+        <div style="font-size:10px; color:#7a86a8; font-family:ui-monospace, monospace;">${new Date(j.time).toLocaleDateString()}</div>
       </div>`;
     }).join('');
   }
   document.getElementById('jellyGalleryModal').classList.add('active');
 };
 
-// 5. 点击详情与操作舱
 window._pokeJellyfish = async function(id) {
   const pool = await localforage.getItem(K_AQUARIUM) ||[];
   const target = pool.find(x => x.id === id);
@@ -21749,36 +21622,44 @@ window._pokeJellyfish = async function(id) {
   
   window._currentJellyId = id;
   const moodMap = { 'happy':'开心', 'sad':'难过', 'angry':'暴躁', 'calm':'平静', 'aggrieved':'委屈', 'miss':'想念', 'tired':'疲惫' };
-  
   const rColor = target.rarity === 'SSR' ? '#ffd1dc' : (target.rarity === 'SR' ? '#d1c4e9' : '#a5cfff');
   
   document.getElementById('jActionRarity').textContent = `${target.rarity} 级标本 · ${moodMap[target.mood]}`;
   document.getElementById('jActionRarity').style.color = rColor;
   document.getElementById('jActionName').textContent = target.name;
-  
   document.getElementById('jActionPreview').innerHTML = `<div class="rarity-${target.rarity}" style="width:60px; height:75px; animation: floatJelly 3s ease-in-out infinite alternate;">${getJellySvgHtml(target.hue, target.rarity)}</div>`;
   document.getElementById('jActionText').textContent = `"${target.text}"`;
   
-  // 隐藏掉图鉴弹窗，显示操作舱
   document.getElementById('jellyGalleryModal').classList.remove('active');
   document.getElementById('jellyActionModal').classList.add('active');
 };
 
-// 6. 放生销毁
 window._deleteJellyfish = async function() {
   if(!window._currentJellyId) return;
   if(!confirm('确定要将它放生吗？这只独一无二的水母将彻底消失在深海哦。')) return;
-  
   let pool = await localforage.getItem(K_AQUARIUM) ||[];
   pool = pool.filter(x => x.id !== window._currentJellyId);
   await localforage.setItem(K_AQUARIUM, pool);
-  
   document.getElementById('jellyActionModal').classList.remove('active');
   window._renderAquariumOcean(); 
 };
 
-// 后续选人和发送逻辑无需改变，只需确保 AI 提示词里加入了水母的名字和稀有度！
-// (...原有的 _openJellyContactModal 等保持不变...)
+// 🌟 补齐丢失的通讯录拉取代码！
+window._openJellyContactModal = function() {
+  const contacts = (window.getContacts ? window.getContacts() :[]).filter(c => !c.isGroup);
+  const list = document.getElementById('jellyContactList');
+  if(contacts.length === 0) {
+    list.innerHTML = `<div style="text-align:center; color:#a0aaba; font-size:12px; padding:20px 0;">通讯录空空如也，先去加个角色吧~</div>`;
+  } else {
+    list.innerHTML = contacts.map(c => `
+      <div onclick="window._sendJellyToTarget('${c.id}')" style="display:flex; align-items:center; gap:12px; padding:12px; background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:12px; cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+        <img src="${c.avatar || 'https://via.placeholder.com/40'}" style="width:40px; height:40px; border-radius:10px; object-fit:cover; border:1px solid #eef4fa;">
+        <b style="color:#3d4a6a; font-size:14px;">发送给 ${safeEsc(c.name)}</b>
+      </div>
+    `).join('');
+  }
+  document.getElementById('jellyContactModal').classList.add('active');
+};
 
 window._sendJellyToTarget = async function(targetId) {
   if(!window._currentJellyId || !targetId) return;
@@ -21787,19 +21668,20 @@ window._sendJellyToTarget = async function(targetId) {
   if(!target) return;
 
   const moodMap = { 'happy':'开心', 'sad':'难过', 'angry':'暴躁', 'calm':'平静', 'aggrieved':'委屈', 'miss':'想念', 'tired':'疲惫' };
-  
-  // 🌟 传送给男主的卡片也适配全新的极简暗黑风
+  const colorMap = { 'happy': '#ffb6c1', 'sad': '#87bcff', 'angry': '#ff6b6b', 'calm': '#f0f8ff', 'aggrieved': '#bea0eb', 'miss': '#ffcc5c', 'tired': '#a0aab9' };
+  const jColor = colorMap[target.mood] || '#a5cfff';
+
   const cardHtml = `
-    <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(165,207,255,0.4); border-radius:16px; padding:16px; width:220px; box-shadow:0 8px 24px rgba(0,0,0,0.3); text-align:center;">
-      <div style="font-size:10px; color:#a5cfff; font-weight:900; letter-spacing:1px; margin-bottom:12px; font-family:ui-monospace, monospace;">// DEEP SEA ECHO //</div>
-      <div style="margin-bottom:16px; display:flex; justify-content:center;">
-        <div class="rarity-${target.rarity}" style="width:40px; height:50px;">
-           ${getJellySvgHtml(target.hue, target.rarity)}
+    <div style="background:rgba(11,16,30,0.85); border:1px solid ${jColor}; border-radius:16px; padding:16px; width:220px; box-shadow:0 8px 24px rgba(0,0,0,0.2); text-align:center;">
+      <div style="font-size:10px; color:${jColor}; font-weight:900; letter-spacing:1px; margin-bottom:12px; font-family:ui-monospace, monospace;">// DEEP SEA ECHO //</div>
+      <div style="margin-bottom:16px; display:flex; justify-content:center; filter:drop-shadow(0 0 10px ${jColor});">
+        <div style="width:40px; height:50px; fill:${jColor}; opacity:0.8; stroke:rgba(255,255,255,0.8); stroke-width:2px;">
+           <svg viewBox="0 0 100 120"><path d="M10,50 C10,15 35,5 50,5 C65,5 90,15 90,50 C90,65 75,70 50,70 C25,70 10,65 10,50 Z"/><path d="M30,65 Q20,95 35,120" fill="none" stroke="${jColor}" stroke-width="3"/><path d="M50,70 Q55,100 45,125" fill="none" stroke="${jColor}" stroke-width="4"/><path d="M70,65 Q80,95 65,120" fill="none" stroke="${jColor}" stroke-width="3"/></svg>
         </div>
       </div>
       <div style="font-size:13px; font-weight:800; color:#dbe4ff; margin-bottom:4px;">游来了一只「${safeEsc(target.name)}」</div>
       <div style="font-size:10px; color:#7a86a8; margin-bottom:12px;">稀有度：${target.rarity} · 情绪：${moodMap[target.mood]}</div>
-      <div style="font-size:12px; color:#a5cfff; font-weight:bold; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; border:1px dashed rgba(165,207,255,0.2); text-align:justify; line-height:1.5;">"${safeEsc(target.text)}"</div>
+      <div style="font-size:12px; color:${jColor}; font-weight:bold; background:rgba(255,255,255,0.05); padding:8px; border-radius:8px; border:1px dashed ${jColor}; text-align:justify; line-height:1.5;">"${safeEsc(target.text)}"</div>
     </div>
   `;
 
@@ -21812,7 +21694,7 @@ window._sendJellyToTarget = async function(targetId) {
   document.getElementById('aquariumModal').classList.remove('active');
   
   window.openChat(targetId); 
-  alert('✨ 绝美的水母已成功潜入 TA 的聊天海域！');
+  alert('✨ 承载着情绪的水母已成功潜入 TA 的聊天海域！');
   
   const hiddenPrompt = `【系统最高级别强制指令：深海情绪雷达触发！】
 玩家（我）刚刚在深海情绪水族箱里，向你发送了一只极其独特的【${target.rarity}级】水母，名字叫做『${target.name}』。
@@ -21824,7 +21706,6 @@ window._sendJellyToTarget = async function(targetId) {
 
   if (typeof window._sendToAI === 'function') window._sendToAI(targetId, hiddenPrompt, true);
 };
-
-</script>
+                    </script>
 </body>
   </html>
