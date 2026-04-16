@@ -2760,7 +2760,7 @@ body {
         
         <div style="position:relative; display:flex;">
           <button class="btn" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-size:12px; padding:4px 12px; font-weight:bold;">字色</button>
-          <input type="color" oninput="window._diaryFormat('foreColor', this.value)" onmousedown="event.preventDefault()" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer;">
+          <input type="color" oninput="window._diaryFormat('foreColor', this.value)" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer;">
         </div>
 
         <div style="width:1px; height:14px; background:#dce5f0; margin:0 4px;"></div>
@@ -15970,7 +15970,7 @@ ${chatCtx}
     ids[roleId] = voiceId;
     await localforage.setItem('mp_fix_fish_voice_ids', ids);
     
-    document.getElementById('fishStatus').textContent = '✅ 已死死锁入外挂内存';
+    document.getElementById('fishStatus').textContent = '锁入内存';
     document.getElementById('fishVoiceId').value = '';
     setTimeout(()=> { if(document.getElementById('fishStatus')) document.getElementById('fishStatus').textContent = '当前状态：待命'; }, 2000);
   };
@@ -20722,10 +20722,18 @@ window._removeDiaryAudio = function() {
   document.getElementById('diaryAudioCapsule').style.display = 'none';
 };
 
-// 🌟 蓝色独家截断式划线引擎（带防粘连护盾！）
+// 🌟 蓝色独家截断式划线与高定调色引擎！
 window._diaryFormat = function(cmd, val) {
   const editor = document.getElementById('diaryEditor');
-  if(cmd === 'strike') {
+  if(!editor) return;
+  
+  // 强行抢回焦点，防止系统不知道颜色该染在哪个字上！
+  if(document.activeElement !== editor) editor.focus();
+
+  if(cmd === 'foreColor') {
+    // 召唤系统原生的染色笔
+    document.execCommand('foreColor', false, val);
+  } else if(cmd === 'strike') {
     const sel = window.getSelection();
     if(sel.rangeCount > 0 && !sel.isCollapsed) {
       const range = sel.getRangeAt(0);
@@ -20899,11 +20907,14 @@ if(!document.getElementById('blueDiaryWeatherCss')) {
   document.head.appendChild(style);
 }
 
-window._changeDiaryWeather = function(type) {
-  const layer = document.getElementById('diaryWeatherLayer');
-  const wrap = document.getElementById('diaryCanvasWrap');
+// 1. 通用天气引擎 (被漏掉的灵魂核心，千万别再删了哦！)
+window._renderWeatherToLayer = function(type, layerId, wrapId) {
+  const layer = document.getElementById(layerId);
+  const wrap = document.getElementById(wrapId);
+  if(!layer) return;
   layer.innerHTML = '';
-  wrap.style.filter = 'none';
+  if(wrap) wrap.style.filter = 'none';
+  
   if(type === 'rain') {
     for(let i=0; i<30; i++) {
       layer.innerHTML += `<div style="position:absolute; width:2px; height:${10+Math.random()*10}px; background:linear-gradient(transparent, rgba(165,207,255,0.8)); left:${Math.random()*100}%; top:-20px; animation:dRain ${0.4+Math.random()*0.3}s linear infinite; pointer-events:none;"></div>`;
@@ -20917,9 +20928,40 @@ window._changeDiaryWeather = function(type) {
       layer.innerHTML += `<div style="position:absolute; width:30px; height:2px; background:rgba(220,229,240,0.6); left:-40px; top:${Math.random()*100}%; animation:dWind ${1+Math.random()*1.5}s linear infinite; border-radius:2px; pointer-events:none; opacity:0;"></div>`;
     }
   } else if(type === 'overcast') {
-    wrap.style.filter = 'saturate(0.8) brightness(0.95)';
+    if(wrap) wrap.style.filter = 'saturate(0.8) brightness(0.95)';
     layer.innerHTML = `<div style="position:absolute; inset:0; background:rgba(92,112,148,0.12); pointer-events:none;"></div>`;
   }
+};
+
+// 2. 覆盖写字台的天气切换
+window._changeDiaryWeather = function(type) {
+  window._renderWeatherToLayer(type, 'diaryWeatherLayer', 'diaryCanvasWrap');
+};
+
+// 3. 档案馆点击事件修复 (加上 onclick 全屏展开！)
+window._openDiaryArchive = async function() {
+  const archive = await localforage.getItem(K_DIARY_ARCHIVE) ||[];
+  const box = document.getElementById('diaryArchiveList');
+  if(archive.length === 0) {
+    box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:12px;">手账本里空空如也，快去记录第一笔吧~</div>`;
+  } else {
+    box.innerHTML = archive.map(d => `
+      <div style="background:rgba(250,252,255,0.85); border:1px solid #dce5f0; border-radius:16px; padding:16px; margin-bottom:12px; box-shadow:0 4px 12px rgba(92,112,148,0.03);">
+        <div style="font-size:11px; color:#5c7094; font-weight:800; border-bottom:1px dashed #dce5f0; padding-bottom:8px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+          <span>${safeEsc(d.date)} ${d.mood ? '· ' + safeEsc(d.mood) : ''}</span>
+          <div style="display:flex; gap:8px;">
+            <button class="btn" onclick="window._prepareShareDiary('${d.id}')" style="background:rgba(238,244,250,0.8); color:#5c7094; border:1px solid #dce5f0; border-radius:6px; padding:2px 8px; font-size:10px; font-weight:bold; box-shadow:none;">分享给TA</button>
+            <button class="btn d" onclick="window._delDiaryArchive('${d.id}')" style="background:#fcf2f2; color:#b57b7b; border:1px solid #f2dcdc; border-radius:6px; padding:2px 8px; font-size:10px; font-weight:bold; box-shadow:none;">销毁</button>
+          </div>
+        </div>
+        <!-- ✨ 这里加上了 onclick 展开详情的魔法！ -->
+        <div onclick="window._openDiaryDetail('${d.id}')" style="position:relative; min-height:80px; background:${d.bg ? d.bg + ' center/cover' : '#fdfaf3'}; border-radius:8px; overflow:hidden; border:1px solid #eef4fa; cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+           <div style="padding:12px; font-size:13px; color:#5c4a3a; line-height:1.6; font-family:'STZhongsong', 'KaiTi', serif; pointer-events:none;">${d.contentHtml}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+  document.getElementById('diaryArchiveModal').classList.add('active');
 };
 
 // 纸张背景替换逻辑
@@ -21060,18 +21102,17 @@ window._executeShareDiary = async function(targetId) {
   if(typeof window._sendToAI === 'function') window._sendToAI(targetId, hiddenPrompt, true);
 };
 </script>
-  <!-- 🌟 蓝色高定：沉浸式日记展厅 (右上角冰透播放键版) -->
-<div id="diaryReadModal" class="modal" style="z-index: 10015; padding:0;">
-  <div class="modal-card" style="width:100%; height:100%; max-width:430px; margin:0 auto; border-radius:0; padding:0; display:flex; flex-direction:column; overflow:hidden; position:relative; box-shadow:none; border:none;">
+  <!-- 🌟 蓝色高定：沉浸式日记展厅 (彻底修复超宽挤压Bug版) -->
+<div id="diaryReadModal" class="modal" style="z-index: 10015; padding:0; box-sizing:border-box;">
+  <!-- 强制限制宽高，绝对不会超出屏幕 -->
+  <div class="modal-card" style="width:100vw; height:100dvh; max-width:430px; margin:0 auto; border-radius:0; padding:0; display:flex; flex-direction:column; overflow:hidden; position:relative; box-shadow:none; border:none; box-sizing:border-box;">
     
-    <!-- 顶部悬浮导航 (播放键移到了最右边！) -->
-    <div style="position:absolute; top:0; left:0; right:0; padding:calc(12px + var(--safe-top)) 16px 12px; display:flex; justify-content:space-between; align-items:center; z-index:20; background:rgba(250,252,255,0.6); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid rgba(220,229,240,0.5);">
-      <button class="btn" onclick="window._closeDiaryDetail()" style="background:rgba(255,255,255,0.8); color:#5c7094; border-radius:50%; width:32px; height:32px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0; font-size:18px; box-shadow:0 2px 8px rgba(92,112,148,0.1);">‹</button>
+    <div style="position:absolute; top:0; left:0; right:0; padding:calc(12px + var(--safe-top)) 16px 12px; display:flex; justify-content:space-between; align-items:center; z-index:20; background:rgba(250,252,255,0.6); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid rgba(220,229,240,0.5); box-sizing:border-box;">
+      <button class="btn" onclick="window._closeDiaryDetail()" style="background:rgba(255,255,255,0.8); color:#5c7094; border-radius:50%; width:32px; height:32px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0; font-size:18px; box-shadow:0 2px 8px rgba(92,112,148,0.1); flex-shrink:0;">‹</button>
       
-      <b id="diaryReadDate" style="color:#3d4a6a; font-size:15px; font-family:'STZhongsong', 'KaiTi', serif; letter-spacing:1px; text-shadow:0 1px 2px rgba(255,255,255,0.8);"></b>
+      <b id="diaryReadDate" style="color:#3d4a6a; font-size:15px; font-family:'STZhongsong', 'KaiTi', serif; letter-spacing:1px; text-shadow:0 1px 2px rgba(255,255,255,0.8); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 10px;"></b>
       
-      <!-- 极简冰透播放键！再也不会挡住内容啦！ -->
-      <div id="diaryReadAudioWrap" style="width:32px; height:32px; display:none; place-items:center;">
+      <div id="diaryReadAudioWrap" style="width:32px; height:32px; display:none; place-items:center; flex-shrink:0;">
          <div onclick="window._toggleReadAudio()" id="diaryReadAudioBtn" style="width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.8); color:#5c7094; border:1px solid #dce5f0; display:grid; place-items:center; cursor:pointer; font-size:12px; backdrop-filter:blur(8px); box-shadow:0 2px 8px rgba(92,112,148,0.1); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">▶</div>
          <audio id="diaryReadAudio" loop></audio> 
       </div>
@@ -21080,8 +21121,7 @@ window._executeShareDiary = async function(targetId) {
     <div id="diaryReadBg" style="position:absolute; inset:0; background-size:cover; background-position:center; z-index:1;"></div>
     <div id="diaryReadWeather" style="position:absolute; inset:0; z-index:5; pointer-events:none; overflow:hidden;"></div>
     
-    <!-- 内容区不再有播放胶囊 -->
-    <div id="diaryReadContentWrap" style="position:relative; z-index:10; flex:1; overflow-y:auto; padding:calc(60px + var(--safe-top)) 24px 60px; font-size:15px; color:#5c4a3a; line-height:1.8; font-family:'STZhongsong', 'KaiTi', serif; text-align:justify; white-space:pre-wrap;">
+    <div id="diaryReadContentWrap" style="position:relative; z-index:10; flex:1; overflow-y:auto; padding:calc(60px + var(--safe-top)) 24px 60px; font-size:15px; color:#5c4a3a; line-height:1.8; font-family:'STZhongsong', 'KaiTi', serif; text-align:justify; white-space:pre-wrap; box-sizing:border-box;">
        <div id="diaryReadContent"></div>
     </div>
     
