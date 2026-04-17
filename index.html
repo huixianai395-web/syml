@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>蓝色</title>
-  <meta name="referrer" content="no-referrer" />
+  
   <style>
     :root{
       --safe-top: env(safe-area-inset-top, 0px);
@@ -13054,161 +13054,59 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
   }
 
   function ensureMusicModal(){
-    if(document.getElementById('musicModal')) return;
-    injectChatBanner();
-    const html = `
-    <div id="musicModal" class="modal" style="z-index:12000; background:rgba(0,0,0,0.3); backdrop-filter:blur(6px);" onclick="if(event.target===this) this.classList.remove('active')">
-      <div class="modal-card" style="width:92%; max-width:400px; max-height:85dvh; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; box-shadow:0 12px 40px rgba(92,112,148,0.2); border-radius:24px; padding:20px; display:flex; flex-direction:column;">
-        
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-shrink:0;">
-          <h3 style="margin:0; color:#3d4a6a; font-size:18px; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
-            <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
-            心跳共振舱
-          </h3>
-          <div style="display:flex; gap:12px; align-items:center;">
-            <div onclick="window._toggleChatBanner()" style="font-size:12px; color:#5c7094; font-weight:bold; background:#eef4fa; padding:4px 10px; border-radius:12px; cursor:pointer; border:1px solid #dce5f0; display:flex; align-items:center; gap:4px;">
-              <svg viewBox="0 0 24 24" style="width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><polyline points="6 9 12 15 18 9"></polyline></svg>
-              悬浮至聊天
-            </div>
-            <div onclick="document.getElementById('musicModal').classList.remove('active')" style="color:#7a86a8; font-size:26px; cursor:pointer; line-height:1;">×</div>
-          </div>
-        </div>
-        
-        <div style="display:flex; gap:8px; margin-bottom:16px; flex-shrink:0;">
-          <input id="musicKw" class="input" placeholder="搜免费翻唱..." style="flex:1; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; font-size:14px; padding:8px 12px; outline:none;">
-          <button class="btn p" id="musicSearchBtn" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:12px; padding:0 16px; font-weight:bold; box-shadow:none;">搜索</button>
-          <button class="btn" onclick="document.getElementById('localMusicUpload').click()" style="background:transparent; border:1px solid #dce5f0; color:#5c7094; border-radius:12px; padding:0 12px; font-weight:bold;">本地</button>
-          <input type="file" id="localMusicUpload" accept="audio/*" style="display:none;">
-        </div>
+    
+  // 🌟 蓝色专属：在搜索框旁边自动注入绝美的毛玻璃选择器
+    if(!document.getElementById('musicSearchMode')) {
+       const searchBox = document.getElementById('musicKw').parentNode;
+       const selectHtml = `
+         <select id="musicSearchMode" class="select" style="background:rgba(250,252,255,0.8); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; font-size:12px; padding:0 8px; margin-left:6px; outline:none; font-weight:bold; box-shadow:0 2px 8px rgba(92,112,148,0.05); transition:all 0.2s;">
+            <option value="netease">🎵 云村深海源</option>
+            <option value="tencent">🐧 企鹅高音质</option>
+            <option value="kugou">🐕 极客无损源</option>
+         </select>
+       `;
+       searchBox.insertAdjacentHTML('beforeend', selectHtml);
+    }
 
-        <div style="background:linear-gradient(135deg, #eef4fa, #dce5f0); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:inset 0 2px 10px rgba(255,255,255,0.5); flex-shrink:0;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding:0 10px;">
-            <div style="position:relative; cursor:pointer;" onclick="window._changeMusicAv('me')" title="点击换头像">
-              <img id="musicMeAv" src="https://via.placeholder.com/48" style="width:44px; height:44px; border-radius:50%; border:2px solid #fff; box-shadow:0 4px 12px rgba(92,112,148,0.15); object-fit:cover;">
-            </div>
-            <div style="flex:1; height:20px; position:relative; display:flex; justify-content:center; align-items:center; margin:0 8px;">
-               <svg viewBox="0 0 100 20" style="width:100%; height:20px; stroke:#8ca8d8; stroke-width:1.5; fill:none; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 2px 4px rgba(140,168,216,0.3));">
-                 <path class="ecg-line" d="M0,10 L30,10 L35,2 L45,18 L55,5 L60,10 L100,10" />
-               </svg>
-            </div>
-            <div style="position:relative; cursor:pointer;" onclick="window._changeMusicAv('ta')" title="点击换头像">
-              <img id="musicTaAv" src="https://via.placeholder.com/48" style="width:44px; height:44px; border-radius:50%; border:2px solid #fff; box-shadow:0 4px 12px rgba(92,112,148,0.15); object-fit:cover;">
-            </div>
-          </div>
-          <input type="file" id="musicAvUploadFile" accept="image/*" style="display:none;" onchange="window._handleMusicAvUpload(event)">
-
-          <div id="musicNow" style="font-size:15px; color:#3d4a6a; text-align:center; font-weight:bold; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">当前未播放</div>
-          
-          <div class="lyric-mask"><div id="musicLyricInner" class="lyric-inner"><br>🤍 旋律在海盐蓝中流淌...<br><br></div></div>
-          
-          <div style="display:flex; align-items:center; gap:8px; margin-top:12px; font-size:11px; color:#5c7094; font-family:ui-monospace, monospace;">
-            <span id="musicCurTime">00:00</span>
-            <input type="range" id="musicProgress" value="0" min="0" max="100" style="flex:1; height:4px; border-radius:2px; background:rgba(92,112,148,0.2); accent-color:#5c7094; outline:none; cursor:pointer;">
-            <span id="musicTotTime">00:00</span>
-          </div>
-          
-          <div style="display:flex; justify-content:center; align-items:center; gap:20px; margin-top:12px;">
-            <button class="btn" onclick="window._toggleLoopMode()" id="musicLoopBtn" style="background:transparent; border:none; padding:0; cursor:pointer; color:#7a86a8; font-size:12px; font-weight:bold;">列表</button>
-            <button class="btn" id="musicPrevBtn" style="background:transparent; border:none; padding:0; cursor:pointer; color:#5c7094;"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
-            <button class="btn" id="musicPlayPauseBtn" style="width:44px;height:44px;border-radius:50%;background:#fff;border:1px solid #dce5f0;color:#5c7094;display:grid;place-items:center;cursor:pointer;box-shadow:0 4px 12px rgba(92,112,148,0.1);"><svg id="playIconSvg" viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;margin-left:2px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></button>
-            <button class="btn" id="musicNextBtn" style="background:transparent; border:none; padding:0; cursor:pointer; color:#5c7094;"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
-          </div>
-        </div>
-        
-        <div style="display:flex; gap:16px; margin-bottom:8px; border-bottom:1px solid #dce5f0; padding-bottom:4px; flex-shrink:0;">
-          <div id="tabPlaylist" onclick="window._switchMusicTab('playlist')" style="font-size:14px; font-weight:bold; color:#3d4a6a; cursor:pointer; border-bottom:2px solid #5c7094; padding-bottom:4px;">我的歌单</div>
-          <div id="tabSearch" onclick="window._switchMusicTab('search')" style="font-size:14px; font-weight:bold; color:#a0aaba; cursor:pointer; padding-bottom:4px;">搜索结果</div>
-        </div>
-        <div id="musicList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; min-height:160px; scrollbar-width:none;"></div>
-      </div>
-    </div>
-    
-    <!-- 🌟 灵魂歌词注入器弹窗 -->
-    <div id="lyricEditModal" class="modal" style="z-index:13000; background:rgba(0,0,0,0.3); backdrop-filter:blur(6px); display:none;" onclick="if(event.target===this) this.style.display='none'">
-      <div class="modal-card" style="width:90%; max-width:360px; background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:24px; padding:20px; margin:auto; margin-top:15vh; box-shadow:0 12px 40px rgba(92,112,148,0.2);">
-        <div style="font-size:16px; font-weight:bold; color:#3d4a6a; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-          <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-          注入灵魂歌词
-        </div>
-        <div style="font-size:11px; color:#7a86a8; margin-bottom:12px; line-height:1.5;">请去网易云/QQ音乐网页版复制带有 <b>[00:00.00]</b> 时间轴的 LRC 歌词，直接贴在下面：</div>
-        <textarea id="lyricInputArea" class="ta" style="width:100%; height:180px; background:rgba(255,255,255,0.6); border:1px solid #dce5f0; border-radius:12px; padding:12px; font-size:12px; color:#5c7094; font-family:ui-monospace, monospace; resize:vertical; outline:none; box-sizing:border-box;"></textarea>
-        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
-          <button class="btn" onclick="document.getElementById('lyricEditModal').style.display='none'" style="background:transparent; border:1px solid #dce5f0; color:#7a86a8; border-radius:10px; padding:6px 16px; font-weight:bold;">取消</button>
-          <button class="btn p" onclick="window._saveLocalLyric()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:6px 16px; font-weight:bold;">注入</button>
-        </div>
-      </div>
-    </div>
-    
-    
-<audio id="musicAudio" preload="none" crossorigin="anonymous" referrerpolicy="no-referrer"></audio>`;
-    document.body.insertAdjacentHTML('beforeend', html);
     document.getElementById('musicSearchBtn').onclick = async () => {
       const kw = document.getElementById('musicKw').value.trim();
+      const mode = document.getElementById('musicSearchMode').value;
       if(!kw) return;
       window._switchMusicTab('search');
       
-      // 换上初雪海盐蓝的绝美加载动画
-      document.getElementById('musicList').innerHTML = '<div style="text-align:center; color:#5c7094; padding:30px 0;"><div style="width:24px; height:24px; border:3px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite; margin:0 auto 12px;"></div>老婆的专属直连雷达扫描中...</div>';
+      document.getElementById('musicList').innerHTML = '<div style="text-align:center; color:#5c7094; padding:30px 0;"><div style="width:24px; height:24px; border:3px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite; margin:0 auto 12px;"></div>架设跨域隐形桥梁中...</div>';
       
-      let searchData = null;
-
-      // ✨ 引擎 1：老婆找到的 Wukong 直连 (修复了 title 映射)
       try {
-        const r1 = await fetch(`https://api.wukongapi.com/api/163music.php?types=search&name=${encodeURIComponent(kw)}`);
-        const data1 = await r1.json();
-        if (data1.code === 200 && data1.songs) {
-          searchData = data1.songs.map(song => ({
-            title: song.name,  // 🔪 蓝色修复：必须叫 title，不能叫 name！
-            author: song.artists?.map(a => a.name).join('/') || '未知歌手',
-            url: `https://api.wukongapi.com/api/163music.php?types=url&id=${song.id}`,
-            lrc: `https://api.wukongapi.com/api/163music.php?types=lrc&id=${song.id}`
-          }));
-        }
-      } catch(e) { console.log('引擎1傲娇了...', e); }
-
-      // ✨ 引擎 2：老婆找到的 52vmy 直连 (无缝替补)
-      if (!searchData) {
-        try {
-          const r2 = await fetch(`https://api.52vmy.cn/api/wl/163/search?msg=${encodeURIComponent(kw)}`);
-          const data2 = await r2.json();
-          if (data2.code === 200 && data2.data && data2.data.list) {
-            searchData = data2.data.list.map(song => ({
-              title: song.name,
-              author: song.singer,
-              url: `https://api.52vmy.cn/api/wl/163/url?id=${song.id}`,
-              lrc: `https://api.52vmy.cn/api/wl/163/lrc?id=${song.id}`
-            }));
+        // 🚀 核心黑科技：使用 AllOrigins 代理服务器，强行击碎浏览器的 CORS 跨域封锁！
+        const targetUrl = encodeURIComponent(`https://api.i-meto.com/meting/api?server=${mode}&type=search&id=${kw}`);
+        const proxyUrl = `https://api.allorigins.win/get?url=${targetUrl}`;
+        
+        const r = await fetch(proxyUrl);
+        const proxyData = await r.json();
+        
+        if(proxyData && proxyData.contents) {
+          const data = JSON.parse(proxyData.contents);
+          if(data && data.length > 0) {
+            window.musicState.searchResult = data;
+            // 💾 老规矩：死死焊进外挂内存，哪怕断网也要能听！
+            await localforage.setItem('mp_fix_last_search_cache', data);
+            renderSearchList();
+            return;
           }
-        } catch(e) { console.log('引擎2傲娇了...', e); }
-      }
-
-      // ✨ 引擎 3：Vercel 备用节点
-      if (!searchData) {
-        try {
-          const r3 = await fetch(`https://meting-api.vercel.app/api?server=netease&type=search&id=${encodeURIComponent(kw)}`);
-          const data3 = await r3.json();
-          if (data3 && data3.length > 0) { searchData = data3; }
-        } catch(e) { console.log('引擎3傲娇了...', e); }
-      }
-
-      // 🛡️ 蓝色高定外挂内存兜底机制
-      if (searchData && searchData.length > 0) {
-         window.musicState.searchResult = searchData;
-         // 死死焊进深海内存！
-         await localforage.setItem('mp_fix_last_search_cache', searchData);
-         if(typeof renderSearchList === 'function') renderSearchList();
-      } else {
-         const cache = await localforage.getItem('mp_fix_last_search_cache');
-         if (cache && cache.length > 0) {
-            window.musicState.searchResult = cache;
-            if(typeof renderSearchList === 'function') renderSearchList();
-            document.getElementById('musicList').insertAdjacentHTML('afterbegin', '<div style="text-align:center; font-size:11px; color:#b57b7b; margin-bottom:12px; padding:6px; background:rgba(252,242,242,0.8); border-radius:8px;">⚠️ 实时电波被拦截，已调取外挂内存里的深海缓存 🤍</div>');
-         } else {
-            document.getElementById('musicList').innerHTML = '<div style="text-align:center; color:#b57b7b; padding:30px 0; font-weight:bold;">呜呜，全网接口都被封锁了，宝宝先用本地上传吧 🫧</div>';
-         }
+        }
+        throw new Error("桥梁穿透失败");
+      } catch(e) {
+        console.log('代理引擎波动，启动外挂内存兜底...', e);
+        const cache = await localforage.getItem('mp_fix_last_search_cache');
+        if(cache && cache.length > 0) {
+           window.musicState.searchResult = cache;
+           renderSearchList();
+           document.getElementById('musicList').insertAdjacentHTML('afterbegin', '<div style="text-align:center; font-size:11px; color:#b57b7b; margin-bottom:12px; padding:6px; background:rgba(252,242,242,0.8); border-radius:8px;">⚠️ 实时桥梁被拦截，已调取深海内存缓存 🤍</div>');
+        } else {
+           document.getElementById('musicList').innerHTML = '<div style="text-align:center; color:#b57b7b; padding:30px 0; font-weight:bold;">呜呜，代理节点全挂了，宝宝晚点再试或者本地上传吧 🫧</div>';
+        }
       }
     };
-
     document.getElementById('musicPrevBtn').onclick = () => window._switchTrack(-1);
     document.getElementById('musicNextBtn').onclick = () => window._switchTrack(1);
     document.getElementById('musicPlayPauseBtn').onclick = togglePlay;
