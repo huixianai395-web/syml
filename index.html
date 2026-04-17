@@ -21552,6 +21552,19 @@ if(window._originalCallApiBeforeMoon) {
     </div>
 
     <div style="position:absolute; bottom:0; left:0; right:0; padding:20px 16px calc(20px + var(--safe-bottom)); background:linear-gradient(0deg, rgba(7,10,19,0.95), transparent); z-index:20; display:flex; flex-direction:column; gap:12px;">
+      <!-- 🌟 水族箱专属：深海环境音胶囊与上传通道 -->
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+  <button class="btn" onclick="document.getElementById('aquaAudioUpload').click()" style="background:rgba(255,255,255,0.05); color:#a5cfff; border:1px dashed rgba(165,207,255,0.4); border-radius:12px; padding:6px 12px; font-size:12px; font-weight:bold; backdrop-filter:blur(8px); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">🎵 注入深海回声</button>
+  <input type="file" id="aquaAudioUpload" accept=".mp3, .wav, .m4a, .aac, audio/*" class="hidden" onchange="window._handleAquaAudio(event)">
+  
+  <div id="aquaAudioCapsule" style="display:none; background:rgba(238,244,250,0.15); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(220,229,240,0.2); border-radius:999px; padding:4px 12px; align-items:center; gap:8px; box-shadow:0 4px 16px rgba(0,0,0,0.5);">
+    <div onclick="window._toggleAquaAudio()" id="aquaAudioPlayBtn" style="width:24px; height:24px; border-radius:50%; background:#eef4fa; color:#5c7094; display:grid; place-items:center; cursor:pointer; font-size:11px; font-weight:900; box-shadow:0 2px 8px rgba(165,207,255,0.3);">▶</div>
+    <div style="font-size:11px; color:#dbe4ff; font-weight:bold; letter-spacing:1px; margin:0 4px;">深海回声环绕中</div>
+    <div onclick="window._removeAquaAudio()" style="color:#ff9a9e; font-size:18px; cursor:pointer; line-height:1; font-weight:bold;" title="销毁音源">×</div>
+    <!-- 带有 loop 属性的隐藏播放器！ -->
+    <audio id="aquaAudioPlayer" loop></audio>
+  </div>
+</div>
       <div style="display:flex; gap:8px;">
         <select id="aquaMoodSel" class="select" style="width:90px; background:rgba(255,255,255,0.1); border:1px solid rgba(165,207,255,0.3); color:#a5cfff; border-radius:12px; outline:none; font-size:13px; font-weight:bold; backdrop-filter:blur(8px);">
           <option value="happy">开心 🌸</option><option value="sad">难过 💧</option><option value="angry">暴躁 🔥</option>
@@ -21658,7 +21671,37 @@ if(window._originalCallApiBeforeMoon) {
 // 🌟 蓝色独家：情绪水族箱核心生态引擎 (V6 基因大爆炸版)
 const K_AQUARIUM = 'mp_fix_aquarium_v6'; 
 window._currentJellyId = null;
+// 🌟 蓝色高定：深海环境音循环引擎
+window._tempAquaAudio = '';
+window._handleAquaAudio = function(e) {
+  const f = e.target.files?.[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    window._tempAquaAudio = ev.target.result;
+    const player = document.getElementById('aquaAudioPlayer');
+    player.src = window._tempAquaAudio;
+    document.getElementById('aquaAudioCapsule').style.display = 'flex';
+    // 瞬间潜入深海自动播放
+    player.play().catch(()=>{});
+    document.getElementById('aquaAudioPlayBtn').textContent = '||';
+  };
+  reader.readAsDataURL(f);
+  e.target.value = '';
+};
 
+window._toggleAquaAudio = function() {
+  const audio = document.getElementById('aquaAudioPlayer');
+  const btn = document.getElementById('aquaAudioPlayBtn');
+  if(audio.paused) { audio.play(); btn.textContent = '||'; } 
+  else { audio.pause(); btn.textContent = '▶'; }
+};
+
+window._removeAquaAudio = function() {
+  window._tempAquaAudio = '';
+  const audio = document.getElementById('aquaAudioPlayer');
+  audio.pause(); audio.src = '';
+  document.getElementById('aquaAudioCapsule').style.display = 'none';
+};
 // 变异基因库
 const TRAITS =[
   { id: 'normal', name: '平凡', weight: 60, icon: '' },
