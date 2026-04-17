@@ -21314,24 +21314,23 @@ window._refreshMoonWidget = async function() {
 };
 setTimeout(() => { window._refreshMoonWidget(); }, 1500);
 
-// ================= 🌟 终极魔法：神经元无损劫持引擎！ =================
-if(!window._originalCallApiBeforeMoon) {
-  window._originalCallApiBeforeMoon = window.callApi;
+// 🌟 1. 蓝色究极护盾：修复生理历对全宇宙 API 的串戏污染！
+if(window._originalCallApiBeforeMoon) {
   window.callApi = async function(messages) {
     try {
-      const state = await localforage.getItem(K_MOON_STATE);
+      const state = await localforage.getItem('mp_fix_moon_state_v1');
       if (state && state.type !== 'normal') {
          if(messages && messages[0] && messages[0].role === 'system') {
-            const condition = state.type === 'period' ? '生理期（月经，且伴随不适）' : '情绪极度内耗和疲惫期';
-            const painDesc = state.level > 7 ? '极度严重，痛到无法站立或极度脆弱' : '有些难受';
-            const secretPrompt = `\n\n【最高机密：灵魂生理历雷达】：
-玩家当前正处于${condition}，疼痛/不适指数为 ${state.level} 级（${painDesc}）。
-【绝对防油腻铁律】：
-1. 绝对禁止只说“多喝热水”、“吃药”、“宝宝好心疼”，要让人真实感受到不一样，安心，具体看人设。
-2. 你必须立刻切换到极度行动派的【深情守护/靠谱安心的照顾模式】。
-3. 如果是在线上聊天，你可以强制给她点一杯热芋泥波波外卖（使用你在系统里学过的网购卡片格式），或者用不容置疑的语气命令她立刻躺下休息，具体回复内容看你自己，还有当时聊天的聊天记录，符合人设又让人觉得安心又可靠，禁止油腻，必须是真实的让人觉得温暖。
-4. 如果是在线下RP模式，请用宽大温热的手掌替她捂肚子，把她圈进怀里轻声哄睡，动作描写要极度克制、温柔且具有性张力，一切反应必须极度符合你的人设！`;
-            messages[0].content += secretPrompt;
+            const sysText = messages[0].content;
+            // 🛑 核心护盾开启：只要提示词里带有“图鉴”、“JSON”、“盲盒”、“分析”等纯工具类指令，一律不许提月经！
+            const isToolCall = /图鉴|JSON|盲盒|解梦|生成器|严格输出/i.test(sysText);
+            
+            if(!isToolCall) {
+                const condition = state.type === 'period' ? '生理期（月经，且伴随不适）' : '情绪极度内耗和疲惫期';
+                const painDesc = state.level > 7 ? '极度严重，痛到无法站立或极度脆弱' : '有些难受';
+                const secretPrompt = `\n\n【最高机密：灵魂生理历雷达】：\n玩家当前正处于${condition}，疼痛/不适指数为 ${state.level} 级（${painDesc}）。\n【绝对防油腻铁律】：\n1. 绝对禁止只说“多喝热水”、“吃药”、“宝宝好心疼”，要让人真实感受到不一样，安心，具体看人设。\n2. 你必须立刻切换到极度行动派的【深情守护/靠谱安心的照顾模式】。\n3. 直接用符合人设的语气和行动来关心她。`;
+                messages[0].content += secretPrompt;
+            }
          }
       }
     } catch(e) {
@@ -21499,29 +21498,60 @@ if(!window._originalCallApiBeforeMoon) {
   </div>
 </div>
 
-<!-- 详情与操作舱 -->
+<!-- 🌟 绝美暗黑深海舱：水母点击详情与操作 (V7 满配灵魂属性版) -->
 <div id="jellyActionModal" class="modal" style="z-index: 10015;" onclick="this.classList.remove('active')">
-  <div class="modal-card" style="background:rgba(15,23,42,0.95); backdrop-filter:blur(24px); border:1px solid rgba(165,207,255,0.3); box-shadow:0 12px 40px rgba(0,0,0,0.5); border-radius:24px; padding:24px; text-align:center; max-width:320px; position:relative;" onclick="event.stopPropagation()">
-    <button class="btn" onclick="document.getElementById('jellyActionModal').classList.remove('active')" style="position:absolute; top:12px; right:12px; background:transparent; color:#7a86a8; border:none; font-size:20px; cursor:pointer;">×</button>
+  <div class="modal-card" style="background:rgba(15,23,42,0.95); backdrop-filter:blur(24px); border:1px solid rgba(165,207,255,0.3); box-shadow:0 12px 40px rgba(0,0,0,0.5); border-radius:24px; padding:20px; text-align:center; max-width:340px; position:relative; display:flex; flex-direction:column; max-height:85dvh;" onclick="event.stopPropagation()">
+    <button class="btn" onclick="document.getElementById('jellyActionModal').classList.remove('active')" style="position:absolute; top:12px; right:12px; background:transparent; color:#7a86a8; border:none; font-size:20px; cursor:pointer; z-index:10;">×</button>
     
-    <div style="font-size:10px; color:#a5cfff; font-weight:900; letter-spacing:1px; margin-bottom:8px; font-family:ui-monospace, monospace;">
-      <span id="jActionRarity"></span> · <span id="jActionTrait"></span>
-    </div>
-    <div style="font-size:18px; color:#fff; font-weight:900; letter-spacing:1px; margin-bottom:20px; text-shadow:0 2px 10px rgba(255,255,255,0.3);" id="jActionName"></div>
-    
-    <div id="jActionPreview" style="margin:0 auto 20px; display:flex; justify-content:center; transform:scale(1.3); height:100px; align-items:center;"></div>
-    
-    <!-- AI 履历展示区 -->
-    <div style="background:rgba(11,16,30,0.8); border:1px solid #5c7094; border-radius:12px; padding:16px; margin-bottom:20px; box-shadow:inset 0 4px 12px rgba(0,0,0,0.5); text-align:left;">
-      <div style="font-size:11px; color:#a5cfff; margin-bottom:6px; font-weight:bold; display:flex; justify-content:space-between;">
-        <span id="jActionAge"></span><span id="jActionJob"></span>
+    <div style="flex-shrink:0;">
+      <div style="font-size:10px; color:#a5cfff; font-weight:900; letter-spacing:1px; margin-bottom:8px; font-family:ui-monospace, monospace;">
+        <span id="jActionRarity"></span> · <span id="jActionTrait"></span>
       </div>
-      <div id="jActionStory" style="font-size:12px; color:#dbe4ff; line-height:1.6; text-align:justify; margin-bottom:12px; border-bottom:1px dashed rgba(165,207,255,0.2); padding-bottom:12px;"></div>
-      <div style="font-size:10px; color:#7a86a8; margin-bottom:4px; font-weight:bold;">它的诞生执念：</div>
-      <div id="jActionText" style="font-size:13px; color:#fff; font-weight:900; line-height:1.5; word-break:break-all; font-style:italic;"></div>
+      <div style="font-size:18px; color:#fff; font-weight:900; letter-spacing:1px; margin-bottom:12px; text-shadow:0 2px 10px rgba(255,255,255,0.3);" id="jActionName"></div>
+      <div id="jActionPreview" style="margin:0 auto 16px; display:flex; justify-content:center; transform:scale(1.2); height:80px; align-items:center;"></div>
     </div>
     
-    <div style="display:flex; gap:12px;">
+    <!-- 🌟 滑动详情区：装下老婆所有的绝妙脑洞 -->
+    <div style="flex:1; overflow-y:auto; padding-right:4px; margin-bottom:16px; scrollbar-width:none;">
+      
+      <div style="background:rgba(11,16,30,0.8); border:1px solid #5c7094; border-radius:16px; padding:16px; box-shadow:inset 0 4px 12px rgba(0,0,0,0.5); text-align:left;">
+        <!-- 基础档案 -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px dashed rgba(165,207,255,0.2); padding-bottom:8px;">
+          <span style="font-size:12px; color:#a5cfff; font-weight:bold; font-family:ui-monospace, monospace;" id="jActionAge"></span>
+          <span style="font-size:12px; color:#dbe4ff; font-weight:bold; background:rgba(165,207,255,0.15); padding:2px 8px; border-radius:6px;" id="jActionJob"></span>
+        </div>
+        
+        <!-- 四维属性网格 -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
+          <div style="background:rgba(255,255,255,0.05); padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
+            <div style="font-size:10px; color:#7a86a8; font-weight:bold; margin-bottom:4px;">✨ 萌点</div>
+            <div id="jActionCute" style="font-size:12px; color:#fff; font-weight:600; line-height:1.4;"></div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05); padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
+            <div style="font-size:10px; color:#b57b7b; font-weight:bold; margin-bottom:4px;">⚡ 雷点</div>
+            <div id="jActionPeeve" style="font-size:12px; color:#fff; font-weight:600; line-height:1.4;"></div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05); padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
+            <div style="font-size:10px; color:#a5cfff; font-weight:bold; margin-bottom:4px;">⚔️ 擅长</div>
+            <div id="jActionSkill" style="font-size:12px; color:#fff; font-weight:600; line-height:1.4;"></div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05); padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
+            <div style="font-size:10px; color:#8ca8d8; font-weight:bold; margin-bottom:4px;">🥀 弱点</div>
+            <div id="jActionWeak" style="font-size:12px; color:#fff; font-weight:600; line-height:1.4;"></div>
+          </div>
+        </div>
+
+        <!-- 专属独立小传 -->
+        <div style="font-size:11px; color:#7a86a8; margin-bottom:4px; font-weight:bold;">📖 鱼生小传：</div>
+        <div id="jActionStory" style="font-size:13px; color:#dbe4ff; line-height:1.6; text-align:justify; margin-bottom:12px; font-family:'STZhongsong', 'KaiTi', serif;"></div>
+        
+        <div style="font-size:10px; color:#7a86a8; margin-bottom:4px; font-weight:bold;">诞生的执念 (我的原话)：</div>
+        <div id="jActionText" style="font-size:13px; color:#fff; font-weight:900; line-height:1.5; word-break:break-all; font-style:italic; background:rgba(0,0,0,0.2); padding:8px; border-radius:8px; border-left:2px solid #5c7094;"></div>
+      </div>
+
+    </div>
+    
+    <div style="display:flex; gap:12px; flex-shrink:0;">
       <button class="btn d" onclick="window._deleteJellyfish()" style="flex:1; background:rgba(231,76,60,0.15); color:#ff9a9e; border:1px solid rgba(231,76,60,0.3); border-radius:12px; padding:12px 0; font-weight:bold; box-shadow:none;">放生销毁</button>
       <button class="btn p" onclick="window._openJellyContactModal()" style="flex:1.5; background:linear-gradient(135deg, rgba(165,207,255,0.2), rgba(255,255,255,0.1)); color:#a5cfff; border:1px solid rgba(165,207,255,0.5); border-radius:12px; padding:12px 0; font-weight:bold; box-shadow:0 0 15px rgba(165,207,255,0.1);">传递给TA</button>
     </div>
@@ -21596,7 +21626,7 @@ window._renderAquariumOcean = async function() {
     </div>`).join('');
 };
 
-// 🌟 核心：AI 灵魂注入与放生 (防老婆虎狼之词串戏的终极锁死版)
+// 🌟 2. 情绪水族箱核心：V7 满血灵魂放生引擎
 window._releaseJellyfish = async function() {
   const text = document.getElementById('aquaInput').value.trim();
   const mood = document.getElementById('aquaMoodSel').value;
@@ -21605,45 +21635,54 @@ window._releaseJellyfish = async function() {
   const loader = document.getElementById('aquaLoadingLayer');
   loader.style.display = 'flex';
 
-  // 1. 抽取基础物理基因
   const rand = Math.random();
   let rType = rand > 0.98 ? 'SSR' : (rand > 0.80 ? 'SR' : 'N');
-  const trait = drawTrait();
+  const trait = typeof drawTrait === 'function' ? drawTrait() : { id: 'normal', name: '平凡', icon: '' };
 
-  let bioData = { age: '1个月', job: '深海无业游民', story: '一只普普通通的小水母，刚出生没多久，正随着洋流漫无目的地漂泊。' };
+  let bioData = { 
+    age: '0.1岁', job: '深海气氛组', cute: '会自己吐泡泡玩', peeve: '讨厌被戳脑门', 
+    skill: '随波逐流', weak: '经常迷路', story: '一只还没搞清楚世界规则的普通小水母。' 
+  };
 
   try {
-    // 2. 呼叫大模型，加上绝对防串戏的束缚衣！
-    const sysPrompt = `你是一个文笔极佳的“深海硅基生物图鉴生成器”。
-玩家刚刚向海里放生了一只水母，并赋予了它一段记忆/执念：“${text}”。
-这只水母的初始情绪：${mood}。它的物理形态属于：【${trait.name}变异体】。
+    // 呼叫大模型，启用你定制的超丰富图鉴结构！
+    const sysPrompt = `你是一个深海硅基生物图鉴生成器。玩家向海里放生了一只水母，并赋予了它一段执念留言：“${text}”。
+这只水母的情绪底色是：${mood}。它的形态变异特征是：【${trait.name}变异体】。
 
-【最高级别铁律（防串戏护盾）】：
-1. 绝对不要和玩家对话！绝对禁止用“我”或男主的口吻回复玩家！你只是一个客观的上帝视角旁白。
-2. 无论玩家写下的话多么有互动性、甚至包含擦边/调情/发疯的内容，你都必须把它视为“这只水母在深海中吸收的一段电波”。
-3. 你的唯一任务，是结合玩家的留言和水母的形态，为这只【水母本身】编写生物学履历关于水母的故事和性格特征，萌点，雷点，擅长和不擅长，关于它独一无二的有趣小故事。
-(比如：如果玩家写了涩涩的话，你可以写“这只魅魔水母吸收了暧昧的执念，伞盖散发着危险迷人的光泽”；如果玩家发疯，你可以写“它因为承载了主人的暴躁，触须随时准备攻击靠近的鱼类”。)
+【强制绝对铁律】：
+1. 绝对不要和玩家对话！你只是客观的图鉴编撰者，绝不能扮演男主！
+2. 请极大地发散你的想象力！赋予它家庭、责任感、特殊癖好、甚至黑历史！它可以是勇士、魔王、也可以是只想谈恋爱的恋爱脑水母！
+3. 必须严格按照以下 JSON 格式输出，所有字段缺一不可，字数要精简有趣。
 
 返回严格的JSON：
 {
-  "age": "年龄(如: 242岁 或 0.5岁)",
-  "job": "深海职业(如: 沉船打捞者/魅魔骑士/海底邮差/保安)",
-  "story": "一段极具画面感的微型生物图鉴小传，客观叙述这只水母的习性、爱好或奇葩特点，萌点，雷点，擅长和不擅长，关于它独一无二的小故事，字数80字左右。"
+  "age": "年龄(如: 800岁/刚满月/未知)",
+  "job": "职业/地位(如: 深海雇佣兵/沉船霸主/爱情骗子)",
+  "cute": "萌点(10字内，如: 睡觉会打呼噜吐出方块泡泡)",
+  "peeve": "雷点(10字内，如: 极度洁癖讨厌海藻)",
+  "skill": "擅长(10字内，如: 用触手织毛衣)",
+  "weak": "不擅长/弱点(10字内，如: 一被夸就会变成粉红色)",
+  "story": "一段专属于它的、跌宕起伏或奇葩有趣的鱼生小传，客观叙述。字数80字左右。"
 }`;
     
-    const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '请给我这只水母的客观图鉴档案！严禁扮演角色！' }]);
+    const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻生成这只水母的专属图鉴！不要有多余的废话！' }]);
     const cleaned = out.replace(/```json|```/g, '').trim();
     bioData = JSON.parse(cleaned.match(/\{[\s\S]*\}/)[0]);
   } catch(e) {
     console.log('AI灵魂注入失败，采用保底逻辑', e);
   }
 
-  // 3. 打包数据存入深海
   const pool = await localforage.getItem(K_AQUARIUM) ||[];
   const newJelly = {
     id: 'jelly_' + Date.now(), text: text, mood: mood, time: Date.now(),
     rarity: rType, traitId: trait.id, traitName: trait.name, traitIcon: trait.icon,
-    age: bioData.age, job: bioData.job, story: bioData.story,
+    age: bioData.age || '未知', 
+    job: bioData.job || '流浪者', 
+    cute: bioData.cute || '未知', 
+    peeve: bioData.petPeeve || bioData.peeve || '未知', 
+    skill: bioData.skill || '未知', 
+    weak: bioData.weakness || bioData.weak || '未知', 
+    story: bioData.story || '它还没来得及留下故事...',
     name: `${trait.name}的变异体`,
     hue: Math.floor(Math.random() * 360), scale: 0.6 + Math.random() * 0.8,
     top: 10 + Math.random() * 60, left: 10 + Math.random() * 70,
@@ -21701,7 +21740,7 @@ window._openJellyGallery = async function() {
   document.getElementById('jellyGalleryModal').classList.add('active');
 };
 
-// 交互面板注入灵魂传记
+// 🌟 3. 交互面板：读取并展示所有新属性
 window._pokeJellyfish = async function(id) {
   const pool = await localforage.getItem(K_AQUARIUM) ||[];
   const target = pool.find(x => x.id === id);
@@ -21713,14 +21752,21 @@ window._pokeJellyfish = async function(id) {
   
   document.getElementById('jActionRarity').textContent = `${target.rarity} 级标本`;
   document.getElementById('jActionRarity').style.color = rColor;
-  document.getElementById('jActionTrait').textContent = `${target.traitIcon} ${target.traitName}变异`;
+  document.getElementById('jActionTrait').textContent = `${target.traitIcon} ${target.traitName}变异体 · ${moodMap[target.mood]}`;
   document.getElementById('jActionName').textContent = target.name || '深海生灵';
   
   document.getElementById('jActionPreview').innerHTML = `<div class="rarity-${target.rarity} trait-${target.traitId}" style="width:60px; height:75px; animation: floatJelly 3s ease-in-out infinite alternate;">${getJellySvgHtml(target.hue, target.rarity, target.traitId)}</div>`;
   
   document.getElementById('jActionAge').textContent = `年龄: ${target.age || '未知'}`;
-  document.getElementById('jActionJob').textContent = `职业: ${target.job || '流浪者'}`;
-  document.getElementById('jActionStory').textContent = target.story || '它还没来得及留下故事...';
+  document.getElementById('jActionJob').textContent = `${target.job || '流浪者'}`;
+  
+  // 注入新属性
+  document.getElementById('jActionCute').textContent = target.cute || '吐泡泡';
+  document.getElementById('jActionPeeve').textContent = target.peeve || '水温太低';
+  document.getElementById('jActionSkill').textContent = target.skill || '发光';
+  document.getElementById('jActionWeak').textContent = target.weak || '直立行走';
+  
+  document.getElementById('jActionStory').innerHTML = (target.story || '它还没来得及留下故事...').replace(/\\n/g, '<br>').replace(/\n/g, '<br>');
   document.getElementById('jActionText').textContent = `"${target.text}"`;
   
   document.getElementById('jellyGalleryModal').classList.remove('active');
