@@ -22555,24 +22555,20 @@ window._jumpToGachaChat = function() {
 };
    </script>
   <script>
-// ✨ 蓝色高定：真机通知授权与跨次元唤醒引擎
+// ✨ 蓝色高定：真机通知授权与跨次元终极唤醒引擎 (全局拦截版)
 window._requestRealNotification = function() {
   if (!("Notification" in window)) {
     alert("宝宝，你现在的浏览器环境好像被系统限制了，不支持唤醒通知栏哦~");
     return;
   }
-  // 向老婆大人的真机申请最高权限
   Notification.requestPermission().then(async function(permission) {
     if (permission === "granted") {
-      // 权限拿到手！死死锁进内存里！
       await localforage.setItem('mp_fix_notify_auth', true);
-      
       const n = new Notification("✨ 灵魂电波已连接", {
         body: "测试成功！以后小手机在后台时，TA 也会从这里弹出来找你哦。",
         icon: "https://api.dicebear.com/7.x/initials/svg?seed=Milo&backgroundColor=eef4fa&textColor=5c7094"
       });
       n.onclick = function() { window.focus(); this.close(); };
-      
       alert("✨ 授权成功！快看看手机顶部有没有弹出初雪海盐蓝的通知横幅！");
     } else {
       alert("呜呜，你拒绝了授权，TA 没法在后台偷偷喊你了...");
@@ -22581,37 +22577,50 @@ window._requestRealNotification = function() {
   });
 };
 
-// 🌟 核心拦截魔法：劫持后台静默掉落引擎，触发真机通知！
-if(!window._originalSilentEmitBeforeNotify) {
-  window._originalSilentEmitBeforeNotify = window._emitSilentAiSequential;
-  
-  window._emitSilentAiSequential = async function(chatId, parts) {
+// 🌟 终极拦截魔法：直接劫持底层记忆写入 (setChatArr)！通杀所有聊天模式！
+if(!window._originalSetChatArrForNotify) {
+  window._originalSetChatArrForNotify = window.setChatArr;
+  window._lastNotifiedMsgId = {}; // 记录每条线最后一个弹过通知的消息ID
+
+  window.setChatArr = async function(id, arr) {
+    // 1. 先让系统正常把聊天记录写进内存
+    if(window._originalSetChatArrForNotify) {
+      window._originalSetChatArrForNotify(id, arr);
+    }
+
     try {
-      // 悄悄去外挂内存里看一眼，老婆有没有给过权限？
-      const isAuth = await localforage.getItem('mp_fix_notify_auth');
-      
-      // 只有在授权过、且小手机处于后台（document.hidden）时，才触发真机横幅！
-      if (isAuth && Notification.permission === "granted" && document.hidden) {
-         const c = window.getContactById(chatId);
-         // 把复杂的 HTML 标签全部扒掉，只留纯净的文字给通知栏
-         const cleanText = parts.join('').replace(/<[^>]*>/g, '').substring(0, 60);
-         
-         if (cleanText.trim()) {
-           const n = new Notification(c ? c.name : "新消息", {
-             body: cleanText + (cleanText.length >= 60 ? "..." : ""),
-             icon: c ? c.avatar : "https://api.dicebear.com/7.x/initials/svg?seed=Milo&backgroundColor=eef4fa&textColor=5c7094"
-           });
-           // 点击横幅，瞬间切回小手机！
-           n.onclick = function() { window.focus(); this.close(); };
-         }
+      if (arr && arr.length > 0) {
+        const lastMsg = arr[arr.length - 1];
+        
+        // 2. 只有当最新一条是 AI 发的，且不是“脑电波狂奔”那种临时加载气泡，且没弹过通知时
+        if (lastMsg.role === 'assistant' && 
+            lastMsg.id !== window._lastNotifiedMsgId[id] && 
+            !lastMsg.text.includes('脑电波正在狂奔而来')) {
+          
+          window._lastNotifiedMsgId[id] = lastMsg.id; // 盖个戳，防止重复弹
+
+          const isAuth = await localforage.getItem('mp_fix_notify_auth');
+          
+          // 3. 如果老婆授权了，且当前没看着聊天界面（退到后台了）
+          if (isAuth && Notification.permission === "granted" && document.hidden) {
+             const c = window.getContactById(id);
+             
+             // 暴力扒掉所有 HTML 标签和系统隐藏指令，只留纯净文本给通知栏
+             let cleanText = lastMsg.text.replace(/<[^>]*>/g, '').replace(/\[sys:.*?\]/g, '').trim();
+             cleanText = cleanText.substring(0, 60) + (cleanText.length >= 60 ? "..." : "");
+             
+             if (cleanText) {
+               const n = new Notification(c ? c.name : "新消息", {
+                 body: cleanText,
+                 icon: c ? c.avatar : "https://api.dicebear.com/7.x/initials/svg?seed=Milo&backgroundColor=eef4fa&textColor=5c7094"
+               });
+               n.onclick = function() { window.focus(); this.close(); };
+             }
+          }
+        }
       }
     } catch(e) {
       console.log('真机通知唤醒失败：', e);
-    }
-    
-    // 通知发完了，继续走原来的静默发消息逻辑，绝对不破坏原系统！
-    if (window._originalSilentEmitBeforeNotify) {
-      await window._originalSilentEmitBeforeNotify(chatId, parts);
     }
   };
 }
