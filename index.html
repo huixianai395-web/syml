@@ -22504,14 +22504,14 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
     })();
     </script>      
    <script>
-// 🌟 蓝色高定终极修复：盲盒潜入聊天顺序倒置问题！先入库，再开门！
+// 🌟 蓝色高定终极修复：盲盒潜入聊天（去机械感，纯净沉浸活人版！）
 window._jumpToGachaChat = function() {
   const roleId = document.getElementById('gachaRoleSelect').value;
   if(!roleId || !window._currentGachaScenario) return;
 
   const hiddenPrompt = `【心跳盲盒·突发剧情触发】：\n玩家（我）刚刚对你做了一个突发的动作或事件：“${window._currentGachaScenario}”。\n【最高优先级铁律：人设第一，拒绝油腻！】\n1. 绝对不要千篇一律的霸总式发言或刻意撩拨！请完全基于你的人设，给出最真实的“人类反应”。\n2. 如果你性格高冷，请表现出克制的错愕或微表情；如果你腹黑，请顺势反击或调侃；如果你暴躁，请直接炸毛；如果你温柔，请自然包容。\n3. 展现极致的活人感，会有尴尬、不知所措、吃醋、破防或无奈，绝对禁止强行发糖！\n4. 直接输出你的反应和对话，绝对不要带名字前缀！不要提“盲盒”、“触发”等出戏词汇。`;
 
-  // 1. 核心修复：先在后台把盲盒剧情和思考气泡塞进外挂内存！
+  // 1. 核心修复：只把剧情触发的标签塞进去，绝对不加任何机器人的加载气泡！
   const arr = window.getChatArr(roleId) || [];
   arr.push({ 
     id: 'm_' + Date.now(), 
@@ -22521,27 +22521,17 @@ window._jumpToGachaChat = function() {
     stored: true 
   });
   
-  const loaderId = 'loader_' + Date.now();
-  arr.push({
-     id: loaderId, role: 'assistant', time: Date.now(), stored: false,
-     text: `<div style="display:flex; align-items:center; gap:8px; color:#a5cfff; font-size:13px; font-weight:bold; font-style:italic; padding:4px;"><div style="width:16px; height:16px; border:2px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite;"></div>TA 的脑电波正在狂奔而来...</div>`
-  });
-  
-  // 2. 死死焊进内存！绝不丢失！
+  // 2. 存入外挂内存！
   window.setChatArr(roleId, arr);
 
-  // 3. 内存写好后，再一脚踹开聊天室的大门！(这样进去就能瞬间看见盲盒)
+  // 3. 踹开聊天室的大门，瞬间切入聊天场景！
   if(typeof window.openChat === 'function') {
     window.openChat(roleId);
   }
 
-  // 4. 呼叫大模型，并在结束后销毁思考气泡
+  // 4. 默默在后台呼叫大模型，完全模拟真人打字的延迟，不露任何系统痕迹！
   if(typeof window._sendToAI === 'function') {
-    window._sendToAI(roleId, hiddenPrompt, true).finally(() => {
-       const finalArr = window.getChatArr(roleId) || [];
-       window.setChatArr(roleId, finalArr.filter(x => x.id !== loaderId));
-       if(window.currentId === roleId && typeof window.renderChat === 'function') window.renderChat();
-    });
+    window._sendToAI(roleId, hiddenPrompt, true);
   }
 };
    </script>
