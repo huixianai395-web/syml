@@ -22573,6 +22573,126 @@ window._jumpToGachaChat = function() {
   }
 };
    </script>
+  <script>
+// 🌟 蓝色深夜高定 V2：聊天列表长按菜单引擎 (完美代替左滑与误触图钉)
+window._currentActionChatId = null;
+window._currentActionIsGroup = false;
+
+// 1. 唤起绝美毛玻璃菜单
+window._openChatListMenu = function(id, isGroup, isPinned, e) {
+  if(e) { e.preventDefault(); e.stopPropagation(); }
+  window._currentActionChatId = id;
+  window._currentActionIsGroup = isGroup;
   
+  let modal = document.getElementById('chatListMenuModal');
+  if(!modal) {
+    const html = `
+    <div id="chatListMenuModal" class="modal" style="z-index: 10000;" onclick="this.classList.remove('active')">
+      <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:24px; padding:20px; text-align:center; max-width:300px; box-shadow:0 12px 40px rgba(92,112,148,0.15);" onclick="event.stopPropagation()">
+        <div style="font-size:13px; color:#7a86a8; font-weight:800; margin-bottom:16px; letter-spacing:1px;">聊天选项</div>
+        
+        <button id="clmPinBtn" class="btn p" style="width:100%; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:14px; padding:14px 0; font-size:15px; font-weight:bold; margin-bottom:12px; box-shadow:0 4px 12px rgba(92,112,148,0.1); transition:transform 0.1s;" onclick="window._executePinToggle()" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">置顶聊天</button>
+        
+        <button class="btn d" style="width:100%; background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid #f2dcdc; border-radius:14px; padding:14px 0; font-size:15px; font-weight:bold; margin-bottom:16px; box-shadow:none; transition:transform 0.1s;" onclick="window._executeDeleteChat()" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">删除该聊天</button>
+        
+        <button class="btn" style="width:100%; background:transparent; color:#7a86a8; border:none; padding:10px 0; font-size:14px; font-weight:bold;" onclick="document.getElementById('chatListMenuModal').classList.remove('active')">取消</button>
+      </div>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', html);
+    modal = document.getElementById('chatListMenuModal');
+  }
+  
+  const pinBtn = document.getElementById('clmPinBtn');
+  pinBtn.textContent = isPinned ? '取消置顶' : '置顶聊天';
+  modal.classList.add('active');
+};
+
+// 2. 执行置顶逻辑并存入外挂内存
+window._executePinToggle = async function() {
+  const id = window._currentActionChatId;
+  const isGroup = window._currentActionIsGroup;
+  if(!id) return;
+  
+  if(isGroup) {
+    const groups = window.getGroups ? window.getGroups() : [];
+    const idx = groups.findIndex(g => g.id === id);
+    if(idx > -1) { groups[idx].pinned = !groups[idx].pinned; window.setGroups(groups); }
+  } else {
+    const contacts = window.getContacts ? window.getContacts() : [];
+    const idx = contacts.findIndex(c => c.id === id);
+    if(idx > -1) { contacts[idx].pinned = !contacts[idx].pinned; window.setContacts(contacts); }
+  }
+  
+  document.getElementById('chatListMenuModal').classList.remove('active');
+  if(typeof window.renderContacts === 'function') window.renderContacts(document.getElementById('searchInput')?.value || '');
+};
+
+// 3. 继承原有的删除逻辑
+window._executeDeleteChat = function() {
+  const id = window._currentActionChatId;
+  if(!id) return;
+  document.getElementById('chatListMenuModal').classList.remove('active');
+  if(typeof window.deleteContactFromList === 'function') window.deleteContactFromList(id);
+};
+
+// 4. 重写列表渲染，彻底解决误触问题！
+setTimeout(() => {
+  window.renderContacts = function(k='') {
+    k = (k||'').trim();
+    const contacts = window.getContacts ? window.getContacts() : [];
+    const groups = window.getGroups ? window.getGroups() : [];
+    const all = [...contacts, ...groups];
+    
+    let arr = all.filter(c => !k || c.name.includes(k) || (c.preview||'').includes(k));
+    
+    // 排序：置顶在前
+    arr.sort((a, b) => {
+      if(a.pinned && !b.pinned) return -1;
+      if(!a.pinned && b.pinned) return 1;
+      return 0; 
+    });
+
+    const listEl = document.getElementById('contactList');
+    if(!listEl) return;
+
+    listEl.innerHTML = arr.map(c => {
+      const unreadHtml = c.unread ? `<div style="position:absolute; top:-4px; right:-6px; background:#f25c5c; color:#fff; font-size:10px; font-weight:800; height:18px; min-width:18px; border-radius:9px; padding:0 5px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 8px rgba(242,92,92,0.25); border:2px solid #fff; z-index:10; font-family:ui-monospace, Arial, sans-serif; transform:scale(0.9); transform-origin:top right; pointer-events:none;">${c.unread > 99 ? '99+' : c.unread}</div>` : '';
+
+      // 静态图钉（仅展示，不再绑定点击事件，彻底防止误触！）
+      const pinSvg = c.pinned ? `<div style="margin-left:4px; display:flex; align-items:center;"><svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:#5c7094; fill:#eef4fa; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M12 17v5"></path><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1v3.76z"></path></svg></div>` : '';
+
+      const isGroupFlag = !!c.isGroup;
+      const isPinnedFlag = !!c.pinned;
+
+      // 核心：将长按事件绑定到 _openChatListMenu
+      return `
+      <div class="item" style="-webkit-touch-callout:none; user-select:none; position:relative; background:${c.pinned ? 'rgba(238,244,250,0.4)' : '#fff'}; border:${c.pinned ? '1px solid #dce5f0' : 'none'};"
+           oncontextmenu="window._openChatListMenu('${c.id}', ${isGroupFlag}, ${isPinnedFlag}, event); return false;"
+           ontouchstart="this._t = setTimeout(()=>{ window._openChatListMenu('${c.id}', ${isGroupFlag}, ${isPinnedFlag}); }, 500)"
+           ontouchend="clearTimeout(this._t)" ontouchmove="clearTimeout(this._t)">
+        <div style="position:relative; width:44px; height:44px; flex-shrink:0;">
+          <img class="avatar" src="${c.avatar||'https://via.placeholder.com/88x88?text=头像'}" style="width:100%; height:100%; object-fit:cover; border-radius:12px;" />
+          ${unreadHtml}
+        </div>
+        <div class="main" onclick="if(window._isDeleting)return; openChat('${c.id}')">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="name" style="display:flex; align-items:center; gap:6px;">
+              ${c.isGroup ? '<span style="font-size:10px; background:#eef3ff; color:#2f66d8; padding:2px 6px; border-radius:4px; font-weight:bold;">群聊</span>' : ''}
+              ${esc(c.name)}
+            </div>
+            <div style="display:flex; align-items:center;">
+              <div class="t">${esc(c.time||'')}</div>
+              ${pinSvg}
+            </div>
+          </div>
+          <div class="preview">${esc(c.preview||'')}</div>
+        </div>
+      </div>`;
+    }).join('') || '<div class="card small">暂无联系人或群聊，点右上角创建吧</div>';
+  };
+  
+  if(document.getElementById('contactList')) window.renderContacts(document.getElementById('searchInput')?.value || '');
+}, 800);
+  </script>
 </body>
   </html>
