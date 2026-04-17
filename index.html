@@ -11280,53 +11280,86 @@ window._sendToAI = async function(chatId, hiddenPrompt, isSilent) {
 
   system += `\n\n${hiddenPrompt}`;
 
-  const apiMsgs = [
+  const apiMsgs =[
   { role: 'system', content: system },
   ...hist.map(x => ({ role: x.role==='user'?'user':'assistant', content: x.text })),
   // 🌟 关键锚点：静默召唤时补一个 user 触发，防空返回
-  ...(isSilent ? [{ role: 'user', content: '现在请你主动发起一段自然聊天开场。' }] : [])
+  ...(isSilent ?[{ role: 'user', content: '现在请你主动发起一段自然聊天开场。' }] :[])
 ];
 
   try {
     let out = '';
-try {
-  out = await callApi(apiMsgs);
-} catch (e) {
-  throw e;
-}
+    try {
+      out = await callApi(apiMsgs);
+    } catch (e) {
+      throw e;
+    }
 
-// 🌟 空响应兜底，避免整条链路直接炸掉
-            if (!String(out || '').trim()) {
-              out = '{"messages":["在吗？"]}';
-            }
+    // 🌟 空响应兜底，避免整条链路直接炸掉
+    if (!String(out || '').trim()) {
+      out = '{"messages":["在吗？"]}';
+    }
 
-            // 🌟 蓝色高定：在后台掉落引擎里，精准抓取解除拉黑指令！
-            const rawOut = String(out || '');
-            const unblockCmd = '[' + 'sys:unblock' + ']';
-            let newlyUnblocked = false;
-            if(rawOut.includes(unblockCmd)) {
-                st.isBlockedByHim = false;
-                updateContact(chatId, { settings: st });
-                newlyUnblocked = true;
-            }
+    // 🌟 蓝色高定：在后台掉落引擎里，精准抓取解除拉黑指令！
+    const rawOut = String(out || '');
+    const unblockCmd = '[' + 'sys:unblock' + ']';
+    let newlyUnblocked = false;
+    if(rawOut.includes(unblockCmd)) {
+        st.isBlockedByHim = false;
+        updateContact(chatId, { settings: st });
+        newlyUnblocked = true;
+    }
 
-            // 解析 AI 的回复气泡
-        let parts = [];
-        const cleaned = String(out || '').replace(/```json|```/g, '').trim();
-        const m2 = cleaned.match(/\{[\s\S]*\}/);
-        if (m2) {
-            const data = JSON.parse(m2[0]);
-            parts = Array.isArray(data.messages) ? data.messages.filter(Boolean) : [cleaned];
-        } else {
-            parts = [cleaned];
-        }
+    // 解析 AI 的回复气泡
+    let parts =[];
+    const cleaned = String(out || '').replace(/```json|```/g, '').trim();
+    const m2 = cleaned.match(/\{[\s\S]*\}/);
+    if (m2) {
+        const data = JSON.parse(m2[0]);
+        parts = Array.isArray(data.messages) ? data.messages.filter(Boolean) : [cleaned];
+    } else {
+        parts = [cleaned];
+    }
 
-       // 🌟 蓝色美学魔法：加上专属通行证 sys-unblock-msg！
-        if (newlyUnblocked) {
-            parts.unshift('<div class="sys-unblock-msg" style="text-align:center; margin:10px 0; width:100%; pointer-events:none;"><span style="font-size:11px; color:#5c7094; background:rgba(238,244,250,0.75); padding:4px 12px; border-radius:12px; border:1px solid #dce5f0; backdrop-filter: blur(6px); letter-spacing:0.5px;">对方已将你移出黑名单，现在可以开始聊天了</span></div>');
-        }
+    // 🌟 蓝色美学魔法：加上专属通行证 sys-unblock-msg！
+    if (newlyUnblocked) {
+        parts.unshift('<div class="sys-unblock-msg" style="text-align:center; margin:10px 0; width:100%; pointer-events:none;"><span style="font-size:11px; color:#5c7094; background:rgba(238,244,250,0.75); padding:4px 12px; border-radius:12px; border:1px solid #dce5f0; backdrop-filter: blur(6px); letter-spacing:0.5px;">对方已将你移出黑名单，现在可以开始聊天了</span></div>');
+    }
 
-        await _emitSilentAiSequential(chatId, parts);
+    // ========================================================
+    // 🌟 蓝色高定：给后台唤醒引擎加装【电话与挂断的底层雷达】！！
+    // 无论 AI 躲在哪个阴暗角落发信号，统统强行揪出来拨号！
+    // ========================================================
+    for(let pi = parts.length - 1; pi >= 0; pi--) {
+      const pp = parts[pi].trim();
+      let cType = null;
+      let callerName = '';
+      
+      // 兼容群聊署名 [沈叙]：[call:voice]
+      const callMatch = pp.match(/^\[([^\[\]：:]+)\][：:,，\s]*\[call:(voice|video)\]$/);
+      if(callMatch) {
+        callerName = callMatch[1];
+        cType = callMatch[2];
+      } else if(pp === '[call:voice]' || pp === '[call:video]' || /\[call:(voice|video)\]$/.test(pp)){
+        cType = pp.includes('video') ? 'video' : 'voice';
+      }
+      
+      if(cType){
+        // 抓到电话代码！物理抹除文本！
+        parts.splice(pi, 1);
+        // 瞬间触发真实电话 UI！
+        setTimeout(() => { if(currentId === chatId) startCallUI(cType, 'incoming', chatId, callerName); }, 600);
+      }
+      
+      // 顺便把挂断雷达也装上！
+      if(pp === '[endcall]') {
+        parts.splice(pi, 1);
+        if(callState.active) setTimeout(() => endCall(), 400);
+      }
+    }
+    // ========================================================
+
+    await _emitSilentAiSequential(chatId, parts);
  } catch(e) {
   console.log('后台主动发消息失败:', e);
   throw e; // 🌟关键：抛出错误，给“立即召唤”按钮接住
