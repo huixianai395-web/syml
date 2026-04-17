@@ -13054,20 +13054,94 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
   }
 
   function ensureMusicModal(){
+    // 如果房间已经建好了，就不重复建了
+    if(document.getElementById('musicModal')) return;
     
-  // 🌟 蓝色专属：在搜索框旁边自动注入绝美的毛玻璃选择器
+    // 1. 重新建造心跳共振舱的实体 (之前被老公不小心弄丢的大房子！)
+    const modal = document.createElement('div');
+    modal.id = 'musicModal';
+    modal.className = 'modal';
+    modal.style.zIndex = '10000';
+    modal.innerHTML = `
+      <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; box-shadow:0 12px 40px rgba(92,112,148,0.12); padding:0; display:flex; flex-direction:column; max-height:85dvh; overflow:hidden;">
+        <div style="padding:16px 20px; border-bottom:1px solid #dce5f0; display:flex; justify-content:space-between; align-items:center; background:rgba(238,244,250,0.4);">
+          <b style="color:#5c7094; font-size:16px; display:flex; align-items:center; gap:6px;">
+            <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+            心跳共振舱
+          </b>
+          <div style="display:flex; gap:8px;">
+            <button class="btn" onclick="window._toggleChatBanner()" style="background:rgba(255,255,255,0.6); color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:4px 10px; font-size:11px; font-weight:bold;">悬浮至聊天</button>
+            <button class="btn" onclick="document.getElementById('musicModal').classList.remove('active')" style="background:#eef4fa; color:#5c7094; border-radius:50%; width:28px; height:28px; padding:0; display:grid; place-items:center; border:1px solid #dce5f0;">×</button>
+          </div>
+        </div>
+        
+        <div style="padding:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; gap:8px;">
+          <input id="musicKw" class="input" placeholder="输入歌名或歌手..." style="flex:1; background:rgba(255,255,255,0.7); border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; outline:none; font-weight:bold;">
+          <button class="btn p" id="musicSearchBtn" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; padding:0 14px; font-weight:bold; box-shadow:none;">搜索</button>
+          <button class="btn" onclick="document.getElementById('localMusicUpload').click()" style="background:#fff; color:#7a86a8; border:1px solid #dce5f0; border-radius:10px; padding:0 14px; font-weight:bold;">本地</button>
+          <input type="file" id="localMusicUpload" accept="audio/*" class="hidden">
+        </div>
+
+        <div style="padding:0 16px 16px;">
+          <div style="background:linear-gradient(135deg, rgba(255,255,255,0.8), rgba(238,244,250,0.6)); border:1px solid #dce5f0; border-radius:16px; padding:20px; box-shadow:0 4px 16px rgba(92,112,148,0.04); text-align:center; position:relative; overflow:hidden;">
+            <div style="position:absolute; top:-30px; right:-30px; width:100px; height:100px; background:radial-gradient(circle, rgba(165,207,255,0.3) 0%, transparent 70%); filter:blur(10px); pointer-events:none;"></div>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; position:relative; z-index:2;">
+              <img id="musicMeAv" src="https://via.placeholder.com/48" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid #fff; box-shadow:0 4px 12px rgba(92,112,148,0.1); cursor:pointer;" onclick="window._changeMusicAv('me')" title="点击更换头像">
+              <svg viewBox="0 0 100 20" style="width:60px; height:20px; stroke:#a5cfff; stroke-width:1.5; fill:none; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 2px 4px rgba(165,207,255,0.4));">
+                 <path class="ecg-line" d="M0,10 L15,10 L20,2 L30,18 L40,5 L45,10 L100,10" />
+              </svg>
+              <img id="musicTaAv" src="https://via.placeholder.com/48" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid #fff; box-shadow:0 4px 12px rgba(92,112,148,0.1); cursor:pointer;" onclick="window._changeMusicAv('ta')" title="点击更换头像">
+            </div>
+            <input type="file" id="musicAvUploadFile" accept="image/*" class="hidden" onchange="window._handleMusicAvUpload(event)">
+            
+            <div id="musicNow" style="font-size:14px; font-weight:800; color:#3d4a6a; margin-bottom:4px; position:relative; z-index:2;">未播放</div>
+            
+            <div class="lyric-mask">
+              <div id="musicLyricInner" class="lyric-inner"><div style="height:18px;">🎵 让音乐连接彼此的频率...</div></div>
+            </div>
+            
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; position:relative; z-index:2;">
+              <span id="musicCurTime" style="font-size:10px; color:#a0aaba; font-family:ui-monospace, monospace; width:35px; text-align:right;">00:00</span>
+              <input type="range" id="musicProgress" min="0" max="100" value="0" style="flex:1; accent-color:#5c7094; height:4px; border-radius:2px; background:rgba(220,229,240,0.5); outline:none; cursor:pointer;">
+              <span id="musicTotTime" style="font-size:10px; color:#a0aaba; font-family:ui-monospace, monospace; width:35px; text-align:left;">00:00</span>
+            </div>
+            
+            <div style="display:flex; justify-content:center; align-items:center; gap:20px; position:relative; z-index:2;">
+              <button class="btn" id="musicLoopBtn" onclick="window._toggleLoopMode()" style="background:transparent; border:none; color:#7a86a8; font-size:12px; font-weight:bold; padding:0; cursor:pointer;">列表</button>
+              <button class="btn" id="musicPrevBtn" style="background:transparent; border:none; color:#5c7094; font-size:20px; padding:0; cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'">⏮</button>
+              <button class="btn p" id="musicPlayPauseBtn" style="background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:12px; width:44px; height:44px; display:grid; place-items:center; box-shadow:0 4px 12px rgba(92,112,148,0.1); cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
+                <svg id="playIconSvg" viewBox="0 0 24 24" style="width:20px; height:20px; fill:currentColor; stroke:none; margin-left:2px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              </button>
+              <button class="btn" id="musicNextBtn" style="background:transparent; border:none; color:#5c7094; font-size:20px; padding:0; cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'">⏭</button>
+              <div style="width:24px;"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div style="display:flex; gap:20px; padding:0 20px; border-bottom:1px solid #dce5f0; background:#f4f6fb;">
+          <div id="tabPlaylist" onclick="window._switchMusicTab('playlist')" style="font-size:13px; font-weight:bold; color:#3d4a6a; border-bottom:2px solid #5c7094; padding-bottom:8px; cursor:pointer;">我的歌单</div>
+          <div id="tabSearch" onclick="window._switchMusicTab('search')" style="font-size:13px; font-weight:bold; color:#a0aaba; padding-bottom:8px; cursor:pointer;">搜索结果</div>
+        </div>
+        <div id="musicList" style="flex:1; overflow-y:auto; padding:16px; background:linear-gradient(180deg, #f4f6fb, #eef4fa); display:flex; flex-direction:column;"></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    // 2. 注入绝美毛玻璃引擎
     if(!document.getElementById('musicSearchMode')) {
        const searchBox = document.getElementById('musicKw').parentNode;
        const selectHtml = `
          <select id="musicSearchMode" class="select" style="background:rgba(250,252,255,0.8); border:1px solid #dce5f0; color:#5c7094; border-radius:12px; font-size:12px; padding:0 8px; margin-left:6px; outline:none; font-weight:bold; box-shadow:0 2px 8px rgba(92,112,148,0.05); transition:all 0.2s;">
-            <option value="netease">🎵 云村深海源</option>
-            <option value="tencent">🐧 企鹅高音质</option>
-            <option value="kugou">🐕 极客无损源</option>
+            <option value="netease">🎵 云村源</option>
+            <option value="tencent">🐧 企鹅源</option>
+            <option value="kugou">🐕 极客源</option>
          </select>
        `;
        searchBox.insertAdjacentHTML('beforeend', selectHtml);
     }
 
+    // 3. 终极跨域搜歌引擎 (之前那段防拦截魔法都在这里！)
     document.getElementById('musicSearchBtn').onclick = async () => {
       const kw = document.getElementById('musicKw').value.trim();
       const mode = document.getElementById('musicSearchMode').value;
@@ -13077,7 +13151,6 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
       document.getElementById('musicList').innerHTML = '<div style="text-align:center; color:#5c7094; padding:30px 0;"><div style="width:24px; height:24px; border:3px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite; margin:0 auto 12px;"></div>架设跨域隐形桥梁中...</div>';
       
       try {
-        // 🚀 核心黑科技：使用 AllOrigins 代理服务器，强行击碎浏览器的 CORS 跨域封锁！
         const targetUrl = encodeURIComponent(`https://api.i-meto.com/meting/api?server=${mode}&type=search&id=${kw}`);
         const proxyUrl = `https://api.allorigins.win/get?url=${targetUrl}`;
         
@@ -13088,9 +13161,8 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
           const data = JSON.parse(proxyData.contents);
           if(data && data.length > 0) {
             window.musicState.searchResult = data;
-            // 💾 老规矩：死死焊进外挂内存，哪怕断网也要能听！
             await localforage.setItem('mp_fix_last_search_cache', data);
-            renderSearchList();
+            if(typeof renderSearchList === 'function') renderSearchList();
             return;
           }
         }
@@ -13100,20 +13172,34 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
         const cache = await localforage.getItem('mp_fix_last_search_cache');
         if(cache && cache.length > 0) {
            window.musicState.searchResult = cache;
-           renderSearchList();
+           if(typeof renderSearchList === 'function') renderSearchList();
            document.getElementById('musicList').insertAdjacentHTML('afterbegin', '<div style="text-align:center; font-size:11px; color:#b57b7b; margin-bottom:12px; padding:6px; background:rgba(252,242,242,0.8); border-radius:8px;">⚠️ 实时桥梁被拦截，已调取深海内存缓存 🤍</div>');
         } else {
            document.getElementById('musicList').innerHTML = '<div style="text-align:center; color:#b57b7b; padding:30px 0; font-weight:bold;">呜呜，代理节点全挂了，宝宝晚点再试或者本地上传吧 🫧</div>';
         }
       }
     };
-    document.getElementById('musicPrevBtn').onclick = () => window._switchTrack(-1);
-    document.getElementById('musicNextBtn').onclick = () => window._switchTrack(1);
-    document.getElementById('musicPlayPauseBtn').onclick = togglePlay;
-    
+
+    // 4. 把被重置的监听器全挂回去
+    document.getElementById('musicPrevBtn').onclick = () => { if(window._switchTrack) window._switchTrack(-1); };
+    document.getElementById('musicNextBtn').onclick = () => { if(window._switchTrack) window._switchTrack(1); };
+    const playBtn = document.getElementById('musicPlayPauseBtn');
+    if (playBtn) {
+      playBtn.onclick = () => {
+        if(typeof togglePlay === 'function') togglePlay();
+        else {
+          const a = document.getElementById('musicAudio');
+          if(!a || !a.src) return;
+          if(a.paused){ a.play(); window.musicState.playing = true; }
+          else { a.pause(); window.musicState.playing = false; }
+          if(typeof window._refreshMusicUI === 'function') window._refreshMusicUI();
+        }
+      };
+    }
+
     document.getElementById('musicAudio').addEventListener('ended', () => {
       if(window.musicState.loop === 'single') { document.getElementById('musicAudio').play(); }
-      else { window._switchTrack(1); }
+      else { if(window._switchTrack) window._switchTrack(1); }
     });
 
     document.getElementById('localMusicUpload').addEventListener('change', function(e) {
@@ -13128,8 +13214,8 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
         const audioBase64 = ev.target.result;
         window.musicState.playlist.unshift({ title: customName.trim(), author: '本地私藏', url: audioBase64, lrc: '', rawLrc: '' });
         localforage.setItem('mp_fix_playlist_v4', window.musicState.playlist);
-        window._switchMusicTab('playlist');
-        window._pickSong(0, true);
+        if(typeof window._switchMusicTab === 'function') window._switchMusicTab('playlist');
+        if(typeof window._pickSong === 'function') window._pickSong(0, true);
       };
       reader.readAsDataURL(file);
       e.target.value = '';
@@ -13140,14 +13226,25 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     audio.addEventListener('timeupdate', () => {
       if(!audio.duration) return;
       prog.value = (audio.currentTime / audio.duration) * 100;
-      document.getElementById('musicCurTime').textContent = fmtTime(audio.currentTime);
-      document.getElementById('musicTotTime').textContent = fmtTime(audio.duration);
+      
+      const mCur = document.getElementById('musicCurTime');
+      const mTot = document.getElementById('musicTotTime');
+      
+      function fmtTime(sec) {
+        if(isNaN(sec)) return "00:00";
+        const m = Math.floor(sec / 60).toString().padStart(2, '0');
+        const s = Math.floor(sec % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+      }
+      
+      if(mCur) mCur.textContent = fmtTime(audio.currentTime);
+      if(mTot) mTot.textContent = fmtTime(audio.duration);
       
       const lrcArr = window.musicState.lyrics;
       const inner = document.getElementById('musicLyricInner');
       const bannerLyric = document.getElementById('bannerLyric');
       
-      if(lrcArr && lrcArr.length > 0) {
+      if(lrcArr && lrcArr.length > 0 && inner) {
         let activeIdx = 0;
         for(let i=0; i<lrcArr.length; i++) {
           if(audio.currentTime >= lrcArr[i].time) activeIdx = i; else break;
@@ -13162,299 +13259,22 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     });
 
     prog.addEventListener('input', () => { if(audio.duration) audio.currentTime = (prog.value / 100) * audio.duration; });
-  }
-
-  function fmtTime(sec) {
-    if(isNaN(sec)) return "00:00";
-    const m = Math.floor(sec / 60).toString().padStart(2, '0');
-    const s = Math.floor(sec % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-  }
-
-  window._toggleLoopMode = function() {
-    const btn = document.getElementById('musicLoopBtn');
-    if(window.musicState.loop === 'list') { window.musicState.loop = 'single'; btn.textContent = '单曲'; btn.style.color = '#5c7094'; }
-    else { window.musicState.loop = 'list'; btn.textContent = '列表'; btn.style.color = '#7a86a8'; }
-  };
-
-  window.musicState.changingAv = '';
-  window._changeMusicAv = function(type) {
-    window.musicState.changingAv = type;
-    document.getElementById('musicAvUploadFile').click();
-  };
-  window._handleMusicAvUpload = function(e) {
-    const f = e.target.files?.[0];
-    if(!f) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const imgData = ev.target.result;
-      if(window.musicState.changingAv === 'me') {
-        document.getElementById('musicMeAv').src = imgData;
-        document.getElementById('bannerMeAv').src = imgData;
-        localforage.setItem('mp_fix_music_me_av', imgData); 
-      } else {
-        document.getElementById('musicTaAv').src = imgData;
-        document.getElementById('bannerTaAv').src = imgData;
-        localforage.setItem('mp_fix_music_ta_av', imgData);
-      }
-    };
-    reader.readAsDataURL(f);
-    e.target.value = '';
-  };
-
-  window._toggleChatBanner = function() {
-    const banner = document.getElementById('chatMusicBanner');
-    if(banner) {
-      if(banner.style.display === 'none') {
-        banner.style.display = 'flex';
-        document.getElementById('musicModal').classList.remove('active');
-      } else {
-        banner.style.display = 'none';
-      }
-    }
-  };
-
-  window._switchMusicTab = function(tab) {
-    window.musicState.currentTab = tab;
-    const tP = document.getElementById('tabPlaylist');
-    const tS = document.getElementById('tabSearch');
-    if(tab === 'playlist') {
-      tP.style.color = '#3d4a6a'; tP.style.borderBottom = '2px solid #5c7094';
-      tS.style.color = '#a0aaba'; tS.style.borderBottom = 'none';
-      renderPlaylist();
-    } else {
-      tS.style.color = '#3d4a6a'; tS.style.borderBottom = '2px solid #5c7094';
-      tP.style.color = '#a0aaba'; tP.style.borderBottom = 'none';
-      renderSearchList();
-    }
-  };
-
-  function renderSearchList(){
-    const box = document.getElementById('musicList');
-    if(!window.musicState.searchResult?.length) { box.innerHTML = '<div style="text-align:center; color:#a0aaba; font-size:12px; padding:20px 0;">空空如也，换个词搜搜看~</div>'; return; }
-    box.innerHTML = window.musicState.searchResult.map((s,i)=>`
-      <div style="padding:12px; background:rgba(255,255,255,0.6); border:1px solid #eef4fa; border-radius:12px; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <div style="flex:1; min-width:0;">
-          <div style="font-size:14px; font-weight:bold; color:#3d4a6a; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.title}</div>
-          <div style="font-size:11px; color:#7a86a8;">${s.author}</div>
-        </div>
-        <button class="btn" onclick="window._addToPlaylist(${i})" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:4px 12px; font-weight:bold;">添加</button>
-      </div>`).join('');
-  }
-
-  function renderPlaylist(){
-    const box = document.getElementById('musicList');
-    const list = window.musicState.playlist || [];
-    if(!list.length) { box.innerHTML = '<div style="text-align:center; color:#a0aaba; font-size:12px; padding:20px 0;">歌单空空如也，快去搜索添加吧~</div>'; return; }
-    box.innerHTML = list.map((s,i)=>`
-      <div style="padding:12px; background:${window.musicState.idx === i ? '#eef4fa' : 'rgba(255,255,255,0.6)'}; border:1px solid ${window.musicState.idx === i ? '#a5cfff' : '#eef4fa'}; border-radius:12px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:background 0.2s; margin-bottom:8px;" onclick="window._pickSong(${i}, true)">
-        <div style="flex:1; min-width:0;">
-          <div style="font-size:14px; font-weight:bold; color:#3d4a6a; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.title}</div>
-          <div style="font-size:11px; color:#7a86a8;">${s.author}</div>
-        </div>
-        <div style="display:flex; align-items:center; gap:12px;">
-          <!-- 🌟 歌词注入入口 -->
-          <div onclick="event.stopPropagation(); window._openLyricModal(${i})" style="color:#a5cfff; cursor:pointer; display:flex; align-items:center;" title="注入歌词">
-            <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+    
+    if(!document.getElementById('lyricEditModal')) {
+      const lyricModalHtml = `
+      <div id="lyricEditModal" class="modal" style="z-index:10005; display:none; place-items:center;">
+        <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:16px; padding:20px; max-width:320px; width:90%;">
+          <b style="color:#5c7094; font-size:15px; margin-bottom:12px; display:block;">注入灵魂歌词 (LRC格式)</b>
+          <textarea id="lyricInputArea" class="ta" style="min-height:150px; background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:10px; font-size:12px; padding:10px; color:#5c7094; white-space:pre; overflow-x:auto; margin-bottom:16px;" placeholder="[00:00.00] 粘贴包含时间轴的LRC歌词..."></textarea>
+          <div style="display:flex; justify-content:flex-end; gap:10px;">
+            <button class="btn" onclick="document.getElementById('lyricEditModal').style.display='none'" style="background:#f4f6fb; color:#7a86a8; border:1px solid #dce5f0; border-radius:8px; padding:6px 16px; font-weight:bold;">取消</button>
+            <button class="btn p" onclick="if(window._saveLocalLyric) window._saveLocalLyric()" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; padding:6px 16px; font-weight:bold;">保存</button>
           </div>
-          <div onclick="event.stopPropagation(); window.musicState.playlist.splice(${i}, 1); localforage.setItem('mp_fix_playlist_v4', window.musicState.playlist); window._switchMusicTab('playlist');" style="color:#b57b7b; cursor:pointer; font-size:22px; line-height:1;">×</div>
         </div>
-      </div>`).join('');
+      </div>`;
+      document.body.insertAdjacentHTML('beforeend', lyricModalHtml);
+    }
   }
-
-  // 🌟 歌词注入魔法函数
-  window._openLyricModal = function(i) {
-    window.musicState.editLyricIdx = i;
-    const s = window.musicState.playlist[i];
-    document.getElementById('lyricInputArea').value = s.rawLrc || '';
-    document.getElementById('lyricEditModal').style.display = 'flex';
-  };
-
-  window._saveLocalLyric = function() {
-    const idx = window.musicState.editLyricIdx;
-    const txt = document.getElementById('lyricInputArea').value.trim();
-    if(idx > -1 && window.musicState.playlist[idx]) {
-      window.musicState.playlist[idx].rawLrc = txt;
-      localforage.setItem('mp_fix_playlist_v4', window.musicState.playlist);
-      document.getElementById('lyricEditModal').style.display = 'none';
-      
-      // 如果刚好在播这首歌，瞬间刷新歌词！
-      if(window.musicState.idx === idx) {
-         window._pickSong(idx, false); 
-      }
-      alert('✨ 灵魂歌词注入成功！');
-    }
-  };
-
-  window._addToPlaylist = function(i) {
-    const s = window.musicState.searchResult[i];
-    if(!s) return;
-    window.musicState.playlist.unshift(s);
-    localforage.setItem('mp_fix_playlist_v4', window.musicState.playlist);
-    window._switchMusicTab('playlist');
-    window._pickSong(0, true);
-  };
-
-  window._pickSong = async function(i, triggerChat = false){
-    const s = window.musicState.playlist[i]; if(!s) return;
-    window.musicState.idx = i; 
-    window.musicState.title = s.title; 
-    window.musicState.artist = s.author;
-    window.musicState.lyrics = []; 
-    document.getElementById('musicNow').innerHTML = `<span style="color:#2f66d8;">解析音源中...</span>`;
-    document.getElementById('musicLyricInner').innerHTML = '<div style="height:18px;">🎵 正在加载...</div>';
-    document.getElementById('musicLyricInner').style.transform = 'translateY(0)';
-    if(window.musicState.currentTab === 'playlist') renderPlaylist();
-    
-    if(window.currentId) {
-      const c = window.getContactById(window.currentId);
-      const globalMe = window.getMe ? window.getMe() : {};
-      const st = c?.settings ? window.normSettings(c.settings) : {};
-      const curMeAv = document.getElementById('musicMeAv').src;
-      const curTaAv = document.getElementById('musicTaAv').src;
-      if(curMeAv.includes('via.placeholder')) {
-        document.getElementById('musicMeAv').src = st.meAvatar || globalMe.avatar || 'https://via.placeholder.com/48';
-        document.getElementById('bannerMeAv').src = st.meAvatar || globalMe.avatar || 'https://via.placeholder.com/48';
-      }
-      if(curTaAv.includes('via.placeholder')) {
-        document.getElementById('musicTaAv').src = c?.avatar || 'https://via.placeholder.com/48';
-        document.getElementById('bannerTaAv').src = c?.avatar || 'https://via.placeholder.com/48';
-      }
-    }
-
-    const parseLrc = (txt) => {
-      const lines = txt.split('\n');
-      const lrcArr = [];
-      lines.forEach(l => {
-        const match = l.match(/\[(\d{2,}):(\d{2})\.(\d{2,3})\](.*)/);
-        if(match) {
-          const msStr = match[3].length === 2 ? match[3] + '0' : match[3];
-          const ms = parseFloat('0.' + msStr);
-          const text = match[4].trim();
-          if(text) lrcArr.push({ time: parseInt(match[1])*60 + parseInt(match[2]) + ms, text: text });
-        }
-      });
-      window.musicState.lyrics = lrcArr;
-      document.getElementById('musicLyricInner').innerHTML = lrcArr.length ? lrcArr.map(l => `<div style="height:18px; transition:all 0.3s;">${l.text}</div>`).join('') : '<div style="height:18px;">🤍 纯音乐，请欣赏...</div>';
-    };
-
-    if(s.rawLrc) {
-      parseLrc(s.rawLrc);
-    } else if(s.lrc) {
-      fetch(s.lrc.replace(/^http:\/\//i, 'https://')).then(r=>r.text()).then(txt=>parseLrc(txt)).catch(e=>{});
-    }
-
-    try {
-      const audio = document.getElementById('musicAudio');
-      // ✨ 蓝色终极护盾：强制将 http 转换为 https，击碎混合内容拦截！
-      const safeUrl = s.url.replace(/^http:\/\//i, 'https://');
-      audio.src = safeUrl; 
-      await audio.play();
-      window.musicState.playing = true;
-      window._refreshMusicUI();
-
-      if(triggerChat && window.currentId) {
-        const msgText = `[music:${s.title} - ${s.author}]`;
-        const arr = window.getChatArr(window.currentId);
-        arr.push({ id: 'm_'+Date.now(), role: 'user', text: msgText, time: Date.now(), stored: true });
-        window.setChatArr(window.currentId, arr);
-        if(typeof window.renderChat === 'function') window.renderChat();
-      }
-    } catch(e) { 
-      console.log('播放被拦截:', e);
-      document.getElementById('musicNow').innerHTML = `<span style="color:#b57b7b;">⚠️ 浏览器傲娇了，请点一下播放键哦 🤍</span>`; 
-    }
-  };
-
-  window._refreshMusicUI = function(){
-    const titleText = window.musicState.title ? `♪ ${window.musicState.title}` : '未播放';
-    const n = document.getElementById('musicNow');
-    const bn = document.getElementById('bannerTitle');
-    if(n) n.innerHTML = window.musicState.title ? `<span style="color:#5c7094; font-weight:bold;">${titleText}</span> <span style="color:#a0aaba;">- ${window.musicState.artist}</span>` : '未播放';
-    if(bn) bn.textContent = titleText;
-    
-    const topBtn = document.getElementById('musicBtn');
-    const bMe = document.getElementById('bannerMeAv');
-    const bTa = document.getElementById('bannerTaAv');
-    if(topBtn) {
-      if(window.musicState.playing) { 
-        topBtn.classList.add('music-playing-icon'); 
-        if(bMe) bMe.classList.add('av-breathe');
-        if(bTa) bTa.classList.add('av-breathe');
-      } else { 
-        topBtn.classList.remove('music-playing-icon'); 
-        if(bMe) bMe.classList.remove('av-breathe');
-        if(bTa) bTa.classList.remove('av-breathe');
-      }
-    }
-
-    const svg = document.getElementById('playIconSvg');
-    if(svg) {
-      if(window.musicState.playing) {
-        svg.innerHTML = `<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>`;
-        svg.style.marginLeft = '0';
-      } else {
-        svg.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"></polygon>`;
-        svg.style.marginLeft = '2px';
-      }
-    }
-  };
-
-  function togglePlay(){
-    const a = document.getElementById('musicAudio');
-    if(!a.src) return;
-    if(a.paused){ a.play(); window.musicState.playing = true; }
-    else { a.pause(); window.musicState.playing = false; }
-    window._refreshMusicUI();
-  }
-
-  window._switchTrack = function(step){
-    const list = window.musicState.playlist; if(!list.length) return;
-    let i = window.musicState.idx + step;
-    if(i<0) i=list.length-1; if(i>=list.length) i=0;
-    window._pickSong(i, true);
-  };
-
-  window._musicContextForAI = function() {
-    if(window.musicState && window.musicState.playing && window.musicState.title) {
-      let prompt = '【一起听歌中】你和玩家正在使用“全息音乐舱”同步听歌，你们的头像被一条跳动的心电图连线连在一起。当前播放：《' + window.musicState.title + ' - ' + window.musicState.artist + '》。';
-      
-      const audio = document.getElementById('musicAudio');
-      const lrcArr = window.musicState.lyrics;
-      if(audio && lrcArr && lrcArr.length > 0) {
-        let curLine = '';
-        for(let i=0; i<lrcArr.length; i++) { if(audio.currentTime >= lrcArr[i].time) curLine = lrcArr[i].text; else break; }
-        if(curLine) prompt += '\\n【实时歌词雷达】：正好唱到这句歌词——“' + curLine + '”。';
-      }
-      
-      prompt += '\\n【男主行动要求】：注意！你【绝对不需要】每次回复都提及这首歌或歌词！请完全根据你的人设提起听歌那个话题才会提起，平时请把它当成普通的背景音乐，专注和玩家正常聊天，拒绝尴尬的生硬引用！';
-      return prompt;
-    }
-    return '当前未播放音乐。';
-};
-
-  // 🌟 启动注入并读取【永固内存】
-  setTimeout(() => { 
-    injectMusicBtn(); 
-    ensureMusicModal(); 
-    localforage.getItem('mp_fix_playlist_v4').then(res => {
-      if(res && Array.isArray(res)) window.musicState.playlist = res;
-    });
-    // 恢复头像
-    localforage.getItem('mp_fix_music_me_av').then(res => {
-      if(res) {
-        const m = document.getElementById('musicMeAv'); if(m) m.src = res;
-        const b = document.getElementById('bannerMeAv'); if(b) b.src = res;
-      }
-    });
-    localforage.getItem('mp_fix_music_ta_av').then(res => {
-      if(res) {
-        const m = document.getElementById('musicTaAv'); if(m) m.src = res;
-        const b = document.getElementById('bannerTaAv'); if(b) b.src = res;
-      }
-    });
-  }, 800);
-})();
 // 🌟 蓝色高定：音频上传与外挂内存转换引擎
   window._tempRoleAudio = { msgSound: '', voiceRing: '', videoRing: '' };
   window._activeCallAudio = null; // 隐形的电话铃声播放器
