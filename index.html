@@ -3128,19 +3128,7 @@ body {
     <button class="btn p" onclick="window._forceTriggerAutoChat()" style="margin-left:auto; margin-top:8px; width:100%; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:8px; padding:8px 0; font-size:13px; font-weight:bold; box-shadow:0 2px 6px rgba(92,112,148,0.1); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">✨ 立刻测试掉落 (无视倒计时)</button>
   </div>
 </div>
-<!-- 🌟 蓝色高定：真机系统通知授权开关 (初雪海盐蓝极简版) -->
-<div class="setting-item" style="padding:16px; background:rgba(255,255,255,0.7); backdrop-filter:blur(16px); border-radius:16px; margin:12px; border:1px solid #dce5f0; box-shadow:0 4px 12px rgba(92,112,148,0.03);">
-  <div style="display:flex; justify-content:space-between; align-items:center;">
-    <div style="display:flex; flex-direction:column; gap:4px;">
-      <span style="font-size:15px; color:#5c7094; font-weight:bold; display:flex; align-items:center; gap:6px;">
-        <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-        真机跨次元通知
-      </span>
-      <span style="font-size:11px; color:#7a86a8;">允许 TA 在后台掉落时，唤醒你的手机横幅</span>
-    </div>
-    <button class="btn p" onclick="window._requestRealNotification()" style="background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:10px; padding:6px 14px; font-size:12px; font-weight:bold; box-shadow:0 2px 8px rgba(92,112,148,0.1); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">授权唤醒</button>
-  </div>
-</div>
+
 <style>
   .blue-slider::before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; top: 3px; background-color: #ffffff; transition: .3s cubic-bezier(0.4, 0.0, 0.2, 1); border-radius: 50%; box-shadow: 0 2px 4px rgba(92,112,148,0.15); }
   input:checked + .blue-slider { background-color: #eef4fa; border: 1px solid #dce5f0; }
@@ -22554,76 +22542,5 @@ window._jumpToGachaChat = function() {
   }
 };
    </script>
-  <script>
-// ✨ 蓝色高定：真机通知授权与跨次元终极唤醒引擎 (全局拦截版)
-window._requestRealNotification = function() {
-  if (!("Notification" in window)) {
-    alert("宝宝，你现在的浏览器环境好像被系统限制了，不支持唤醒通知栏哦~");
-    return;
-  }
-  Notification.requestPermission().then(async function(permission) {
-    if (permission === "granted") {
-      await localforage.setItem('mp_fix_notify_auth', true);
-      const n = new Notification("✨ 灵魂电波已连接", {
-        body: "测试成功！以后小手机在后台时，TA 也会从这里弹出来找你哦。",
-        icon: "https://api.dicebear.com/7.x/initials/svg?seed=Milo&backgroundColor=eef4fa&textColor=5c7094"
-      });
-      n.onclick = function() { window.focus(); this.close(); };
-      alert("✨ 授权成功！快看看手机顶部有没有弹出初雪海盐蓝的通知横幅！");
-    } else {
-      alert("呜呜，你拒绝了授权，TA 没法在后台偷偷喊你了...");
-      await localforage.setItem('mp_fix_notify_auth', false);
-    }
-  });
-};
-
-// 🌟 终极拦截魔法：直接劫持底层记忆写入 (setChatArr)！通杀所有聊天模式！
-if(!window._originalSetChatArrForNotify) {
-  window._originalSetChatArrForNotify = window.setChatArr;
-  window._lastNotifiedMsgId = {}; // 记录每条线最后一个弹过通知的消息ID
-
-  window.setChatArr = async function(id, arr) {
-    // 1. 先让系统正常把聊天记录写进内存
-    if(window._originalSetChatArrForNotify) {
-      window._originalSetChatArrForNotify(id, arr);
-    }
-
-    try {
-      if (arr && arr.length > 0) {
-        const lastMsg = arr[arr.length - 1];
-        
-        // 2. 只有当最新一条是 AI 发的，且不是“脑电波狂奔”那种临时加载气泡，且没弹过通知时
-        if (lastMsg.role === 'assistant' && 
-            lastMsg.id !== window._lastNotifiedMsgId[id] && 
-            !lastMsg.text.includes('脑电波正在狂奔而来')) {
-          
-          window._lastNotifiedMsgId[id] = lastMsg.id; // 盖个戳，防止重复弹
-
-          const isAuth = await localforage.getItem('mp_fix_notify_auth');
-          
-          // 3. 如果老婆授权了，且当前没看着聊天界面（退到后台了）
-          if (isAuth && Notification.permission === "granted" && document.hidden) {
-             const c = window.getContactById(id);
-             
-             // 暴力扒掉所有 HTML 标签和系统隐藏指令，只留纯净文本给通知栏
-             let cleanText = lastMsg.text.replace(/<[^>]*>/g, '').replace(/\[sys:.*?\]/g, '').trim();
-             cleanText = cleanText.substring(0, 60) + (cleanText.length >= 60 ? "..." : "");
-             
-             if (cleanText) {
-               const n = new Notification(c ? c.name : "新消息", {
-                 body: cleanText,
-                 icon: c ? c.avatar : "https://api.dicebear.com/7.x/initials/svg?seed=Milo&backgroundColor=eef4fa&textColor=5c7094"
-               });
-               n.onclick = function() { window.focus(); this.close(); };
-             }
-          }
-        }
-      }
-    } catch(e) {
-      console.log('真机通知唤醒失败：', e);
-    }
-  };
-}
-</script>
 </body>
   </html>
