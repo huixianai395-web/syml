@@ -22542,56 +22542,19 @@ window._jumpToGachaChat = function() {
   }
 };
    </script>
-  <!-- 🌟 蓝色终极救命补丁 V3：绝对底层劫持，完美置顶与长按菜单 -->
+  <!-- 🌟 蓝色终极救命补丁 V4：独立记忆字典，彻底绕过闭包隔离！ -->
 <script>
 setTimeout(() => {
-  // 1. 终极木马：直接劫持系统的原生删除指令！
-  window._originalDelete = window.deleteContactFromList;
-  
-  window.deleteContactFromList = function(id, e) {
-    if(e) { e.preventDefault(); e.stopPropagation(); }
-    // 防手抖连点锁
-    if(window._menuLock) return false;
-    window._menuLock = true; setTimeout(()=>window._menuLock=false, 300);
-
-    const isGroup = window.getGroups ? window.getGroups().some(g=>g.id===id) : false;
-    const contacts = window.getContacts ? window.getContacts() : [];
-    const c = contacts.find(x=>x.id===id) || (isGroup ? window.getGroups().find(x=>x.id===id) : null);
-    const isPinned = c ? !!c.pinned : false;
-
-    // 死死捂住系统原生弹窗的嘴，强行呼出咱们的绝美菜单！
-    window._openChatListMenu(id, isGroup, isPinned, e);
-    return false; 
-  };
-
-  // 2. 真正的删除动作（交给菜单里的红色删除键）
-  window._executeDeleteChat = function() {
-    const id = window._currentActionChatId;
-    if(!id) return;
-    document.getElementById('chatListMenuModal').classList.remove('active');
-    
-    // 恢复原生删除流程
-    window._isDeleting=true; setTimeout(()=>window._isDeleting=false,500);
-    if(!confirm('确定要彻底抹除这个聊天及所有记录吗？')) return;
-    
-    const groups = window.getGroups ? window.getGroups() : [];
-    if(groups.some(g => g.id === id)) {
-      window.setGroups(groups.filter(g => g.id !== id));
-    } else {
-      window.setContacts(window.getContacts().filter(c=>c.id!==id));
-    }
-    const map = window.getChats(); delete map[id]; window.setChats(map);
-    if(window.currentId===id) window.currentId=null; 
-    if(typeof window.renderContacts === 'function') window.renderContacts(document.getElementById('searchInput')?.value||'');
-  };
-
-  // 3. 绝美毛玻璃菜单的呼出引擎
+  // 1. 呼出绝美毛玻璃菜单
   window._currentActionChatId = null;
-  window._currentActionIsGroup = false;
   
-  window._openChatListMenu = function(id, isGroup, isPinned, e) {
+  window._openChatListMenu = function(id, isGroup, e) {
+    if(e) { e.preventDefault(); e.stopPropagation(); }
     window._currentActionChatId = id;
-    window._currentActionIsGroup = isGroup;
+    
+    // 从独立字典读取置顶状态，绝对不依赖系统底层！
+    const pinnedMap = JSON.parse(localStorage.getItem('mp_pinned_chats') || '{}');
+    const isPinned = !!pinnedMap[id];
     
     let modal = document.getElementById('chatListMenuModal');
     if(!modal) {
@@ -22607,30 +22570,41 @@ setTimeout(() => {
       document.body.insertAdjacentHTML('beforeend', html);
       modal = document.getElementById('chatListMenuModal');
     }
+    
     document.getElementById('clmPinBtn').textContent = isPinned ? '取消置顶' : '置顶聊天';
     modal.classList.add('active');
   };
 
-  // 4. 置顶逻辑写入外挂内存
-  window._executePinToggle = async function() {
+  // 2. 独立字典写入逻辑（绝对不会报错！）
+  window._executePinToggle = function() {
     const id = window._currentActionChatId;
-    const isGroup = window._currentActionIsGroup;
     if(!id) return;
     
-    if(isGroup) {
-      const groups = window.getGroups ? window.getGroups() : [];
-      const idx = groups.findIndex(g => g.id === id);
-      if(idx > -1) { groups[idx].pinned = !groups[idx].pinned; window.setGroups(groups); }
+    const pinnedMap = JSON.parse(localStorage.getItem('mp_pinned_chats') || '{}');
+    if(pinnedMap[id]) {
+      delete pinnedMap[id]; // 已置顶则取消
     } else {
-      const contacts = window.getContacts ? window.getContacts() : [];
-      const idx = contacts.findIndex(c => c.id === id);
-      if(idx > -1) { contacts[idx].pinned = !contacts[idx].pinned; window.setContacts(contacts); }
+      pinnedMap[id] = true; // 未置顶则打上标记
     }
+    localStorage.setItem('mp_pinned_chats', JSON.stringify(pinnedMap));
+    
     document.getElementById('chatListMenuModal').classList.remove('active');
+    // 瞬间重绘列表，让图钉生效
     if(typeof window.renderContacts === 'function') window.renderContacts(document.getElementById('searchInput')?.value || '');
   };
 
-  // 5. 暴力重写渲染，确保图钉显示和排序绝对生效！
+  // 3. 呼叫原生删除逻辑 (完美继承)
+  window._executeDeleteChat = function() {
+    const id = window._currentActionChatId;
+    if(!id) return;
+    document.getElementById('chatListMenuModal').classList.remove('active');
+    // 延迟 50ms 等弹窗收起，再呼出系统的删除确认框
+    setTimeout(() => {
+      if(typeof window.deleteContactFromList === 'function') window.deleteContactFromList(id);
+    }, 50);
+  };
+
+  // 4. 重写列表渲染，带上外挂字典排序
   window.renderContacts = function(k='') {
     k = (k||'').trim();
     const contacts = window.getContacts ? window.getContacts() : [];
@@ -22639,7 +22613,11 @@ setTimeout(() => {
     
     let arr = all.filter(c => !k || c.name.includes(k) || (c.preview||'').includes(k));
     
-    // 核心排序：置顶无条件排在最前面
+    // 🌟 核心魔法：读取外挂字典，给角色强行贴上置顶标签
+    const pinnedMap = JSON.parse(localStorage.getItem('mp_pinned_chats') || '{}');
+    arr.forEach(c => { c.pinned = !!pinnedMap[c.id]; });
+    
+    // 排序：置顶无条件在前
     arr.sort((a, b) => {
       if(a.pinned && !b.pinned) return -1;
       if(!a.pinned && b.pinned) return 1;
@@ -22652,13 +22630,16 @@ setTimeout(() => {
     listEl.innerHTML = arr.map(c => {
       const unreadHtml = c.unread ? `<div style="position:absolute; top:-4px; right:-6px; background:#f25c5c; color:#fff; font-size:10px; font-weight:800; height:18px; min-width:18px; border-radius:9px; padding:0 5px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 8px rgba(242,92,92,0.25); border:2px solid #fff; z-index:10; font-family:ui-monospace, Arial, sans-serif; transform:scale(0.9); transform-origin:top right; pointer-events:none;">${c.unread > 99 ? '99+' : c.unread}</div>` : '';
 
-      const pinSvg = c.pinned ? `<div style="margin-left:4px; display:flex; align-items:center;"><svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:#5c7094; fill:#eef4fa; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M12 17v5"></path><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1v3.76z"></path></svg></div>` : '';
+      const pinColor = c.pinned ? '#5c7094' : '#dce5f0';
+      const pinFill = c.pinned ? '#eef4fa' : 'none';
+      const pinSvg = c.pinned ? `<div style="margin-left:4px; display:flex; align-items:center;"><svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:${pinColor}; fill:${pinFill}; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M12 17v5"></path><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1v3.76z"></path></svg></div>` : '';
 
-      // 注意：这里依然绑定 deleteContactFromList，但它已经被木马劫持了！
+      const isGroupFlag = !!c.isGroup;
+
       return `
       <div class="item" style="-webkit-touch-callout:none; user-select:none; position:relative; background:${c.pinned ? 'rgba(238,244,250,0.4)' : '#fff'}; border:${c.pinned ? '1px solid #dce5f0' : 'none'};"
-           oncontextmenu="return deleteContactFromList('${c.id}', event)"
-           ontouchstart="this._t = setTimeout(()=>deleteContactFromList('${c.id}'), 600)"
+           oncontextmenu="window._openChatListMenu('${c.id}', ${isGroupFlag}, event); return false;"
+           ontouchstart="this._t = setTimeout(()=>{ window._openChatListMenu('${c.id}', ${isGroupFlag}); }, 500)"
            ontouchend="clearTimeout(this._t)" ontouchmove="clearTimeout(this._t)">
         <div style="position:relative; width:44px; height:44px; flex-shrink:0;">
           <img class="avatar" src="${c.avatar||'https://via.placeholder.com/88x88?text=头像'}" style="width:100%; height:100%; object-fit:cover; border-radius:12px;" />
@@ -22680,11 +22661,9 @@ setTimeout(() => {
       </div>`;
     }).join('') || '<div class="card small">暂无联系人或群聊，点右上角创建吧</div>';
   };
-
-  // 强行唤醒刷新
+  
   if(document.getElementById('contactList')) window.renderContacts(document.getElementById('searchInput')?.value || '');
-  console.log("✨ 蓝色 V3 终极劫持补丁已生效！");
-}, 1500); // 延迟加长到1.5秒，确保所有旧代码都跑完！
+}, 800);
 </script>
 </body>
   </html>
