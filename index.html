@@ -19878,243 +19878,228 @@ window._playAccSound = async function(type) {
 
 <script>
 (function(){
-  const K_SOUL_ARCHIVE = 'mp_fix_soul_archive_v1';
+  const K_GACHA_POOL = 'mp_fix_gacha_pool_v2';
+  // 🌟 核心修复：把丢失的安全剪刀带回盲盒舱！
   const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 
-  // 经典的 36 个灵魂拷问
-  const SOUL_QS = [
-    "如果可以在世界上所有人中任意选择，你想邀请谁共进晚餐？",
-    "你想出名吗？以什么样的方式出名？",
-    "在打电话之前，你会预演你要说的话吗？为什么？",
-    "对你来说，怎样才算是一个“完美”的一天？",
-    "你最后一次对自己唱歌是什么时候？最后一次对别人唱呢？",
-    "如果你能活到90岁，并能在生命最后的60年里保留30岁时的心智或身体，你选择哪一个？",
-    "你心里对自己的死法有某种隐秘的预感吗？",
-    "说出三个你和我的共同点。",
-    "你人生中最感激的是什么？",
-    "如果你能改变你成长过程中的任何一件事，你会改变什么？",
-    "用四分钟尽可能详细地向我讲述你的人生故事。",
-    "如果你明天醒来能获得一种新的品质或能力，你希望是什么？",
-    "如果有一颗水晶球能告诉你关于你自己、你的人生、你的未来或其他任何事情的真相，你想知道什么？",
-    "有什么事是你一直梦想去做的吗？为什么还没做？",
-    "你人生中最大的成就是什么？",
-    "在一段友谊中，你最看重什么？",
-    "你最珍贵的记忆是什么？",
-    "你最糟糕的记忆是什么？",
-    "如果你知道自己在一年内就会突然死去，你会改变现在的生活方式吗？为什么？",
-    "对你来说，友谊意味着什么？",
-    "在你的生活中，爱和感情扮演着怎样的角色？",
-    "轮流说出你认为我具备的一个优点。共说五项。",
-    "你的家庭有多亲密和温暖？你觉得你的童年比大多数人更幸福吗？",
-    "你觉得你和母亲的关系怎样？",
-    "用“我们”造三个真实的句子。比如，“我们都在这个房间里，感觉……”",
-    "完成这个句子：“我希望有一个人能与之分享……”",
-    "如果我要成为你的密友，有什么是你认为我必须知道的？",
-    "告诉我你喜欢我什么；这次要非常诚实，说一些你平时不会对刚认识的人说的话。",
-    "和我分享你人生中尴尬的一个瞬间。",
-    "你最后一次在别人面前哭是什么时候？最后一次自己一个人哭呢？",
-    "告诉我你已经开始喜欢我的哪一点？",
-    "有什么事情（如果有的话）是严重到不能开玩笑的？",
-    "如果你今晚就会死掉，且没有机会与任何人交流，你最遗憾没有告诉别人什么事？为什么到现在还没告诉他们？",
-    "你的房子着火了，里面有你所有的财产。救出你的亲人和宠物后，你还有时间安全地冲进去最后救出一样东西。你会拿什么？为什么？",
-    "你家族所有人中，谁的死会让你最难过？为什么？",
-    "分享一个你的私人问题，并问我如果遇到这种情况会怎么处理。同时，让我反思并告诉你，我猜你对这个问题的感受是什么。"
+  const DEFAULT_POOL = [
+    "你突然从背后紧紧抱住TA，把脸埋进TA的颈窝里，一声不吭。",
+    "你走路时故意越靠越近，直到你们的手背不经意间擦过。",
+    "你在沙发上睡着了，头无意识地滑落到了TA的肩膀上。",
+    "你突然伸手捏了捏TA的脸颊，然后立刻转过头装作无事发生。",
+    "你抱怨手很冷，然后理直气壮地把手塞进了TA的外套口袋里。",
+    "你突然盯着TA的嘴唇看了整整十秒钟，然后咽了一下口水。",
+    "你帮TA整理衣领时，手指故意在TA的喉结处多停留了两秒。",
+    "你看电影遇到恐怖画面，下意识地抓住了TA的手臂，躲在TA身后。",
+    "你走路没看路差点摔倒，下意识地死死抱住了TA的腰。",
+    "你故意在TA面前提起一个帅气的新同事，并夸了他两句。",
+    "你盯着手机屏幕看消息，突然忍不住笑出了声，但就是不告诉TA在笑什么。",
+    "你假装不经意地问：'如果有一天我突然消失了，你会找我吗？'",
+    "你当着TA的面，接起了一个电话，语气变得异常温柔：'喂？嗯，今晚有空呀。'",
+    "你突然盯着TA的眼睛问：'你以前谈恋爱的时候，也是这么对她的吗？'",
+    "你喷了一种味道有些撩人的香水，在TA面前晃来晃去，却故意不问好不好闻。",
+    "你朋友给你发了一张相亲对象的照片，你故意把屏幕往TA那边偏了偏。",
+    "你叹了口气说：'哎，最近好无聊，想谈一场轰轰烈烈的恋爱了。'",
+    "你肚子突然发出了极其响亮的‘咕噜’声，在安静的房间里回荡。",
+    "你本来想发给闺蜜的吐槽表情包，手滑发到了TA的微信上，还撤回失败了。",
+    "你一边走路一边低头玩手机，直接撞到了玻璃门上，发出一声闷响。",
+    "你信誓旦旦地说要给TA做顿大餐，结果半小时后厨房传来了焦糊味。",
+    "你试图在TA面前展现一个帅气的动作，结果脚下一滑，直接跪在了TA面前。",
+    "你睡觉时不仅打呼噜，还一脚把TA踹下了床（TA刚好来叫你起床）。",
+    "你想偷偷放个屁，结果声音出奇的大，场面陷入了死一般的寂静。",
+    "你因为工作受了委屈，红着眼眶看着TA，声音带着哭腔：'我今天好累。'",
+    "你半夜突然惊醒，满头大汗地拉住TA的手：'我做了一个很可怕的梦...'",
+    "你喝醉了，眼神迷离地看着TA，突然傻笑着说：'其实你这人挺好的。'",
+    "你在外面淋了雨，浑身湿透地站在门口，像一只无家可归的小猫。",
+    "你看着一部很普通的电影，突然毫无征兆地开始吧嗒吧嗒掉眼泪。",
+    "你喝醉了酒，死死抱着TA的胳膊不撒手，嘴里嘟囔着：'不许走...'",
+    "你突然把一个剥好的橘子塞进了TA的嘴里，不管TA愿不愿意吃。",
+    "你不知道从哪找来一个奇丑无比的发箍，非要戴在TA的头上。",
+    "你突然指着天花板大喊一声：'看！有飞碟！'然后趁TA抬头时偷吃TA的零食。",
+    "你一本正经拿出一个硬币：'正面你请客，反面我请客。'结果硬币掉进下水道。",
+    "你半夜不睡觉，发消息问TA：'企鹅如果膝盖痒了该怎么挠？'",
+    "你突然跳到TA的背上，大喊一声：'驾！向着夕阳奔跑吧！'",
+    "你突然捧住TA的脸，极其认真地端详了半分钟，然后叹了口气：'也就那样吧。'",
+    "你帮TA擦掉嘴角的酱汁，指尖若有似无地划过TA的唇瓣。",
+    "你故意在TA耳边用极低的气声说话，热气全打在TA的耳廓上。",
+    "你们在拥挤的电梯里，你被人群挤得紧紧贴在TA的怀里，无处可逃。",
+    "你洗完头半湿着走出来，水滴顺着锁骨滑落，你毫无防备地让TA拿毛巾。",
+    "你突然咬了一口TA手里的冰淇淋，并且故意咬在TA刚才吃过的地方。",
+    "你在桌子底下，用脚尖轻轻蹭了蹭TA的小腿。",
+    "你半开玩笑半认真地说：'要不我们凑合过得了？'",
+    "你大半夜突然发疯，给TA发了一连串的土味情话。",
+    "你当着TA的面，极其敷衍地夸了TA一句：'哇，你今天真像个人。'",
+    "你突然用一种极其做作的咏叹调对TA朗诵了一首诗。"
   ];
 
-  window._currentSoulQIdx = 0;
+  window._currentGachaScenario = '';
 
-  window._initSoulApp = function() {
+  window._initGachaApp = async function() {
     const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
-    const sel = document.getElementById('soulRoleSelect');
-    if(sel) sel.innerHTML = contacts.map(c => `<option value="${c.id}">${safeEsc(c.name)}</option>`).join('');
+    const sel = document.getElementById('gachaRoleSelect');
+    if(sel) {
+      sel.innerHTML = contacts.map(c => `<option value="${c.id}">${safeEsc(c.name)}</option>`).join('');
+    }
     
-    const box = document.getElementById('soulQuestionList');
-    if(box) {
-      box.innerHTML = SOUL_QS.map((q, idx) => {
-        let stage = '';
-        if(idx === 0) stage = '<div style="font-size:11px; color:#a0aaba; letter-spacing:2px; text-align:center; margin:16px 0 8px;">— 第一阶段：破冰与浅层暴露 —</div>';
-        if(idx === 12) stage = '<div style="font-size:11px; color:#a0aaba; letter-spacing:2px; text-align:center; margin:24px 0 8px;">— 第二阶段：深潜与自我剖析 —</div>';
-        if(idx === 24) stage = '<div style="font-size:11px; color:#a5cfff; letter-spacing:2px; text-align:center; margin:24px 0 8px; font-weight:bold;">— 第三阶段：致命的灵魂共振 —</div>';
+    const pool = await localforage.getItem(K_GACHA_POOL);
+    if(!pool || pool.length === 0) {
+      await localforage.setItem(K_GACHA_POOL, DEFAULT_POOL);
+    }
 
-        return `
-          ${stage}
-          <div onclick="window._openSoulQuestion(${idx})" style="background:rgba(255,255,255,0.7); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:16px; padding:16px; box-shadow:0 4px 12px rgba(92,112,148,0.03); cursor:pointer; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
-            <div style="font-size:11px; color:#a5cfff; font-weight:900; margin-bottom:8px; font-family:ui-monospace, monospace;">QUESTION ${String(idx + 1).padStart(2, '0')}</div>
-            <div style="font-size:14px; font-weight:bold; color:#3d4a6a; line-height:1.5;">${safeEsc(q)}</div>
-          </div>
-        `;
-      }).join('');
+    document.getElementById('gachaResultArea').style.display = 'none';
+    document.getElementById('gachaBoxEntity').style.display = 'flex';
+    window._currentGachaScenario = '';
+  };
+
+  window._addGachaIdea = async function() {
+    const idea = prompt('宝宝，把你脑子里那些奇奇怪怪的、想看他吃醋发疯的脑洞写下来吧：');
+    if(idea && idea.trim()) {
+      let pool = await localforage.getItem(K_GACHA_POOL) || DEFAULT_POOL;
+      pool.unshift(idea.trim());
+      await localforage.setItem(K_GACHA_POOL, pool);
+      alert('✨ 新脑洞已成功塞进盲盒机！下次就有机会抽到啦！');
     }
   };
 
-  window._openSoulQuestion = function(idx) {
-    window._currentSoulQIdx = idx;
-    document.getElementById('soulModalTitle').textContent = `第 ${idx + 1} 问`;
-    document.getElementById('soulQuestionText').textContent = SOUL_QS[idx];
-    document.getElementById('soulMyAnswer').value = '';
-    document.getElementById('soulAiEchoArea').style.display = 'none';
-    
-    const btn = document.getElementById('soulSubmitBtn');
-    btn.style.display = 'block';
-    btn.textContent = '提交并倾听 TA 的回音';
+  window._tempGachaAiList = [];
+
+  window._openGachaAiModal = function() {
+    document.getElementById('gachaAiModal').classList.add('active');
+    document.getElementById('gachaAiList').innerHTML = '<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:12px;">等待灵感接入中...</div>';
+    window._tempGachaAiList = [];
+    const btn = document.getElementById('gachaAiGenerateBtn');
+    btn.textContent = '开始抽取脑洞';
     btn.style.pointerEvents = 'auto';
-    
-    document.getElementById('soulAnswerModal').classList.add('active');
   };
 
-  window._submitSoulAnswer = async function() {
-    const roleId = document.getElementById('soulRoleSelect').value;
-    const myAnswer = document.getElementById('soulMyAnswer').value.trim();
-    if(!roleId) return alert('宝宝，请先选择一个共振对象！');
-    if(!myAnswer) return alert('宝宝，在灵魂拷问面前，不能敷衍哦，写下你的答案吧！');
-
-    const c = window.getContactById ? window.getContactById(roleId) : null;
-    if(!c) return;
-
-    const btn = document.getElementById('soulSubmitBtn');
-    btn.textContent = '脑电波深度接入中...';
+  window._generateGachaAiIdeas = async function() {
+    const btn = document.getElementById('gachaAiGenerateBtn');
+    const listEl = document.getElementById('gachaAiList');
+    btn.textContent = '脑电波激烈碰撞中...';
     btn.style.pointerEvents = 'none';
+    
+    listEl.innerHTML = `<div style="text-align:center; padding:40px 0; color:#5c7094; font-size:12px; font-weight:bold;"><div style="width:24px; height:24px; border:3px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite; margin:0 auto 12px;"></div>正在生成 20 条神仙脑洞...</div>`;
 
-    const qText = SOUL_QS[window._currentSoulQIdx];
-
-    // 🌟 蓝色高定：跨界调取聊天记忆！让 AI 知道你们到底有多熟！
-    const arr = window.getChatArr ? window.getChatArr(roleId) : [];
-    const histText = arr.filter(m => m.text && !m.hiddenForAi)
-                        .slice(-50) // 提取最近50条聊天记录
-                        .map(m => `${m.role === 'user' ? '我' : c.name}: ${m.text.replace(/<[^>]*>/g, '')}`)
-                        .join('\n');
-
-    const sysPrompt = `你现在是：${c.name}。人设：${c.persona}。
-【你们近期的聊天记忆（用于判断你们目前的熟悉程度与关系羁绊）】：
-${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
-
-你们现在正在进行著名的“让陌生人相爱的36个问题”心理学实验。
-当前的问题是：“${qText}”
-玩家刚刚给出了她的回答：“${myAnswer}”。
-
-【核心任务】：
-1. 必须结合【近期的聊天记忆】来决定你现在的态度！如果你们还不熟，语气可以克制试探；如果你们已经很亲密，请毫无保留地展现你的偏爱和占有欲。
-2. 先对玩家的回答做出极度符合你人设的真实反应。
-3. 然后，给出你自己的真实答案！暴露你性格深处的软肋或偏执，绝对禁止说空话套话。
-
-【必须严格返回JSON格式】：
-{
-  "reaction": "你听完玩家回答后的真实反应与评价（第一人称对话，不要带名字前缀）",
-  "answer": "你对这个问题的真实答案（第一人称对话，深入剖析内心）"
-}`;
+    const sysPrompt = `你是一个极具创意的恋爱盲盒剧情设计师。
+请生成 20 个适合情侣线下互动的盲盒剧情。
+要求：
+1. 包含各种风格：暧昧拉扯、肢体接触、吃醋试探、搞笑社死、突发奇想等。
+2. 绝对拒绝油腻和霸总语录！要极其具有活人感、接地气。
+3. 第一人称叙述（以“你”开头，描述玩家对AI角色做的事）。
+4. 必须严格返回纯 JSON 数组格式，不要任何 markdown 标记和额外文字！
+格式：["剧情1", "剧情2", "剧情3"...]`;
 
     try {
-      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '我已经回答了，现在轮到你了，不许撒谎！' }]);
-      const match = out.replace(/\`\`\`json|\`\`\`/g, '').trim().match(/\{[\s\S]*\}/);
-      if(!match) throw new Error('时空乱流干扰了连接');
-      const data = JSON.parse(match[0]);
-
-      document.getElementById('soulAiReaction').textContent = `"${data.reaction}"`;
-      document.getElementById('soulAiAnswer').textContent = `"${data.answer}"`;
+      const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '立刻生成20条绝佳脑洞！' }]);
+      const cleaned = out.replace(/```json|```/g, '').trim();
+      const match = cleaned.match(/\[[\s\S]*\]/);
+      if(!match) throw new Error("AI 时空乱流");
       
-      btn.style.display = 'none';
-      document.getElementById('soulAiEchoArea').style.display = 'block';
-
-      // 🌟 死死钉入外挂内存
-      const archive = await localforage.getItem(K_SOUL_ARCHIVE) || [];
-      archive.unshift({
-        id: 'soul_' + Date.now(),
-        roleName: c.name,
-        qIdx: window._currentSoulQIdx,
-        question: qText,
-        myAnswer: myAnswer,
-        aiReaction: data.reaction,
-        aiAnswer: data.answer,
-        time: Date.now()
-      });
-      await localforage.setItem(K_SOUL_ARCHIVE, archive);
-
+      window._tempGachaAiList = JSON.parse(match[0]);
+      window._renderGachaAiList();
+      btn.textContent = '重新抽取脑洞';
     } catch(e) {
-      alert('共振失败了宝宝：' + e.message);
-      btn.textContent = '提交并倾听 TA 的回音';
+      listEl.innerHTML = `<div style="text-align:center; padding:40px 0; color:#b57b7b; font-size:12px;">生成失败啦宝宝：${e.message}</div>`;
+      btn.textContent = '开始抽取脑洞';
+    } finally {
       btn.style.pointerEvents = 'auto';
     }
   };
 
-    // 🌟 新增全局变量，记住当前在看谁的回音
-  window._currentSoulTab = 'All';
-
-  window._openSoulArchive = async function() {
-    window._currentSoulTab = 'All';
-    await window._renderSoulArchive();
-    document.getElementById('soulArchiveModal').classList.add('active');
-  };
-
-  // 🌟 切换标签的专属魔法
-  window._switchSoulTab = function(tabName) {
-    window._currentSoulTab = tabName;
-    window._renderSoulArchive();
-  };
-
- // 🌟 重构的独立渲染引擎 (修复了 TA 的反应丢失 Bug！)
-  window._renderSoulArchive = async function() {
-    const list = await localforage.getItem(K_SOUL_ARCHIVE) || [];
-    const box = document.getElementById('soulArchiveList');
-    const tabsBox = document.getElementById('soulArchiveTabs');
-    if(!box || !tabsBox) return;
-
-    const roleNames = [...new Set(list.map(item => item.roleName))];
-    
-    if(list.length === 0) {
-      tabsBox.innerHTML = '';
-      box.innerHTML = `<div style="text-align:center; padding:60px 0; color:#a0aaba; font-size:12px;">回音壁上空空如也<br>去完成你们的第一次灵魂共振吧</div>`;
+  window._renderGachaAiList = function() {
+    const listEl = document.getElementById('gachaAiList');
+    if(window._tempGachaAiList.length === 0) {
+      listEl.innerHTML = '<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:12px;">脑洞都被删光啦，重新抽一波吧~</div>';
       return;
     }
 
-    let tabsHtml = `<div onclick="window._switchSoulTab('All')" style="padding:6px 16px; border-radius:999px; font-size:12px; font-weight:bold; cursor:pointer; white-space:nowrap; flex-shrink:0; transition:all 0.2s; ${window._currentSoulTab === 'All' ? 'background:#5c7094; color:#fff; box-shadow:0 2px 8px rgba(92,112,148,0.2);' : 'background:transparent; color:#7a86a8; border:1px solid #dce5f0;'}">全部回音</div>`;
-    
-    roleNames.forEach(name => {
-      const isSel = window._currentSoulTab === name;
-      tabsHtml += `<div onclick="window._switchSoulTab('${safeEsc(name)}')" style="padding:6px 16px; border-radius:999px; font-size:12px; font-weight:bold; cursor:pointer; white-space:nowrap; flex-shrink:0; transition:all 0.2s; ${isSel ? 'background:#5c7094; color:#fff; box-shadow:0 2px 8px rgba(92,112,148,0.2);' : 'background:transparent; color:#7a86a8; border:1px solid #dce5f0;'}">${safeEsc(name)}</div>`;
-    });
-    tabsBox.innerHTML = tabsHtml;
-
-    const filteredList = window._currentSoulTab === 'All' ? list : list.filter(item => item.roleName === window._currentSoulTab);
-
-    if(filteredList.length === 0) {
-      box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:12px;">这里暂时没有TA的回响哦~</div>`;
-      return;
-    }
-
-    box.innerHTML = filteredList.map(item => `
-      <div style="background:rgba(250,252,255,0.85); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:16px; padding:16px; box-shadow:0 4px 16px rgba(92,112,148,0.03); position:relative;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px dashed #eef4fa; padding-bottom:8px;">
-          <div style="font-size:11px; color:#a5cfff; font-weight:800; font-family:ui-monospace, monospace;">Q${String(item.qIdx + 1).padStart(2, '0')} · ${new Date(item.time).toLocaleDateString()}</div>
-          <button class="btn d" onclick="window._delSoulArchive('${item.id}')" style="background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid #f2dcdc; border-radius:8px; padding:4px 10px; font-size:11px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">抹除</button>
+    listEl.innerHTML = window._tempGachaAiList.map((item, idx) => `
+      <div style="background:rgba(255,255,255,0.7); border:1px solid #dce5f0; border-radius:12px; padding:16px; position:relative; box-shadow:0 2px 8px rgba(92,112,148,0.02); transition:all 0.2s ease;">
+        <div onclick="window._removeGachaAiItem(${idx})" style="position:absolute; top:8px; right:8px; width:24px; height:24px; background:rgba(252,242,242,0.8); border:1px solid #f2dcdc; border-radius:8px; color:#b57b7b; display:grid; place-items:center; cursor:pointer; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.85)'" onmouseup="this.style.transform='scale(1)'" title="剔除这条">
+          <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </div>
-        
-        <div style="font-size:14px; color:#3d4a6a; font-weight:bold; margin-bottom:12px; line-height:1.5;">${safeEsc(item.question)}</div>
-        
-        <div style="font-size:12px; color:#7a86a8; font-weight:bold; margin-bottom:4px;">我的回答：</div>
-        <div style="font-size:13px; color:#5c7094; line-height:1.6; margin-bottom:12px; background:rgba(238,244,250,0.4); padding:10px; border-radius:10px;">${safeEsc(item.myAnswer)}</div>
-        
-        <!-- 🌟 补回来的 TA 的反应 -->
-        <div style="font-size:12px; color:#b57b7b; font-weight:bold; margin-bottom:4px; display:flex; align-items:center; gap:4px;">
-          <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-          TA 听完后的反应：
-        </div>
-        <div style="font-size:13px; color:#3d4a6a; font-style:italic; margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed #eef4fa; line-height:1.5;">"${safeEsc(item.aiReaction)}"</div>
-        
-        <!-- TA 的正式回答 -->
-        <div style="font-size:12px; color:#5c7094; font-weight:bold; margin-bottom:4px;">TA 的真实答案：</div>
-        <div style="font-size:14px; color:#2b3a60; font-family:'STZhongsong', 'KaiTi', serif; line-height:1.6; font-weight:bold; border-left:3px solid #a5cfff; padding-left:10px; text-align:justify;">"${safeEsc(item.aiAnswer)}"</div>
+        <div style="font-size:13px; color:#3d4a6a; font-weight:bold; line-height:1.6; padding-right:24px; text-align:justify;">${safeEsc(item)}</div>
       </div>
     `).join('');
   };
 
-  window._delSoulArchive = async function(id) {
-    if(!confirm('确定要彻底抹除这段灵魂回音吗？')) return;
-    let list = await localforage.getItem(K_SOUL_ARCHIVE) || [];
-    list = list.filter(x => x.id !== id);
-    await localforage.setItem(K_SOUL_ARCHIVE, list);
-    window._renderSoulArchive(); // 删完之后瞬间静默重绘
+  window._removeGachaAiItem = function(idx) {
+    window._tempGachaAiList.splice(idx, 1);
+    window._renderGachaAiList();
   };
 
+  window._importGachaAiIdeas = async function() {
+    if(window._tempGachaAiList.length === 0) return alert('宝宝，列表里没有存货啦，先去抽点脑洞吧！');
+    
+    let pool = await localforage.getItem(K_GACHA_POOL) || DEFAULT_POOL;
+    pool = [...window._tempGachaAiList, ...pool];
+    await localforage.setItem(K_GACHA_POOL, pool);
+    
+    document.getElementById('gachaAiModal').classList.remove('active');
+    // 🌟 核心修复：把之前导致语法崩溃的反斜杠彻底拔除！
+    alert(`✨ 太棒了！成功将 ${window._tempGachaAiList.length} 条绝美脑洞封入盲盒机！已永久保存！`);
+    window._tempGachaAiList = [];
+  };
+
+  window._drawGachaCard = async function(isRedraw = false) {
+    const roleId = document.getElementById('gachaRoleSelect').value;
+    if(!roleId) return alert('请先选择一个要在TA面前拆盲盒的人哦！');
+
+    const box = document.getElementById('gachaBoxEntity');
+    const resArea = document.getElementById('gachaResultArea');
+    const resText = document.getElementById('gachaResultText');
+
+    if (isRedraw) {
+      resArea.style.display = 'none';
+      box.style.display = 'flex';
+    }
+
+    box.classList.add('gacha-shaking');
+    
+    setTimeout(async () => {
+      box.classList.remove('gacha-shaking');
+      box.style.display = 'none'; 
+      
+      const pool = await localforage.getItem(K_GACHA_POOL) || DEFAULT_POOL;
+      const luckyStr = pool[Math.floor(Math.random() * pool.length)];
+      window._currentGachaScenario = luckyStr;
+
+      resText.textContent = `"${luckyStr}"`;
+      resArea.style.display = 'block';
+    }, 500); 
+  };
+
+  window._jumpToGachaChat = function() {
+    const roleId = document.getElementById('gachaRoleSelect').value;
+    if(!roleId || !window._currentGachaScenario) return;
+
+    if(typeof window.openChat === 'function') {
+      window.openChat(roleId);
+    }
+
+    const hiddenPrompt = `【心跳盲盒·突发剧情触发】：
+玩家（我）刚刚对你做了一个突发的动作或事件：“${window._currentGachaScenario}”。
+【最高优先级铁律：人设第一，拒绝油腻！】
+1. 绝对不要千篇一律的霸总式发言或刻意撩拨！请完全基于你的人设，给出最真实的“人类反应”。
+2. 如果你性格高冷，请表现出克制的错愕或微表情；如果你腹黑，请顺势反击或调侃；如果你暴躁，请直接炸毛；如果你温柔，请自然包容。
+3. 展现极致的活人感，会有尴尬、不知所措、吃醋、破防或无奈，绝对禁止强行发糖！
+4. 直接输出你的反应和对话，绝对不要带名字前缀！不要提“盲盒”、“触发”等出戏词汇。`;
+
+    if(typeof window._sendToAI === 'function') {
+      const arr = window.getChatArr(roleId) || [];
+      arr.push({ 
+        id: 'm_' + Date.now(), 
+        role: 'user', 
+        text: `<div style="text-align:center; margin:12px 0;"><span style="font-size:11px; color:#5c7094; background:rgba(238,244,250,0.85); padding:6px 14px; border-radius:12px; border:1px dashed #a5cfff; box-shadow:0 2px 8px rgba(92,112,148,0.05);">✨ 盲盒剧情已触发：${window._currentGachaScenario}</span></div>`, 
+        time: Date.now(), 
+        stored: true 
+      });
+      window.setChatArr(roleId, arr);
+      if(typeof window.renderChat === 'function') window.renderChat();
+      
+      window._sendToAI(roleId, hiddenPrompt, true);
+    }
+  };
 })();
 </script>
   <script>
