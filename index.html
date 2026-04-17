@@ -11158,37 +11158,14 @@ async function _emitSilentAiSequential(chatId, parts){
     }
   }
 
-  // 🌟 蓝色高定：置顶状态切换引擎 (全局响应)
-window._togglePinContact = async function(id, isGroup, e) {
-  e.stopPropagation(); e.preventDefault();
-  if(isGroup) {
-    const groups = window.getGroups ? window.getGroups() : [];
-    const idx = groups.findIndex(g => g.id === id);
-    if(idx > -1) { groups[idx].pinned = !groups[idx].pinned; window.setGroups(groups); }
-  } else {
-    const contacts = window.getContacts ? window.getContacts() : [];
-    const idx = contacts.findIndex(c => c.id === id);
-    if(idx > -1) { contacts[idx].pinned = !contacts[idx].pinned; window.setContacts(contacts); }
-  }
-  // 触发内部的心脏刷新！
-  if(typeof renderContacts === 'function') renderContacts(document.getElementById('searchInput')?.value || '');
-};
+  // --- 覆盖联系人渲染：红点稳定显示 ---
 
-// --- 覆盖联系人渲染：红点稳定显示 + 绝美置顶排序 ---
 renderContacts = function(k=''){
   k=(k||'').trim();
   const contacts = getContacts();
   const groups = window.getGroups ? window.getGroups() : [];
   const all = [...contacts, ...groups];
-  
-  let arr = all.filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
-
-  // 🌟 核心魔法：置顶排序引擎 (带有 pinned 标签的无条件排在最前面)
-  arr.sort((a, b) => {
-    if(a.pinned && !b.pinned) return -1;
-    if(!a.pinned && b.pinned) return 1;
-    return 0;
-  });
+  const arr = all.filter(c=>!k||c.name.includes(k)||(c.preview||'').includes(k));
 
   $('contactList').innerHTML = arr.map(c=> {
     const unreadHtml = c.unread ? `
@@ -11204,13 +11181,8 @@ renderContacts = function(k=''){
         transform:scale(0.9); transform-origin:top right; pointer-events:none;
       ">${c.unread > 99 ? '99+' : c.unread}</div>` : '';
 
-    // 🌟 绝美初雪海盐蓝置顶图钉
-    const pinColor = c.pinned ? '#5c7094' : '#dce5f0';
-    const pinFill = c.pinned ? '#eef4fa' : 'none';
-    const pinSvg = `<div onclick="window._togglePinContact('${c.id}', ${!!c.isGroup}, event)" style="cursor:pointer; padding:4px; margin-left:4px; display:flex; align-items:center; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'" title="置顶聊天"><svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:${pinColor}; fill:${pinFill}; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M12 17v5"></path><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1v3.76z"></path></svg></div>`;
-
     return `
-    <div class="item" style="-webkit-touch-callout:none; user-select:none; position:relative; background:${c.pinned ? 'rgba(238,244,250,0.4)' : '#fff'}; border:${c.pinned ? '1px solid #dce5f0' : 'none'};"
+    <div class="item" style="-webkit-touch-callout:none; user-select:none; position:relative;"
          oncontextmenu="return deleteContactFromList('${c.id}', event)"
          ontouchstart="this._t = setTimeout(()=>deleteContactFromList('${c.id}'), 600)"
          ontouchend="clearTimeout(this._t)" ontouchmove="clearTimeout(this._t)">
@@ -11225,10 +11197,7 @@ renderContacts = function(k=''){
             ${c.isGroup ? '<span style="font-size:10px; background:#eef3ff; color:#2f66d8; padding:2px 6px; border-radius:4px; font-weight:bold;">群聊</span>' : ''}
             ${esc(c.name)}
           </div>
-          <div style="display:flex; align-items:center;">
-            <div class="t">${esc(c.time||'')}</div>
-            ${pinSvg}
-          </div>
+          <div class="t">${esc(c.time||'')}</div>
         </div>
         <div class="preview">${esc(c.preview||'')}</div>
       </div>
