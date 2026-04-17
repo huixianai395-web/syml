@@ -22227,6 +22227,281 @@ window._sendJellyToTarget = async function(targetId) {
 
   if (typeof window._sendToAI === 'function') window._sendToAI(targetId, hiddenPrompt, true);
 };
-                                                                                                                                                       </script>
+<script>
+    // 🌟 修复一：心跳盲盒加入“防懵逼”打字指示器与语法净化！
+    window._jumpToGachaChat = function() {
+      const roleId = document.getElementById('gachaRoleSelect').value;
+      if(!roleId || !window._currentGachaScenario) return;
+
+      const hiddenPrompt = `【心跳盲盒·突发剧情触发】：\n玩家（我）刚刚对你做了一个突发的动作或事件：“${window._currentGachaScenario}”。\n【最高优先级铁律：人设第一，拒绝油腻！】\n1. 绝对不要千篇一律的霸总式发言或刻意撩拨！请完全基于你的人设，给出最真实的“人类反应”。\n2. 如果你性格高冷，请表现出克制的错愕或微表情；如果你腹黑，请顺势反击或调侃；如果你暴躁，请直接炸毛；如果你温柔，请自然包容。\n3. 展现极致的活人感，会有尴尬、不知所措、吃醋、破防或无奈，绝对禁止强行发糖！\n4. 直接输出你的反应和对话，绝对不要带名字前缀！不要提“盲盒”、“触发”等出戏词汇。`;
+
+      if(typeof window.openChat === 'function') {
+        window.openChat(roleId);
+      }
+
+      if(typeof window._sendToAI === 'function') {
+        const arr = window.getChatArr(roleId) || [];
+        arr.push({ 
+          id: 'm_' + Date.now(), 
+          role: 'user', 
+          text: `<div style="text-align:center; margin:12px 0;"><span style="font-size:11px; color:#5c7094; background:rgba(238,244,250,0.85); padding:6px 14px; border-radius:12px; border:1px dashed #a5cfff; box-shadow:0 2px 8px rgba(92,112,148,0.05);">✨ 盲盒剧情已触发：${window._currentGachaScenario}</span></div>`, 
+          time: Date.now(), 
+          stored: true 
+        });
+        
+        // 🌟 蓝色高定：插入一个临时的“正在思考”海盐蓝气泡！
+        const loaderId = 'loader_' + Date.now();
+        arr.push({
+           id: loaderId, role: 'assistant', time: Date.now(), stored: false,
+           text: `<div style="display:flex; align-items:center; gap:8px; color:#a5cfff; font-size:13px; font-weight:bold; font-style:italic; padding:4px;"><div style="width:16px; height:16px; border:2px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite;"></div>TA 的脑电波正在狂奔而来...</div>`
+        });
+        
+        window.setChatArr(roleId, arr);
+        if(typeof window.renderChat === 'function') window.renderChat();
+        
+        // 🌟 发送给 AI，并在完成后自动销毁思考气泡
+        window._sendToAI(roleId, hiddenPrompt, true).finally(() => {
+           const finalArr = window.getChatArr(roleId) || [];
+           window.setChatArr(roleId, finalArr.filter(x => x.id !== loaderId));
+           if(window.currentId === roleId && typeof window.renderChat === 'function') window.renderChat();
+        });
+      }
+    };
+    </script>
+
+    <!-- 🌟 修复二：补回被误删的灵魂36问神经中枢！ -->
+    <script>
+    (function(){
+      const K_SOUL_ARCHIVE = 'mp_fix_soul_archive_v1';
+      const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+
+      const SOUL_QS = [
+        "如果可以在世界上所有人中任意选择，你想邀请谁共进晚餐？",
+        "你想出名吗？以什么样的方式出名？",
+        "在打电话之前，你会预演你要说的话吗？为什么？",
+        "对你来说，怎样才算是一个“完美”的一天？",
+        "你最后一次对自己唱歌是什么时候？最后一次对别人唱呢？",
+        "如果你能活到90岁，并能在生命最后的60年里保留30岁时的心智或身体，你选择哪一个？",
+        "你心里对自己的死法有某种隐秘的预感吗？",
+        "说出三个你和我的共同点。",
+        "你人生中最感激的是什么？",
+        "如果你能改变你成长过程中的任何一件事，你会改变什么？",
+        "用四分钟尽可能详细地向我讲述你的人生故事。",
+        "如果你明天醒来能获得一种新的品质或能力，你希望是什么？",
+        "如果有一颗水晶球能告诉你关于你自己、你的人生、你的未来或其他任何事情的真相，你想知道什么？",
+        "有什么事是你一直梦想去做的吗？为什么还没做？",
+        "你人生中最大的成就是什么？",
+        "在一段友谊中，你最看重什么？",
+        "你最珍贵的记忆是什么？",
+        "你最糟糕的记忆是什么？",
+        "如果你知道自己在一年内就会突然死去，你会改变现在的生活方式吗？为什么？",
+        "对你来说，友谊意味着什么？",
+        "在你的生活中，爱和感情扮演着怎样的角色？",
+        "轮流说出你认为我具备的一个优点。共说五项。",
+        "你的家庭有多亲密和温暖？你觉得你的童年比大多数人更幸福吗？",
+        "你觉得你和母亲的关系怎样？",
+        "用“我们”造三个真实的句子。比如，“我们都在这个房间里，感觉……”",
+        "完成这个句子：“我希望有一个人能与之分享……”",
+        "如果我要成为你的密友，有什么是你认为我必须知道的？",
+        "告诉我你喜欢我什么；这次要非常诚实，说一些你平时不会对刚认识的人说的话。",
+        "和我分享你人生中尴尬的一个瞬间。",
+        "你最后一次在别人面前哭是什么时候？最后一次自己一个人哭呢？",
+        "告诉我你已经开始喜欢我的哪一点？",
+        "有什么事情（如果有的话）是严重到不能开玩笑的？",
+        "如果你今晚就会死掉，且没有机会与任何人交流，你最遗憾没有告诉别人什么事？为什么到现在还没告诉他们？",
+        "你的房子着火了，里面有你所有的财产。救出你的亲人和宠物后，你还有时间安全地冲进去最后救出一样东西。你会拿什么？为什么？",
+        "你家族所有人中，谁的死会让你最难过？为什么？",
+        "分享一个你的私人问题，并问我如果遇到这种情况会怎么处理。同时，让我反思并告诉你，我猜你对这个问题的感受是什么。"
+      ];
+
+      window._currentSoulQIdx = 0;
+
+      window._initSoulApp = function() {
+        const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
+        const sel = document.getElementById('soulRoleSelect');
+        if(sel) sel.innerHTML = contacts.map(c => `<option value="${c.id}">${safeEsc(c.name)}</option>`).join('');
+        
+        const box = document.getElementById('soulQuestionList');
+        if(box) {
+          box.innerHTML = SOUL_QS.map((q, idx) => {
+            let stage = '';
+            if(idx === 0) stage = '<div style="font-size:11px; color:#a0aaba; letter-spacing:2px; text-align:center; margin:16px 0 8px;">— 第一阶段：破冰与浅层暴露 —</div>';
+            if(idx === 12) stage = '<div style="font-size:11px; color:#a0aaba; letter-spacing:2px; text-align:center; margin:24px 0 8px;">— 第二阶段：深潜与自我剖析 —</div>';
+            if(idx === 24) stage = '<div style="font-size:11px; color:#a5cfff; letter-spacing:2px; text-align:center; margin:24px 0 8px; font-weight:bold;">— 第三阶段：致命的灵魂共振 —</div>';
+
+            return `
+              ${stage}
+              <div onclick="window._openSoulQuestion(${idx})" style="background:rgba(255,255,255,0.7); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:16px; padding:16px; box-shadow:0 4px 12px rgba(92,112,148,0.03); cursor:pointer; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+                <div style="font-size:11px; color:#a5cfff; font-weight:900; margin-bottom:8px; font-family:ui-monospace, monospace;">QUESTION ${String(idx + 1).padStart(2, '0')}</div>
+                <div style="font-size:14px; font-weight:bold; color:#3d4a6a; line-height:1.5;">${safeEsc(q)}</div>
+              </div>
+            `;
+          }).join('');
+        }
+      };
+
+      window._openSoulQuestion = function(idx) {
+        window._currentSoulQIdx = idx;
+        document.getElementById('soulModalTitle').textContent = `第 ${idx + 1} 问`;
+        document.getElementById('soulQuestionText').textContent = SOUL_QS[idx];
+        document.getElementById('soulMyAnswer').value = '';
+        document.getElementById('soulAiEchoArea').style.display = 'none';
+        
+        const btn = document.getElementById('soulSubmitBtn');
+        btn.style.display = 'block';
+        btn.textContent = '提交并倾听 TA 的回音';
+        btn.style.pointerEvents = 'auto';
+        
+        document.getElementById('soulAnswerModal').classList.add('active');
+      };
+
+      window._submitSoulAnswer = async function() {
+        const roleId = document.getElementById('soulRoleSelect').value;
+        const myAnswer = document.getElementById('soulMyAnswer').value.trim();
+        if(!roleId) return alert('宝宝，请先选择一个共振对象！');
+        if(!myAnswer) return alert('宝宝，在灵魂拷问面前，不能敷衍哦，写下你的答案吧！');
+
+        const c = window.getContactById ? window.getContactById(roleId) : null;
+        if(!c) return;
+
+        const btn = document.getElementById('soulSubmitBtn');
+        btn.textContent = '脑电波深度接入中...';
+        btn.style.pointerEvents = 'none';
+
+        const qText = SOUL_QS[window._currentSoulQIdx];
+        const arr = window.getChatArr ? window.getChatArr(roleId) : [];
+        const histText = arr.filter(m => m.text && !m.hiddenForAi)
+                            .slice(-50) 
+                            .map(m => `${m.role === 'user' ? '我' : c.name}: ${m.text.replace(/<[^>]*>/g, '')}`)
+                            .join('\n');
+
+        const sysPrompt = `你现在是：${c.name}。人设：${c.persona}。
+【你们近期的聊天记忆】：
+${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
+
+你们现在正在进行著名的“让陌生人相爱的36个问题”心理学实验。
+当前的问题是：“${qText}”
+玩家刚刚给出了她的回答：“${myAnswer}”。
+
+【核心任务】：
+1. 必须结合【近期的聊天记忆】来决定你现在的态度！
+2. 先对玩家的回答做出极度符合你人设的真实反应。
+3. 然后，给出你自己的真实答案！
+
+【必须严格返回JSON格式】：
+{
+  "reaction": "你听完玩家回答后的真实反应与评价（第一人称对话，不要带名字前缀）",
+  "answer": "你对这个问题的真实答案（第一人称对话，深入剖析内心）"
+}`;
+
+        try {
+          const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '我已经回答了，现在轮到你了，不许撒谎！' }]);
+          const cleaned = out.replace(/```json|```/g, '').trim();
+          const match = cleaned.match(/\{[\s\S]*\}/);
+          if(!match) throw new Error('时空乱流干扰了连接');
+          const data = JSON.parse(match[0]);
+
+          document.getElementById('soulAiReaction').textContent = `"${data.reaction}"`;
+          document.getElementById('soulAiAnswer').textContent = `"${data.answer}"`;
+          
+          btn.style.display = 'none';
+          document.getElementById('soulAiEchoArea').style.display = 'block';
+
+          const archive = await localforage.getItem(K_SOUL_ARCHIVE) || [];
+          archive.unshift({
+            id: 'soul_' + Date.now(),
+            roleName: c.name,
+            qIdx: window._currentSoulQIdx,
+            question: qText,
+            myAnswer: myAnswer,
+            aiReaction: data.reaction,
+            aiAnswer: data.answer,
+            time: Date.now()
+          });
+          await localforage.setItem(K_SOUL_ARCHIVE, archive);
+
+        } catch(e) {
+          alert('共振失败了宝宝：' + e.message);
+          btn.textContent = '提交并倾听 TA 的回音';
+          btn.style.pointerEvents = 'auto';
+        }
+      };
+
+      window._currentSoulTab = 'All';
+
+      window._openSoulArchive = async function() {
+        window._currentSoulTab = 'All';
+        await window._renderSoulArchive();
+        document.getElementById('soulArchiveModal').classList.add('active');
+      };
+
+      window._switchSoulTab = function(tabName) {
+        window._currentSoulTab = tabName;
+        window._renderSoulArchive();
+      };
+
+      window._renderSoulArchive = async function() {
+        const list = await localforage.getItem(K_SOUL_ARCHIVE) || [];
+        const box = document.getElementById('soulArchiveList');
+        const tabsBox = document.getElementById('soulArchiveTabs');
+        if(!box || !tabsBox) return;
+
+        const roleNames = [...new Set(list.map(item => item.roleName))];
+        
+        if(list.length === 0) {
+          tabsBox.innerHTML = '';
+          box.innerHTML = `<div style="text-align:center; padding:60px 0; color:#a0aaba; font-size:12px;">回音壁上空空如也<br>去完成你们的第一次灵魂共振吧</div>`;
+          return;
+        }
+
+        let tabsHtml = `<div onclick="window._switchSoulTab('All')" style="padding:6px 16px; border-radius:999px; font-size:12px; font-weight:bold; cursor:pointer; white-space:nowrap; flex-shrink:0; transition:all 0.2s; ${window._currentSoulTab === 'All' ? 'background:#5c7094; color:#fff; box-shadow:0 2px 8px rgba(92,112,148,0.2);' : 'background:transparent; color:#7a86a8; border:1px solid #dce5f0;'}">全部回音</div>`;
+        
+        roleNames.forEach(name => {
+          const isSel = window._currentSoulTab === name;
+          tabsHtml += `<div onclick="window._switchSoulTab('${safeEsc(name)}')" style="padding:6px 16px; border-radius:999px; font-size:12px; font-weight:bold; cursor:pointer; white-space:nowrap; flex-shrink:0; transition:all 0.2s; ${isSel ? 'background:#5c7094; color:#fff; box-shadow:0 2px 8px rgba(92,112,148,0.2);' : 'background:transparent; color:#7a86a8; border:1px solid #dce5f0;'}">${safeEsc(name)}</div>`;
+        });
+        tabsBox.innerHTML = tabsHtml;
+
+        const filteredList = window._currentSoulTab === 'All' ? list : list.filter(item => item.roleName === window._currentSoulTab);
+
+        if(filteredList.length === 0) {
+          box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:12px;">这里暂时没有TA的回响哦~</div>`;
+          return;
+        }
+
+        box.innerHTML = filteredList.map(item => `
+          <div style="background:rgba(250,252,255,0.85); backdrop-filter:blur(12px); border:1px solid #dce5f0; border-radius:16px; padding:16px; box-shadow:0 4px 16px rgba(92,112,148,0.03); position:relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px dashed #eef4fa; padding-bottom:8px;">
+              <div style="font-size:11px; color:#a5cfff; font-weight:800; font-family:ui-monospace, monospace;">Q${String(item.qIdx + 1).padStart(2, '0')} · ${new Date(item.time).toLocaleDateString()}</div>
+              <button class="btn d" onclick="window._delSoulArchive('${item.id}')" style="background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid #f2dcdc; border-radius:8px; padding:4px 10px; font-size:11px; font-weight:bold; box-shadow:none; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">抹除</button>
+            </div>
+            
+            <div style="font-size:14px; color:#3d4a6a; font-weight:bold; margin-bottom:12px; line-height:1.5;">${safeEsc(item.question)}</div>
+            
+            <div style="font-size:12px; color:#7a86a8; font-weight:bold; margin-bottom:4px;">我的回答：</div>
+            <div style="font-size:13px; color:#5c7094; line-height:1.6; margin-bottom:12px; background:rgba(238,244,250,0.4); padding:10px; border-radius:10px;">${safeEsc(item.myAnswer)}</div>
+            
+            <div style="font-size:12px; color:#b57b7b; font-weight:bold; margin-bottom:4px; display:flex; align-items:center; gap:4px;">
+              <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+              TA 听完后的反应：
+            </div>
+            <div style="font-size:13px; color:#3d4a6a; font-style:italic; margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed #eef4fa; line-height:1.5;">"${safeEsc(item.aiReaction)}"</div>
+            
+            <div style="font-size:12px; color:#5c7094; font-weight:bold; margin-bottom:4px;">TA 的真实答案：</div>
+            <div style="font-size:14px; color:#2b3a60; font-family:'STZhongsong', 'KaiTi', serif; line-height:1.6; font-weight:bold; border-left:3px solid #a5cfff; padding-left:10px; text-align:justify;">"${safeEsc(item.aiAnswer)}"</div>
+          </div>
+        `).join('');
+      };
+
+      window._delSoulArchive = async function(id) {
+        if(!confirm('确定要彻底抹除这段灵魂回音吗？')) return;
+        let list = await localforage.getItem(K_SOUL_ARCHIVE) || [];
+        list = list.filter(x => x.id !== id);
+        await localforage.setItem(K_SOUL_ARCHIVE, list);
+        window._renderSoulArchive(); 
+      };
+
+    })();
+    </script>                                                                                                                                                       </script>
 </body>
   </html>
