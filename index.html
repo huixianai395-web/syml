@@ -21442,6 +21442,26 @@ if(window._originalCallApiBeforeMoon) {
   .rarity-N { --j-color: rgba(165, 207, 255, 0.8); --j-glow: rgba(165,207,255,0.6); }
   .rarity-SR { --j-color: rgba(255, 255, 255, 0.95); --j-glow: rgba(255, 255, 255, 0.9); }
   .rarity-SSR { --j-color: #ffd1dc; --j-glow: #d1c4e9; }
+  /* 🌟 蓝色高定：水母受惊物理反馈动画 */
+  @keyframes dashAway { 
+    0% { transform: scale(1) translate(0, 0); } 
+    50% { transform: translate(-40px, -60px) scale(0.8) skewX(25deg); opacity: 0.7; } 
+    100% { transform: scale(1) translate(0, 0); opacity: 1; } 
+  }
+  @keyframes spinHappy { 
+    0% { transform: rotate(0deg) scale(1); } 
+    50% { transform: rotate(180deg) scale(1.2); filter: hue-rotate(90deg); } 
+    100% { transform: rotate(360deg) scale(1); } 
+  }
+  @keyframes shrinkShy { 
+    0% { transform: scale(1); } 
+    50% { transform: scale(0.5); opacity: 0.3; } 
+    100% { transform: scale(1); opacity: 1; } 
+  }
+
+  .interact-dash { animation: dashAway 0.6s ease-out !important; }
+  .interact-spin { animation: spinHappy 0.8s ease-in-out !important; }
+  .interact-shy { animation: shrinkShy 0.6s ease-in-out !important; }
 </style>
 
 <!-- 水族箱本体 -->
@@ -21584,44 +21604,104 @@ function drawTrait() {
   return TRAITS[0];
 }
 
-// 绝美 SVG 包含隐藏法器
+// 🌟 核心引擎：异形伞盖重塑与多色镭射融合
 function getJellySvgHtml(hueOffset, rarity, traitId) {
-  const colorFilter = rarity === 'N' ? `filter: hue-rotate(${hueOffset}deg);` : '';
+  const isMixed = rarity === 'SSR' || rarity === 'SR';
+  const gradId = 'grad_' + Math.floor(Math.random() * 100000);
+
+  // 💎 梦幻流体变色：SSR和SR专属的 3色线性渐变
+  const defs = isMixed ? `
+    <defs>
+      <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="hsl(${hueOffset}, 85%, 75%)" />
+        <stop offset="50%" stop-color="hsl(${(hueOffset + 60) % 360}, 80%, 70%)" />
+        <stop offset="100%" stop-color="hsl(${(hueOffset + 120) % 360}, 85%, 75%)" />
+      </linearGradient>
+    </defs>
+  ` : '';
+
+  // 基础颜色设定
+  const fillStyle = isMixed ? `url(#${gradId})` : `hsl(${hueOffset}, 75%, 80%)`;
+  const colorFilter = rarity === 'N' ? '' : `filter: drop-shadow(0 0 ${rarity==='SSR'?25:12}px hsl(${hueOffset}, 80%, 70%));`;
+
+  // 🧬 基因突变：赋予不同性格水母专属形状！
+  let umbrella = `<path class="umbrella" fill="${fillStyle}" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" d="M10,50 C10,15 35,5 50,5 C65,5 90,15 90,50 C90,65 75,70 50,70 C25,70 10,65 10,50 Z"/>`;
   
+  if (traitId === 'warrior' || traitId === 'demon') {
+    // 好战/恶魔：锋利的菱形机甲伞盖
+    umbrella = `<path class="umbrella" fill="${fillStyle}" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" d="M5,50 L50,10 L95,50 C90,75 70,65 50,75 C30,65 10,75 5,50 Z"/>`;
+  } else if (traitId === 'lazy') {
+    // 懒蛋：被压扁的软趴趴大饼
+    umbrella = `<path class="umbrella" fill="${fillStyle}" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" d="M2,60 C2,35 25,25 50,25 C75,25 98,35 98,60 C90,70 70,65 50,70 C30,65 10,70 2,60 Z"/>`;
+  } else if (traitId === 'king') {
+    // 君王：高耸的钟塔形皇冠伞盖
+    umbrella = `<path class="umbrella" fill="${fillStyle}" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" d="M15,50 L25,15 L35,30 L50,5 L65,30 L75,15 L85,50 C80,70 65,65 50,70 C35,65 20,70 15,50 Z"/>`;
+  }
+
   // 法器展示逻辑
-  const halo = traitId === 'angel' ? `<ellipse cx="50" cy="15" rx="20" ry="6" fill="none" stroke="gold" stroke-width="2" filter="drop-shadow(0 0 5px gold)"/>` : '';
-  const horns = traitId === 'demon' ? `<path d="M 25 30 Q 15 10 30 5 Q 35 15 35 25 M 75 30 Q 85 10 70 5 Q 65 15 65 25" fill="#500" stroke="#ff4d4d" stroke-width="1.5"/>` : '';
+  const halo = traitId === 'angel' ? `<ellipse cx="50" cy="15" rx="20" ry="6" fill="none" stroke="#fff" stroke-width="2" filter="drop-shadow(0 0 8px #fff)"/>` : '';
+  const horns = traitId === 'demon' ? `<path d="M 25 30 Q 15 10 30 5 Q 35 15 35 25 M 75 30 Q 85 10 70 5 Q 65 15 65 25" fill="#2b1010" stroke="#ff4d4d" stroke-width="1.5"/>` : '';
   const crown = traitId === 'king' ? `<path d="M 35 25 L 30 5 L 42 15 L 50 2 L 58 15 L 70 5 L 65 25 Z" fill="gold" stroke="#fff" stroke-width="1" filter="drop-shadow(0 0 8px gold)"/>` : '';
   const zzz = traitId === 'lazy' ? `<text x="70" y="20" fill="#a5cfff" font-size="14" font-weight="bold" font-family="monospace" style="animation: zzzFloat 2s infinite;">Z</text>` : '';
-  const armor = traitId === 'warrior' ? `<path d="M 20 40 Q 50 70 80 40 L 70 60 Q 50 80 30 60 Z" fill="rgba(200,200,200,0.5)" stroke="#fff" stroke-width="1.5"/>` : '';
 
   return `
     <svg class="jelly-svg" viewBox="0 0 100 120" style="${colorFilter}">
-      ${halo} ${horns} ${crown} ${zzz} ${armor}
-      <path class="umbrella" d="M10,50 C10,15 35,5 50,5 C65,5 90,15 90,50 C90,65 75,70 50,70 C25,70 10,65 10,50 Z"/>
+      ${defs} ${halo} ${horns} ${crown} ${zzz}
+      ${umbrella}
       ${traitId === 'lazy' 
-        ? `<path class="highlight" d="M30,35 Q35,40 40,35 M60,35 Q65,40 70,35"/>` 
-        : `<path class="highlight" d="M25,30 C35,15 65,15 75,30"/>`}
-      <path class="tentacle" style="animation-duration:2.5s; animation-delay:0s;" d="M30,65 Q20,95 35,120"/>
-      <path class="tentacle" style="stroke-width:4px; animation-duration:3s; animation-delay:0.3s;" d="M50,70 Q55,100 45,125"/>
-      <path class="tentacle" style="animation-duration:2.8s; animation-delay:0.6s;" d="M70,65 Q80,95 65,120"/>
+        ? `<path class="highlight" d="M25,45 C35,35 65,35 75,45" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round"/>` 
+        : `<path class="highlight" d="M25,30 C35,15 65,15 75,30" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round"/>`}
+      <path class="tentacle" style="animation-duration:2.5s; animation-delay:0s;" d="M30,65 Q20,95 35,120" fill="none" stroke="${fillStyle}" stroke-linecap="round" stroke-width="3"/>
+      <path class="tentacle" style="animation-duration:3s; animation-delay:0.3s;" d="M50,70 Q55,100 45,125" fill="none" stroke="${fillStyle}" stroke-linecap="round" stroke-width="4"/>
+      <path class="tentacle" style="animation-duration:2.8s; animation-delay:0.6s;" d="M70,65 Q80,95 65,120" fill="none" stroke="${fillStyle}" stroke-linecap="round" stroke-width="3"/>
     </svg>
   `;
 }
 
+// 🌟 开门钥匙：千万要留着它！
 window._openAquariumApp = async function() {
   document.getElementById('aquariumModal').classList.add('active');
   await window._renderAquariumOcean();
 };
 
+// 🌟 交互拦截引擎：先物理反馈，后打开详情面板
+window._interactJellyfish = function(e, id, traitId) {
+  e.stopPropagation();
+  const node = e.currentTarget;
+  
+  // 杜绝疯狂连点导致的动画鬼畜
+  if(node.classList.contains('interact-dash') || node.classList.contains('interact-spin') || node.classList.contains('interact-shy')) return;
+
+  // 根据水母基因判定物理反应
+  if(traitId === 'demon' || traitId === 'warrior') {
+    node.classList.add('interact-dash'); // 暴躁乱窜
+  } else if(traitId === 'lazy' || traitId === 'king' || traitId === 'sad') {
+    node.classList.add('interact-shy'); // 社恐缩小
+  } else {
+    node.classList.add('interact-spin'); // 开心转圈
+  }
+
+  // 动画即将结束时，优雅地召唤详情档案舱
+  setTimeout(() => {
+    node.classList.remove('interact-dash', 'interact-shy', 'interact-spin');
+    window._pokeJellyfish(id);
+  }, 500);
+};
+
+// 🌟 海洋渲染绑定物理引擎
 window._renderAquariumOcean = async function() {
+  // 提取深海里的所有生命体
   const pool = await localforage.getItem(K_AQUARIUM) ||[];
   const ocean = document.getElementById('aquariumOcean');
+  
+  // 🌟 核心：将每个水母的 onclick 绑定到刚才写的物理拦截器上！
   ocean.innerHTML = pool.map(j => `
     <div class="jellyfish-node rarity-${j.rarity || 'N'} trait-${j.traitId || 'normal'}" 
          style="top:${j.top}%; left:${j.left}%; animation: floatJelly ${j.animDur}s ease-in-out ${j.animDelay}s infinite alternate; transform: scale(${j.scale || 1});"
-         onclick="window._pokeJellyfish('${j.id}')">
-      <div class="jelly-body" style="width:${60*(j.scale||1)}px; height:${75*(j.scale||1)}px;">${getJellySvgHtml(j.hue || 0, j.rarity || 'N', j.traitId || 'normal')}</div>
+         onclick="window._interactJellyfish(event, '${j.id}', '${j.traitId || 'normal'}')">
+      <div class="jelly-body" style="width:${60*(j.scale||1)}px; height:${75*(j.scale||1)}px;">
+        ${getJellySvgHtml(j.hue || 0, j.rarity || 'N', j.traitId || 'normal')}
+      </div>
       <div class="jelly-text">${safeEsc(j.text)}</div>
     </div>`).join('');
 };
