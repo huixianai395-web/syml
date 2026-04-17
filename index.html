@@ -22075,59 +22075,6 @@ window._sendJellyToTarget = async function(targetId) {
 
   if (typeof window._sendToAI === 'function') window._sendToAI(targetId, hiddenPrompt, true);
 };
-   <script>
-(function() {
-  // ==========================================
-  // 1. 暴力劫持网络：无缝切换到更稳定的音乐源
-  // ==========================================
-  const oldAPI = 'https://api.i-meto.com/meting/api';
-  const newAPI = 'https://api.injahow.cn/meting/'; // 备用高可用节点（极其稳定）
-  
-  const originalFetch = window.fetch;
-  window.fetch = async function(url, options) {
-    if (typeof url === 'string' && url.includes(oldAPI)) {
-      url = url.replace(oldAPI, newAPI);
-      console.log('✨ 蓝色魔法：已成功将崩溃的旧接口拦截，重定向至稳定源！');
-    }
-    return originalFetch.call(this, url, options);
-  };
-
-  // ==========================================
-  // 2. 苹果终极克星：隐形静音糖浆 (0.1秒真实的空白音频)
-  // ==========================================
-  // 只有给保安塞真实的 mp3 数据，他才会放行！
-  const SILENT_MP3 = 'data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU5LjI3LjEwMAAAAAAAAAAAAAAA//MExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq';
-
-  setTimeout(() => {
-    if(typeof window.ensureMusicModal === 'function') {
-      window.ensureMusicModal();
-    }
-    
-    const unlockAllAudio = () => {
-      const musicAudio = document.getElementById('musicAudio');
-      // 致命 Bug 修复：空播放器调用 play 会被 Safari 拦截，必须塞入真实静音音频数据！
-      if(musicAudio && !musicAudio.src) { 
-        musicAudio.src = SILENT_MP3;
-        musicAudio.play().then(() => {
-            musicAudio.pause();
-            musicAudio.src = ''; // 解锁成功后立刻销毁伪装，深藏功与名！
-            console.log('✨ 蓝色魔法：底层播放权限已彻底攻破！');
-        }).catch(()=>{}); 
-      }
-      
-      // 同步解锁系统提示音与电话引擎
-      if(window._blueNotifyAudio) { window._blueNotifyAudio.play().catch(()=>{}); window._blueNotifyAudio.pause(); }
-      if(window._activeCallAudio) { window._activeCallAudio.play().catch(()=>{}); window._activeCallAudio.pause(); }
-      
-      document.removeEventListener('touchstart', unlockAllAudio);
-      document.removeEventListener('click', unlockAllAudio);
-    };
-    
-    document.addEventListener('touchstart', unlockAllAudio, { once: true, passive: true });
-    document.addEventListener('click', unlockAllAudio, { once: true, passive: true });
-    
-  }, 1500);
-})();
-</script>                                                                                                                                                </script>
+                                                                                                                                                       </script>
 </body>
   </html>
