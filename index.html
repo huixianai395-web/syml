@@ -22504,14 +22504,22 @@ ${histText || '（你们似乎才刚刚认识，还没有太多交流。）'}
     })();
     </script>      
    <script>
-// 🌟 蓝色高定终极修复：盲盒潜入聊天（去机械感，纯净沉浸活人版！）
+// 🌟 蓝色高定终极修复：盲盒视角代词反转 Bug，加入“防替罪羊”护盾！
 window._jumpToGachaChat = function() {
   const roleId = document.getElementById('gachaRoleSelect').value;
   if(!roleId || !window._currentGachaScenario) return;
 
-  const hiddenPrompt = `【心跳盲盒·突发剧情触发】：\n玩家（我）刚刚对你做了一个突发的动作或事件：“${window._currentGachaScenario}”。\n【最高优先级铁律：人设第一，拒绝油腻！】\n1. 绝对不要千篇一律的霸总式发言或刻意撩拨！请完全基于你的人设，给出最真实的“人类反应”。\n2. 如果你性格高冷，请表现出克制的错愕或微表情；如果你腹黑，请顺势反击或调侃；如果你暴躁，请直接炸毛；如果你温柔，请自然包容。\n3. 展现极致的活人感，会有尴尬、不知所措、吃醋、破防或无奈，绝对禁止强行发糖！\n4. 直接输出你的反应和对话，绝对不要带名字前缀！不要提“盲盒”、“触发”等出戏词汇。`;
+  // 🔪 核心修复：强行纠正 AI 的第一人称错觉，明确“屁到底是谁放的”！
+  const hiddenPrompt = `【心跳盲盒·突发剧情触发】：
+【⚠️ 视角代词绝对纠正：下方的场景描述是写给玩家看的，所以描述中的“你”= 玩家（我），“TA”= 你（AI角色）！千万别背锅！】
+场景内容：“${window._currentGachaScenario}”。
+这意味着，是【玩家（我）】做了这件事，而【你】是目击者或被动作对象！
+【最高优先级铁律：人设第一，拒绝油腻！】
+1. 面对玩家的突发状况（如社死、放屁、吃醋等），请完全基于你的人设，给出最真实的“人类反应”。
+2. 如果你性格高冷，请表现出克制的错愕、嫌弃或微表情；如果你腹黑，请无情嘲笑或顺势调侃；如果你暴躁，请直接炸毛；如果你温柔，请自然包容或帮忙解围。
+3. 展现极致的活人感，会有尴尬、憋笑、吃醋、破防、嫌弃或无奈，绝对禁止强行发糖和霸总语录！
+4. 直接输出你的反应和对话，绝对不要带名字前缀！不要提“盲盒”、“触发”等出戏词汇。`;
 
-  // 1. 核心修复：只把剧情触发的标签塞进去，绝对不加任何机器人的加载气泡！
   const arr = window.getChatArr(roleId) || [];
   arr.push({ 
     id: 'm_' + Date.now(), 
@@ -22521,15 +22529,13 @@ window._jumpToGachaChat = function() {
     stored: true 
   });
   
-  // 2. 存入外挂内存！
   window.setChatArr(roleId, arr);
 
-  // 3. 踹开聊天室的大门，瞬间切入聊天场景！
   if(typeof window.openChat === 'function') {
     window.openChat(roleId);
   }
 
-  // 4. 默默在后台呼叫大模型，完全模拟真人打字的延迟，不露任何系统痕迹！
+  // 带着护盾去敲门，绝不给他们装傻的机会
   if(typeof window._sendToAI === 'function') {
     window._sendToAI(roleId, hiddenPrompt, true);
   }
