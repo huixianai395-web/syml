@@ -5,6 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>蓝色</title>
+  <meta name="referrer" content="no-referrer" />
   <style>
     :root{
       --safe-top: env(safe-area-inset-top, 0px);
@@ -13368,7 +13369,6 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
       }
     }
 
-    // 🌟 歌词解析引擎 (优先读取你贴进去的 rawLrc)
     const parseLrc = (txt) => {
       const lines = txt.split('\n');
       const lrcArr = [];
@@ -13388,12 +13388,14 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
     if(s.rawLrc) {
       parseLrc(s.rawLrc);
     } else if(s.lrc) {
-      fetch(s.lrc).then(r=>r.text()).then(txt=>parseLrc(txt)).catch(e=>{});
+      fetch(s.lrc.replace(/^http:\/\//i, 'https://')).then(r=>r.text()).then(txt=>parseLrc(txt)).catch(e=>{});
     }
 
     try {
       const audio = document.getElementById('musicAudio');
-      audio.src = s.url; 
+      // ✨ 蓝色终极护盾：强制将 http 转换为 https，击碎混合内容拦截！
+      const safeUrl = s.url.replace(/^http:\/\//i, 'https://');
+      audio.src = safeUrl; 
       await audio.play();
       window.musicState.playing = true;
       window._refreshMusicUI();
@@ -13405,7 +13407,10 @@ ${outline ? '\\n玩家给出的开局脑洞：' + outline : '\\n请你自由发�
         window.setChatArr(window.currentId, arr);
         if(typeof window.renderChat === 'function') window.renderChat();
       }
-    } catch(e) { document.getElementById('musicNow').textContent = '⚠️ 浏览器拦截，请手动点击播放键'; }
+    } catch(e) { 
+      console.log('播放被拦截:', e);
+      document.getElementById('musicNow').innerHTML = `<span style="color:#b57b7b;">⚠️ 浏览器傲娇了，请点一下播放键哦 🤍</span>`; 
+    }
   };
 
   window._refreshMusicUI = function(){
