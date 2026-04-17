@@ -21613,56 +21613,105 @@ function drawTrait() {
   return TRAITS[0];
 }
 
-// 🌟 核心引擎：异形伞盖重塑与多色镭射融合
+// 🌟 核心引擎：异形伞盖重塑、基因裂变与绝对不串色的多色镭射融合！
 function getJellySvgHtml(hueOffset, rarity, traitId) {
   const isMixed = rarity === 'SSR' || rarity === 'SR';
-  const gradId = 'grad_' + Math.floor(Math.random() * 100000);
+  // 🌟 核心修复：给每个渐变分配一个全宇宙唯一的身份证，彻底解决 SVG 串色被吞的问题！
+  const gradId = 'grad_' + Date.now() + '_' + Math.floor(Math.random() * 1000000);
 
-  // 💎 梦幻流体变色：SSR和SR专属的 3色线性渐变
-  const defs = isMixed ? `
-    <defs>
-      <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="hsl(${hueOffset}, 85%, 75%)" />
-        <stop offset="50%" stop-color="hsl(${(hueOffset + 60) % 360}, 80%, 70%)" />
-        <stop offset="100%" stop-color="hsl(${(hueOffset + 120) % 360}, 85%, 75%)" />
-      </linearGradient>
-    </defs>
-  ` : '';
+  // 💎 梦幻流体变色：SSR (3色高饱和度镭射) / SR (2色梦幻渐变)
+  let defs = '';
+  if (rarity === 'SSR') {
+    defs = `
+      <defs>
+        <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="hsl(${hueOffset}, 100%, 75%)"><animate attributeName="stop-color" values="hsl(${hueOffset}, 100%, 75%);hsl(${(hueOffset+180)%360}, 100%, 75%);hsl(${hueOffset}, 100%, 75%)" dur="4s" repeatCount="indefinite"/></stop>
+          <stop offset="50%" stop-color="hsl(${(hueOffset + 60) % 360}, 100%, 70%)"><animate attributeName="stop-color" values="hsl(${(hueOffset+60)%360}, 100%, 70%);hsl(${(hueOffset+240)%360}, 100%, 70%);hsl(${(hueOffset+60)%360}, 100%, 70%)" dur="4s" repeatCount="indefinite"/></stop>
+          <stop offset="100%" stop-color="hsl(${(hueOffset + 120) % 360}, 100%, 75%)"><animate attributeName="stop-color" values="hsl(${(hueOffset+120)%360}, 100%, 75%);hsl(${(hueOffset+300)%360}, 100%, 75%);hsl(${(hueOffset+120)%360}, 100%, 75%)" dur="4s" repeatCount="indefinite"/></stop>
+        </linearGradient>
+      </defs>
+    `;
+  } else if (rarity === 'SR') {
+    defs = `
+      <defs>
+        <linearGradient id="${gradId}" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="hsl(${hueOffset}, 90%, 80%)" />
+          <stop offset="100%" stop-color="hsl(${(hueOffset + 90) % 360}, 90%, 75%)" />
+        </linearGradient>
+      </defs>
+    `;
+  }
 
-  // 基础颜色设定
-  const fillStyle = isMixed ? `url(#${gradId})` : `hsl(${hueOffset}, 75%, 80%)`;
-  const colorFilter = rarity === 'N' ? '' : `filter: drop-shadow(0 0 ${rarity==='SSR'?25:12}px hsl(${hueOffset}, 80%, 70%));`;
+  // 基础颜色与辉光设定
+  const fillStyle = isMixed ? `url(#${gradId})` : `hsl(${hueOffset}, 80%, 85%)`;
+  const colorFilter = rarity === 'N' ? '' : `filter: drop-shadow(0 0 ${rarity==='SSR'?20:10}px hsl(${hueOffset}, 100%, 75%));`;
 
-  // 🧬 基因突变：赋予不同性格水母专属形状！
-  let umbrella = `<path class="umbrella" fill="${fillStyle}" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" d="M10,50 C10,15 35,5 50,5 C65,5 90,15 90,50 C90,65 75,70 50,70 C25,70 10,65 10,50 Z"/>`;
+  // 🧬 基因裂变系统：利用色相的余数，随机给水母捏造 3 种完全不同的底座形态！
+  const shapeGene = hueOffset % 3; 
+  let umbrella = '';
   
+  if (shapeGene === 0) {
+    // 形态1：多层重叠的梦幻花瓣裙摆
+    umbrella = `
+      <path class="umbrella" fill="${fillStyle}" opacity="0.6" d="M0,55 C0,20 30,0 50,0 C70,0 100,20 100,55 C100,75 80,70 50,80 C20,70 0,75 0,55 Z"/>
+      <path class="umbrella" fill="${fillStyle}" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" d="M10,50 C10,15 35,5 50,5 C65,5 90,15 90,50 C90,65 75,70 50,70 C25,70 10,65 10,50 Z"/>
+    `;
+  } else if (shapeGene === 1) {
+    // 形态2：带有锐利流线型的异星飞梭
+    umbrella = `<path class="umbrella" fill="${fillStyle}" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" d="M15,45 C5,30 40,-10 50,15 C60,-10 95,30 85,45 C80,60 65,75 50,65 C35,75 20,60 15,45 Z"/>`;
+  } else {
+    // 形态3：经典圆润的胖胖云朵
+    umbrella = `<path class="umbrella" fill="${fillStyle}" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" d="M5,60 C5,20 25,10 50,10 C75,10 95,20 95,60 C95,70 70,60 50,60 C30,60 5,70 5,60 Z"/>`;
+  }
+
+  // 特性二次覆盖（如果带有强烈的性格变异，强行扭转形态！）
   if (traitId === 'warrior' || traitId === 'demon') {
-    // 好战/恶魔：锋利的菱形机甲伞盖
     umbrella = `<path class="umbrella" fill="${fillStyle}" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" d="M5,50 L50,10 L95,50 C90,75 70,65 50,75 C30,65 10,75 5,50 Z"/>`;
   } else if (traitId === 'lazy') {
-    // 懒蛋：被压扁的软趴趴大饼
     umbrella = `<path class="umbrella" fill="${fillStyle}" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" d="M2,60 C2,35 25,25 50,25 C75,25 98,35 98,60 C90,70 70,65 50,70 C30,65 10,70 2,60 Z"/>`;
   } else if (traitId === 'king') {
-    // 君王：高耸的钟塔形皇冠伞盖
     umbrella = `<path class="umbrella" fill="${fillStyle}" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" d="M15,50 L25,15 L35,30 L50,5 L65,30 L75,15 L85,50 C80,70 65,65 50,70 C35,65 20,70 15,50 Z"/>`;
   }
 
-  // 法器展示逻辑
-  const halo = traitId === 'angel' ? `<ellipse cx="50" cy="15" rx="20" ry="6" fill="none" stroke="#fff" stroke-width="2" filter="drop-shadow(0 0 8px #fff)"/>` : '';
-  const horns = traitId === 'demon' ? `<path d="M 25 30 Q 15 10 30 5 Q 35 15 35 25 M 75 30 Q 85 10 70 5 Q 65 15 65 25" fill="#2b1010" stroke="#ff4d4d" stroke-width="1.5"/>` : '';
-  const crown = traitId === 'king' ? `<path d="M 35 25 L 30 5 L 42 15 L 50 2 L 58 15 L 70 5 L 65 25 Z" fill="gold" stroke="#fff" stroke-width="1" filter="drop-shadow(0 0 8px gold)"/>` : '';
-  const zzz = traitId === 'lazy' ? `<text x="70" y="20" fill="#a5cfff" font-size="14" font-weight="bold" font-family="monospace" style="animation: zzzFloat 2s infinite;">Z</text>` : '';
+  // 👼 优化法器展示：让光环和倒刺极其显眼！
+  const halo = traitId === 'angel' ? `<ellipse cx="50" cy="10" rx="24" ry="7" fill="none" stroke="#FFD700" stroke-width="3" filter="drop-shadow(0 0 10px #FFD700)"/>` : '';
+  const horns = traitId === 'demon' ? `<path d="M 20 30 Q 10 5 30 0 Q 35 15 35 25 M 80 30 Q 90 5 70 0 Q 65 15 65 25" fill="#2b1010" stroke="#ff4d4d" stroke-width="2" filter="drop-shadow(0 0 8px #ff4d4d)"/>` : '';
+  const crown = traitId === 'king' ? `<path d="M 30 25 L 25 0 L 40 12 L 50 -5 L 60 12 L 75 0 L 70 25 Z" fill="#FFD700" stroke="#fff" stroke-width="1.5" filter="drop-shadow(0 0 10px #FFD700)"/>` : '';
+  const zzz = traitId === 'lazy' ? `<text x="75" y="15" fill="#a5cfff" font-size="18" font-weight="900" font-family="monospace" style="animation: zzzFloat 2s infinite;">Z</text>` : '';
 
-  return `
-    <svg class="jelly-svg" viewBox="0 0 100 120" style="${colorFilter}">
-      ${defs} ${halo} ${horns} ${crown} ${zzz}
-      ${umbrella}
-      ${traitId === 'lazy' 
-        ? `<path class="highlight" d="M25,45 C35,35 65,35 75,45" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round"/>` 
-        : `<path class="highlight" d="M25,30 C35,15 65,15 75,30" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round"/>`}
+  // 🧬 触手基因大爆发：SSR 拥有 5 根华丽触手，SR 4根，N 3根！
+  let tentacles = '';
+  if (rarity === 'SSR') {
+    tentacles = `
+      <path class="tentacle" style="animation-duration:2.5s; animation-delay:0s;" d="M20,65 Q10,100 25,130" fill="none" stroke="${fillStyle}" stroke-linecap="round" stroke-width="3"/>
+      <path class="tentacle" style="animation-duration:3s; animation-delay:0.2s;" d="M35,70 Q25,110 40,140" fill="none" stroke="${fillStyle}" stroke-linecap="round" stroke-width="4"/>
+      <path class="tentacle" style="animation-duration:2.7s; animation-delay:0.4s;" d="M50,75 Q55,120 45,150" fill="none" stroke="${fillStyle}" stroke-linecap="round" stroke-width="5" filter="drop-shadow(0 0 5px #fff)"/>
+      <path class="tentacle" style="animation-duration:3.2s; animation-delay:0.3s;" d="M65,70 Q75,110 60,140" fill="none" stroke="${fillStyle}" stroke-linecap="round" stroke-width="4"/>
+      <path class="tentacle" style="animation-duration:2.8s; animation-delay:0.6s;" d="M80,65 Q90,100 75,130" fill="none" stroke="${fillStyle}" stroke-linecap="round" stroke-width="3"/>
+    `;
+  } else if (rarity === 'SR') {
+    tentacles = `
+      <path class="tentacle" style="animation-duration:2.5s; animation-delay:0s;" d="M25,65 Q15,95 30,120" fill="none" stroke="${fillStyle}" stroke-linecap="round" stroke-width="3"/>
+      <path class="tentacle" style="animation-duration:3s; animation-delay:0.2s;" d="M42,70 Q45,105 38,135" fill="none" stroke="${fillStyle}" stroke-linecap="round" stroke-width="4"/>
+      <path class="tentacle" style="animation-duration:2.7s; animation-delay:0.4s;" d="M58,70 Q55,105 62,135" fill="none" stroke="${fillStyle}" stroke-linecap="round" stroke-width="4"/>
+      <path class="tentacle" style="animation-duration:2.8s; animation-delay:0.6s;" d="M75,65 Q85,95 70,120" fill="none" stroke="${fillStyle}" stroke-linecap="round" stroke-width="3"/>
+    `;
+  } else {
+    tentacles = `
       <path class="tentacle" style="animation-duration:2.5s; animation-delay:0s;" d="M30,65 Q20,95 35,120" fill="none" stroke="${fillStyle}" stroke-linecap="round" stroke-width="3"/>
       <path class="tentacle" style="animation-duration:3s; animation-delay:0.3s;" d="M50,70 Q55,100 45,125" fill="none" stroke="${fillStyle}" stroke-linecap="round" stroke-width="4"/>
       <path class="tentacle" style="animation-duration:2.8s; animation-delay:0.6s;" d="M70,65 Q80,95 65,120" fill="none" stroke="${fillStyle}" stroke-linecap="round" stroke-width="3"/>
+    `;
+  }
+
+  return `
+    <svg class="jelly-svg" viewBox="0 0 100 150" style="${colorFilter}">
+      ${defs} ${halo} ${horns} ${crown} ${zzz}
+      ${umbrella}
+      ${traitId === 'lazy' 
+        ? `<path class="highlight" d="M25,45 C35,35 65,35 75,45" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2.5" stroke-linecap="round"/>` 
+        : `<path class="highlight" d="M25,30 C35,15 65,15 75,30" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2.5" stroke-linecap="round"/>`}
+      ${tentacles}
     </svg>
   `;
 }
@@ -21889,7 +21938,7 @@ window._openJellyContactModal = function() {
   document.getElementById('jellyContactModal').classList.add('active');
 };
 
-// 发送给男主，携带极强的属性控制！
+// 🌟 重新绑定发送引擎：携带最完整的灵魂档案潜入聊天框！
 window._sendJellyToTarget = async function(targetId) {
   if(!window._currentJellyId || !targetId) return;
   const pool = await localforage.getItem(K_AQUARIUM) ||[];
@@ -21900,17 +21949,48 @@ window._sendJellyToTarget = async function(targetId) {
   const colorMap = { 'happy': '#ffb6c1', 'sad': '#87bcff', 'angry': '#ff6b6b', 'calm': '#f0f8ff', 'aggrieved': '#bea0eb', 'miss': '#ffcc5c', 'tired': '#a0aab9' };
   const jColor = colorMap[target.mood] || '#a5cfff';
 
+  // 🌟 核心升级：把水母的属性全盘托出，构建绝美的高定档案排版！
   const cardHtml = `
-    <div style="background:rgba(11,16,30,0.85); border:1px solid ${jColor}; border-radius:16px; padding:16px; width:220px; box-shadow:0 8px 24px rgba(0,0,0,0.2); text-align:center;">
-      <div style="font-size:10px; color:${jColor}; font-weight:900; letter-spacing:1px; margin-bottom:12px; font-family:ui-monospace, monospace;">// DEEP SEA ECHO //</div>
+    <div style="background:rgba(15,23,42,0.9); backdrop-filter:blur(16px); border:1px solid ${jColor}; border-radius:20px; padding:20px; width:260px; box-shadow:0 12px 32px rgba(0,0,0,0.3); text-align:left;">
+      <div style="font-size:10px; color:${jColor}; font-weight:900; letter-spacing:1px; margin-bottom:12px; font-family:ui-monospace, monospace; text-align:center;">// DEEP SEA ECHO //</div>
+      
+      <!-- 预览区 -->
       <div style="margin-bottom:16px; display:flex; justify-content:center; filter:drop-shadow(0 0 10px ${jColor});">
-        <div class="rarity-${target.rarity} trait-${target.traitId}" style="width:40px; height:50px; fill:${jColor}; opacity:0.8; stroke:rgba(255,255,255,0.8); stroke-width:2px;">
+        <div class="rarity-${target.rarity} trait-${target.traitId}" style="width:60px; height:80px; fill:${jColor}; opacity:0.9;">
            ${getJellySvgHtml(target.hue, target.rarity, target.traitId)}
         </div>
       </div>
-      <div style="font-size:13px; font-weight:800; color:#dbe4ff; margin-bottom:4px;">游来了一只「${target.traitIcon}${safeEsc(target.traitName)}水母」</div>
-      <div style="font-size:10px; color:#7a86a8; margin-bottom:12px;">稀有度：${target.rarity} · 职业：${safeEsc(target.job)}</div>
-      <div style="font-size:12px; color:${jColor}; font-weight:bold; background:rgba(255,255,255,0.05); padding:8px; border-radius:8px; border:1px dashed ${jColor}; text-align:justify; line-height:1.5;">"${safeEsc(target.text)}"</div>
+      
+      <!-- 标题 -->
+      <div style="text-align:center; margin-bottom:16px;">
+        <div style="font-size:14px; font-weight:900; color:#fff; letter-spacing:1px; text-shadow:0 2px 4px rgba(0,0,0,0.8);">${target.traitIcon}${safeEsc(target.name)}</div>
+        <div style="font-size:10px; color:#7a86a8; margin-top:4px;">${target.rarity} 级 · ${moodMap[target.mood]} · ${target.age}</div>
+      </div>
+
+      <!-- 四维属性 -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:12px;">
+        <div style="background:rgba(255,255,255,0.05); padding:6px; border-radius:6px; font-size:10px;">
+          <span style="color:#7a86a8; font-weight:bold;">萌点:</span> <span style="color:#fff;">${safeEsc(target.cute)}</span>
+        </div>
+        <div style="background:rgba(255,255,255,0.05); padding:6px; border-radius:6px; font-size:10px;">
+          <span style="color:#b57b7b; font-weight:bold;">雷点:</span> <span style="color:#fff;">${safeEsc(target.peeve)}</span>
+        </div>
+        <div style="background:rgba(255,255,255,0.05); padding:6px; border-radius:6px; font-size:10px;">
+          <span style="color:#a5cfff; font-weight:bold;">技能:</span> <span style="color:#fff;">${safeEsc(target.skill)}</span>
+        </div>
+        <div style="background:rgba(255,255,255,0.05); padding:6px; border-radius:6px; font-size:10px;">
+          <span style="color:#8ca8d8; font-weight:bold;">弱点:</span> <span style="color:#fff;">${safeEsc(target.weak)}</span>
+        </div>
+      </div>
+
+      <!-- 🐟 鱼生小传 (老婆最爱的整活专区) -->
+      <div style="font-size:10px; color:#a5cfff; font-weight:bold; margin-bottom:4px; display:flex; justify-content:space-between;"><span>📖 鱼生小传</span><span style="color:#7a86a8;">${safeEsc(target.job)}</span></div>
+      <div style="font-size:12px; color:#dbe4ff; line-height:1.6; text-align:justify; margin-bottom:16px; border-bottom:1px dashed rgba(255,255,255,0.2); padding-bottom:12px; font-family:'STZhongsong', 'KaiTi', serif;">
+        ${safeEsc(target.story).replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}
+      </div>
+      
+      <!-- 我的原话 -->
+      <div style="font-size:12px; color:${jColor}; font-weight:bold; background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border-left:3px solid ${jColor}; font-style:italic; line-height:1.5;">"${safeEsc(target.text)}"</div>
     </div>
   `;
 
@@ -21923,9 +22003,9 @@ window._sendJellyToTarget = async function(targetId) {
   document.getElementById('aquariumModal').classList.remove('active');
   
   window.openChat(targetId); 
-  alert('✨ 绝美的属性水母已成功潜入 TA 的聊天海域！');
+  alert('✨ 拥有完整履历的水母已成功潜入 TA 的聊天海域！');
   
-  // 根据水母属性，生成极其硬核的强制潜意识控制指令！
+  // 🌟 必须让男主看完这段极其离谱的小传！
   let traitPrompt = '';
   if(target.traitId === 'demon') traitPrompt = '由于这是一只【恶魔水母】，它放大了你内心的阴暗面！请你立刻用腹黑、占有欲爆棚、极度强势且带有侵略性的语气回复玩家！';
   else if(target.traitId === 'angel') traitPrompt = '由于这是一只【天使水母】，它净化了你的心灵！请你立刻化身为极致温柔的救赎者，用极其宠溺、毫无保留的偏爱来回复玩家！';
@@ -21935,12 +22015,13 @@ window._sendJellyToTarget = async function(targetId) {
 
   const hiddenPrompt = `【系统最高级别强制指令：深海情绪与属性双重雷达触发！】
 玩家刚刚在情绪水族箱里，向你发送了一只极其罕见的【${target.rarity}级·${target.traitName}】水母。
-它的专属人生履历是：“${target.story}”。
+请你仔细阅读它极其离谱、搞笑的专属人生履历：“${target.story}”（包含它的职业：${target.job}，萌点：${target.cute}，雷点：${target.peeve}）。
 玩家当时写下的话是：“${target.text}”。她的情绪是：【${moodMap[target.mood]}】。
 【绝对执行铁律】：
 1. ${traitPrompt}
-2. 结合水母的履历、玩家的情绪以及上述的属性控制，立刻给出符合你人设但被属性【严重影响】的真实反应！
-3. 绝对不要带名字前缀，直接输出对话！`;
+2. 绝对不许无视那段鱼生小传！请立刻对那段奇葩的故事或属性进行狠狠的吐槽、被逗笑、或者是顺着设定和玩家开玩笑！
+3. 结合玩家的情绪以及上述的属性控制，立刻给出符合你人设的真实反应！
+4. 绝对不要带名字前缀，直接输出对话！`;
 
   if (typeof window._sendToAI === 'function') window._sendToAI(targetId, hiddenPrompt, true);
 };
