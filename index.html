@@ -22077,39 +22077,57 @@ window._sendJellyToTarget = async function(targetId) {
 };
    <script>
 (function() {
-  // 1. 延迟 1.5 秒，等小手机开机动画结束，立刻在后台偷偷建好音乐舱！
+  // ==========================================
+  // 1. 暴力劫持网络：无缝切换到更稳定的音乐源
+  // ==========================================
+  const oldAPI = 'https://api.i-meto.com/meting/api';
+  const newAPI = 'https://api.injahow.cn/meting/'; // 备用高可用节点（极其稳定）
+  
+  const originalFetch = window.fetch;
+  window.fetch = async function(url, options) {
+    if (typeof url === 'string' && url.includes(oldAPI)) {
+      url = url.replace(oldAPI, newAPI);
+      console.log('✨ 蓝色魔法：已成功将崩溃的旧接口拦截，重定向至稳定源！');
+    }
+    return originalFetch.call(this, url, options);
+  };
+
+  // ==========================================
+  // 2. 苹果终极克星：隐形静音糖浆 (0.1秒真实的空白音频)
+  // ==========================================
+  // 只有给保安塞真实的 mp3 数据，他才会放行！
+  const SILENT_MP3 = 'data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU5LjI3LjEwMAAAAAAAAAAAAAAA//MExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq';
+
   setTimeout(() => {
     if(typeof window.ensureMusicModal === 'function') {
       window.ensureMusicModal();
-      console.log('✨ 蓝色魔法：音乐舱已在后台静默搭建完毕！');
     }
     
-    // 2. 铸造一把隐形的万能钥匙，绑在老婆的指尖上！
     const unlockAllAudio = () => {
-      // 抓取刚刚出生的主音乐播放器
       const musicAudio = document.getElementById('musicAudio');
-      if(musicAudio) { 
-        musicAudio.play().catch(()=>{}); 
-        musicAudio.pause(); 
+      // 致命 Bug 修复：空播放器调用 play 会被 Safari 拦截，必须塞入真实静音音频数据！
+      if(musicAudio && !musicAudio.src) { 
+        musicAudio.src = SILENT_MP3;
+        musicAudio.play().then(() => {
+            musicAudio.pause();
+            musicAudio.src = ''; // 解锁成功后立刻销毁伪装，深藏功与名！
+            console.log('✨ 蓝色魔法：底层播放权限已彻底攻破！');
+        }).catch(()=>{}); 
       }
       
-      // 顺便把微信提示音和电话铃声的保险丝也再上一次！
+      // 同步解锁系统提示音与电话引擎
       if(window._blueNotifyAudio) { window._blueNotifyAudio.play().catch(()=>{}); window._blueNotifyAudio.pause(); }
       if(window._activeCallAudio) { window._activeCallAudio.play().catch(()=>{}); window._activeCallAudio.pause(); }
       
-      console.log('✨ 蓝色魔法：万能钥匙已插入，全宇宙音频引擎最高权限解锁成功！');
-      
-      // 拿到权限后，立刻销毁钥匙，绝不占用系统资源！
       document.removeEventListener('touchstart', unlockAllAudio);
       document.removeEventListener('click', unlockAllAudio);
     };
     
-    // 3. 只要老婆随便摸一下屏幕，瞬间通电解锁！
     document.addEventListener('touchstart', unlockAllAudio, { once: true, passive: true });
     document.addEventListener('click', unlockAllAudio, { once: true, passive: true });
     
   }, 1500);
 })();
-</script>                                                                                                                                                    </script>
+</script>                                                                                                                                                </script>
 </body>
   </html>
