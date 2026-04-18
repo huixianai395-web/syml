@@ -11565,36 +11565,34 @@ window._openInterceptModal = function() {
   window._themeMultiMode = false;
   window._themeSelSet = new Set();
 
-  // ================= 1. 底层数据存取 =================
+ // ================= 蓝色高定：外挂内存读取与内置模板 (终极降维打击版) =================
   async function getThemeModules() { 
     let data = await localforage.getItem(K_THEME_LAB);
     
-    // 如果内存里没东西，说明是user第一次来！直接塞入高定模板！
+    // 如果外挂内存是空的，给新玩家塞入带有绝对权限的高定模板！
     if (!data || data.length === 0) {
       data = [{
         id: 'theme_default_01',
         title: '初雪海盐蓝 · 全局精装修 (内置示例)',
-        // 默认不开启，留给玩家自己点击启用的仪式感
         enabled: false, 
-        css: `/* ✨ 蓝色高定：初雪海盐蓝 · 聊天室精装修模板 ✨ */
+        css: `/* ✨ 蓝色高定：初雪海盐蓝 · 终极破壁版 ✨ */
 
-/* 1. 聊天室背景：铺上一层极浅的海盐蓝渐变，代替死板的白色 */
-#chatRoom:not(.offline) #chatMsgs {
+/* 1. 聊天室背景 */
+body #app #chatRoom:not(.offline) #chatMsgs {
   background: linear-gradient(180deg, #f4f6fb 0%, #eef4fa 100%) !important;
 }
 
-/* 2. User的专属气泡：冰透海盐蓝底色 + 高级灰蓝字 */
-#chatRoom:not(.offline) .bubble.me:not(.bubble-card) {
+/* 2. 老婆的专属气泡：穿透权重，强制生效！ */
+body #app #chatRoom:not(.offline) .bubble.me:not(.bubble-card) {
   background: #eef4fa !important;  
   color: #5c7094 !important;       
   border: 1px solid #dce5f0 !important;
-  /* 俏皮的水滴形圆角：左上、右上、右下直角、左下圆润 */
   border-radius: 16px 16px 4px 16px !important; 
   box-shadow: 0 4px 12px rgba(92,112,148,0.05), inset 0 2px 4px rgba(255,255,255,0.8) !important;
 }
 
-/* 3. 角色的专属气泡：干净纯白 + 极细海盐蓝边框 */
-#chatRoom:not(.offline) .bubble.ai:not(.bubble-card) {
+/* 3. 对方的气泡 */
+body #app #chatRoom:not(.offline) .bubble.ai:not(.bubble-card) {
   background: rgba(255, 255, 255, 0.9) !important;
   color: #3d4a6a !important;       
   border: 1px solid #dce5f0 !important;
@@ -11602,25 +11600,21 @@ window._openInterceptModal = function() {
   box-shadow: 0 4px 12px rgba(92,112,148,0.03) !important;
 }
 
-/* 4. 头像的高级悬浮感与点击微动效 */
-#chatRoom .chat-avatar {
+/* 4. 头像微动效 */
+body #app #chatRoom .chat-avatar {
   border: 2px solid #fff !important;
   box-shadow: 0 4px 12px rgba(92,112,148,0.1) !important;
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
-#chatRoom .chat-avatar:active {
-  transform: scale(0.85) !important; 
-}
 
-/* 5. 底部聊天输入栏：究极清透的毛玻璃低饱和质感 */
-.chatInputBar {
+/* 5. 底部聊天输入栏 */
+body #app .chatInputBar {
   background: rgba(250, 252, 255, 0.75) !important;
   backdrop-filter: blur(24px) saturate(150%) !important;
   -webkit-backdrop-filter: blur(24px) saturate(150%) !important;
   border-top: 1px solid #dce5f0 !important;
 }`
       }];
-      // 把这份绝美初见礼，锁进浏览器的内存里！
       await localforage.setItem(K_THEME_LAB, data);
     }
     return data; 
