@@ -5128,8 +5128,7 @@ function refreshFontSizeUI(){
       p = rawText
         .replace(/<[^>]+>/g, '')
         .replace(/\[voice:\d*:?(.*?)\]/g, '[语音] $1')
-        // 🌟 核心修复：给外面的列表摘要安检员也升级宽容雷达！认得 st: 和 st_
-        .replace(/\[(stk:|st:|st_).*?\]/gi, '[表情包]')
+        .replace(/\[(stk:|st:|st_|表情包:|表情:).*?\]/gi, '[表情包]')
         .replace(/\[call:.*?\]/g, '[通话记录]')
         .replace(/\[quote\]/g, '')
         .trim();
@@ -5599,11 +5598,14 @@ window._ivManageMode = false;
       const src = t.slice(5, -6);
       return `${quote}<div class="bubble ${cls} ${hidden} bubble-card" style="padding:0;background:transparent;border:none;box-shadow:none;"><img class="bubble-img" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
     }
-   // 🌟 蓝色高定：表情包隐形修复盾（真正的完美拼写版！）
-    const stkMatch = t.trim().match(/^\[(stk:|st:|st_)([^\]]+)\]$/i);
+     // 🌟 蓝色高定：表情包隐形修复盾（真正的完美拼写版 + AI幻觉宽容雷达！）
+    // 🔪 核心升级：正则雷达扩大搜索范围，强行捕获 AI 乱编的 [表情包:] 和 [表情:] 前缀！
+    const stkMatch = t.trim().match(/^\[(stk:|st:|st_|表情包:|表情:)([^\]]+)\]$/i);
     if(stkMatch){
+      // 提取第二组也就是真正的 ID，无论 AI 前面加了什么前缀，我们都只取纯净的 ID！
       const id = stkMatch[2].trim();
-      // 🔪 致命错误修复：调用正确的雷达函数，并把图片链接解包出来！
+      
+      // 调用雷达函数，把图片链接解包出来！
       const sticker = window.__stickerGetById ? window.__stickerGetById(id) : null;
       const src = sticker ? sticker.src : '';
       
