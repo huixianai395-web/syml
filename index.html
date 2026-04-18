@@ -22542,128 +22542,137 @@ window._jumpToGachaChat = function() {
   }
 };
    </script>
-  <!-- 🌟 蓝色终极救命补丁 V4：独立记忆字典，彻底绕过闭包隔离！ -->
+  <!-- 🌟 蓝色终极救命补丁 V5：物理 DOM 排序 + 原生劫持 (绝对防失效版) -->
 <script>
 setTimeout(() => {
-  // 1. 呼出绝美毛玻璃菜单
-  window._currentActionChatId = null;
-  
-  window._openChatListMenu = function(id, isGroup, e) {
-    if(e) { e.preventDefault(); e.stopPropagation(); }
-    window._currentActionChatId = id;
+  // 1. 终极木马：直接劫持系统的原生删除指令！
+  if(!window._deleteHookedV5) {
+    window._originalNativeDelete = window.deleteContactFromList;
     
-    // 从独立字典读取置顶状态，绝对不依赖系统底层！
-    const pinnedMap = JSON.parse(localStorage.getItem('mp_pinned_chats') || '{}');
-    const isPinned = !!pinnedMap[id];
+    window.deleteContactFromList = function(id, e) {
+      if(e) { e.preventDefault(); e.stopPropagation(); }
+      window._currentActionChatId = id;
+      
+      const pinnedMap = JSON.parse(localStorage.getItem('mp_pinned_chats') || '{}');
+      const isPinned = !!pinnedMap[id];
+      
+      let modal = document.getElementById('chatListMenuModal');
+      if(!modal) {
+        const html = `
+        <div id="chatListMenuModal" class="modal" style="z-index: 10000;" onclick="this.classList.remove('active')">
+          <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:24px; padding:20px; text-align:center; max-width:300px; box-shadow:0 12px 40px rgba(92,112,148,0.15);" onclick="event.stopPropagation()">
+            <div style="font-size:13px; color:#7a86a8; font-weight:800; margin-bottom:16px; letter-spacing:1px;">聊天选项</div>
+            <button id="clmPinBtn" class="btn p" style="width:100%; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:14px; padding:14px 0; font-size:15px; font-weight:bold; margin-bottom:12px; box-shadow:0 4px 12px rgba(92,112,148,0.1); transition:transform 0.1s;" onclick="window._executePinToggle()" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">置顶聊天</button>
+            <button class="btn d" style="width:100%; background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid #f2dcdc; border-radius:14px; padding:14px 0; font-size:15px; font-weight:bold; margin-bottom:16px; box-shadow:none; transition:transform 0.1s;" onclick="window._executeRealDelete()" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">删除该聊天</button>
+            <button class="btn" style="width:100%; background:transparent; color:#7a86a8; border:none; padding:10px 0; font-size:14px; font-weight:bold;" onclick="document.getElementById('chatListMenuModal').classList.remove('active')">取消</button>
+          </div>
+        </div>`;
+        document.body.insertAdjacentHTML('beforeend', html);
+        modal = document.getElementById('chatListMenuModal');
+      }
+      
+      document.getElementById('clmPinBtn').textContent = isPinned ? '取消置顶' : '置顶聊天';
+      modal.classList.add('active');
+      return false; // 死死捂住系统原生弹窗的嘴！
+    };
+    window._deleteHookedV5 = true;
+  }
+
+  // 2. 真正的删除动作 (放行给系统原生逻辑)
+  window._executeRealDelete = function() {
+    const id = window._currentActionChatId;
+    if(!id) return;
+    document.getElementById('chatListMenuModal').classList.remove('active');
     
-    let modal = document.getElementById('chatListMenuModal');
-    if(!modal) {
-      const html = `
-      <div id="chatListMenuModal" class="modal" style="z-index: 10000;" onclick="this.classList.remove('active')">
-        <div class="modal-card" style="background:rgba(250,252,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid #dce5f0; border-radius:24px; padding:20px; text-align:center; max-width:300px; box-shadow:0 12px 40px rgba(92,112,148,0.15);" onclick="event.stopPropagation()">
-          <div style="font-size:13px; color:#7a86a8; font-weight:800; margin-bottom:16px; letter-spacing:1px;">聊天选项</div>
-          <button id="clmPinBtn" class="btn p" style="width:100%; background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:14px; padding:14px 0; font-size:15px; font-weight:bold; margin-bottom:12px; box-shadow:0 4px 12px rgba(92,112,148,0.1); transition:transform 0.1s;" onclick="window._executePinToggle()" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">置顶聊天</button>
-          <button class="btn d" style="width:100%; background:rgba(252,242,242,0.8); color:#b57b7b; border:1px solid #f2dcdc; border-radius:14px; padding:14px 0; font-size:15px; font-weight:bold; margin-bottom:16px; box-shadow:none; transition:transform 0.1s;" onclick="window._executeDeleteChat()" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">删除该聊天</button>
-          <button class="btn" style="width:100%; background:transparent; color:#7a86a8; border:none; padding:10px 0; font-size:14px; font-weight:bold;" onclick="document.getElementById('chatListMenuModal').classList.remove('active')">取消</button>
-        </div>
-      </div>`;
-      document.body.insertAdjacentHTML('beforeend', html);
-      modal = document.getElementById('chatListMenuModal');
-    }
-    
-    document.getElementById('clmPinBtn').textContent = isPinned ? '取消置顶' : '置顶聊天';
-    modal.classList.add('active');
+    setTimeout(() => {
+      if(window._originalNativeDelete) {
+         window._originalNativeDelete(id); 
+      }
+    }, 50);
   };
 
-  // 2. 独立字典写入逻辑（绝对不会报错！）
+  // 3. 置顶逻辑 (写入外挂内存)
   window._executePinToggle = function() {
     const id = window._currentActionChatId;
     if(!id) return;
     
     const pinnedMap = JSON.parse(localStorage.getItem('mp_pinned_chats') || '{}');
-    if(pinnedMap[id]) {
-      delete pinnedMap[id]; // 已置顶则取消
-    } else {
-      pinnedMap[id] = true; // 未置顶则打上标记
-    }
+    if(pinnedMap[id]) delete pinnedMap[id];
+    else pinnedMap[id] = true;
     localStorage.setItem('mp_pinned_chats', JSON.stringify(pinnedMap));
     
     document.getElementById('chatListMenuModal').classList.remove('active');
-    // 瞬间重绘列表，让图钉生效
-    if(typeof window.renderContacts === 'function') window.renderContacts(document.getElementById('searchInput')?.value || '');
+    window._applyPinStyles(); // 瞬间触发物理重排！
   };
 
-  // 3. 呼叫原生删除逻辑 (完美继承)
-  window._executeDeleteChat = function() {
-    const id = window._currentActionChatId;
-    if(!id) return;
-    document.getElementById('chatListMenuModal').classList.remove('active');
-    // 延迟 50ms 等弹窗收起，再呼出系统的删除确认框
-    setTimeout(() => {
-      if(typeof window.deleteContactFromList === 'function') window.deleteContactFromList(id);
-    }, 50);
-  };
-
-  // 4. 重写列表渲染，带上外挂字典排序
-  window.renderContacts = function(k='') {
-    k = (k||'').trim();
-    const contacts = window.getContacts ? window.getContacts() : [];
-    const groups = window.getGroups ? window.getGroups() : [];
-    const all = [...contacts, ...groups];
+  // 4. 暴力 DOM 排序引擎 (无视黑匣子，直接在屏幕上动手脚)
+  window._applyPinStyles = function() {
+    const list = document.getElementById('contactList');
+    if(!list) return;
     
-    let arr = all.filter(c => !k || c.name.includes(k) || (c.preview||'').includes(k));
-    
-    // 🌟 核心魔法：读取外挂字典，给角色强行贴上置顶标签
     const pinnedMap = JSON.parse(localStorage.getItem('mp_pinned_chats') || '{}');
-    arr.forEach(c => { c.pinned = !!pinnedMap[c.id]; });
+    const items = Array.from(list.querySelectorAll('.item'));
     
-    // 排序：置顶无条件在前
-    arr.sort((a, b) => {
-      if(a.pinned && !b.pinned) return -1;
-      if(!a.pinned && b.pinned) return 1;
-      return 0; 
+    items.forEach(item => {
+      const main = item.querySelector('.main');
+      if(!main) return;
+      const match = (main.getAttribute('onclick')||'').match(/openChat\(['"]([^'"]+)['"]/);
+      if(!match) return;
+      const id = match[1];
+      const isPinned = !!pinnedMap[id];
+      
+      // 贴上标记，准备排序
+      item.dataset.isPinned = isPinned ? '1' : '0';
+      
+      // 渲染绝美海盐蓝背景
+      item.style.background = isPinned ? 'rgba(238,244,250,0.4)' : '#fff';
+      item.style.border = isPinned ? '1px solid #dce5f0' : 'none';
+      
+      // 注入图钉
+      const timeRow = main.querySelector('.t')?.parentNode;
+      if(timeRow) {
+         let pinIcon = timeRow.querySelector('.pin-icon');
+         if(isPinned) {
+           if(!pinIcon) {
+             timeRow.insertAdjacentHTML('beforeend', `<div class="pin-icon" style="margin-left:4px; display:flex; align-items:center;"><svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:#5c7094; fill:#eef4fa; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M12 17v5"></path><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1v3.76z"></path></svg></div>`);
+           }
+         } else {
+           if(pinIcon) pinIcon.remove();
+         }
+      }
     });
-
-    const listEl = document.getElementById('contactList');
-    if(!listEl) return;
-
-    listEl.innerHTML = arr.map(c => {
-      const unreadHtml = c.unread ? `<div style="position:absolute; top:-4px; right:-6px; background:#f25c5c; color:#fff; font-size:10px; font-weight:800; height:18px; min-width:18px; border-radius:9px; padding:0 5px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 8px rgba(242,92,92,0.25); border:2px solid #fff; z-index:10; font-family:ui-monospace, Arial, sans-serif; transform:scale(0.9); transform-origin:top right; pointer-events:none;">${c.unread > 99 ? '99+' : c.unread}</div>` : '';
-
-      const pinColor = c.pinned ? '#5c7094' : '#dce5f0';
-      const pinFill = c.pinned ? '#eef4fa' : 'none';
-      const pinSvg = c.pinned ? `<div style="margin-left:4px; display:flex; align-items:center;"><svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:${pinColor}; fill:${pinFill}; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><path d="M12 17v5"></path><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1v3.76z"></path></svg></div>` : '';
-
-      const isGroupFlag = !!c.isGroup;
-
-      return `
-      <div class="item" style="-webkit-touch-callout:none; user-select:none; position:relative; background:${c.pinned ? 'rgba(238,244,250,0.4)' : '#fff'}; border:${c.pinned ? '1px solid #dce5f0' : 'none'};"
-           oncontextmenu="window._openChatListMenu('${c.id}', ${isGroupFlag}, event); return false;"
-           ontouchstart="this._t = setTimeout(()=>{ window._openChatListMenu('${c.id}', ${isGroupFlag}); }, 500)"
-           ontouchend="clearTimeout(this._t)" ontouchmove="clearTimeout(this._t)">
-        <div style="position:relative; width:44px; height:44px; flex-shrink:0;">
-          <img class="avatar" src="${c.avatar||'https://via.placeholder.com/88x88?text=头像'}" style="width:100%; height:100%; object-fit:cover; border-radius:12px;" />
-          ${unreadHtml}
-        </div>
-        <div class="main" onclick="if(window._isDeleting)return; openChat('${c.id}')">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div class="name" style="display:flex; align-items:center; gap:6px;">
-              ${c.isGroup ? '<span style="font-size:10px; background:#eef3ff; color:#2f66d8; padding:2px 6px; border-radius:4px; font-weight:bold;">群聊</span>' : ''}
-              ${window.esc ? window.esc(c.name) : c.name}
-            </div>
-            <div style="display:flex; align-items:center;">
-              <div class="t">${window.esc ? window.esc(c.time||'') : (c.time||'')}</div>
-              ${pinSvg}
-            </div>
-          </div>
-          <div class="preview">${window.esc ? window.esc(c.preview||'') : (c.preview||'')}</div>
-        </div>
-      </div>`;
-    }).join('') || '<div class="card small">暂无联系人或群聊，点右上角创建吧</div>';
+    
+    // 物理移动 DOM 节点！
+    items.sort((a, b) => {
+      const aPin = a.dataset.isPinned === '1';
+      const bPin = b.dataset.isPinned === '1';
+      if(aPin && !bPin) return -1;
+      if(!aPin && bPin) return 1;
+      return 0;
+    }).forEach(item => list.appendChild(item)); 
   };
+
+  // 5. 挂载雷达监控：只要列表一刷新，立刻执行排版！
+  if(window._pinObserver) window._pinObserver.disconnect();
+  window._pinObserver = new MutationObserver((mutations) => {
+    let shouldSort = false;
+    for(let m of mutations) {
+      if(m.addedNodes.length > 0) { shouldSort = true; break; }
+    }
+    if(shouldSort) {
+      window._pinObserver.disconnect();
+      window._applyPinStyles();
+      window._pinObserver.observe(document.getElementById('contactList'), { childList: true });
+    }
+  });
   
-  if(document.getElementById('contactList')) window.renderContacts(document.getElementById('searchInput')?.value || '');
-}, 800);
+  const listEl = document.getElementById('contactList');
+  if(listEl) {
+    window._pinObserver.observe(listEl, { childList: true });
+    window._applyPinStyles(); // 初始先排一次
+  }
+  
+}, 1000); // 延迟一秒，等旧代码全部落网后再出击！
 </script>
 </body>
   </html>
