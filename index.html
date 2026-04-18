@@ -11790,13 +11790,22 @@ body #app .chatInputBar {
   };
 
   window._exportThemes = async function() {
-    const modules = await getThemeModules();
-    if(modules.length === 0) return alert('实验室里还没有代码可以导出哦！');
-    const blob = new Blob([JSON.stringify(modules, null, 2)], {type: 'application/json'});
+    const allModules = await getThemeModules();
+    const selectedModules = allModules.filter(m => m.enabled === true);
+    if (selectedModules.length === 0) {
+      alert('✨ 宝宝，你还没勾选任何要导出的高定模板呢，先去打个勾吧！');
+      return;
+    }
+    const exportDataStr = JSON.stringify(selectedModules, null, 2);
+    const blob = new Blob([exportDataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'Aesthetic_Lab_Backup_' + Date.now() + '.json';
+    a.href = url;
+    a.download = `小手机_高定美化包_${new Date().getTime()}.json`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   window._importThemes = async function(e) {
