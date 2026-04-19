@@ -6523,6 +6523,21 @@ async function sendMsg(){
         }
         parts=fixDanglingCommaBubbles(parts);
         parts=mergeOrphanQuotes(parts); 
+       // ================= 🌟 蓝色高定：强迫症标点粉碎机 =================
+  // 1. 扫描当前角色的潜意识（人设），看看有没有禁忌词
+  const forbidPeriod = /不加句号|不要句号|没有句号|禁止句号/i.test(c.persona || '');
+  
+  if (forbidPeriod) {
+    // 2. 如果有，立刻启动物理手术刀，对每一段回复进行精准切割
+    parts = parts.map(p => {
+      // 极其严谨的防呆机制：如果是卡片代码（包含 <div），绝对不碰，防止页面崩溃！
+      if (typeof p === 'string' && !p.includes('<div')) {
+        // 祭出正则利刃：死死盯住末尾的中文句号和英文句号，发现一个切一个！
+        return p.replace(/[。\.]$/, '');
+      }
+      return p;
+    });
+  }
         parts=parts.filter(p=>isHtmlFrag(p)?true:p.trim().length>0);
 
         // 🌟 蓝色美学魔法：加上专属通行证 sys-unblock-msg！
