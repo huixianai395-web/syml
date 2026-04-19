@@ -22869,7 +22869,7 @@ setTimeout(() => {
   const file = e.target.files?.[0];
   if (!file) return;
 
-  // ✨ 蓝色高定：创造一个初雪海盐蓝的沉浸式加载遮罩，抛弃丑陋的系统默认样式！
+  // 创造一个初雪海盐蓝的沉浸式加载遮罩
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed; inset:0; z-index:99999; background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#5c7094; font-weight:bold; font-size:13px; letter-spacing:1px;';
   overlay.innerHTML = '<div style="width:44px; height:44px; border:3px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; margin-bottom:20px;"></div><div id="splitProgressText">初雪海盐蓝手术刀已就位...</div>';
@@ -22890,8 +22890,9 @@ setTimeout(() => {
         return alert('这本书不大，直接用普通【导入】就可以啦！');
       }
 
-      // 🔪 核心修复：摘掉 window. 的前缀，强行在本地作用域抓取这本厚厚的魔法书数据！
-      const data = (typeof getStudyData === 'function') ? getStudyData() : window.getStudyData();
+      // 🔪 终极魔法：不找函数了！直接用 localforage 撬开底层外挂内存的保险箱！
+      let data = await localforage.getItem('mp_fix_study_books');
+      if (!data) data = { currentBookId: null, books: [] };
       
       for (let i = 0; i < totalChunks; i++) {
         document.getElementById('splitProgressText').innerHTML = `正在封存外挂内存<br><br><span style="color:#a5cfff; font-size:20px;">第 ${i + 1} 卷 / 共 ${totalChunks} 卷</span>`;
@@ -22910,14 +22911,15 @@ setTimeout(() => {
         data.books.push(newBook);
       }
 
-      // ✨ 一次性死死钉进外挂内存，绝对不丢！
+      // ✨ 死死钉进外挂内存，绝对不丢数据！
       await localforage.setItem('mp_fix_study_books', data);
       
       overlay.remove();
       
-      // 🔪 核心修复：同理，摘掉 window. 强行呼叫书房渲染大队！
+      // 刷新页面，让书房重新读取内存 (加入双重兜底，就算函数找不到也强行刷新网页)
       if(typeof renderStudyHome === 'function') renderStudyHome();
       else if(typeof window.renderStudyHome === 'function') window.renderStudyHome();
+      else location.reload(); 
       
       alert(`✨ 拆分成功！这本巨著已经被完美切成了 ${totalChunks} 卷，安安静静躺在外挂内存里啦！`);
 
