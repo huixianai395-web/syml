@@ -8549,31 +8549,32 @@ window.__stickerGetById = (id) => {
   return fuzzy || null;
 };
 
-// 压缩：省空间（你要多上传）
-      // 强制PNG，兼容vivo等问题机型
-      async function compressStickerImage(file){
-        const maxSide = 160;
-        return new Promise((resolve,reject)=>{
-          const fr=new FileReader();
-          fr.onload=()=>{
-            const img=new Image();
-            img.onload=()=>{
-              const scale=Math.min(maxSide/img.width,maxSide/img.height,1);
-              const w=Math.max(1,Math.round(img.width*scale));
-              const h=Math.max(1,Math.round(img.height*scale));
-              const c=document.createElement('canvas');
-              c.width=w; c.height=h;
-              const ctx=c.getContext('2d');
-              ctx.clearRect(0,0,w,h);
-              ctx.drawImage(img,0,0,w,h);
-              resolve(c.toDataURL('image/png'));
-            };
-            img.onerror=reject;
-            img.src=fr.result;
-          };
-          fr.onerror=reject;
-          fr.readAsDataURL(file);
-        });
+// ================= 🌟 蓝色高定：vivo 终极防空白与防断联引擎 =================
+  // 1. 核心粉碎压缩引擎：绝对透明底 PNG，永不丢失的实体纹身！
+  async function compressStickerImage(file){
+    const maxSide = 160;
+    return new Promise((resolve,reject)=>{
+      const fr = new FileReader();
+      fr.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const scale = Math.min(maxSide/img.width, maxSide/img.height, 1);
+          const w = Math.max(1, Math.round(img.width * scale));
+          const h = Math.max(1, Math.round(img.height * scale));
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          const ctx = c.getContext('2d');
+          ctx.clearRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+          // 彻底抛弃 vivo 抽风的 WebP，强制输出稳定透明的 PNG！
+          resolve(c.toDataURL('image/png'));
+        };
+        img.onerror = reject;
+        img.src = fr.result;
+      };
+      fr.onerror = reject;
+      fr.readAsDataURL(file);
+    });
   }
 
 // URL行解析：哭哭：url / 哭哭 url / url 哭哭 / 哭哭|url
@@ -8800,29 +8801,36 @@ $('stImportUrlBtn').onclick=()=>{
 };
 
 $('stPickFilesBtn').onclick=()=> $('stFilePick').click();
-$('stFilePick').onchange=async (e)=>{
-  const files=[...(e.target.files||[])]; e.target.value='';
-  if(!files.length) return;
+// 2. 完美的按钮连接线：接管上传点击事件！
+  document.getElementById('stFilePick').onchange = async (e) => {
+    const files = [...(e.target.files||[])]; 
+    e.target.value = ''; // 极其关键：清空输入框，防止下次选同一张图没反应！
+    if(!files.length) return;
 
-  const gid=$('stImportGroupSel').value;
-  const s=getStickerState();
-  const grp=s.groups.find(g=>g.id===gid);
-  if(!grp) return alert('请先选分组');
+    const gid = document.getElementById('stImportGroupSel').value;
+    const s = getStickerState();
+    const grp = s.groups.find(g => g.id === gid);
+    if(!grp) return alert('请先选分组哦宝宝！');
 
-  let added=0;
-  for(const f of files){
-    if(!f.type || !f.type.startsWith('image/')) continue;
-    try{
-      const data=await compressStickerImage(f);
-      grp.stickers.push({id:stUid(),name:(f.name||'贴纸').replace(/\.[a-z0-9]+$/i,''),src:data});
-      added++;
-      
-    }catch{}
-  }
-  setStickerState(s);
-  stMgrRender(); stRenderSheet();
-  alert(added?`已加入 ${added} 张`:'没有可用图片');
-};
+    let added = 0;
+    for(const f of files){
+      if(!f.type || !f.type.startsWith('image/')) continue;
+      try{
+        // 召唤咱们刚刚写好的核心压缩引擎！
+        const data = await compressStickerImage(f);
+        grp.stickers.push({
+           id: stUid(),
+           name: (f.name||'贴纸').replace(/\.[a-z0-9]+$/i,''),
+           src: data
+        });
+        added++;
+      } catch(err) { console.error('图片压缩失败:', err); }
+    }
+    setStickerState(s);
+    stMgrRender(); 
+    stRenderSheet();
+    alert(added ? `✨ 成功凝结了 ${added} 张表情包！已死死刻入内存！` : '没有可用图片哦~');
+  };
 
 // 多选工具
 $('stSelToggleBtn').onclick=()=>{
