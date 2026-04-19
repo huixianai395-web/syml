@@ -5663,9 +5663,9 @@ window._ivManageMode = false;
     }
 
     // 🌟 蓝色高定：第二道闸门，带云端唤魂播放引擎的语音拦截器！
-    const voiceMatch=t.match(/^\[voice:(\d+):([\s\S]*)\]$/);
+   const voiceMatch=t.match(/^\[voice:(\d+):([\s\S]*)\]$/);
     if(voiceMatch){
-      const dur=voiceMatch[1],vtext=voiceMatch[2],vid='vr_'+m.id;
+      const dur=voiceMatch[1], vtext=voiceMatch[2], vid='vr_'+m.id;
       const w=Math.min(180,72+Number(dur)*4);
       const waves='<div class="voice-wave"></div>'.repeat(6);
       
@@ -5673,10 +5673,17 @@ window._ivManageMode = false;
       if(vtext.includes('bubble-bilingual')) finalVtext = vtext; 
       
       const roleIdForVoice = isMe ? 'me' : currentId;
-      const safeVoiceText = safeEsc(vtext.replace(/<[^>]*>/g, '')); // 提取纯文字给大模型念
+      
+      // 🔪 蓝色高定手术刀：暴力切除语音里所有的 (停顿) [叹气] *苦笑* 等无效剧本词！
+      let pureVoiceText = vtext.replace(/[\(（\[【\*][^\)）\]】\*]+[\)）\]】\*]/g, '').trim();
+      
+      // 兜底护盾：如果整条语音全是括号，给个省略号防止崩溃
+      if(!pureVoiceText) pureVoiceText = "……"; 
+      
+      const safeVoiceText = safeEsc(pureVoiceText.replace(/<[^>]*>/g, '')); 
       
       return `${quote}<div class="bubble ${cls} ${hidden}" style="width:${w}px;cursor:pointer;" onclick="var el=document.getElementById('${vid}');if(el)el.classList.toggle('hidden'); window._playVoiceClone(this, '${safeVoiceText}', '${roleIdForVoice}');"><div class="bubble-voice"><div class="voice-waves">${waves}</div><div class="voice-dur">${dur}″</div></div></div><div id="${vid}" class="voice-reveal hidden" style="${vtext.includes('bubble-bilingual') ? 'padding:0; background:transparent;' : ''}">${finalVtext}</div>${ts}`;
-    }
+  }
 
     // 🌟 蓝色高定：第三道闸门，纯文字的双语字幕拦截器（带引用兼容版）
     if(t.includes('bubble-bilingual')){
@@ -6200,10 +6207,10 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 2. 本次回复的条数由你完全根据人设的立体性格、心理波动和当前语境自由发挥（拒绝刻板，气泡条数可多可少）。
 3. 每条消息≤30字为佳，绝对禁止超过40字。像真人发微信，短句+标点。
 4. 【代码防粘连绝对规则】：凡是回复中包含HTML代码，必须遵守以下全部要求：a)代码必须是以<!DOCTYPE html>开头的完整文档，禁止发片段；b)整个HTML文档必须作为一个完整字符串放在JSON数组的一条里，禁止拆分成多条；c)禁止添加任何markdown标记如\`\`\`html；d)代码前后的对话文字必须和代码分开，各自独立一条。⚠️发红包、定位、模拟发图等功能【绝对不是】发代码，严禁加上<!DOCTYPE html>，必须直接输出卡片的div！`,
-`5. messages数组里的每一条都只能是角色说的话（纯对话文本），严禁混入任何动作描写、心理描写、场景描写、旁白叙述。`,
+`5. messages数组里的每一条都只能是纯粹的口语台词！【绝对、永远禁止】在气泡里混入任何 (停顿)、（叹气）、*苦笑*、动作描写或旁白叙述！更严禁把这些动作词单独作为一个气泡发送！违反即为严重OOC！`,
       rangeRule,
 `6. 【表情包】你可以像真人一样发文字，也可以偶尔发1张表情包。若要发表情包，请让某一条消息内容严格等于：[stk:ID]，ID必须从下方列表中原样复制。可用表情包列表：\n${window.__stickerPromptText?window.__stickerPromptText(200):'（暂无）'}`,
-`7. 【语音消息】你可以发语音，让某一条消息严格等于：[voice:秒数:语音内容]，秒数根据内容长度估算（2-60）。语音消息表达更私密亲昵的语气。整条语音消息只能是[voice:秒数:内容]，绝对禁止前后添加任何时间戳、标点或说明文字。`,
+`7.【语音消息】你可以发语音，格式严格为：[voice:秒数:语音内容]。【最高警告】：语音内容必须是纯正的口语字句！里面绝对不许出现“(停顿)”、“（叹气）”等任何括号及动作词！因为语音引擎会把括号里的字直接读出来，非常出戏！`,
 `8. 【通话】你可以主动发起语音或视频通话，让某一条消息严格等于：[call:voice] 或 [call:video]。需要挂断时某一条消息严格等于 [endcall]。发起通话和挂断指令必须单独一条，不能和文字混在一起。`,
 `9. 具备真实的时间观念：根据"上一次消息时间与当前系统时间"的间隔，自然体现时间流逝。`, 
 `10. 每条消息必须带正常中文标点，禁止无标点长句。`,
@@ -6257,9 +6264,9 @@ fatal_pattern: {"messages":...}→BLOCK`;
 3. 每条消息≤30字为佳，绝对禁止超过40字。像真人发微信，短句+标点。
 4. 【代码防粘连绝对规则】：凡回复中包含HTML代码：a)必须是以<!DOCTYPE html>开头的完整文档，禁止发片段；b)整个HTML文档作为一个完整字符串放在JSON数组的一条里，禁止拆分；c)禁止添加任何markdown标记如\`\`\`html；d)代码前后的对话文字必须和代码分开，各自独立一条。若输出HTML，按钮和交互元素的点击事件必须用onclick属性直接写在标签上，禁止使用addEventListener。
 5. 遇到代码输出（指网页开发代码）时，结构必须严格切分为：["[名字]：代码前的铺垫","[名字]：html代码块","[名字]：代码后的互动"]。⚠️发红包、定位、模拟发图等卡片【绝对不是】发代码，严禁加上<!DOCTYPE html>，必须直接输出卡片的div！
-6. messages数组里的每一条都只能是角色说的话（纯对话文本），严禁混入任何动作描写、心理描写、场景描写、旁白叙述。如果只有引用没有回复，禁止输出该条消息。
+6. messages数组里的每一条都只能是纯粹的口语台词！【绝对、永远禁止】在气泡里混入任何 (停顿)、（叹气）、*苦笑*、动作描写或旁白叙述！更严禁把这些动作词单独作为一个气泡发送！违反即为严重OOC！
 7. 【表情包】可以像真人一样发文字，也可以偶尔发1张表情包。若要发表情包，让某一条消息严格等于：[名字]：[stk:ID]，ID必须从可用列表中原样复制。可用表情包列表：\n${window.__stickerPromptText?window.__stickerPromptText(200):'（暂无）'}
-8. 【语音消息】可以发语音，让某一条消息严格等于：[名字]：[voice:秒数:语音内容]，秒数根据内容长度估算（2-60）。语音消息表达更私密亲昵的语气。（注意：语音内容中不得包含。！？，等标点，用纯文字表达）
+8. 【语音消息】你可以发语音，格式严格为：[voice:秒数:语音内容]。【最高警告】：语音内容必须是纯正的口语字句！里面绝对不许出现"(停顿)"、"（叹气）"等任何括号及动作词！因为语音引擎会把括号里的字直接读出来，非常出戏！
 9. 【通话】可以主动发起语音或视频通话，让某一条消息严格等于：[名字]：[call:voice] 或 [名字]：[call:video]。需要挂断时某一条消息严格等于 [名字]：[endcall]。发起通话和挂断指令必须单独一条，不能和文字混在一起。
 10. 每条消息必须带正常中文标点，禁止无标点长句。
 11. 【引用回复铁律】：如需引用对方某条消息，必须且只能在【同一条消息内】完成！格式严格为：[名字]：[quote]被引用的原话[/quote]紧接着写你的回复正文。⚠️绝对禁止把引用的原话单独拆成一条独立的消息发出来！
@@ -6607,7 +6614,12 @@ async function sendMsg(){
       return p;
     });
   }
-        parts=parts.filter(p=>isHtmlFrag(p)?true:p.trim().length>0);
+        parts=parts.filter(p => {
+  if(isHtmlFrag(p)) return true;
+  const txt = p.trim();
+  if(/^[\(（\[【\*].*?[\)）\]】\*]$/.test(txt)) return false;
+  return txt.length > 0;
+});
 
         // 🌟 蓝色美学魔法：加上专属通行证 sys-unblock-msg！
         if (newlyUnblocked) {
