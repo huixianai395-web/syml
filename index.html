@@ -2210,6 +2210,26 @@ body #app .chatInputBar textarea {
   min-height: 40px !important;
   vertical-align: middle !important;
 }
+    /* ================= 🌟 蓝色高定：面板防打架与沉浸式平铺补丁 ================= */
+/* 让表情包放弃悬浮，乖乖融入输入栏的流式布局，去除边框和阴影 */
+body #app #stickerSheet {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 100% !important;
+  margin: 8px 0 0 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  z-index: 10 !important;
+}
+
+/* 优化里面的标签页滑动区排版 */
+body #app .sticker-sheet-hd {
+  padding: 4px 4px 10px !important;
+}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
@@ -22791,5 +22811,44 @@ setTimeout(() => {
   
 }, 1000); // 延迟一秒，等旧代码全部落网后再出击！
 </script>
+          <!-- 🌟 蓝色高定：面板互斥与收纳引擎 -->
+<script>
+setTimeout(() => {
+  const funcBtn = document.getElementById('funcToggleBtn');
+  const stickerBtn = document.getElementById('stickerBtn');
+  const chatInput = document.getElementById('chatInput');
+  const funcPanel = document.getElementById('funcPanel');
+  const stickerSheet = document.getElementById('stickerSheet');
+
+  // 1. 点功能面板，强行关掉表情包
+  if(funcBtn) {
+    funcBtn.onclick = () => {
+      if(stickerSheet) stickerSheet.classList.add('hidden');
+      funcPanel.classList.toggle('show');
+    };
+  }
+
+  // 2. 点表情包，强行关掉功能面板
+  if(stickerBtn) {
+    stickerBtn.onclick = (e) => {
+      e.stopPropagation();
+      if(funcPanel) funcPanel.classList.remove('show');
+      stickerSheet.classList.toggle('hidden');
+      if(!stickerSheet.classList.contains('hidden') && typeof stRenderSheet === 'function') {
+        stRenderSheet();
+      }
+    };
+  }
+
+  // 3. 点击输入框打字，把下面的面板全收起来，绝对不挡视线
+  if(chatInput) {
+    chatInput.addEventListener('focus', () => {
+      if(funcPanel) funcPanel.classList.remove('show');
+      if(stickerSheet) stickerSheet.classList.add('hidden');
+    });
+  }
+}, 1500); // 延迟加载，确保原代码的事件被我们完美劫持覆盖
+</script>
+          
 </body>
   </html>
