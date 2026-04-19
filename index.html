@@ -4764,6 +4764,7 @@ window.changeReaderFontColor = function(colorHex){
       <button class="fm-btn" data-act="copy">复制</button>
       <button class="fm-btn" data-act="delete">删除</button>
       <button class="fm-btn" data-act="quote">引用</button>
+      <button class="fm-btn" data-act="regen">重回</button>
       <button class="fm-btn" data-act="hide">隐藏(仅AI不可见)</button>
       <button class="fm-btn hidden" data-act="unhide">取消隐藏</button>
       <button class="fm-btn" data-act="multi">多选</button>
@@ -7027,6 +7028,7 @@ document.getElementById('globalImportFile').onchange = async function(e) {
     if(act==='all'){closeFloatMenu();enterSelectMode();selectAllMessages();return;}
     if(act==='fav'){msg.favorite=!msg.favorite;arr[i]=toMsg(msg);setChatArr(currentId,arr);renderChat();closeFloatMenu();return;}
     if(act==='edit'){editMsgId=mid;$('editMsgInput').value=msg.text||'';$('editModal').classList.add('active');closeFloatMenu();return;}
+    if(act==='regen'){closeFloatMenu();if(!confirm('确定要让 TA 重新思考这段回复吗？时光倒流后，这条消息及之后的记忆都会被抹除哦！'))return;const arr=getChatArr(currentId);const idx=arr.findIndex(x=>x.id===mid);if(idx<0)return;setChatArr(currentId,arr.slice(0,idx));renderChat();const hiddenPrompt='【系统强制指令：时光倒流与命运重写】\n玩家对你刚才的反应不太满意，时间线已重置。请你严格保持人设，结合你们刚刚的聊天上下文，换一种全新的思路、语气或切入点来重新回复她！绝对不要和之前的回复重复！';if(typeof window._sendToAI==='function'){window._sendToAI(currentId,hiddenPrompt,true);}else{alert('后台引擎未挂载，重回失败');}return;}
   });
 
   $('cancelEditBtn').onclick=()=>{editMsgId=null;$('editModal').classList.remove('active');};
