@@ -4431,10 +4431,13 @@ body #app .sticker-sheet-hd {
   </div>
   </section>
   <section id="study" class="screen">
-  <div class="header">
-    <button class="btn" onclick="show('home')">&#8249; 返回</button>
-    <b>书房</b>
-    <button class="btn" onclick="document.getElementById('studyFileInput').click()">导入</button>
+  <div class="header" style="background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid #dce5f0;">
+  <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 桌面</button>
+  <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">书房</b>
+  <div style="display:flex; gap:6px;">
+    <button class="btn" onclick="document.getElementById('studyFileInput').click()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px;">导入</button>
+    <button class="btn p" onclick="document.getElementById('studySplitInput').click()" style="background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:10px; font-weight:bold; padding:6px 10px; box-shadow:0 2px 8px rgba(92,112,148,0.1);">拆分导入</button>
+  </div>
   </div>
 
   <div class="page" id="studyPage">
@@ -4459,6 +4462,7 @@ body #app .sticker-sheet-hd {
   </div>
 
   <input type="file" id="studyFileInput" accept=".txt,text/plain" class="hidden">
+    <input type="file" id="studySplitInput" accept=".txt,text/plain" class="hidden" onchange="window._splitAndImportBook(event)">
   </section>
   <section id="studyReader" class="screen" style="overflow: hidden;">
   <div class="header" style="background:rgba(246,248,255,0.85)!important; backdrop-filter:blur(16px); z-index:100;">
@@ -22858,6 +22862,65 @@ setTimeout(() => {
     });
   }
 }, 1500); // 延迟加载，确保原代码的事件被我们完美劫持覆盖
+  window._splitAndImportBook = function(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed; inset:0; z-index:99999; background:rgba(250,252,255,0.85); backdrop-filter:blur(16px); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#5c7094; font-weight:bold; font-size:14px; letter-spacing:1px;';
+  overlay.innerHTML = '<div style="width:40px; height:40px; border:3px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite; margin-bottom:16px;"></div><div id="splitProgressText">正在挥动手术刀...</div>';
+  document.body.appendChild(overlay);
+
+  const reader = new FileReader();
+  reader.onload = async function(ev) {
+    try {
+      const text = String(ev.target.result || '').trim();
+      if (!text) throw new Error('宝宝，这本书是空的哦！');
+
+      const rawName = file.name.replace(/\.[^.]+$/, '') || '未命名文本';
+      const chunkSize = 500000;
+      const totalChunks = Math.ceil(text.length / chunkSize);
+      
+      if(totalChunks <= 1) {
+        overlay.remove();
+        return alert('这本书不大，直接用普通【导入】就可以啦！');
+      }
+
+      const data = window.getStudyData();
+      
+      for (let i = 0; i < totalChunks; i++) {
+        document.getElementById('splitProgressText').textContent = `正在封存外挂内存：第 ${i + 1} 卷 / 共 ${totalChunks} 卷`;
+        const chunkText = text.substring(i * chunkSize, (i + 1) * chunkSize);
+        const newBook = {
+          id: 'book_' + Date.now() + '_' + i,
+          title: `${rawName} (卷 ${i + 1})`,
+          author: '本地拆分导入',
+          cover: 'linear-gradient(135deg, #eef4fa, #cdd7e8)',
+          content: chunkText
+        };
+        data.books.push(newBook);
+      }
+
+      await localforage.setItem('mp_fix_study_books', data);
+      overlay.remove();
+      if(typeof window.renderStudyHome === 'function') window.renderStudyHome();
+      alert(`✨ 拆分成功！这本巨著已经被完美切成了 ${totalChunks} 卷！`);
+
+    } catch (err) {
+      overlay.remove();
+      alert('拆分失败啦宝宝：' + err.message);
+    } finally {
+      e.target.value = '';
+    }
+  };
+  
+  reader.onerror = function() {
+    overlay.remove();
+    alert('读取文件失败啦宝宝。');
+  };
+  
+  reader.readAsText(file, 'utf-8');
+};
 </script>
           
 </body>
