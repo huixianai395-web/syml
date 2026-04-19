@@ -2230,6 +2230,35 @@ body #app #stickerSheet {
 body #app .sticker-sheet-hd {
   padding: 4px 4px 10px !important;
 }
+    /* === 🌟 蓝色高定：安卓底层兼容护盾 (专治 Vivo/Via 浏览器字消失 Bug) === */
+/* 1. 强行打碎老旧浏览器不支持的 gap，换成最稳固的 flex 基础对齐 */
+.ios-icon {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+}
+
+/* 2. 强行拽出被系统吞掉的文字，重塑初雪海盐蓝高级排版 */
+.ios-icon span {
+  display: block !important;      /* 强制块级元素，防止被挤压缩水 */
+  width: 100% !important;
+  text-align: center !important;
+  font-size: 11px !important;
+  color: #3d4a6a !important;      /* 换成咱们最高级的深灰蓝，拒绝死黑 */
+  font-weight: bold !important;   /* 🔪 核心救命：弃用 800，用 bold 完美兼容所有安卓字体引擎！ */
+  margin-top: 6px !important;     /* 代替 gap 起作用，老浏览器绝对能看懂 */
+  line-height: 1.2 !important;
+  white-space: nowrap !important; /* 强制不换行 */
+  overflow: visible !important;
+  text-shadow: 0 1px 2px rgba(255,255,255,0.6) !important; /* 加一层浅浅的白光护盾防暗化 */
+}
+
+/* 3. 底部 Dock 栏的专属间距微调 */
+.ios-dock .ios-icon span {
+  margin-top: 4px !important;
+  font-size: 10px !important;
+}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
