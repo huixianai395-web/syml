@@ -1108,31 +1108,39 @@
   height: 10px;
   background: rgba(122, 134, 168, 0.2);
   }
-    /* ================= 🌟 蓝色高定：终极防挤压与防折叠护盾 ================= */
+   /* ================= 🌟 蓝色高定：终极防挤压与防折叠护盾 (排版重塑修复版) ================= */
 
-/* 1. 保护两翼：让左右两侧的按钮绝对不许缩水变形 */
+/* 1. 释放外层引力：允许换行，拯救被挤压的面部和表情包 */
+body #app .chatInputBar {
+  display: flex !important;
+  align-items: flex-end !important;
+  flex-wrap: wrap !important; /* 核心魔法：允许面板掉落到下一行！ */
+}
+
+/* 2. 面板专属占位：强行占据 100% 宽度，完美撑开海盐蓝底板 */
+body #app #funcPanel,
+body #app #stickerSheet {
+  width: 100% !important;
+  flex-shrink: 0 !important;
+  order: 99 !important; /* 强制排在输入框的正下方 */
+  margin-top: 8px !important;
+}
+
+/* 3. 保护两翼：左右两侧的工具和发送按钮绝对不许缩水 */
 body #app .chatInputBar .left-tools,
 body #app .chatInputBar .send-actions {
   flex-shrink: 0 !important; 
 }
 
-/* 2. 强权输入框：打破 Flex 默认收缩魔咒，绝不妥协 */
+/* 4. 强权输入框：温柔地霸占剩余空间，绝不妥协 */
 body #app #chatInput {
-  flex: 1 1 100% !important; /* 强制霸占所有剩余空间 */
-  min-width: 0 !important; /* 🌟 核心魔法：彻底摧毁浏览器默认的最小宽度限制 */
-  width: 100% !important;
-  white-space: pre-wrap !important; /* 保证文字极其优雅地排版 */
+  flex: 1 1 0% !important; /* 让出计算空间，彻底填满中间 */
+  min-width: 50px !important; 
+  width: auto !important;
+  white-space: pre-wrap !important; 
   word-break: break-all !important;
-  /* 维持咱们最爱的冰透海盐蓝质感 */
   background: rgba(255,255,255,0.8) !important;
   box-sizing: border-box !important;
-}
-
-/* 3. 确保外层容器绝对不换行 */
-body #app .chatInputBar {
-  display: flex !important;
-  align-items: flex-end !important;
-  flex-wrap: nowrap !important; /* 严禁挤压换行 */
 }
     /* === 蓝色书房海盐蓝高定重塑 === */
 #study .page, #studyReader .page { background: #eef4fa !important; }
