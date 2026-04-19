@@ -23028,5 +23028,86 @@ setTimeout(() => {
     });
   }, 1000); // 放在外挂内存机制后执行，确保彻底洗净
 </script>    
+  <!-- 🌟 蓝色高定：线下模式“沉浸式纯净阅读”隐形斗篷引擎 -->
+<style>
+  /* 🔪 核心物理粉碎：只要聊天室开启了隐藏结界，线下大头像彻底消失，绝不占位！ */
+  #chatRoom.offline.hide-avatar .chat-avatar {
+    display: none !important;
+  }
+  
+  /* 稍微收紧一点因为头像消失而空出的顶部缝隙，让排版更紧凑高级 */
+  #chatRoom.offline.hide-avatar .rp-meta-box {
+    margin-top: 12px !important;
+    margin-bottom: 16px !important;
+  }
+</style>
+
+<script>
+(function(){
+  // 1. 悄无声息地将开关注入到“聊天设置”的线下专属卡片中
+  setTimeout(() => {
+    const offlineCard = document.getElementById('offlineSettingCard');
+    if(offlineCard && !document.getElementById('hideOfflineAvatarSwitch')) {
+      const toggleHtml = `
+        <div style="margin-top:16px; border-top:1px dashed #eef4fa; padding-top:16px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <div style="font-size:14px; color:#5c7094; font-weight:800; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
+              <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line x1="3" y1="3" x2="21" y2="21"></line></svg>
+              沉浸式纯净阅读
+            </div>
+            <div style="font-size:11px; color:#8892a8;">开启后，线下模式将隐藏巨大的相纸头像</div>
+          </div>
+          <input id="hideOfflineAvatarSwitch" type="checkbox" style="transform:scale(1.2); accent-color:#5c7094; cursor:pointer;" />
+        </div>
+      `;
+      offlineCard.insertAdjacentHTML('beforeend', toggleHtml);
+    }
+  }, 1500);
+
+  // 2. 劫持原有的设置面板打开逻辑，回填外挂内存里的状态
+  const oldOpenChatSetting = window.openChatSettingPage;
+  window.openChatSettingPage = function() {
+    if(oldOpenChatSetting) oldOpenChatSetting();
+    const p = window.getPref ? window.getPref() : {};
+    const toggle = document.getElementById('hideOfflineAvatarSwitch');
+    if(toggle) toggle.checked = !!p.hideOfflineAvatar;
+  };
+
+  // 3. 劫持保存按钮，把状态死死锁进内存，并瞬间应用隐形结界！
+  const saveBtn = document.getElementById('saveChatSettingBtn');
+  if(saveBtn) {
+    const oldSaveClick = saveBtn.onclick;
+    saveBtn.onclick = function(e) {
+      const p = window.getPref ? window.getPref() : {};
+      const toggle = document.getElementById('hideOfflineAvatarSwitch');
+      if(toggle) {
+        p.hideOfflineAvatar = !!toggle.checked;
+        if(window.setPref) window.setPref(p);
+      }
+      
+      if(oldSaveClick) oldSaveClick.call(this, e);
+      
+      // 瞬间施加隐形魔法！
+      const chatRoom = document.getElementById('chatRoom');
+      if(chatRoom) {
+        chatRoom.classList.toggle('hide-avatar', !!p.hideOfflineAvatar);
+      }
+    };
+  }
+
+  // 4. 确保每次切入聊天室时，都会检查一次结界状态
+  const oldOpenChat = window.openChat;
+  if(oldOpenChat) {
+    window.openChat = function(id) {
+      oldOpenChat(id);
+      const p = window.getPref ? window.getPref() : {};
+      const chatRoom = document.getElementById('chatRoom');
+      if(chatRoom) {
+        chatRoom.classList.toggle('hide-avatar', !!p.hideOfflineAvatar);
+      }
+    };
+  }
+})();
+</script>
 </body>
   </html>
