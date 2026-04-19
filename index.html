@@ -7748,11 +7748,14 @@ window.renderStudyHome=function(){
   const header = document.querySelector('#study .header');
   if(header){
     header.innerHTML = `
-      <button class="btn" onclick="show('home')">‹ 返回</button>
-      <b>书房</b>
-      <div style="display:flex; gap:8px;">
-        <button class="btn" onclick="toggleStudyManage()">${window.studyManageMode ? '取消' : '管理'}</button>
-        ${!window.studyManageMode ? `<button class="btn" onclick="document.getElementById('studyFileInput').click()">导入</button>` : ''}
+      <button class="btn" onclick="show('home')" style="background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 12px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">‹ 桌面</button>
+      <b style="color:#3d4a6a; font-size:16px; letter-spacing:1px;">书房</b>
+      <div style="display:flex; gap:6px;">
+        <button class="btn" onclick="toggleStudyManage()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px;">${window.studyManageMode ? '取消' : '管理'}</button>
+        ${!window.studyManageMode ? `
+        <button class="btn" onclick="document.getElementById('studyFileInput').click()" style="background:transparent; color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:bold; padding:6px 10px;">导入</button>
+        <button class="btn p" onclick="document.getElementById('studySplitInput').click()" style="background:linear-gradient(135deg, #eef4fa, #dce5f0); color:#5c7094; border:1px solid #cdd7e8; border-radius:10px; font-weight:bold; padding:6px 10px; box-shadow:0 2px 8px rgba(92,112,148,0.1); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">拆分</button>
+        ` : ''}
       </div>
     `;
   }
