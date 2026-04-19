@@ -22869,9 +22869,10 @@ setTimeout(() => {
   const file = e.target.files?.[0];
   if (!file) return;
 
+  // ✨ 蓝色高定：创造一个初雪海盐蓝的沉浸式加载遮罩，抛弃丑陋的系统默认样式！
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed; inset:0; z-index:99999; background:rgba(250,252,255,0.85); backdrop-filter:blur(16px); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#5c7094; font-weight:bold; font-size:14px; letter-spacing:1px;';
-  overlay.innerHTML = '<div style="width:40px; height:40px; border:3px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s linear infinite; margin-bottom:16px;"></div><div id="splitProgressText">正在挥动手术刀...</div>';
+  overlay.style.cssText = 'position:fixed; inset:0; z-index:99999; background:rgba(250,252,255,0.85); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#5c7094; font-weight:bold; font-size:13px; letter-spacing:1px;';
+  overlay.innerHTML = '<div style="width:44px; height:44px; border:3px solid #dce5f0; border-top-color:#a5cfff; border-radius:50%; animation:pcSpin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; margin-bottom:20px;"></div><div id="splitProgressText">初雪海盐蓝手术刀已就位...</div>';
   document.body.appendChild(overlay);
 
   const reader = new FileReader();
@@ -22881,7 +22882,7 @@ setTimeout(() => {
       if (!text) throw new Error('宝宝，这本书是空的哦！');
 
       const rawName = file.name.replace(/\.[^.]+$/, '') || '未命名文本';
-      const chunkSize = 500000;
+      const chunkSize = 500000; // 每 50 万字切一刀，性能极致平滑
       const totalChunks = Math.ceil(text.length / chunkSize);
       
       if(totalChunks <= 1) {
@@ -22889,25 +22890,36 @@ setTimeout(() => {
         return alert('这本书不大，直接用普通【导入】就可以啦！');
       }
 
-      const data = window.getStudyData();
+      // 🔪 核心修复：摘掉 window. 的前缀，强行在本地作用域抓取这本厚厚的魔法书数据！
+      const data = (typeof getStudyData === 'function') ? getStudyData() : window.getStudyData();
       
       for (let i = 0; i < totalChunks; i++) {
-        document.getElementById('splitProgressText').textContent = `正在封存外挂内存：第 ${i + 1} 卷 / 共 ${totalChunks} 卷`;
+        document.getElementById('splitProgressText').innerHTML = `正在封存外挂内存<br><br><span style="color:#a5cfff; font-size:20px;">第 ${i + 1} 卷 / 共 ${totalChunks} 卷</span>`;
+        
+        // 切割字符串
         const chunkText = text.substring(i * chunkSize, (i + 1) * chunkSize);
+        
         const newBook = {
           id: 'book_' + Date.now() + '_' + i,
           title: `${rawName} (卷 ${i + 1})`,
           author: '本地拆分导入',
-          cover: 'linear-gradient(135deg, #eef4fa, #cdd7e8)',
+          cover: 'linear-gradient(135deg, #eef4fa, #cdd7e8)', // 初雪海盐蓝极简渐变封面
           content: chunkText
         };
+        // 逆序塞入，保证卷1排在最前面
         data.books.push(newBook);
       }
 
+      // ✨ 一次性死死钉进外挂内存，绝对不丢！
       await localforage.setItem('mp_fix_study_books', data);
+      
       overlay.remove();
-      if(typeof window.renderStudyHome === 'function') window.renderStudyHome();
-      alert(`✨ 拆分成功！这本巨著已经被完美切成了 ${totalChunks} 卷！`);
+      
+      // 🔪 核心修复：同理，摘掉 window. 强行呼叫书房渲染大队！
+      if(typeof renderStudyHome === 'function') renderStudyHome();
+      else if(typeof window.renderStudyHome === 'function') window.renderStudyHome();
+      
+      alert(`✨ 拆分成功！这本巨著已经被完美切成了 ${totalChunks} 卷，安安静静躺在外挂内存里啦！`);
 
     } catch (err) {
       overlay.remove();
@@ -22922,6 +22934,7 @@ setTimeout(() => {
     alert('读取文件失败啦宝宝。');
   };
   
+  // 开始读取
   reader.readAsText(file, 'utf-8');
 };
 </script>
