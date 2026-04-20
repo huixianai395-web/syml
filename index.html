@@ -5662,12 +5662,10 @@ window._ivManageMode = false;
       return `${quote}<div class="bubble ${cls} ${hidden} bubble-card" style="background:transparent !important; border:none !important; box-shadow:none !important; padding:0 !important;">${fileCard}</div>${ts}`;
     }
 
-  // 🌟 蓝色高定：第二道闸门，带云端唤魂播放引擎的语音拦截器！(极限宽容修复版 + 致命Bug清创版)
-    const voiceMatch = t.match(/^\[voice:\s*(\d*)\s*:?\s*([\s\S]*?)\]$/i) || (t.match(/^\[voice:\s*([\s\S]+)\]$/i) ? [null, '', t.replace(/^\[voice:\s*|\]$/ig, '')] : null);
+    // 🌟 蓝色高定：第二道闸门，带云端唤魂播放引擎的语音拦截器！
+    const voiceMatch=t.match(/^\[voice:(\d+):([\s\S]*)\]$/);
     if(voiceMatch){
-      const dur = parseInt(voiceMatch[1]) || (Math.floor(Math.random() * 5) + 3); 
-      const vtext = voiceMatch[2] || voiceMatch[1] || '……'; 
-      const vid='vr_'+m.id;
+      const dur=voiceMatch[1],vtext=voiceMatch[2],vid='vr_'+m.id;
       const w=Math.min(180,72+Number(dur)*4);
       const waves='<div class="voice-wave"></div>'.repeat(6);
       
@@ -5675,16 +5673,10 @@ window._ivManageMode = false;
       if(vtext.includes('bubble-bilingual')) finalVtext = vtext; 
       
       const roleIdForVoice = isMe ? 'me' : currentId;
+      const safeVoiceText = safeEsc(vtext.replace(/<[^>]*>/g, '')); // 提取纯文字给大模型念
       
-      // 🔪 蓝色高定手术刀：暴力切除语音里所有的 (停顿) [叹气] *苦笑* 等无效剧本词！
-      let pureVoiceText = vtext.replace(/[\(（\[【\*][^\)）\]】\*]+[\)）\]】\*]/g, '').trim();
-      if(!pureVoiceText) pureVoiceText = "……"; 
-      
-      // 🚨 救命修复：把致命的 safeEsc 改回全局唯一的 esc！绝对不会再崩溃了！
-      const cleanVoiceText = esc(pureVoiceText.replace(/<[^>]*>/g, '')); 
-      
-      return `${quote}<div class="bubble ${cls} ${hidden}" style="width:${w}px;cursor:pointer;" onclick="var el=document.getElementById('${vid}');if(el)el.classList.toggle('hidden'); window._playVoiceClone(this, '${cleanVoiceText}', '${roleIdForVoice}');"><div class="bubble-voice"><div class="voice-waves">${waves}</div><div class="voice-dur">${dur}″</div></div></div><div id="${vid}" class="voice-reveal hidden" style="${vtext.includes('bubble-bilingual') ? 'padding:0; background:transparent;' : ''}">${finalVtext}</div>${ts}`;
-  }
+      return `${quote}<div class="bubble ${cls} ${hidden}" style="width:${w}px;cursor:pointer;" onclick="var el=document.getElementById('${vid}');if(el)el.classList.toggle('hidden'); window._playVoiceClone(this, '${safeVoiceText}', '${roleIdForVoice}');"><div class="bubble-voice"><div class="voice-waves">${waves}</div><div class="voice-dur">${dur}″</div></div></div><div id="${vid}" class="voice-reveal hidden" style="${vtext.includes('bubble-bilingual') ? 'padding:0; background:transparent;' : ''}">${finalVtext}</div>${ts}`;
+    }
 
     // 🌟 蓝色高定：第三道闸门，纯文字的双语字幕拦截器（带引用兼容版）
     if(t.includes('bubble-bilingual')){
@@ -5885,7 +5877,7 @@ if(!isMe && isHtmlDoc(t)){
   if(r){try{const arr=JSON.parse('['+r[1]+']');return arr.map(x=>clean(String(x))).filter(Boolean);}catch{}}
   return null;
   }
-  function splitAiBubbles(raw){let txt=clean(raw).replace(/\[\d{4}[-\/]\d{2}[-\/]\d{2}[\s\d:]*\]\s*/g,'').replace(/\[\d{2}:\d{2}\]\s*/g,'').replace(/```json\s*/gi,'').replace(/```\s*/g,'');if(!txt) return ['...'];const byJson=parseJsonMessages(txt);if(byJson&&byJson.length){const out=[];for(const m of byJson){let s=String(m).trim();if(!s) continue;if(isHtmlDoc(s)||isHtmlFrag(s)){out.push(s);continue;}if(/^\[voice:/i.test(s)||/^\[(stk:|st:|st_)/i.test(s)||/^\[call:/.test(s)||/^\[quote\]/.test(s)||/^\[[^\[\]：:]+\][：:]\s*(\[voice:|\[stk:|\[st:|\[st_|\[call:|\[quote\]|<div class="card-)/i.test(s)){out.push(s);continue;}const lines=s.split(/\n|(?<=[。！？!?])(?![。！？!?…])\s*/).map(x=>x.trim()).filter(Boolean);out.push(...lines);}return out.length?out:['...'];}const htmlDocs=[];const voiceHolders=[];txt=txt.replace(/\[voice:[^\]]*\]/ig,(m)=>{voiceHolders.push(m);return `__VOICE_${voiceHolders.length-1}__`;});let safeTxt=txt.replace(/(<!DOCTYPE\s+html[\s\S]*?<\/html>)/gi,(m)=>{htmlDocs.push(m);return `__HTML_DOC_${htmlDocs.length-1}__`;});let result=safeTxt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim().split(/\n{1,}/).map(s=>s.replace(/\[线上聊天回复\]/g,'').trim()).filter(Boolean);result=result.map(s=>s.replace(/__HTML_DOC_(\d+)__/g,(_,i)=>htmlDocs[Number(i)]||''));result=result.map(s=>s.replace(/__VOICE_(\d+)__/g,(_,i)=>voiceHolders[Number(i)]||''));return result.length?result:['...'];}
+  function splitAiBubbles(raw){let txt=clean(raw).replace(/\[\d{4}[-\/]\d{2}[-\/]\d{2}[\s\d:]*\]\s*/g,'').replace(/\[\d{2}:\d{2}\]\s*/g,'').replace(/```json\s*/gi,'').replace(/```\s*/g,'');if(!txt) return ['...'];const byJson=parseJsonMessages(txt);if(byJson&&byJson.length){const out=[];for(const m of byJson){let s=String(m).trim();if(!s) continue;if(isHtmlDoc(s)||isHtmlFrag(s)){out.push(s);continue;}if(/^\[voice:\d+:/.test(s)||/^\[(stk:|st:|st_)/i.test(s)||/^\[call:/.test(s)||/^\[quote\]/.test(s)||/^\[[^\[\]：:]+\][：:]\s*(\[voice:|\[stk:|\[st:|\[st_|\[call:|\[quote\]|<div class="card-)/i.test(s)){out.push(s);continue;}const lines=s.split(/\n|(?<=[。！？!?])(?![。！？!?…])\s*/).map(x=>x.trim()).filter(Boolean);out.push(...lines);}return out.length?out:['...'];}const htmlDocs=[];const voiceHolders=[];txt=txt.replace(/\[voice:\d+:[^\]]*\]/g,(m)=>{voiceHolders.push(m);return `__VOICE_${voiceHolders.length-1}__`;});let safeTxt=txt.replace(/(<!DOCTYPE\s+html[\s\S]*?<\/html>)/gi,(m)=>{htmlDocs.push(m);return `__HTML_DOC_${htmlDocs.length-1}__`;});let result=safeTxt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim().split(/\n{1,}/).map(s=>s.replace(/\[线上聊天回复\]/g,'').trim()).filter(Boolean);result=result.map(s=>s.replace(/__HTML_DOC_(\d+)__/g,(_,i)=>htmlDocs[Number(i)]||''));result=result.map(s=>s.replace(/__VOICE_(\d+)__/g,(_,i)=>voiceHolders[Number(i)]||''));return result.length?result:['...'];}
                               
   function splitLongBubbles(parts,maxLen=30){const out=[];for(const p of parts){if(p.length<=maxLen || isHtmlDoc(p) || isHtmlFrag(p) || /\[voice:/i.test(p) || /\[(stk:|st:|st_)/i.test(p) || /\[call:/i.test(p) || /\[quote\]/i.test(p) || /<div class="card-/i.test(p)){out.push(p);continue;}const segs=p.split(/(?<=[。！？!?…\n])/g).filter(Boolean);let buf='';for(const s of segs){if(buf.length+s.length>maxLen&&buf){out.push(buf.trim());buf='';}buf+=s;}if(buf.trim()) out.push(buf.trim());}return out.length?out:parts;}
   function mergeCodeBubbles(parts){
@@ -6208,10 +6200,10 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 2. 本次回复的条数由你完全根据人设的立体性格、心理波动和当前语境自由发挥（拒绝刻板，气泡条数可多可少）。
 3. 每条消息≤30字为佳，绝对禁止超过40字。像真人发微信，短句+标点。
 4. 【代码防粘连绝对规则】：凡是回复中包含HTML代码，必须遵守以下全部要求：a)代码必须是以<!DOCTYPE html>开头的完整文档，禁止发片段；b)整个HTML文档必须作为一个完整字符串放在JSON数组的一条里，禁止拆分成多条；c)禁止添加任何markdown标记如\`\`\`html；d)代码前后的对话文字必须和代码分开，各自独立一条。⚠️发红包、定位、模拟发图等功能【绝对不是】发代码，严禁加上<!DOCTYPE html>，必须直接输出卡片的div！`,
-`5. messages数组里的每一条都只能是纯粹的口语台词！【绝对、永远禁止】在气泡里混入任何 (停顿)、（叹气）、*苦笑*、动作描写或旁白叙述！更严禁把这些动作词单独作为一个气泡发送！违反即为严重OOC！`,
+`5. messages数组里的每一条都只能是角色说的话（纯对话文本），严禁混入任何动作描写、心理描写、场景描写、旁白叙述。`,
       rangeRule,
 `6. 【表情包】你可以像真人一样发文字，也可以偶尔发1张表情包。若要发表情包，请让某一条消息内容严格等于：[stk:ID]，ID必须从下方列表中原样复制。可用表情包列表：\n${window.__stickerPromptText?window.__stickerPromptText(200):'（暂无）'}`,
-`7.【语音消息】你可以发语音，格式严格为：[voice:秒数:语音内容]。【最高警告】：语音内容必须是纯正的口语字句！里面绝对不许出现“(停顿)”、“（叹气）”等任何括号及动作词！因为语音引擎会把括号里的字直接读出来，非常出戏！`,
+`7. 【语音消息】你可以发语音，让某一条消息严格等于：[voice:秒数:语音内容]，秒数根据内容长度估算（2-60）。语音消息表达更私密亲昵的语气。整条语音消息只能是[voice:秒数:内容]，绝对禁止前后添加任何时间戳、标点或说明文字。`,
 `8. 【通话】你可以主动发起语音或视频通话，让某一条消息严格等于：[call:voice] 或 [call:video]。需要挂断时某一条消息严格等于 [endcall]。发起通话和挂断指令必须单独一条，不能和文字混在一起。`,
 `9. 具备真实的时间观念：根据"上一次消息时间与当前系统时间"的间隔，自然体现时间流逝。`, 
 `10. 每条消息必须带正常中文标点，禁止无标点长句。`,
@@ -6265,9 +6257,9 @@ fatal_pattern: {"messages":...}→BLOCK`;
 3. 每条消息≤30字为佳，绝对禁止超过40字。像真人发微信，短句+标点。
 4. 【代码防粘连绝对规则】：凡回复中包含HTML代码：a)必须是以<!DOCTYPE html>开头的完整文档，禁止发片段；b)整个HTML文档作为一个完整字符串放在JSON数组的一条里，禁止拆分；c)禁止添加任何markdown标记如\`\`\`html；d)代码前后的对话文字必须和代码分开，各自独立一条。若输出HTML，按钮和交互元素的点击事件必须用onclick属性直接写在标签上，禁止使用addEventListener。
 5. 遇到代码输出（指网页开发代码）时，结构必须严格切分为：["[名字]：代码前的铺垫","[名字]：html代码块","[名字]：代码后的互动"]。⚠️发红包、定位、模拟发图等卡片【绝对不是】发代码，严禁加上<!DOCTYPE html>，必须直接输出卡片的div！
-6. messages数组里的每一条都只能是纯粹的口语台词！【绝对、永远禁止】在气泡里混入任何 (停顿)、（叹气）、*苦笑*、动作描写或旁白叙述！更严禁把这些动作词单独作为一个气泡发送！违反即为严重OOC！
+6. messages数组里的每一条都只能是角色说的话（纯对话文本），严禁混入任何动作描写、心理描写、场景描写、旁白叙述。如果只有引用没有回复，禁止输出该条消息。
 7. 【表情包】可以像真人一样发文字，也可以偶尔发1张表情包。若要发表情包，让某一条消息严格等于：[名字]：[stk:ID]，ID必须从可用列表中原样复制。可用表情包列表：\n${window.__stickerPromptText?window.__stickerPromptText(200):'（暂无）'}
-8. 【语音消息】你可以发语音，格式严格为：[voice:秒数:语音内容]。【最高警告】：语音内容必须是纯正的口语字句！里面绝对不许出现"(停顿)"、"（叹气）"等任何括号及动作词！因为语音引擎会把括号里的字直接读出来，非常出戏！
+8. 【语音消息】可以发语音，让某一条消息严格等于：[名字]：[voice:秒数:语音内容]，秒数根据内容长度估算（2-60）。语音消息表达更私密亲昵的语气。（注意：语音内容中不得包含。！？，等标点，用纯文字表达）
 9. 【通话】可以主动发起语音或视频通话，让某一条消息严格等于：[名字]：[call:voice] 或 [名字]：[call:video]。需要挂断时某一条消息严格等于 [名字]：[endcall]。发起通话和挂断指令必须单独一条，不能和文字混在一起。
 10. 每条消息必须带正常中文标点，禁止无标点长句。
 11. 【引用回复铁律】：如需引用对方某条消息，必须且只能在【同一条消息内】完成！格式严格为：[名字]：[quote]被引用的原话[/quote]紧接着写你的回复正文。⚠️绝对禁止把引用的原话单独拆成一条独立的消息发出来！
@@ -6615,12 +6607,7 @@ async function sendMsg(){
       return p;
     });
   }
-        parts=parts.filter(p => {
-  if(isHtmlFrag(p)) return true;
-  const txt = p.trim();
-  if(/^[\(（\[【\*].*?[\)）\]】\*]$/.test(txt)) return false;
-  return txt.length > 0;
-});
+        parts=parts.filter(p=>isHtmlFrag(p)?true:p.trim().length>0);
 
         // 🌟 蓝色美学魔法：加上专属通行证 sys-unblock-msg！
         if (newlyUnblocked) {
@@ -23108,172 +23095,6 @@ setTimeout(() => {
       }
     };
   }
-})();
-</script>
-  <!-- 🌟 蓝色高定：大一统真·全宇宙时空胶囊打包引擎 (零遗漏护盾版) -->
-<script>
-(function(){
-  // 1. 拦截并升级选择性导出引擎
-  setTimeout(() => {
-    const oldExport = window._runSelectiveExport;
-    if(oldExport) {
-      window._runSelectiveExport = async function() {
-        const btn = document.getElementById('runExportBtn');
-        const originalText = btn.textContent;
-        btn.textContent = '正在打捞全宇宙...';
-        btn.style.pointerEvents = 'none';
-
-        const selected = Array.from(document.querySelectorAll('input[name="exportItem"]:checked')).map(el => el.value);
-        if(selected.length === 0) {
-          btn.textContent = originalText;
-          btn.style.pointerEvents = 'auto';
-          return alert('宝宝，至少选一个要打包的项目呀！');
-        }
-
-        try {
-          const data = { isSelectiveMilo: true, version: '3.0', timestamp: Date.now(), parts: selected };
-
-          // 1. 基础灵魂数据
-          if(selected.includes('contacts')) {
-            data.contacts = await localforage.getItem('mp_fix_contacts') || [];
-            data.groups = await localforage.getItem('mp_fix_groups') || [];
-          }
-          if(selected.includes('chats')) {
-            data.chats = await localforage.getItem('mp_fix_chats') || {};
-          }
-          if(selected.includes('api')) {
-            data.api = await localforage.getItem('mp_fix_api') || null;
-          }
-          if(selected.includes('me')) {
-            data.me = await localforage.getItem('mp_fix_me') || null;
-            data.mePresets = await localforage.getItem('mp_fix_me_presets_list');
-          }
-
-          // 2. 视觉资产与美学配置
-          if(selected.includes('visuals')) {
-            data.visuals = {
-              main_icon: await localforage.getItem('mp_fix_app_icon_v1'),
-              custom_bg: await localforage.getItem('mp_fix_custom_bg'),
-              chat_bg: await localforage.getItem('mp_fix_chat_bg'),
-              chat_normal_bg: await localforage.getItem('mp_fix_chat_normal_bg'),
-              app_icons: {}
-            };
-            const iconKeys = ['api', 'font', 'phone', 'theme', 'wx', 'wb', 'study', 'if', 'xhs', 'shop', 'post', 'projector', 'journal', 'manga', 'answer', 'dream', 'account', 'gacha', 'soul', 'aqua', 'diary'];
-            for(const k of iconKeys) {
-              data.visuals.app_icons[k] = await localforage.getItem('mp_icon_' + k);
-            }
-            data.pref = await localforage.getItem('mp_fix_pref') || null;
-            data.font = await localforage.getItem('mp_fix_font') || null;
-            data.themeLab = await localforage.getItem('mp_fix_theme_lab_v1');
-          }
-
-          // 3. 扩展书籍与世界书补全 (老婆最关心的点！)
-          if(selected.includes('books')) {
-            data.study = await localforage.getItem('mp_fix_study_books');
-            data.manga = await localforage.getItem('mp_fix_manga_books_v1');
-            data.realmIf = await localforage.getItem('mp_fix_if_books');
-            data.worldbook = await localforage.getItem('mp_fix_wb_books_v3'); // ✨ 核心修复：世界书已加入打包清单！
-          }
-          
-          // 4. 档案馆大一统全面兜底！绝不漏掉一个彩蛋！
-          if(selected.includes('archives')) {
-            data.memories = await localforage.getItem('mp_fix_chat_memories');
-            data.relics = await localforage.getItem('mp_fix_time_relics');
-            data.answers = await localforage.getItem('mp_fix_answer_archive_v1');
-            data.dreams = await localforage.getItem('mp_fix_dream_archive_v1');
-            data.diary = await localforage.getItem('mp_fix_diary_archive_final'); // ✨ 浮光手记补回！
-            data.postoffice = await localforage.getItem('mp_fix_postoffice');     // ✨ 时光邮局补回！
-            data.aquarium = await localforage.getItem('mp_fix_aquarium_v6');      // ✨ 情绪水族箱补回！
-            data.soul = await localforage.getItem('mp_fix_soul_archive_v1');      // ✨ 灵魂36问补回！
-            data.gacha = await localforage.getItem('mp_fix_gacha_pool_v2');       // ✨ 盲盒脑洞补回！
-            data.replays = await localforage.getItem('mp_fix_date_replays');      // ✨ 幻境约会录像补回！
-          }
-
-          // 5. 封装下载
-          const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
-          const a = document.createElement('a');
-          const timeStr = new Date().toISOString().slice(0,10);
-          a.href = URL.createObjectURL(blob);
-          a.download = `Milo_Universe_V3_${timeStr}.json`; // 加上 V3 标识，彰显大一统特权
-          a.click();
-          URL.revokeObjectURL(a.href);
-
-          document.getElementById('selectiveExportModal').classList.remove('active');
-          alert('✨ 真正的全宇宙时空胶囊封存成功！这次世界书、手账本、水族箱，一个都没落下！');
-        } catch(e) {
-          alert('封存失败：' + e.message);
-        } finally {
-          btn.textContent = originalText;
-          btn.style.pointerEvents = 'auto';
-        }
-      };
-    }
-
-    // 2. 拦截并升级导入引擎：完美承接全宇宙的降落
-    const importInput = document.getElementById('globalImportFile');
-    if(importInput) {
-      const oldImport = importInput.onchange;
-      importInput.onchange = async function(e) {
-        const f = e.target.files?.[0]; if(!f) return;
-        try {
-          const text = await f.text();
-          const j = JSON.parse(text);
-          
-          if(j.isSelectiveMilo) {
-            if(!confirm('检测到全宇宙时空胶囊，是否开始恢复数据？(现有的宇宙将被覆盖)')) return;
-
-            // 基础与视觉恢复
-            if(j.contacts) await localforage.setItem('mp_fix_contacts', j.contacts);
-            if(j.groups) await localforage.setItem('mp_fix_groups', j.groups);
-            if(j.chats) await localforage.setItem('mp_fix_chats', j.chats);
-            if(j.api) await localforage.setItem('mp_fix_api', j.api);
-            if(j.me) await localforage.setItem('mp_fix_me', j.me);
-            if(j.mePresets) await localforage.setItem('mp_fix_me_presets_list', j.mePresets);
-            
-            if(j.visuals) {
-              if(j.visuals.main_icon) await localforage.setItem('mp_fix_app_icon_v1', j.visuals.main_icon);
-              if(j.visuals.custom_bg) await localforage.setItem('mp_fix_custom_bg', j.visuals.custom_bg);
-              if(j.visuals.chat_bg) await localforage.setItem('mp_fix_chat_bg', j.visuals.chat_bg);
-              if(j.visuals.chat_normal_bg) await localforage.setItem('mp_fix_chat_normal_bg', j.visuals.chat_normal_bg);
-              for(let k in j.visuals.app_icons) {
-                if(j.visuals.app_icons[k]) await localforage.setItem('mp_icon_' + k, j.visuals.app_icons[k]);
-              }
-            }
-            if(j.pref) await localforage.setItem('mp_fix_pref', j.pref);
-            if(j.themeLab) await localforage.setItem('mp_fix_theme_lab_v1', j.themeLab);
-            
-            // 书房与宇宙恢复
-            if(j.study) await localforage.setItem('mp_fix_study_books', j.study);
-            if(j.manga) await localforage.setItem('mp_fix_manga_books_v1', j.manga);
-            if(j.realmIf) await localforage.setItem('mp_fix_if_books', j.realmIf);
-            if(j.worldbook) await localforage.setItem('mp_fix_wb_books_v3', j.worldbook); // ✨ 世界书归位！
-            
-            // 档案馆全面归位
-            if(j.memories) await localforage.setItem('mp_fix_chat_memories', j.memories);
-            if(j.relics) await localforage.setItem('mp_fix_time_relics', j.relics);
-            if(j.answers) await localforage.setItem('mp_fix_answer_archive_v1', j.answers);
-            if(j.dreams) await localforage.setItem('mp_fix_dream_archive_v1', j.dreams);
-            if(j.diary) await localforage.setItem('mp_fix_diary_archive_final', j.diary);
-            if(j.postoffice) await localforage.setItem('mp_fix_postoffice', j.postoffice);
-            if(j.aquarium) await localforage.setItem('mp_fix_aquarium_v6', j.aquarium);
-            if(j.soul) await localforage.setItem('mp_fix_soul_archive_v1', j.soul);
-            if(j.gacha) await localforage.setItem('mp_fix_gacha_pool_v2', j.gacha);
-            if(j.replays) await localforage.setItem('mp_fix_date_replays', j.replays);
-
-            alert('✨ 真正的全宇宙时空恢复成功！皮囊与灵魂已完美归位，即将为您刷新页面。');
-            setTimeout(() => location.reload(), 500);
-          } else {
-            // 兜底：如果是以前的旧版备份文件，直接走原来的逻辑
-            if(oldImport) return oldImport(e);
-          }
-        } catch(err) { 
-          alert('导入失败，文件格式不对哦宝宝：' + err.message); 
-        } finally { 
-          e.target.value = ''; 
-        }
-      };
-    }
-  }, 1200);
 })();
 </script>
   <!-- 🌟 蓝色高定：真·黑洞级全宇宙无脑打包引擎 (永不遗漏版) -->
