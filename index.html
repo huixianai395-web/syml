@@ -5662,12 +5662,10 @@ window._ivManageMode = false;
       return `${quote}<div class="bubble ${cls} ${hidden} bubble-card" style="background:transparent !important; border:none !important; box-shadow:none !important; padding:0 !important;">${fileCard}</div>${ts}`;
     }
 
-   // 🌟 蓝色高定：第二道闸门，带云端唤魂播放引擎的语音拦截器！(极限宽容修复版)
-    const voiceMatch = t.match(/^\[voice:\s*(\d*)\s*:?\s*([\s\S]*)\]$/i) || (t.match(/^\[voice:\s*([\s\S]+)\]$/i) ? [null, '', t.replace(/^\[voice:\s*|\]$/ig, '')] : null);
+    // 🌟 蓝色高定：第二道闸门，带云端唤魂播放引擎的语音拦截器！
+   const voiceMatch=t.match(/^\[voice:(\d+):([\s\S]*)\]$/);
     if(voiceMatch){
-      const dur = parseInt(voiceMatch[1]) || (Math.floor(Math.random() * 5) + 3); 
-      const vtext = voiceMatch[2] || voiceMatch[1] || '……'; 
-      const vid='vr_'+m.id;
+      const dur=voiceMatch[1], vtext=voiceMatch[2], vid='vr_'+m.id;
       const w=Math.min(180,72+Number(dur)*4);
       const waves='<div class="voice-wave"></div>'.repeat(6);
       
@@ -5678,6 +5676,8 @@ window._ivManageMode = false;
       
       // 🔪 蓝色高定手术刀：暴力切除语音里所有的 (停顿) [叹气] *苦笑* 等无效剧本词！
       let pureVoiceText = vtext.replace(/[\(（\[【\*][^\)）\]】\*]+[\)）\]】\*]/g, '').trim();
+      
+      // 兜底护盾：如果整条语音全是括号，给个省略号防止崩溃
       if(!pureVoiceText) pureVoiceText = "……"; 
       
       const safeVoiceText = safeEsc(pureVoiceText.replace(/<[^>]*>/g, '')); 
@@ -5884,7 +5884,7 @@ if(!isMe && isHtmlDoc(t)){
   if(r){try{const arr=JSON.parse('['+r[1]+']');return arr.map(x=>clean(String(x))).filter(Boolean);}catch{}}
   return null;
   }
-  function splitAiBubbles(raw){let txt=clean(raw).replace(/\[\d{4}[-\/]\d{2}[-\/]\d{2}[\s\d:]*\]\s*/g,'').replace(/\[\d{2}:\d{2}\]\s*/g,'').replace(/```json\s*/gi,'').replace(/```\s*/g,'');if(!txt) return ['...'];const byJson=parseJsonMessages(txt);if(byJson&&byJson.length){const out=[];for(const m of byJson){let s=String(m).trim();if(!s) continue;if(isHtmlDoc(s)||isHtmlFrag(s)){out.push(s);continue;}if(/^\[voice:/i.test(s)||/^\[(stk:|st:|st_)/i.test(s)||/^\[call:/.test(s)||/^\[quote\]/.test(s)||/^\[[^\[\]：:]+\][：:]\s*(\[voice:|\[stk:|\[st:|\[st_|\[call:|\[quote\]|<div class="card-)/i.test(s)){out.push(s);continue;}const lines=s.split(/\n|(?<=[。！？!?])(?![。！？!?…])\s*/).map(x=>x.trim()).filter(Boolean);out.push(...lines);}return out.length?out:['...'];}const htmlDocs=[];const voiceHolders=[];txt=txt.replace(/\[voice:[^\]]*\]/ig,(m)=>{voiceHolders.push(m);return `__VOICE_${voiceHolders.length-1}__`;});let safeTxt=txt.replace(/(<!DOCTYPE\s+html[\s\S]*?<\/html>)/gi,(m)=>{htmlDocs.push(m);return `__HTML_DOC_${htmlDocs.length-1}__`;});let result=safeTxt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim().split(/\n{1,}/).map(s=>s.replace(/\[线上聊天回复\]/g,'').trim()).filter(Boolean);result=result.map(s=>s.replace(/__HTML_DOC_(\d+)__/g,(_,i)=>htmlDocs[Number(i)]||''));result=result.map(s=>s.replace(/__VOICE_(\d+)__/g,(_,i)=>voiceHolders[Number(i)]||''));return result.length?result:['...'];}
+  function splitAiBubbles(raw){let txt=clean(raw).replace(/\[\d{4}[-\/]\d{2}[-\/]\d{2}[\s\d:]*\]\s*/g,'').replace(/\[\d{2}:\d{2}\]\s*/g,'').replace(/```json\s*/gi,'').replace(/```\s*/g,'');if(!txt) return ['...'];const byJson=parseJsonMessages(txt);if(byJson&&byJson.length){const out=[];for(const m of byJson){let s=String(m).trim();if(!s) continue;if(isHtmlDoc(s)||isHtmlFrag(s)){out.push(s);continue;}if(/^\[voice:\d+:/.test(s)||/^\[(stk:|st:|st_)/i.test(s)||/^\[call:/.test(s)||/^\[quote\]/.test(s)||/^\[[^\[\]：:]+\][：:]\s*(\[voice:|\[stk:|\[st:|\[st_|\[call:|\[quote\]|<div class="card-)/i.test(s)){out.push(s);continue;}const lines=s.split(/\n|(?<=[。！？!?])(?![。！？!?…])\s*/).map(x=>x.trim()).filter(Boolean);out.push(...lines);}return out.length?out:['...'];}const htmlDocs=[];const voiceHolders=[];txt=txt.replace(/\[voice:\d+:[^\]]*\]/g,(m)=>{voiceHolders.push(m);return `__VOICE_${voiceHolders.length-1}__`;});let safeTxt=txt.replace(/(<!DOCTYPE\s+html[\s\S]*?<\/html>)/gi,(m)=>{htmlDocs.push(m);return `__HTML_DOC_${htmlDocs.length-1}__`;});let result=safeTxt.replace(/\r/g,'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim().split(/\n{1,}/).map(s=>s.replace(/\[线上聊天回复\]/g,'').trim()).filter(Boolean);result=result.map(s=>s.replace(/__HTML_DOC_(\d+)__/g,(_,i)=>htmlDocs[Number(i)]||''));result=result.map(s=>s.replace(/__VOICE_(\d+)__/g,(_,i)=>voiceHolders[Number(i)]||''));return result.length?result:['...'];}
                               
   function splitLongBubbles(parts,maxLen=30){const out=[];for(const p of parts){if(p.length<=maxLen || isHtmlDoc(p) || isHtmlFrag(p) || /\[voice:/i.test(p) || /\[(stk:|st:|st_)/i.test(p) || /\[call:/i.test(p) || /\[quote\]/i.test(p) || /<div class="card-/i.test(p)){out.push(p);continue;}const segs=p.split(/(?<=[。！？!?…\n])/g).filter(Boolean);let buf='';for(const s of segs){if(buf.length+s.length>maxLen&&buf){out.push(buf.trim());buf='';}buf+=s;}if(buf.trim()) out.push(buf.trim());}return out.length?out:parts;}
   function mergeCodeBubbles(parts){
