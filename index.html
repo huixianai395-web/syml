@@ -23267,6 +23267,48 @@ setTimeout(() => {
     }
   }, 2000);
 })();
+  // 🌟 蓝色高定：PWA 独立应用模式注入引擎 (绝对安全，零冲突)
+setTimeout(async () => {
+  // 1. 检查是否已经有声明书，防止重复注入
+  if(document.querySelector('link[rel="manifest"]')) return;
+  
+  // 2. 去外挂内存里，把老婆在“桌面图标定制台”设置的高清图标拿出来
+  let appIcon = await localforage.getItem('mp_fix_app_icon_v1');
+  if(!appIcon) {
+    appIcon = "https://api.dicebear.com/7.x/initials/svg?seed=Milo&backgroundColor=eef4fa&textColor=5c7094";
+  }
+
+  // 3. 按照 Edge/Chrome 的官方标准，写一份“我是独立应用”的声明书
+  const manifest = {
+    "name": "小手机",
+    "short_name": "小手机",
+    "display": "standalone", // 核心魔法：告诉浏览器隐藏地址栏，像原生 App 一样全屏运行！
+    "start_url": ".",
+    "background_color": "#eef4fa", // 初雪海盐蓝底色
+    "theme_color": "#eef4fa",
+    "icons": [
+      {
+        "src": appIcon,
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": appIcon,
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  };
+
+  // 4. 把声明书变成文件，悄悄塞进网页的头部
+  const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = URL.createObjectURL(blob);
+  document.head.appendChild(link);
+  
+  console.log("✨ PWA 独立应用声明书已安全递交！");
+}, 2000); // 延迟 2 秒执行，绝对不抢占任何核心功能的性能！
 </script>
 </body>
   </html>
