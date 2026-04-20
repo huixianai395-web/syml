@@ -16265,53 +16265,57 @@ ${chatCtx}
     setTimeout(()=> { if(document.getElementById('mmStatus')) document.getElementById('mmStatus').textContent = '当前状态：待命'; }, 2000);
   };
 
-  // ================= 🌟 蓝色高定：MiniMax 云端唤魂直连引擎 (终极防幽灵空格修复版) =================
+    // ================= 🌟 蓝色高定：MiniMax 云端唤魂直连引擎 (苹果 Safari 终极破壁版) =================
   window._playVoiceClone = async function(el, text, roleId) {
+    // 1. UI 状态管理：如果正在播，就暂停
     if(el.classList.contains('voice-playing')) {
-       if(window._activeVoiceAudio) { window._activeVoiceAudio.pause(); window._activeVoiceAudio = null; }
+       if(window._activeVoiceAudio) { window._activeVoiceAudio.pause(); }
        el.classList.remove('voice-playing');
        return;
     }
+    
+    // 2. 停止其他声音，重置波纹
     if(window._activeVoiceAudio) window._activeVoiceAudio.pause();
     document.querySelectorAll('.voice-playing').forEach(n => n.classList.remove('voice-playing'));
     el.classList.add('voice-playing');
 
-    // 🔪 蓝色高定：暴力清洗外挂内存里可能潜伏的任何首尾空格！
+    // 🔪 终极魔法：在网络请求前，立刻创建播放器并播放一段极其短暂的"无声音频"！
+    // 这一步是为了欺骗苹果 Safari 的安检门，强行要到音频播放的最高权限！
+    if(!window._activeVoiceAudio) {
+      window._activeVoiceAudio = new Audio();
+    }
+    const audio = window._activeVoiceAudio;
+    // 塞入一段 0.1秒的空白静音 Base64 磁带
+    audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+    // 立刻播放，解锁苹果的音频通道（忽略报错，因为我们只是为了拿权限）
+    audio.play().catch(() => {});
+
+    // 3. 读取并清洗密钥
     const groupId = (localStorage.getItem('mp_fix_mm_group') || '').trim();
     const apiKey = (localStorage.getItem('mp_fix_mm_key') || '').trim();
     const ids = await localforage.getItem('mp_fix_mm_voice_ids') || {};
     const voiceId = (ids[roleId] || '').trim();
 
-    // 🛡️ 终极防漏网之鱼拦截：只要清洗完是空的，立刻优雅降级！绝不报错！
+    // 4. 空值降级护盾
     if(!groupId || !apiKey || !voiceId) {
        el.classList.remove('voice-playing');
-       console.log('未配置密钥或声纹ID为空，已静默降级为纯文字语音模式 🤍');
+       console.log('未配置密钥或声纹ID为空，已静默降级为纯文字 🤍');
        return;
     }
 
-    // 🛡️ 文本终极兜底：防止纯旁白被手术刀切空后，导致 empty field 报错！
     let finalText = (text || '').trim();
     if(!finalText) finalText = "……";
 
     try {
+      // 5. 高定便当盒：向服务器索要真实声音
       const res = await fetch('https://api.minimax.chat/v1/t2a_v2?GroupId=' + groupId, {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           model: "speech-01-turbo", 
           text: finalText,
-          voice_setting: { 
-            voice_id: voiceId, 
-            speed: 1.0, 
-            vol: 1.0, 
-            pitch: 0 
-          },
-          audio_setting: { 
-            sample_rate: 32000, 
-            bitrate: 128000, 
-            format: "mp3", 
-            channel: 1 
-          }
+          voice_setting: { voice_id: voiceId, speed: 1.0, vol: 1.0, pitch: 0 },
+          audio_setting: { sample_rate: 32000, bitrate: 128000, format: "mp3", channel: 1 }
         })
       });
       
@@ -16322,11 +16326,14 @@ ${chatCtx}
           throw new Error('MiniMax 报错啦：' + data.base_resp.status_msg);
       }
       
+      // 6. 狸猫换太子：把拿到的真实声音，塞进刚才已经解锁的播放器里！
       const audioUrl = 'data:audio/mp3;hex,' + data.data.audio;
-      const audio = new Audio(audioUrl);
-      window._activeVoiceAudio = audio;
+      audio.src = audioUrl;
       audio.onended = () => el.classList.remove('voice-playing');
+      
+      // 此时苹果的通道已经大门敞开，丝滑播放！
       await audio.play();
+      
     } catch(e) {
       alert('呜呜，呼叫失败了：' + e.message);
       el.classList.remove('voice-playing');
