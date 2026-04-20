@@ -16272,29 +16272,28 @@ ${chatCtx}
     setTimeout(()=> { if(document.getElementById('mmStatus')) document.getElementById('mmStatus').textContent = '当前状态：待命'; }, 2000);
   };
 
-    // ================= 🌟 蓝色高定：MiniMax 云端唤魂直连引擎 (苹果 Safari 终极破壁版) =================
+   // ================= 🌟 蓝色高定：MiniMax 云端唤魂直连引擎 (苹果 Safari 终极破壁 + 文字波纹修复版) =================
   window._playVoiceClone = async function(el, text, roleId) {
     // 1. UI 状态管理：如果正在播，就暂停
     if(el.classList.contains('voice-playing')) {
        if(window._activeVoiceAudio) { window._activeVoiceAudio.pause(); }
+       if(el._fallbackTimer) { clearTimeout(el._fallbackTimer); el._fallbackTimer = null; } // 🔪 清理文字版的幻影倒计时
        el.classList.remove('voice-playing');
        return;
     }
     
     // 2. 停止其他声音，重置波纹
     if(window._activeVoiceAudio) window._activeVoiceAudio.pause();
-    document.querySelectorAll('.voice-playing').forEach(n => n.classList.remove('voice-playing'));
+    document.querySelectorAll('.voice-playing').forEach(n => {
+       n.classList.remove('voice-playing');
+       if(n._fallbackTimer) { clearTimeout(n._fallbackTimer); n._fallbackTimer = null; }
+    });
     el.classList.add('voice-playing');
 
     // 🔪 终极魔法：在网络请求前，立刻创建播放器并播放一段极其短暂的"无声音频"！
-    // 这一步是为了欺骗苹果 Safari 的安检门，强行要到音频播放的最高权限！
-    if(!window._activeVoiceAudio) {
-      window._activeVoiceAudio = new Audio();
-    }
+    if(!window._activeVoiceAudio) { window._activeVoiceAudio = new Audio(); }
     const audio = window._activeVoiceAudio;
-    // 塞入一段 0.1秒的空白静音 Base64 磁带
     audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
-    // 立刻播放，解锁苹果的音频通道（忽略报错，因为我们只是为了拿权限）
     audio.play().catch(() => {});
 
     // 3. 读取并清洗密钥
@@ -16303,11 +16302,20 @@ ${chatCtx}
     const ids = await localforage.getItem('mp_fix_mm_voice_ids') || {};
     const voiceId = (ids[roleId] || '').trim();
 
-    // 4. 空值降级护盾
+    // 4. 空值降级护盾（🌟 蓝色修复：让文字语音也拥有跳动的灵魂！）
     if(!groupId || !apiKey || !voiceId) {
-       el.classList.remove('voice-playing');
        console.log('未配置密钥或声纹ID为空，已静默降级为纯文字 🤍');
-       return;
+       
+       // 智能提取气泡上的秒数，让它像模像样地跳动完！
+       const durText = el.querySelector('.voice-dur')?.textContent || '3';
+       const dur = parseInt(durText) || 3;
+       
+       // 设定幻影倒计时，时间到了自动停止波纹
+       el._fallbackTimer = setTimeout(() => {
+           el.classList.remove('voice-playing');
+           el._fallbackTimer = null;
+       }, dur * 1000);
+       return; // 🌟 彻底阻断，绝对不会去干扰下面的 MiniMax 请求！
     }
 
     let finalText = (text || '').trim();
@@ -16333,8 +16341,7 @@ ${chatCtx}
           throw new Error('MiniMax 报错啦：' + data.base_resp.status_msg);
       }
       
-      // 6. 狸猫换太子：把拿到的真实声音，塞进刚才已经解锁的播放器里！
-      // 🌟 蓝色高定炼金术：将非法的 Hex 乱码，转化为苹果绝对认可的 Blob 深海胶囊！
+      // 6. 狸猫换太子：Hex 乱码转 Blob 深海胶囊
       const hexString = data.data.audio;
       const bytes = new Uint8Array(Math.ceil(hexString.length / 2));
       for (let i = 0; i < bytes.length; i++) {
@@ -16346,10 +16353,9 @@ ${chatCtx}
       audio.src = audioUrl;
       audio.onended = () => {
          el.classList.remove('voice-playing');
-         URL.revokeObjectURL(audioUrl); // 播完顺手把胶囊销毁，绝不占用老婆手机一丝多余内存！
+         URL.revokeObjectURL(audioUrl); // 播完销毁内存，保持极致流畅！
       };
       
-      // 此时苹果的通道已经大门敞开，丝滑播放！
       await audio.play();
       
     } catch(e) {
