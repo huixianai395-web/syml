@@ -16297,7 +16297,22 @@ ${chatCtx}
       const res = await fetch('https://api.minimax.chat/v1/t2a_v2?GroupId=' + groupId, {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: finalText, voice_id: voiceId, model: "speech-01-turbo", format: "mp3" })
+        body: JSON.stringify({ 
+          model: "speech-01-turbo", 
+          text: finalText,
+          voice_setting: { 
+            voice_id: voiceId, 
+            speed: 1.0, 
+            vol: 1.0, 
+            pitch: 0 
+          },
+          audio_setting: { 
+            sample_rate: 32000, 
+            bitrate: 128000, 
+            format: "mp3", 
+            channel: 1 
+          }
+        })
       });
       
       if(!res.ok) throw new Error('网络拦截啦！状态码: ' + res.status);
