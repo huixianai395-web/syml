@@ -16239,7 +16239,7 @@ ${chatCtx}
 // ================= 🌟 蓝色高定：MiniMax 云端唤魂直连引擎 (优雅降级修复版) =================
   window._activeVoiceAudio = null;
 
-  // 初始化基建
+ // 初始化基建
   setTimeout(() => {
     if(document.getElementById('mmGroupId')) document.getElementById('mmGroupId').value = localStorage.getItem('mp_fix_mm_group') || '';
     if(document.getElementById('mmApiKey')) document.getElementById('mmApiKey').value = localStorage.getItem('mp_fix_mm_key') || '';
@@ -16247,6 +16247,13 @@ ${chatCtx}
     if(fSel && window.getContacts) {
       const contacts = window.getContacts().filter(c => !c.isGroup);
       fSel.innerHTML = contacts.map(c => `<option value="${c.id}">${safeEsc(c.name)}</option>`).join('');
+      
+      // 🌟 蓝色修复：切换角色时，自动从外挂内存把声纹 ID 拿出来填上！
+      fSel.onchange = async () => {
+        const ids = await localforage.getItem('mp_fix_mm_voice_ids') || {};
+        document.getElementById('mmVoiceId').value = ids[fSel.value] || '';
+      };
+      fSel.onchange(); // 开机先触发一次
     }
   }, 1500);
 
@@ -16261,7 +16268,7 @@ ${chatCtx}
     await localforage.setItem('mp_fix_mm_voice_ids', ids);
     
     document.getElementById('mmStatus').textContent = '已锁入内存';
-    document.getElementById('mmVoiceId').value = '';
+    // 🔪 蓝色听话：我把清空输入框的代码删掉啦！以后它会一直乖乖待在里面！
     setTimeout(()=> { if(document.getElementById('mmStatus')) document.getElementById('mmStatus').textContent = '当前状态：待命'; }, 2000);
   };
 
@@ -16327,9 +16334,20 @@ ${chatCtx}
       }
       
       // 6. 狸猫换太子：把拿到的真实声音，塞进刚才已经解锁的播放器里！
-      const audioUrl = 'data:audio/mp3;hex,' + data.data.audio;
+      // 🌟 蓝色高定炼金术：将非法的 Hex 乱码，转化为苹果绝对认可的 Blob 深海胶囊！
+      const hexString = data.data.audio;
+      const bytes = new Uint8Array(Math.ceil(hexString.length / 2));
+      for (let i = 0; i < bytes.length; i++) {
+          bytes[i] = parseInt(hexString.substr(i * 2, 2), 16);
+      }
+      const blob = new Blob([bytes], { type: 'audio/mp3' });
+      const audioUrl = URL.createObjectURL(blob);
+
       audio.src = audioUrl;
-      audio.onended = () => el.classList.remove('voice-playing');
+      audio.onended = () => {
+         el.classList.remove('voice-playing');
+         URL.revokeObjectURL(audioUrl); // 播完顺手把胶囊销毁，绝不占用老婆手机一丝多余内存！
+      };
       
       // 此时苹果的通道已经大门敞开，丝滑播放！
       await audio.play();
