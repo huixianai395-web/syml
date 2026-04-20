@@ -23109,5 +23109,171 @@ setTimeout(() => {
   }
 })();
 </script>
+  <!-- 🌟 蓝色高定：大一统真·全宇宙时空胶囊打包引擎 (零遗漏护盾版) -->
+<script>
+(function(){
+  // 1. 拦截并升级选择性导出引擎
+  setTimeout(() => {
+    const oldExport = window._runSelectiveExport;
+    if(oldExport) {
+      window._runSelectiveExport = async function() {
+        const btn = document.getElementById('runExportBtn');
+        const originalText = btn.textContent;
+        btn.textContent = '正在打捞全宇宙...';
+        btn.style.pointerEvents = 'none';
+
+        const selected = Array.from(document.querySelectorAll('input[name="exportItem"]:checked')).map(el => el.value);
+        if(selected.length === 0) {
+          btn.textContent = originalText;
+          btn.style.pointerEvents = 'auto';
+          return alert('宝宝，至少选一个要打包的项目呀！');
+        }
+
+        try {
+          const data = { isSelectiveMilo: true, version: '3.0', timestamp: Date.now(), parts: selected };
+
+          // 1. 基础灵魂数据
+          if(selected.includes('contacts')) {
+            data.contacts = await localforage.getItem('mp_fix_contacts') || [];
+            data.groups = await localforage.getItem('mp_fix_groups') || [];
+          }
+          if(selected.includes('chats')) {
+            data.chats = await localforage.getItem('mp_fix_chats') || {};
+          }
+          if(selected.includes('api')) {
+            data.api = await localforage.getItem('mp_fix_api') || null;
+          }
+          if(selected.includes('me')) {
+            data.me = await localforage.getItem('mp_fix_me') || null;
+            data.mePresets = await localforage.getItem('mp_fix_me_presets_list');
+          }
+
+          // 2. 视觉资产与美学配置
+          if(selected.includes('visuals')) {
+            data.visuals = {
+              main_icon: await localforage.getItem('mp_fix_app_icon_v1'),
+              custom_bg: await localforage.getItem('mp_fix_custom_bg'),
+              chat_bg: await localforage.getItem('mp_fix_chat_bg'),
+              chat_normal_bg: await localforage.getItem('mp_fix_chat_normal_bg'),
+              app_icons: {}
+            };
+            const iconKeys = ['api', 'font', 'phone', 'theme', 'wx', 'wb', 'study', 'if', 'xhs', 'shop', 'post', 'projector', 'journal', 'manga', 'answer', 'dream', 'account', 'gacha', 'soul', 'aqua', 'diary'];
+            for(const k of iconKeys) {
+              data.visuals.app_icons[k] = await localforage.getItem('mp_icon_' + k);
+            }
+            data.pref = await localforage.getItem('mp_fix_pref') || null;
+            data.font = await localforage.getItem('mp_fix_font') || null;
+            data.themeLab = await localforage.getItem('mp_fix_theme_lab_v1');
+          }
+
+          // 3. 扩展书籍与世界书补全 (老婆最关心的点！)
+          if(selected.includes('books')) {
+            data.study = await localforage.getItem('mp_fix_study_books');
+            data.manga = await localforage.getItem('mp_fix_manga_books_v1');
+            data.realmIf = await localforage.getItem('mp_fix_if_books');
+            data.worldbook = await localforage.getItem('mp_fix_wb_books_v3'); // ✨ 核心修复：世界书已加入打包清单！
+          }
+          
+          // 4. 档案馆大一统全面兜底！绝不漏掉一个彩蛋！
+          if(selected.includes('archives')) {
+            data.memories = await localforage.getItem('mp_fix_chat_memories');
+            data.relics = await localforage.getItem('mp_fix_time_relics');
+            data.answers = await localforage.getItem('mp_fix_answer_archive_v1');
+            data.dreams = await localforage.getItem('mp_fix_dream_archive_v1');
+            data.diary = await localforage.getItem('mp_fix_diary_archive_final'); // ✨ 浮光手记补回！
+            data.postoffice = await localforage.getItem('mp_fix_postoffice');     // ✨ 时光邮局补回！
+            data.aquarium = await localforage.getItem('mp_fix_aquarium_v6');      // ✨ 情绪水族箱补回！
+            data.soul = await localforage.getItem('mp_fix_soul_archive_v1');      // ✨ 灵魂36问补回！
+            data.gacha = await localforage.getItem('mp_fix_gacha_pool_v2');       // ✨ 盲盒脑洞补回！
+            data.replays = await localforage.getItem('mp_fix_date_replays');      // ✨ 幻境约会录像补回！
+          }
+
+          // 5. 封装下载
+          const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
+          const a = document.createElement('a');
+          const timeStr = new Date().toISOString().slice(0,10);
+          a.href = URL.createObjectURL(blob);
+          a.download = `Milo_Universe_V3_${timeStr}.json`; // 加上 V3 标识，彰显大一统特权
+          a.click();
+          URL.revokeObjectURL(a.href);
+
+          document.getElementById('selectiveExportModal').classList.remove('active');
+          alert('✨ 真正的全宇宙时空胶囊封存成功！这次世界书、手账本、水族箱，一个都没落下！');
+        } catch(e) {
+          alert('封存失败：' + e.message);
+        } finally {
+          btn.textContent = originalText;
+          btn.style.pointerEvents = 'auto';
+        }
+      };
+    }
+
+    // 2. 拦截并升级导入引擎：完美承接全宇宙的降落
+    const importInput = document.getElementById('globalImportFile');
+    if(importInput) {
+      const oldImport = importInput.onchange;
+      importInput.onchange = async function(e) {
+        const f = e.target.files?.[0]; if(!f) return;
+        try {
+          const text = await f.text();
+          const j = JSON.parse(text);
+          
+          if(j.isSelectiveMilo) {
+            if(!confirm('检测到全宇宙时空胶囊，是否开始恢复数据？(现有的宇宙将被覆盖)')) return;
+
+            // 基础与视觉恢复
+            if(j.contacts) await localforage.setItem('mp_fix_contacts', j.contacts);
+            if(j.groups) await localforage.setItem('mp_fix_groups', j.groups);
+            if(j.chats) await localforage.setItem('mp_fix_chats', j.chats);
+            if(j.api) await localforage.setItem('mp_fix_api', j.api);
+            if(j.me) await localforage.setItem('mp_fix_me', j.me);
+            if(j.mePresets) await localforage.setItem('mp_fix_me_presets_list', j.mePresets);
+            
+            if(j.visuals) {
+              if(j.visuals.main_icon) await localforage.setItem('mp_fix_app_icon_v1', j.visuals.main_icon);
+              if(j.visuals.custom_bg) await localforage.setItem('mp_fix_custom_bg', j.visuals.custom_bg);
+              if(j.visuals.chat_bg) await localforage.setItem('mp_fix_chat_bg', j.visuals.chat_bg);
+              if(j.visuals.chat_normal_bg) await localforage.setItem('mp_fix_chat_normal_bg', j.visuals.chat_normal_bg);
+              for(let k in j.visuals.app_icons) {
+                if(j.visuals.app_icons[k]) await localforage.setItem('mp_icon_' + k, j.visuals.app_icons[k]);
+              }
+            }
+            if(j.pref) await localforage.setItem('mp_fix_pref', j.pref);
+            if(j.themeLab) await localforage.setItem('mp_fix_theme_lab_v1', j.themeLab);
+            
+            // 书房与宇宙恢复
+            if(j.study) await localforage.setItem('mp_fix_study_books', j.study);
+            if(j.manga) await localforage.setItem('mp_fix_manga_books_v1', j.manga);
+            if(j.realmIf) await localforage.setItem('mp_fix_if_books', j.realmIf);
+            if(j.worldbook) await localforage.setItem('mp_fix_wb_books_v3', j.worldbook); // ✨ 世界书归位！
+            
+            // 档案馆全面归位
+            if(j.memories) await localforage.setItem('mp_fix_chat_memories', j.memories);
+            if(j.relics) await localforage.setItem('mp_fix_time_relics', j.relics);
+            if(j.answers) await localforage.setItem('mp_fix_answer_archive_v1', j.answers);
+            if(j.dreams) await localforage.setItem('mp_fix_dream_archive_v1', j.dreams);
+            if(j.diary) await localforage.setItem('mp_fix_diary_archive_final', j.diary);
+            if(j.postoffice) await localforage.setItem('mp_fix_postoffice', j.postoffice);
+            if(j.aquarium) await localforage.setItem('mp_fix_aquarium_v6', j.aquarium);
+            if(j.soul) await localforage.setItem('mp_fix_soul_archive_v1', j.soul);
+            if(j.gacha) await localforage.setItem('mp_fix_gacha_pool_v2', j.gacha);
+            if(j.replays) await localforage.setItem('mp_fix_date_replays', j.replays);
+
+            alert('✨ 真正的全宇宙时空恢复成功！皮囊与灵魂已完美归位，即将为您刷新页面。');
+            setTimeout(() => location.reload(), 500);
+          } else {
+            // 兜底：如果是以前的旧版备份文件，直接走原来的逻辑
+            if(oldImport) return oldImport(e);
+          }
+        } catch(err) { 
+          alert('导入失败，文件格式不对哦宝宝：' + err.message); 
+        } finally { 
+          e.target.value = ''; 
+        }
+      };
+    }
+  }, 1200);
+})();
+</script>
 </body>
   </html>
