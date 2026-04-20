@@ -5292,8 +5292,8 @@ function refreshFontSizeUI(){
         <div class="main" onclick="if(window._isDeleting)return; openChat('${c.id}')">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div class="name" style="display:flex; align-items:center; gap:6px;">
-              ${c.isGroup ? '<span style="font-size:10px; background:#eef3ff; color:#2f66d8; padding:2px 6px; border-radius:4px; font-weight:bold;">群聊</span>' : ''}
-              ${esc(c.name)}
+              ${c.isGroup ? '<span style="font-size:10px; background:#eef4fa; color:#5c7094; padding:2px 6px; border-radius:4px; font-weight:bold; border:1px solid #dce5f0;">群聊</span>' : ''}
+${esc(c.note || c.name)}
             </div>
             <div class="t">${esc(c.time||'')}</div>
           </div>
@@ -5580,7 +5580,7 @@ window._ivManageMode = false;
 
   window.openChat=function(id){
     currentId=id;selectMode=false;selectedIds.clear();closeFloatMenu();composeQuote=null;updateQuoteBar();
-    const c=getContactById(id);$('chatTitle').textContent=c?c.name:'聊天';applyModeUI();renderChat();show('chatRoom');
+    const c=getContactById(id);$('chatTitle').textContent=c?(c.note||c.name):'聊天';applyModeUI();renderChat();show('chatRoom');
   };
 
   function renderQuote(q){ if(!q||!q.text) return ''; return `<div class="msg-quote"><div class="q-content">${esc(q.text)}</div></div>`; }
@@ -6815,7 +6815,7 @@ $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';
       p.avatarCrop=!!$('avatarCropSwitch').checked;
       setPref(p); applyBubbleCss(); applyFontSize();
       
-      const now=getContactById(currentId); $('chatTitle').textContent=now?.name||'聊天';
+      const now=getContactById(currentId); $('chatTitle').textContent=(now?.note||now?.name)||'聊天';
       applyModeUI(); renderChat(); renderContacts($('searchInput').value||''); show('chatRoom');
    }catch(e){alert('保存失败：'+(e.message||'未知错误'));console.error('详细报错:',e);}
   };
