@@ -23275,5 +23275,118 @@ setTimeout(() => {
   }, 1200);
 })();
 </script>
+  <!-- 🌟 蓝色高定：真·黑洞级全宇宙无脑打包引擎 (永不遗漏版) -->
+<script>
+(function(){
+  // 延迟挂载，确保覆盖掉之前所有的“旧版打包机器人”
+  setTimeout(() => {
+    const exportBtn = document.getElementById('globalExportBtn');
+    const importInput = document.getElementById('globalImportFile');
+
+    if(exportBtn) {
+      // 🔪 覆盖点击事件，直接启动黑洞引擎！
+      exportBtn.onclick = async function() {
+        const originalText = this.textContent;
+        this.textContent = '正在开启黑洞吸取全宇宙...';
+        this.style.pointerEvents = 'none';
+
+        try {
+          // 造一个能装下整个宇宙的超级胶囊
+          const universeData = { 
+            isUltimateMilo: true, 
+            version: 'MAX', 
+            timestamp: Date.now(), 
+            forageData: {}, 
+            storageData: {} 
+          };
+
+          // 1. 暴力遍历所有的外挂硬盘 (localforage)
+          const keys = await localforage.keys();
+          for(const k of keys) {
+            // 只要是咱们小手机的数据，统统吸进去！
+            if(k.startsWith('mp_')) {
+               universeData.forageData[k] = await localforage.getItem(k);
+            }
+          }
+
+          // 2. 暴力遍历所有的浅层记忆 (localStorage)
+          for(let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if(k && k.startsWith('mp_')) {
+               universeData.storageData[k] = localStorage.getItem(k);
+            }
+          }
+
+          // 3. 封装并下载
+          const blob = new Blob([JSON.stringify(universeData)], {type: 'application/json'});
+          const a = document.createElement('a');
+          const timeStr = new Date().toISOString().slice(0,10);
+          a.href = URL.createObjectURL(blob);
+          a.download = `Milo_Ultimate_Backup_${timeStr}.json`;
+          a.click();
+          URL.revokeObjectURL(a.href);
+
+          alert('✨ 黑洞级全量打包完成！世界书、手账本、聊天记录...连一粒灰尘都没落下！以后再加新功能也绝对不会丢数据啦！');
+        } catch(e) {
+          alert('打包失败啦宝宝：' + e.message);
+        } finally {
+          this.textContent = '一键云端打包';
+          this.style.pointerEvents = 'auto';
+        }
+      };
+    }
+
+    if(importInput) {
+      // 升级导入引擎，完美识别黑洞胶囊与旧版胶囊
+      importInput.onchange = async function(e) {
+        const f = e.target.files?.[0]; if(!f) return;
+        try {
+          const text = await f.text();
+          const j = JSON.parse(text);
+          
+          if(j.isUltimateMilo) {
+            if(!confirm('检测到黑洞级全量备份胶囊！是否开始覆盖当前时空？')) return;
+            
+            // 1. 恢复外挂硬盘
+            for(const k in j.forageData) {
+              await localforage.setItem(k, j.forageData[k]);
+            }
+            // 2. 恢复浅层记忆
+            for(const k in j.storageData) {
+              localStorage.setItem(k, j.storageData[k]);
+            }
+            
+            alert('✨ 宇宙重塑成功！皮囊与灵魂已完美归位，即将刷新页面。');
+            setTimeout(() => location.reload(), 500);
+
+          } else {
+            // 🔪 极度强悍的万能兜底：如果老婆导入的是之前漏掉的旧版文件！
+            if(!confirm('检测到旧版/选择性备份文件，是否尝试恢复核心数据？')) return;
+            
+            if(j.worldbook) await localforage.setItem('mp_fix_wb_books_v3', j.worldbook);
+            if(j.contacts) await localforage.setItem('mp_fix_contacts', j.contacts);
+            if(j.groups) await localforage.setItem('mp_fix_groups', j.groups);
+            if(j.chats) await localforage.setItem('mp_fix_chats', j.chats);
+            if(j.study) await localforage.setItem('mp_fix_study_books', j.study);
+            if(j.api) await localforage.setItem('mp_fix_api', j.api);
+            if(j.me) await localforage.setItem('mp_fix_me', j.me);
+            // 把可能存在的数据全都塞回去
+            if(j.manga) await localforage.setItem('mp_fix_manga_books_v1', j.manga);
+            if(j.realmIf) await localforage.setItem('mp_fix_if_books', j.realmIf);
+            if(j.memories) await localforage.setItem('mp_fix_chat_memories', j.memories);
+            
+            alert('✨ 兼容模式恢复成功！你确定存在的旧数据已经尽力为你抢救回来啦！');
+            setTimeout(() => location.reload(), 500);
+          }
+        } catch(err) { 
+          alert('导入失败，文件格式不对哦宝宝：' + err.message); 
+        } finally { 
+          e.target.value = ''; 
+        }
+      };
+    }
+  }, 2000);
+})();
+</script>
 </body>
   </html>
