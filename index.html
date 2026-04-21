@@ -5708,22 +5708,24 @@ window._ivManageMode = false;
       const src = t.slice(5, -6);
       return `${quote}<div class="bubble ${cls} ${hidden} bubble-card" style="padding:0;background:transparent;border:none;box-shadow:none;"><img class="bubble-img" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
     }
-     // 🌟 蓝色高定：表情包隐形修复盾（真正的完美拼写版 + AI幻觉宽容雷达！）
-    // 🔪 核心升级：正则雷达扩大搜索范围，强行捕获 AI 乱编的 [表情包:] 和 [表情:] 前缀！
-    const stkMatch = t.trim().match(/^\[(stk:|st:|st_|表情包:|表情:)([^\]]+)\]$/i);
+    // 🔪 蓝色高定：表情包容错分离刀 (把混在一起的文字强行切开！)
+    const stkMatch = t.trim().match(/^\[(stk:|st:|st_|表情包:|表情:)([^\]]+)\]([\s\S]*)$/i);
     if(stkMatch){
-      // 提取第二组也就是真正的 ID，无论 AI 前面加了什么前缀，我们都只取纯净的 ID！
       const id = stkMatch[2].trim();
-      
-      // 调用雷达函数，把图片链接解包出来！
+      const leftover = stkMatch[3].trim(); // 截获它偷偷跟在后面的文字
       const sticker = window.__stickerGetById ? window.__stickerGetById(id) : null;
       const src = sticker ? sticker.src : '';
       
-      // 🌟 兜底：如果连模糊匹配都找不到，绝不发空白，给个高级的占位提示！
-      if(!src) return `${quote}<div class="bubble ${cls} ${hidden}" style="color:#a0aaba; font-style:italic; font-size:13px;">(发出了一个表情)</div>${ts}`;
+      let html = '';
+      if(!src) html = `${quote}<div class="bubble ${cls} ${hidden}" style="color:#a0aaba; font-style:italic; font-size:13px;">(发出了一个表情)</div>`;
+      else html = `${quote}<div class="bubble ${cls} ${hidden} bubble-card" style="padding:0;background:transparent;border:none;box-shadow:none;"><img class="bubble-sticker" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>`;
       
-      return `${quote}<div class="bubble ${cls} ${hidden} bubble-card" style="padding:0;background:transparent;border:none;box-shadow:none;"><img class="bubble-sticker" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
-    }
+      // 🌟 如果它后面还粘了文字，顺势在下面追加一个同级的漂亮气泡！
+      if(leftover) {
+         html += `${ts}</div><div class="msg-row"><div class="bubble-wrap ${cls}" style="margin-top:4px;"><div class="bubble ${cls} ${hidden}">${esc(leftover)}</div>`;
+      }
+      return html + (leftover ? '' : ts);
+  }
 if(!isMe && isHtmlDoc(t)){
   const src=toHtmlDataUrl(t);
   return `${quote}<div class="bubble ${cls} has-html${hidden}"><div class="html-embed"><iframe sandbox="allow-same-origin allow-scripts allow-modals" referrerpolicy="no-referrer" src="${src}"></iframe></div></div>${ts}`;
@@ -6265,11 +6267,11 @@ fatal_pattern: {"messages":...}→BLOCK`;
 4. 【代码防粘连绝对规则】：凡回复中包含HTML代码：a)必须是以<!DOCTYPE html>开头的完整文档，禁止发片段；b)整个HTML文档作为一个完整字符串放在JSON数组的一条里，禁止拆分；c)禁止添加任何markdown标记如\`\`\`html；d)代码前后的对话文字必须和代码分开，各自独立一条。若输出HTML，按钮和交互元素的点击事件必须用onclick属性直接写在标签上，禁止使用addEventListener。
 5. 遇到代码输出（指网页开发代码）时，结构必须严格切分为：["[名字]：代码前的铺垫","[名字]：html代码块","[名字]：代码后的互动"]。⚠️发红包、定位、模拟发图等卡片【绝对不是】发代码，严禁加上<!DOCTYPE html>，必须直接输出卡片的div！
 6. messages数组里的每一条都只能是角色说的话（纯对话文本），严禁混入任何动作描写、心理描写、场景描写、旁白叙述。如果只有引用没有回复，禁止输出该条消息。
-7. 【表情包】可以像真人一样发文字，也可以偶尔发1张表情包。若要发表情包，让某一条消息严格等于：[名字]：[stk:ID]，ID必须从可用列表中原样复制。可用表情包列表：\n${window.__stickerPromptText?window.__stickerPromptText(200):'（暂无）'}
+7. 【表情包】你可以发表情包，让某一条消息严格等于：[名字]：[stk:ID] 。⚠️【致命红线】：表情包必须独占一个气泡！[stk:ID]的前后绝对、绝对禁止加上任何聊天文字！如果既想发表情又想说话，必须分成两条消息（两条数组元素）！
 8. 【语音消息】可以发语音，让某一条消息严格等于：[名字]：[voice:秒数:语音内容]，秒数根据内容长度估算（2-60）。语音消息表达更私密亲昵的语气。（注意：语音内容中不得包含。！？，等标点，用纯文字表达）
 9. 【通话】可以主动发起语音或视频通话，让某一条消息严格等于：[名字]：[call:voice] 或 [名字]：[call:video]。需要挂断时某一条消息严格等于 [名字]：[endcall]。发起通话和挂断指令必须单独一条，不能和文字混在一起。
 10. 每条消息必须带正常中文标点，禁止无标点长句。
-11. 【引用回复铁律】：如需引用对方某条消息，必须且只能在【同一条消息内】完成！格式严格为：[名字]：[quote]被引用的原话[/quote]紧接着写你的回复正文。⚠️绝对禁止把引用的原话单独拆成一条独立的消息发出来！
+11. 【引用回复与防复读铁律】：如需引用对方某条消息，必须且只能在【同一条消息内】完成！格式严格为：[名字]：[quote]被引用的原话[/quote]紧接着写你的回复正文。⚠️绝对禁止把引用的原话单独拆成一条独立的消息发出来！更严禁像复读机一样单发玩家的原话！
 12. 【严禁事项】：正文任何地方绝对禁止出现时间戳前缀！
 13. 【发言顺序防排队铁律】：绝对禁止按成员列表顺序一人一句刻板排队发言！大模型极易犯这种列表式的偷懒毛病，你必须打破它！必须根据剧情和性格决定谁先开口、谁抢话、谁潜水暗中观察。允许同一角色连续发多条消息，允许某些角色一直不说话。聊天顺序必须是彻底打乱的、穿插的（例如 B -> C -> B -> A），制造出极其真实的修罗场混乱感与活人感！
 [FORMAT_LOCK]
@@ -6405,8 +6407,8 @@ async function sendMsg(){
         }
         
         if (groupMemTexts.length > 0) {
-          system += '\n\n【上帝视角：各男主与玩家的私密羁绊记忆】（这是他们在单聊中与玩家发生的重要前情，请根据这些记忆，在群聊修罗场中表现出对应的吃醋、占有欲或暗中较劲，神不知鬼不觉地融入群聊互动中）：\n' + groupMemTexts.join('\n\n');
-        }
+          system += '\n\n【上帝视角：各男主与玩家的私密羁绊记忆】（这是他们在单聊中与玩家发生的重要前情，请根据这些记忆，在群聊修罗场中表现出对应的吃醋、占有欲或暗中较劲，神不知鬼不觉地融入群聊互动中）\n⚠️【记忆隔离铁律】：各男主绝对不知道别人的私密记忆！你只能根据自己的记忆行事。如果看到别人和玩家的私密经历，你可以吃醋或阴阳怪气，但绝对禁止直接说出别人记忆里的具体细节（因为你根本不知道）！绝不许串戏！\n：\n' + groupMemTexts.join('\n\n');
+  }
       } else {
         // 传统单聊记忆注入
         const activeMems = (allMems[chatId] || []).filter(m => m.injectEnabled !== false);
