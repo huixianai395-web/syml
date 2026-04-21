@@ -16257,18 +16257,30 @@ ${chatCtx}
     }
   }, 1500);
 
-  // 锁入保险箱
+ // 锁入保险箱 (🌟 蓝色高定：智能穿脱马甲版，绝对安全零冲突)
   window._saveMmVoiceId = async function() {
     const roleId = document.getElementById('mmRoleSelect').value;
     const voiceId = document.getElementById('mmVoiceId').value.trim();
-    if(!roleId || !voiceId) return alert('宝宝，角色和声纹 ID 都要填哦！');
+    
+    // 🔪 拆除旧的严苛安检门，只校验角色是否选择，允许声纹为空！
+    if(!roleId) return alert('宝宝，请先选择一个角色哦！');
     
     let ids = await localforage.getItem('mp_fix_mm_voice_ids') || {};
-    ids[roleId] = voiceId;
+    
+    if(voiceId === "") {
+      // 如果老婆把输入框清空了，说明要脱下马甲，恢复纯文字语音！
+      delete ids[roleId];
+      document.getElementById('mmStatus').textContent = '已脱下声纹 🤍';
+    } else {
+      // 正常穿上声纹马甲
+      ids[roleId] = voiceId;
+      document.getElementById('mmStatus').textContent = '已锁入内存 ✨';
+    }
+    
+    // 死死写入外挂硬盘
     await localforage.setItem('mp_fix_mm_voice_ids', ids);
     
-    document.getElementById('mmStatus').textContent = '已锁入内存';
-    // 🔪 蓝色听话：我把清空输入框的代码删掉啦！以后它会一直乖乖待在里面！
+    // 两秒后恢复待命状态
     setTimeout(()=> { if(document.getElementById('mmStatus')) document.getElementById('mmStatus').textContent = '当前状态：待命'; }, 2000);
   };
 
