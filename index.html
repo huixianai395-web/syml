@@ -10319,7 +10319,7 @@ window.renderNotesList = function(){
       try {
         if (!window.currentId) throw new Error("未选中任何角色或群聊！");
         const c = window.getContactById(window.currentId);
-        const st = window.normSettings(c?.settings);
+        const st = normSettings(c?.settings);
         window._tempSelectedWbIds = new Set(st.wbEnabled || []);
 
         const books = await window.getWbBooks();
@@ -10373,7 +10373,7 @@ window.renderNotesList = function(){
         const c = window.getContactById(window.currentId);
         if (!c) return;
         
-        const st = window.normSettings(c?.settings);
+        const st = normSettings(c?.settings);
         st.wbEnabled = Array.from(window._tempSelectedWbIds || []);
         
         // 🔪 核心手术刀：判断是群聊还是单聊，分别存入不同的外挂内存！
