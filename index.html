@@ -10317,8 +10317,8 @@ window.renderNotesList = function(){
       box.innerHTML = '<div style="text-align:center; padding:40px; color:#5c7094; font-size:13px; font-weight:bold; letter-spacing:1px; animation:blueBlink 1.5s infinite;">正在从外挂硬盘调取法则...</div>';
 
       try {
-        if (!window.currentId) throw new Error("未选中任何角色或群聊！");
-        const c = window.getContactById(window.currentId);
+        if (!currentId) throw new Error("未选中任何角色或群聊！");
+        const c = window.getContactById(currentId);
         const st = normSettings(c?.settings);
         window._tempSelectedWbIds = new Set(st.wbEnabled || []);
 
@@ -10369,8 +10369,8 @@ window.renderNotesList = function(){
     const saveRoleWbBtn = document.getElementById('saveRoleWbBtn');
     if (saveRoleWbBtn) {
       saveRoleWbBtn.onclick = () => {
-        if (!window.currentId) return;
-        const c = window.getContactById(window.currentId);
+        if (!currentId) return;
+        const c = window.getContactById(currentId);
         if (!c) return;
         
         const st = normSettings(c?.settings);
@@ -10379,13 +10379,13 @@ window.renderNotesList = function(){
         // 🔪 核心手术刀：判断是群聊还是单聊，分别存入不同的外挂内存！
         if (c.isGroup) {
           const groups = window.getGroups();
-          const idx = groups.findIndex(g => g.id === window.currentId);
+          const idx = groups.findIndex(g => g.id === currentId);
           if (idx > -1) {
             groups[idx].settings = st;
             window.setGroups(groups);
           }
         } else {
-          window.updateContact(window.currentId, { settings: st });
+          window.updateContact(currentId, { settings: st });
         }
         
         document.getElementById('roleWbModal').classList.remove('active');
