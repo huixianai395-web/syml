@@ -10370,7 +10370,7 @@ window.renderNotesList = function(){
     if (saveRoleWbBtn) {
       saveRoleWbBtn.onclick = () => {
         if (!currentId) return;
-        const c = window.getContactById(currentId);
+        const c = window.getContactById(currentId) || (window.getGroups()||[]).find(g=>g.id===currentId);
         if (!c) return;
         
         const st = normSettings(c?.settings);
