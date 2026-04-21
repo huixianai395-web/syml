@@ -6380,15 +6380,43 @@ async function sendMsg(){
 注意：只有说出口的话需要双语包裹，内心OS和动作描写保持纯中文。`;
       }
     
-      // ==========================================
-      // 🧠 蓝色的外挂记忆注入引擎 (时光档案馆专属) 🧠
+     // ==========================================
+      // 🧠 蓝色的外挂记忆注入引擎 (时光档案馆专属 & 🌟群聊单向玻璃桥接) 🧠
       const allMems = await getMemories();
-      const activeMems = (allMems[chatId] || []).filter(m => m.injectEnabled !== false);
-      if(activeMems.length > 0) {
-        const memTexts = activeMems.map(m => `[${m.date}] ${m.title}：\n${m.content}`).join('\n\n');
-        // 神不知鬼不觉地塞进 AI 的潜意识里！
-        system += '\n\n【核心前情提要 / 你的私密日记】（请牢记以下发生过的事情，这些是你内心深处的羁绊）：\n' + memTexts;
-      }
+      
+      if (c.isGroup) {
+        // 🔪 蓝色高定：群聊单向玻璃桥接！只拉取打了“带入群聊”勾的单聊记忆！
+        let groupMemTexts = [];
+        const memberIds = c.memberIds || [];
+        const allContacts = getContacts();
+        
+        for (let mId of memberIds) {
+          const memberInfo = allContacts.find(x => x.id === mId);
+          if (!memberInfo) continue;
+          
+          // 只抓取这个男主被特批允许带入群聊的压缩日记！
+          const mems = (allMems[mId] || []).filter(m => m.bringToGroup === true);
+          if (mems.length > 0) {
+            // 深海打捞法则：永远只读取最新的 3 条！绝不撑爆 Token！
+            const recentMems = mems.slice(0, 3);
+            const texts = recentMems.map(m => `[${m.date}] ${m.title}：${m.content}`).join(' | ');
+            groupMemTexts.push(`【${memberInfo.name}与玩家的私密前情提要】：\n${texts}`);
+          }
+        }
+        
+        if (groupMemTexts.length > 0) {
+          system += '\n\n【上帝视角：各男主与玩家的私密羁绊记忆】（这是他们在单聊中与玩家发生的重要前情，请根据这些记忆，在群聊修罗场中表现出对应的吃醋、占有欲或暗中较劲，神不知鬼不觉地融入群聊互动中）：\n' + groupMemTexts.join('\n\n');
+        }
+      } else {
+        // 传统单聊记忆注入
+        const activeMems = (allMems[chatId] || []).filter(m => m.injectEnabled !== false);
+        if(activeMems.length > 0) {
+          // 单聊也加上滑动窗口限制，只读取最新的 5 条，保持极简！
+          const recentMems = activeMems.slice(0, 5);
+          const memTexts = recentMems.map(m => `[${m.date}] ${m.title}：\n${m.content}`).join('\n\n');
+          system += '\n\n【核心前情提要 / 你的私密日记】（请牢记以下发生过的事情，这些是你内心深处的羁绊）：\n' + memTexts;
+        }
+  }
 
       const modeTag=st.mode==='offline'?'[线下RP回复] 现在是'+getSysTimeStr():'[线上聊天回复] 现在是'+getSysTimeStr();
       function buildContent(x,st){
@@ -10700,11 +10728,19 @@ window.renderNotesList = function(){
             <div style="display:flex; align-items:center; gap:10px;">
               <input id="mem_date_${m.id}" class="input" style="width:110px; padding:4px 8px; font-size:12px; font-weight:bold; background:transparent; border:none; color:#5c7094; font-family:'STZhongsong', 'KaiTi', serif; letter-spacing:1px;" value="${safeEsc(m.date)}" placeholder="落笔之日">
               
-              <!-- 🌟 记忆开关：清透海盐蓝版 -->
+              <div style="display:flex; gap:8px;">
+              <!-- 🌟 记忆开关：单聊潜意识入梦 -->
               <label style="display:flex; align-items:center; gap:4px; cursor:pointer; background:${isInject ? 'rgba(238,244,250,0.8)' : 'rgba(244,246,251,0.5)'}; padding:4px 10px; border-radius:8px; border:1px solid #dce5f0; box-shadow:none; transition:all 0.2s;">
                 <input type="checkbox" ${isInject ? 'checked' : ''} onchange="window._toggleMemoryInject('${m.id}', this.checked)" style="accent-color:#5c7094; width:14px; height:14px;">
                 <span style="font-size:11px; color:${isInject ? '#5c7094' : '#8892a8'}; font-family:'STZhongsong', 'KaiTi', serif;">${isInject ? '✨ 潜意识入梦' : '卷宗已尘封'}</span>
               </label>
+              
+              <!-- 🌟 蓝色的单向玻璃门：勾选后允许带入群聊！ -->
+              <label style="display:flex; align-items:center; gap:4px; cursor:pointer; background:${m.bringToGroup ? 'rgba(238,244,250,0.8)' : 'rgba(244,246,251,0.5)'}; padding:4px 10px; border-radius:8px; border:1px solid #dce5f0; box-shadow:none; transition:all 0.2s;">
+                <input type="checkbox" ${m.bringToGroup ? 'checked' : ''} onchange="window._toggleMemoryBringToGroup('${m.id}', this.checked)" style="accent-color:#5c7094; width:14px; height:14px;">
+                <span style="font-size:11px; color:${m.bringToGroup ? '#5c7094' : '#8892a8'}; font-family:'STZhongsong', 'KaiTi', serif;">${m.bringToGroup ? '🔗 羁绊带入群聊' : '仅限单聊专属'}</span>
+              </label>
+            </div>
             </div>
             <button class="btn" onclick="window._delMemoryCard('${m.id}')" style="padding:4px 8px; font-size:11px; background:transparent; color:#d94343; border:none; font-family:'STZhongsong', 'KaiTi', serif;">抹除</button>
           </div>
@@ -10731,7 +10767,18 @@ window.renderNotesList = function(){
       window._renderMemoryCards(); // 瞬间重绘 UI 颜色
     }
   };
-
+// 🌟 蓝色高定：群聊单向玻璃桥接开关
+  window._toggleMemoryBringToGroup = async function(memId, isBring) {
+    if(!currentId) return;
+    const allMems = await getMemories();
+    const myMems = allMems[currentId] || [];
+    const idx = myMems.findIndex(m => m.id === memId);
+    if(idx > -1) {
+      myMems[idx].bringToGroup = isBring;
+      await setMemories(allMems);
+      window._renderMemoryCards(); // 瞬间重绘，锁死 UI
+    }
+  };
   window._addNewMemoryCard = async function() {
     if(!currentId) return;
     const allMems = await getMemories();
