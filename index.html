@@ -10306,23 +10306,25 @@ window.renderNotesList = function(){
       originalShow(id);
     };
 
+    // 🌟 蓝色高定修复：世界书群聊保存分流与极简 UI 升级
     window._openRoleWbModal = async function() {
       const modal = document.getElementById('roleWbModal');
       const box = document.getElementById('roleWbList');
       if(!modal || !box) return;
       
       modal.classList.add('active');
-      box.innerHTML = '<div style="text-align:center; padding:40px; color:#888;">正在从外挂内存读取数据...</div>';
+      // 注入极简提示，使用高级灰蓝与海盐蓝
+      box.innerHTML = '<div style="text-align:center; padding:40px; color:#5c7094; font-size:13px; font-weight:bold; letter-spacing:1px; animation:blueBlink 1.5s infinite;">正在从外挂硬盘调取法则...</div>';
 
       try {
-        if (!currentId) throw new Error("未选中任何角色！");
-        const c = getContactById(currentId);
-        const st = normSettings(c?.settings);
+        if (!window.currentId) throw new Error("未选中任何角色或群聊！");
+        const c = window.getContactById(window.currentId);
+        const st = window.normSettings(c?.settings);
         window._tempSelectedWbIds = new Set(st.wbEnabled || []);
 
-        const books = await getWbBooks();
+        const books = await window.getWbBooks();
         if (!books || books.length === 0) {
-          box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:13px;">请先去桌面进入【世界书】App添加数据哦</div>`;
+          box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#7a86a8; font-size:12px;">导入的世界书都是空的哦~<br>去主屏幕添加点设定吧</div>`;
           return;
         }
 
@@ -10334,21 +10336,21 @@ window.renderNotesList = function(){
           const entriesHtml = entries.map(e => {
             const isChecked = window._tempSelectedWbIds.has(e.id);
             return `
-              <label style="display:flex; align-items:flex-start; gap:8px; padding:10px 0; border-top:1px dashed #edf2ff; cursor:pointer;">
-                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="window._toggleRoleEntry('${e.id}', this.checked)" style="width:18px; height:18px; accent-color:#2f66d8; margin-top:2px; flex-shrink:0;">
+              <label style="display:flex; align-items:flex-start; gap:8px; padding:10px 0; border-top:1px dashed #dce5f0; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='rgba(238,244,250,0.4)'" onmouseout="this.style.background='transparent'">
+                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="window._toggleRoleEntry('${e.id}', this.checked)" style="width:18px; height:18px; accent-color:#5c7094; margin-top:2px; flex-shrink:0;">
                 <div style="flex:1; min-width:0;">
-                  <div style="font-size:13px; font-weight:bold; color:${isChecked ? '#2f66d8' : '#333'};">${safeEsc(e.keys)}</div>
-                  <div style="font-size:11px; color:#888; margin-top:4px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${safeEsc(e.content)}</div>
+                  <div style="font-size:13px; font-weight:bold; color:${isChecked ? '#3d4a6a' : '#5c7094'};">${safeEsc(e.keys)}</div>
+                  <div style="font-size:11px; color:#7a86a8; margin-top:4px; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${safeEsc(e.content)}</div>
                 </div>
               </label>
             `;
           }).join('');
 
           html += `
-            <div style="background:#fff; border:1px solid #e4e8f5; border-radius:12px; padding:12px; box-shadow:0 2px 8px rgba(47,102,216,0.02); margin-bottom:12px;">
-              <div style="font-size:14px; font-weight:800; color:#1a1d26; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="background:rgba(250,252,255,0.8); border:1px solid #dce5f0; border-radius:12px; padding:12px; box-shadow:0 4px 12px rgba(92,112,148,0.03); margin-bottom:12px;">
+              <div style="font-size:14px; font-weight:800; color:#3d4a6a; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
                 <span style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📖 ${safeEsc(b.bookName)}</span>
-                <button class="btn" onclick="window._selectAllBook('${b.bookId}')" style="font-size:11px; padding:4px 8px; background:#eef3ff; color:#2f66d8; flex-shrink:0;">本本全选</button>
+                <button class="btn" onclick="window._selectAllBook('${b.bookId}')" style="font-size:11px; padding:4px 10px; background:#eef4fa; color:#5c7094; border:1px solid #dce5f0; border-radius:8px; font-weight:bold;">本本全选</button>
               </div>
               <div style="max-height:220px; overflow-y:auto; padding-right:4px;">
                 ${entriesHtml}
@@ -10357,11 +10359,39 @@ window.renderNotesList = function(){
           `;
         });
 
-        box.innerHTML = html || `<div style="text-align:center; padding:40px 0; color:#a0aaba; font-size:13px;">导入的世界书都是空的哦~</div>`;
+        box.innerHTML = html || `<div style="text-align:center; padding:40px 0; color:#7a86a8; font-size:12px;">没有找到有效词条呢~</div>`;
       } catch (err) {
-        box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#e74c3c; font-size:13px;">渲染失败：${err.message}</div>`;
+        box.innerHTML = `<div style="text-align:center; padding:40px 0; color:#b57b7b; font-size:12px;">渲染失败：${err.message}</div>`;
       }
     };
+
+    // 🌟 核心：保存按钮的路由分发！它现在能认出群聊保险箱了！
+    const saveRoleWbBtn = document.getElementById('saveRoleWbBtn');
+    if (saveRoleWbBtn) {
+      saveRoleWbBtn.onclick = () => {
+        if (!window.currentId) return;
+        const c = window.getContactById(window.currentId);
+        if (!c) return;
+        
+        const st = window.normSettings(c?.settings);
+        st.wbEnabled = Array.from(window._tempSelectedWbIds || []);
+        
+        // 🔪 核心手术刀：判断是群聊还是单聊，分别存入不同的外挂内存！
+        if (c.isGroup) {
+          const groups = window.getGroups();
+          const idx = groups.findIndex(g => g.id === window.currentId);
+          if (idx > -1) {
+            groups[idx].settings = st;
+            window.setGroups(groups);
+          }
+        } else {
+          window.updateContact(window.currentId, { settings: st });
+        }
+        
+        document.getElementById('roleWbModal').classList.remove('active');
+        alert('✨ 专属法则已锁定！内存已经记住了你的勾选！');
+      };
+  }
 
     window._toggleRoleEntry = (id, isChecked) => {
       if (isChecked) window._tempSelectedWbIds.add(id); else window._tempSelectedWbIds.delete(id);
