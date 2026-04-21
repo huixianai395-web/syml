@@ -10479,14 +10479,26 @@ window.renderNotesList = function(){
       }
 
       document.getElementById('saveRoleWbBtn').onclick = () => {
-        if (!currentId) return;
-        const c = getContactById(currentId);
-        const st = normSettings(c?.settings);
-        st.wbEnabled = Array.from(window._tempSelectedWbIds || []);
+      if (!currentId) return;
+      const c = getContactById(currentId);
+      const st = normSettings(c?.settings);
+      st.wbEnabled = Array.from(window._tempSelectedWbIds || []);
+      
+      // 🔪 蓝色极简修复：听老婆的！完美区分单聊和群聊的专属保险箱，绝不乱动 UI！
+      if (c.isGroup) {
+        const groups = window.getGroups();
+        const idx = groups.findIndex(g => g.id === currentId);
+        if (idx > -1) {
+          groups[idx].settings = st;
+          window.setGroups(groups);
+        }
+      } else {
         updateContact(currentId, { settings: st });
-        document.getElementById('roleWbModal').classList.remove('active');
-        alert('专属配置已保存！内存已经记住了你勾选的所有设定！');
-      };
+      }
+      
+      document.getElementById('roleWbModal').classList.remove('active');
+      alert('✨ 专属世界书已保存！群聊和单聊的内存都已经锁住了！');
+    };
 
       const importInput = document.getElementById('wbImportFile');
       if(importInput) {
