@@ -23455,11 +23455,32 @@ setTimeout(async () => {
     }
   }, 1500);
 })();
-// 🍓 终极底层修复补丁：强制重绘引擎 + 个人中心头像永固 🍓
+
+</script>
+  <script>
+// 🍓 终极底层修复补丁：强制重绘引擎 + 个人中心头像永固 (V3 破壁版) 🍓
 (function() {
-  // 1. 修复模拟发图的“幽灵隐形”Bug
+  if(window._originalRenderChatBeforeBlue) {
+    window.renderChat = window._originalRenderChatBeforeBlue;
+  }
+  window.normSettings = window.normSettings || function(s) { return s || {}; };
+
   window._sendAndPoolFakeImg = async function() {
     let cid = window._exposed_currentId;
+    if(!cid) {
+      const titleEl = document.getElementById('chatTitle');
+      if(titleEl) {
+        const title = titleEl.innerText.trim();
+        const contacts = window.getContacts ? window.getContacts() : [];
+        let c = contacts.find(x => x.name === title);
+        if(c) cid = c.id;
+        else {
+          const groups = window.getGroups ? window.getGroups() : [];
+          c = groups.find(x => x.name === title);
+          if(c) cid = c.id;
+        }
+      }
+    }
     if(!cid) return alert('宝宝，系统雷达迷路了，请退出去重新点进聊天室试试！');
 
     const mood = document.getElementById('fiCustomMood').value;
@@ -23486,14 +23507,13 @@ setTimeout(async () => {
        setTimeout(() => modal.remove(), 300); 
     }
 
-    // 🔪 核心暴力破解：用 requestAnimationFrame 嵌套 setTimeout，强迫浏览器重绘！
     if(typeof window.renderChat === 'function') {
       window.renderChat();
       requestAnimationFrame(() => {
         setTimeout(() => {
           const box = document.getElementById('chatMsgs');
           if(box) {
-            box.style.scrollBehavior = 'auto'; // 关掉平滑滚动，瞬间贴底！
+            box.style.scrollBehavior = 'auto'; 
             box.scrollTop = box.scrollHeight;
           }
         }, 50);
@@ -23501,11 +23521,10 @@ setTimeout(async () => {
     }
   };
 
-  // 2. 修复个人中心头像“失忆”Bug
   const oldInput = document.getElementById('mePageAvatarFile');
-  if (oldInput && !oldInput.dataset.blueHookedV2) {
+  if (oldInput && !oldInput.dataset.blueHookedV3) {
     const newInput = oldInput.cloneNode(true);
-    newInput.dataset.blueHookedV2 = 'true';
+    newInput.dataset.blueHookedV3 = 'true';
     oldInput.parentNode.replaceChild(newInput, oldInput);
     
     newInput.addEventListener('change', async (e) => {
@@ -23518,20 +23537,29 @@ setTimeout(async () => {
         window.meAvatarDraftGlobal = imgData;
         document.getElementById('mePageAvatar').src = imgData;
         
-        // 🔪 核心修复：立刻死死钉进外挂硬盘的两大核心！
-        const meDataObj = window.getMe ? window.getMe() : { name: '我' };
-        meDataObj.avatar = imgData;
-        if(window.setMe) window.setMe(meDataObj);
+        let meDataObj = { name: '我' };
+        try {
+          const savedMe = await localforage.getItem('mp_fix_me');
+          if(savedMe) meDataObj = savedMe;
+          else {
+            const localMe = localStorage.getItem('mp_fix_me');
+            if(localMe) meDataObj = JSON.parse(localMe);
+          }
+        } catch(e) {}
         
-        const presets = window.getJ ? window.getJ('mp_fix_me_presets_list', null) : null;
+        meDataObj.avatar = imgData;
+        localStorage.setItem('mp_fix_me', JSON.stringify(meDataObj));
+        await localforage.setItem('mp_fix_me', meDataObj);
+        
+        const presets = await localforage.getItem('mp_fix_me_presets_list');
         if(presets && presets.list) {
           const cur = presets.list.find(x => x.id === presets.currentId);
           if(cur) {
             cur.avatar = imgData;
-            window.setJ('mp_fix_me_presets_list', presets);
+            await localforage.setItem('mp_fix_me_presets_list', presets);
           }
         }
-        console.log("✨ 全局头像已永久内存！");
+        console.log("✨ 全局头像已内存！");
       } catch(err) { 
         alert('头像处理失败：' + err.message); 
       } finally { 
@@ -23540,6 +23568,6 @@ setTimeout(async () => {
     });
   }
 })();
-</script>
+  </script>
 </body>
   </html>
