@@ -16178,6 +16178,7 @@ ${chatCtx}
       }
       window._originalSetChatArrForFakeImg(id, arr);
     };
+    if(typeof window.renderChat==='function') window.renderChat();
   }
 })();
   // ================= 🌟 蓝色高定：声纹克隆舱底层存储引擎 =================
@@ -23454,19 +23455,7 @@ setTimeout(async () => {
     }
   }, 1500);
 })();
-  // 🍓 防吞图 JS 补丁：强制唤醒屏幕重绘 🍓
-(function(){
-  if(window._sendAndPoolFakeImg && !window._fakeImgHooked) {
-    const oldSend = window._sendAndPoolFakeImg;
-    window._sendAndPoolFakeImg = async function() {
-      await oldSend(); // 先执行原来的存图逻辑
-      // 核心魔法：踹系统一脚，强行刷新聊天屏幕！
-      if(typeof window.renderChat === 'function') window.renderChat();
-    };
-    window._fakeImgHooked = true; // 打上标记，防止重复挂载
-    console.log("✨ 防吞图补丁已注入内存！");
-  }
-})();
+  
 </script>
 </body>
   </html>
