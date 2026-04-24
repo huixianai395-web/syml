@@ -23521,36 +23521,31 @@ setTimeout(async () => {
     }
   };
 
+  
+})();
+  </script>
+  <script>
+(function() {
   const oldInput = document.getElementById('mePageAvatarFile');
-  if (oldInput && !oldInput.dataset.blueHookedV3) {
+  if (oldInput && !oldInput.dataset.blueHookedV4) {
     const newInput = oldInput.cloneNode(true);
-    newInput.dataset.blueHookedV3 = 'true';
+    newInput.dataset.blueHookedV4 = 'true';
     oldInput.parentNode.replaceChild(newInput, oldInput);
-    
     newInput.addEventListener('change', async (e) => {
       const f = e.target.files?.[0];
       if(!f) return;
       try {
         const compFn = window._fiCompressImage || window.compressImage;
         const imgData = await compFn(f);
-        
         window.meAvatarDraftGlobal = imgData;
         document.getElementById('mePageAvatar').src = imgData;
-        
         let meDataObj = { name: '我' };
         try {
           const savedMe = await localforage.getItem('mp_fix_me');
           if(savedMe) meDataObj = savedMe;
-          else {
-            const localMe = localStorage.getItem('mp_fix_me');
-            if(localMe) meDataObj = JSON.parse(localMe);
-          }
         } catch(e) {}
-        
         meDataObj.avatar = imgData;
-        localStorage.setItem('mp_fix_me', JSON.stringify(meDataObj));
         await localforage.setItem('mp_fix_me', meDataObj);
-        
         const presets = await localforage.getItem('mp_fix_me_presets_list');
         if(presets && presets.list) {
           const cur = presets.list.find(x => x.id === presets.currentId);
@@ -23559,11 +23554,10 @@ setTimeout(async () => {
             await localforage.setItem('mp_fix_me_presets_list', presets);
           }
         }
-        console.log("✨ 全局头像已内存！");
-      } catch(err) { 
-        alert('头像处理失败：' + err.message); 
-      } finally { 
-        e.target.value = ''; 
+      } catch(err) {
+        alert('头像处理失败：' + err.message);
+      } finally {
+        e.target.value = '';
       }
     });
   }
