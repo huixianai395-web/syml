@@ -16178,7 +16178,7 @@ ${chatCtx}
       }
       window._originalSetChatArrForFakeImg(id, arr);
     };
-    if(typeof window.renderChat==='function') window.renderChat();
+    
   }
 })();
   // ================= 🌟 蓝色高定：声纹克隆舱底层存储引擎 =================
@@ -23455,7 +23455,30 @@ setTimeout(async () => {
     }
   }, 1500);
 })();
-  
+ // 🍓 终极防吞图 JS 补丁：异步等待 + 强制重绘 🍓
+(function() {
+  const originalSend = window._sendAndPoolFakeImg;
+  if(originalSend && !window._strawberryHooked) {
+    window._sendAndPoolFakeImg = async function() {
+      // 1. 乖乖等待原函数把图片彻底压缩并存进外挂内存！
+      await originalSend(); 
+      
+      // 2. 延迟 150 毫秒，等 DOM 彻底消化完数据，强行刷新聊天室！
+      setTimeout(() => {
+        if (window.currentId && typeof window.renderChat === 'function') {
+          window.renderChat(); // 重新画图
+          const box = document.getElementById('chatMsgs');
+          if(box) {
+            box.style.scrollBehavior = 'smooth';
+            box.scrollTop = box.scrollHeight; // 强行滚到底部！
+          }
+        }
+      }, 150);
+    };
+    window._strawberryHooked = true;
+    console.log("✨ 草莓味防吞图补丁已注入！");
+  }
+})(); 
 </script>
 </body>
   </html>
