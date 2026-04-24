@@ -23383,5 +23383,77 @@ setTimeout(async () => {
   console.log("✨ PWA 独立应用声明书已安全递交！");
 }, 2000); // 延迟 2 秒执行，绝对不抢占任何核心功能的性能！
 </script>
+  <!-- 🌟 蓝色高定 MAX 版：全场景空白气泡粉碎机 -->
+<script>
+(function(){
+  // 核心鉴定器：用 X 光扫描一个气泡是不是真的“空壳”
+  function isGhostBubble(text) {
+    if (!text) return true;
+    
+    // 1. 剔除所有系统隐藏标签 (比如拉黑/解除拉黑)
+    let pure = text.replace(/\[sys:(un)?block\]/g, '');
+    
+    // 2. 剔除零宽字符、空格、回车等看不见的占位符
+    pure = pure.replace(/[\u200B-\u200D\uFEFF\s]/g, '');
+    
+    // 3. 剔除 HTML 标签后，看看还剩不剩纯文本
+    const noHtml = pure.replace(/<[^>]*>/g, '');
+    
+    // 如果剔除后连一个字都没有，并且里面没有包含任何多媒体元素（图片、卡片、语音），那就是纯纯的幽灵！
+    if (noHtml === '' && !text.includes('<img') && !text.includes('class="card-') && !text.includes('class="bubble-voice"')) {
+      return true;
+    }
+    return false;
+  }
+
+  // 🌟 拦截写入外挂内存的终极安检门
+  if(!window._ghostBubbleHookedV2) {
+    const oldSetChatArr = window.setChatArr;
+    window.setChatArr = function(id, arr) {
+      if (arr && arr.length > 0) {
+        // 倒序遍历，安全删除，绝不漏掉一个空壳！
+        for (let i = arr.length - 1; i >= 0; i--) {
+          let msg = arr[i];
+          if (msg.role === 'assistant' && typeof msg.text === 'string') {
+            if (isGhostBubble(msg.text)) {
+              arr.splice(i, 1); // 物理超度！
+            }
+          }
+        }
+      }
+      if(oldSetChatArr) oldSetChatArr(id, arr);
+    };
+    window._ghostBubbleHookedV2 = true;
+  }
+
+  // 🌟 瞬间清剿历史遗留的空白气泡 (包括你现在已经看到的那些)
+  setTimeout(() => {
+    const allChats = window.getChats ? window.getChats() : {};
+    let cleanedAny = false;
+    
+    Object.keys(allChats).forEach(cid => {
+        let chatArr = allChats[cid];
+        let originalLen = chatArr.length;
+        chatArr = chatArr.filter(m => {
+            if (m.role === 'assistant' && typeof m.text === 'string') {
+                return !isGhostBubble(m.text); // 不是幽灵才放行
+            }
+            return true;
+        });
+        if (chatArr.length !== originalLen) {
+            allChats[cid] = chatArr;
+            cleanedAny = true;
+        }
+    });
+    
+    // 如果吸到了垃圾，就静默更新硬盘并重绘屏幕
+    if (cleanedAny) {
+        window.setChats(allChats);
+        if (typeof window.renderChat === 'function') window.renderChat();
+        console.log('✨ 全宇宙幽灵气泡大扫除完成！');
+    }
+  }, 1500);
+})();
+</script>
 </body>
   </html>
