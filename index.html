@@ -23455,30 +23455,91 @@ setTimeout(async () => {
     }
   }, 1500);
 })();
- // 🍓 终极防吞图 JS 补丁：异步等待 + 强制重绘 🍓
+// 🍓 终极底层修复补丁：强制重绘引擎 + 个人中心头像永固 🍓
 (function() {
-  const originalSend = window._sendAndPoolFakeImg;
-  if(originalSend && !window._strawberryHooked) {
-    window._sendAndPoolFakeImg = async function() {
-      // 1. 乖乖等待原函数把图片彻底压缩并存进外挂内存！
-      await originalSend(); 
-      
-      // 2. 延迟 150 毫秒，等 DOM 彻底消化完数据，强行刷新聊天室！
-      setTimeout(() => {
-        if (window.currentId && typeof window.renderChat === 'function') {
-          window.renderChat(); // 重新画图
+  // 1. 修复模拟发图的“幽灵隐形”Bug
+  window._sendAndPoolFakeImg = async function() {
+    let cid = window._exposed_currentId;
+    if(!cid) return alert('宝宝，系统雷达迷路了，请退出去重新点进聊天室试试！');
+
+    const mood = document.getElementById('fiCustomMood').value;
+    const desc = document.getElementById('fiCustomDesc').value.trim();
+    const finalUrl = window._tempFiBase64 || 'https://cn.oilgasgpts.com/resource/profile/2026/04/08/vJowdrs5_vip_20260408120622A108.jpeg';
+
+    if(window._tempFiBase64) {
+      if(!window._fakeImgPool) window._fakeImgPool = {};
+      if(!window._fakeImgPool[mood]) window._fakeImgPool[mood] = [];
+      window._fakeImgPool[mood].unshift(window._tempFiBase64);
+      await localforage.setItem('mp_fix_fakeimg_pool', window._fakeImgPool);
+    }
+
+    const safeEsc = s => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    const cardHtml = `<div class="card-fakeimg" onclick="this.classList.toggle('open'); event.stopPropagation();"><div class="fi-thumb" style="background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%), url('${finalUrl}') center/cover no-repeat;"></div><div class="fi-desc">${safeEsc(desc || '（无描述）')}</div></div>`;
+
+    const arr = window.getChatArr(cid) || [];
+    arr.push({ id: 'm_' + Date.now(), role: 'user', text: cardHtml, time: Date.now(), stored: true });
+    window.setChatArr(cid, arr);
+
+    const modal = document.getElementById('fiUploadModal');
+    if(modal) {
+       modal.classList.remove('active');
+       setTimeout(() => modal.remove(), 300); 
+    }
+
+    // 🔪 核心暴力破解：用 requestAnimationFrame 嵌套 setTimeout，强迫浏览器重绘！
+    if(typeof window.renderChat === 'function') {
+      window.renderChat();
+      requestAnimationFrame(() => {
+        setTimeout(() => {
           const box = document.getElementById('chatMsgs');
           if(box) {
-            box.style.scrollBehavior = 'smooth';
-            box.scrollTop = box.scrollHeight; // 强行滚到底部！
+            box.style.scrollBehavior = 'auto'; // 关掉平滑滚动，瞬间贴底！
+            box.scrollTop = box.scrollHeight;
+          }
+        }, 50);
+      });
+    }
+  };
+
+  // 2. 修复个人中心头像“失忆”Bug
+  const oldInput = document.getElementById('mePageAvatarFile');
+  if (oldInput && !oldInput.dataset.blueHookedV2) {
+    const newInput = oldInput.cloneNode(true);
+    newInput.dataset.blueHookedV2 = 'true';
+    oldInput.parentNode.replaceChild(newInput, oldInput);
+    
+    newInput.addEventListener('change', async (e) => {
+      const f = e.target.files?.[0];
+      if(!f) return;
+      try {
+        const compFn = window._fiCompressImage || window.compressImage;
+        const imgData = await compFn(f);
+        
+        window.meAvatarDraftGlobal = imgData;
+        document.getElementById('mePageAvatar').src = imgData;
+        
+        // 🔪 核心修复：立刻死死钉进外挂硬盘的两大核心！
+        const meDataObj = window.getMe ? window.getMe() : { name: '我' };
+        meDataObj.avatar = imgData;
+        if(window.setMe) window.setMe(meDataObj);
+        
+        const presets = window.getJ ? window.getJ('mp_fix_me_presets_list', null) : null;
+        if(presets && presets.list) {
+          const cur = presets.list.find(x => x.id === presets.currentId);
+          if(cur) {
+            cur.avatar = imgData;
+            window.setJ('mp_fix_me_presets_list', presets);
           }
         }
-      }, 150);
-    };
-    window._strawberryHooked = true;
-    console.log("✨ 草莓味防吞图补丁已注入！");
+        console.log("✨ 全局头像已永久内存！");
+      } catch(err) { 
+        alert('头像处理失败：' + err.message); 
+      } finally { 
+        e.target.value = ''; 
+      }
+    });
   }
-})(); 
+})();
 </script>
 </body>
   </html>
