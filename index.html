@@ -2259,6 +2259,16 @@ body #app .sticker-sheet-hd {
   margin-top: 4px !important;
   font-size: 10px !important;
 }
+    /* 🍓 甜妹高定 23.0：强制退回旧版高度 (牺牲顶部，死保底部完整) 🍓 */
+
+/* 强行打碎底层的 dvh，退回 vh，并强制顶出底部安全区 */
+html, body, #app {
+  height: 100vh !important;
+  min-height: 100vh !important;
+  padding-bottom: env(safe-area-inset-bottom) !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important; /* 锁死外框，禁止乱滑 */
+}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
