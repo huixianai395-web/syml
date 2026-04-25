@@ -2290,6 +2290,20 @@ body #app .chatInputBar {
   border-top: 1px solid rgba(220, 229, 240, 0.6) !important;
   box-shadow: none !important;
 }
+    /* ✨ 蓝色高定修补：拯救被天花板卡住的线下调色板 ✨ */
+
+/* 强制把调色板（下拉菜单）往下挪，避开刘海屏和状态栏 */
+body #app #chatRoom.offline .color-picker-panel,
+body #app #chatRoom.offline .offline-settings-box,
+body #app #chatRoom.offline .dropdown-menu,
+body #app #chatRoom.offline .el-dropdown-menu {
+  margin-top: 25px !important; /* 往下推一段距离 */
+  top: 75px !important; /* 重新锁定绝对高度 */
+  z-index: 99999 !important; /* 赋予最高层级，绝对不能被别人盖住！ */
+  border: 2px dashed #ffb6c1 !important; /* 顺便给它加上咱们的草莓虚线边框~ */
+  border-radius: 16px !important;
+  box-shadow: 0 8px 24px rgba(255, 182, 193, 0.4) !important;
+}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
