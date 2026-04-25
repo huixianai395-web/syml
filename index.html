@@ -2304,20 +2304,25 @@ body #app #chatRoom.offline .el-dropdown-menu {
   border-radius: 16px !important;
   box-shadow: 0 8px 24px rgba(255, 182, 193, 0.4) !important;
 }
-    /* ✨ 蓝色高定：输入栏左右完美对称与拉伸补丁 ✨ */
+    /* ✨ 蓝色高定：终极防换行输入栏护盾 ✨ */
 body #app .chatInputBar {
-  padding: 10px 12px !important; /* 强制左右边距完全一致，治愈强迫症 */
-  gap: 8px !important; /* 统一内部组件的间距 */
+  padding: 10px 12px calc(10px + var(--safe-bottom)) 12px !important;
+  gap: 8px !important;
 }
 
+/* 1. 左右护法：绝对不允许缩水，绝对不允许掉线 */
+body #app .chatInputBar .left-tools,
+body #app .chatInputBar .send-actions {
+  flex: 0 0 auto !important; 
+  margin: 0 !important;
+  gap: 8px !important;
+}
+
+/* 2. 输入框：弹性填满中间，打破最小宽度限制，乖乖让座 */
 body #app #chatInput {
-  margin: 0 !important; /* 拔掉输入框自带的冗余边距 */
-  flex: 1 1 auto !important; /* 开启终极弹性，把右侧按钮狠狠挤到边缘 */
-}
-
-body #app .send-actions {
-  margin-right: 0 !important; /* 确保右侧毫无保留贴合 */
-  gap: 8px !important; 
+  flex: 1 1 0% !important;
+  min-width: 0 !important; 
+  margin: 0 !important;
 }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
