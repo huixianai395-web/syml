@@ -98,7 +98,7 @@
     .bubble.has-html{padding:4px!important;max-width:100%!important;overflow:visible!important;background:transparent!important;border:none!important;box-shadow:none!important}
 .bubble .html-embed{width:100%;max-width:100%}
 .bubble .html-embed iframe{width:100%;height:520px;border:0;border-radius:4px;background:#fff;overflow:auto}
-.chatInputBar { position:absolute; left:0; right:0; bottom:0; padding:10px 6px; padding-bottom:calc(10px + var(--safe-bottom)); background:rgba(250,252,255,0.75); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-top:1px solid rgba(220,229,240,0.8); display:flex; gap:6px; align-items:flex-end; }
+.chatInputBar { position:absolute; left:0; right:0; bottom:0; padding:10px 6px; padding-bottom:calc(10px + var(--safe-bottom)); background:rgba(250,252,255,0.75); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-top:1px solid rgba(220,229,240,0.8); display:flex; gap:6px; align-items:flex-end; flex-wrap:wrap; }
 .left-tools { margin-right:0 !important; gap:6px !important; }
 #chatInput { flex:1; height:38px; min-height:38px; max-height:96px; overflow-y:auto; resize:none; background:rgba(255,255,255,0.8); border:1px solid rgba(220,229,240,0.9); border-radius:19px; padding:8px 16px; font-size:16px; color:#3d4a6a; box-shadow:inset 0 2px 6px rgba(92,112,148,0.02); transition:all 0.2s ease; line-height:1.4; margin:0 2px; }
 #chatInput:focus { background:#fff; border-color:#a5cfff; outline:none; }
@@ -1135,7 +1135,7 @@ body #app .chatInputBar .send-actions {
 /* 4. 强权输入框：温柔地霸占剩余空间，绝不妥协 */
 body #app #chatInput {
   flex: 1 1 0% !important; /* 让出计算空间，彻底填满中间 */
-  min-width: 0 !important;
+  min-width: 50px !important; 
   width: auto !important;
   white-space: pre-wrap !important; 
   word-break: break-all !important;
@@ -2303,19 +2303,6 @@ body #app #chatRoom.offline .el-dropdown-menu {
   border: 2px dashed #ffb6c1 !important; /* 顺便给它加上咱们的草莓虚线边框~ */
   border-radius: 16px !important;
   box-shadow: 0 8px 24px rgba(255, 182, 193, 0.4) !important;
-}
-    /* ✨ 蓝色高定：输入栏终极空间重构法则 ✨ */
-body #app .chatInputBar {
-  padding: 10px 12px calc(10px + var(--safe-bottom)) 12px !important;
-  gap: 8px !important; /* 强制统一 8px 完美间距，绝不偏移 */flex-wrap: nowrap !important;
-}
-body #app #chatInput {
-  flex: 1 1 auto !important; 
-  margin: 0 !important; /* 拔掉所有冗余边距，向右极致拉伸 */
-}
-body #app .send-actions {
-  flex: 0 0 auto !important;
-  margin: 0 !important; /* 让发送和储存键死死贴住右侧安全区 */
 }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
