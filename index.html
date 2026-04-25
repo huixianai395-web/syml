@@ -8618,7 +8618,7 @@ window.addHighlight = function(type){
 
 // 【全新神级功能】：点击文字，优雅删除高亮/划线/批注！
 window.removeHighlight = function(hid, fallbackText){
-  if(!confirm('老婆，确定要取消这段高亮/划线/批注吗？')) return;
+  if(!confirm('宝宝，确定要取消这段高亮/划线/批注吗？')) return;
   
   const data = getStudyData();
   const book = data.books.find(b => b.id === readerState.bookId);
@@ -10615,7 +10615,7 @@ window.renderNotesList = function(){
 
   // 绑定入口按钮：开启档案馆
   document.getElementById('openMemoryArchiveBtn').onclick = () => {
-    if(!currentId) return alert('老婆，请先进入一个男主的聊天设置，再打开TA的专属档案馆哦！');
+    if(!currentId) return alert('宝宝，请先进入一个男主的聊天设置，再打开TA的专属档案馆哦！');
     window._renderMemoryCards();
     document.getElementById('memoryArchiveModal').classList.add('active');
   };
@@ -16998,7 +16998,7 @@ ${wbText ? '【世界书设定】：\n' + wbText : ''}
         if (window._echoesManageMode && !defaultTabs.includes(t)) {
            btn.innerHTML = `${safeEsc(t)} <span style="color:#ff8a8a; font-weight:900; margin-left:4px; font-size:14px;">×</span>`;
            btn.onclick = async () => {
-              if(confirm(`老婆，确定要拆除【${t}】这个海域吗？`)) {
+              if(confirm(`宝宝，确定要拆除【${t}】这个海域吗？`)) {
                  const newCustom = realCustomTabs.filter(x => x !== t);
                  await localforage.setItem(customKey, newCustom);
                  if(window._currentEchoesTab === t) window._currentEchoesTab = '全球海岸';
@@ -23607,6 +23607,33 @@ setTimeout(async () => {
     });
   }
 })();
+    /* ✨ 蓝色高定：答案之书性能优化引擎 (拯救打字卡顿) ✨ */
+setTimeout(() => {
+  const ansInput = document.getElementById('answerQuestionInput');
+  const magicCircle = document.getElementById('magicCircle');
+  
+  if(ansInput && magicCircle) {
+    // 1. 开启硬件加速：强制唤醒手机独立显卡 (GPU) 分担压力
+    magicCircle.style.transform = 'translateZ(0)';
+    magicCircle.style.willChange = 'transform, opacity';
+    
+    // 2. 打字时智能休眠魔法阵，拯救手机性能！
+    ansInput.addEventListener('focus', () => {
+      magicCircle.style.opacity = '0.3'; // 变暗一点，减少重绘负担
+      // 暂停魔法阵里所有的旋转和呼吸动画
+      const anims = magicCircle.querySelectorAll('*');
+      anims.forEach(el => el.style.animationPlayState = 'paused');
+    });
+    
+    // 3. 键盘收起时，魔法阵重新开始流转
+    ansInput.addEventListener('blur', () => {
+      magicCircle.style.opacity = '1';
+      // 恢复所有动画
+      const anims = magicCircle.querySelectorAll('*');
+      anims.forEach(el => el.style.animationPlayState = 'running');
+    });
+  }
+}, 1500);
   </script>
 </body>
   </html>
