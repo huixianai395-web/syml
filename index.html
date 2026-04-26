@@ -23648,5 +23648,51 @@ setTimeout(() => {
   }
 }, 1500);
   </script>
+  <!-- 🌟 蓝色高定：同频专注舱“幽灵角色”修复引擎 -->
+<script>
+(function(){
+  // 💡 蓝色的魔法钩子：只要底层外挂内存的通讯录一刷新，专注舱的角色列表必须瞬间同步！
+  const originalRenderContacts = window.renderContacts;
+  if (originalRenderContacts && !window._focusHooked) {
+    window.renderContacts = function(k) {
+      // 1. 先让原系统乖乖把通讯录画完
+      originalRenderContacts(k);
+      
+      // 2. 然后我们悄悄把专注舱的下拉列表也重新填满！
+      const contacts = (window.getContacts ? window.getContacts() : []).filter(c => !c.isGroup);
+      const sel = document.getElementById('focusRoleSelect');
+      if (sel) {
+        const oldVal = sel.value; // 记住老婆刚才选的陪伴对象
+        
+        // 重新注入最新的男主列表
+        sel.innerHTML = contacts.map(c => `<option value="${c.id}">${String(c.name).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]))}</option>`).join('');
+        
+        // 如果原来的男主还在列表里，就帮老婆重新选上他，保持绝对的丝滑！
+        if (oldVal && contacts.some(c => c.id === oldVal)) {
+          sel.value = oldVal;
+        } else if (contacts.length > 0) {
+          sel.value = contacts[0].id;
+          // 触发一次 onchange，把新男主的高清头像瞬间刷出来
+          if(sel.onchange) sel.onchange({target: sel}); 
+        }
+      }
+    };
+    window._focusHooked = true;
+  }
+  
+  // 💡 顺便把那个傻乎乎的死板定时器干掉，换成每次回到桌面都强制检查一次！
+  const originalShowForFocus = window.show;
+  if (originalShowForFocus && !window._showFocusHooked) {
+    window.show = function(id) {
+      originalShowForFocus(id);
+      if (id === 'home' && window._initFocusCabin) {
+        // 延迟 50 毫秒，等桌面 UI 切换完毕后瞬间重绘专注舱
+        setTimeout(() => { window._initFocusCabin(); }, 50);
+      }
+    };
+    window._showFocusHooked = true;
+  }
+})();
+</script>
 </body>
   </html>
