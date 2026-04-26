@@ -9187,6 +9187,7 @@ applyChatBg();
 async function applyChatBg() {
   const glassBg = await localforage.getItem('mp_fix_chat_bg');
   const normalBg = await localforage.getItem('mp_fix_chat_normal_bg');
+  if (glassBg || normalBg) { document.body.setAttribute('data-has-bg', 'true'); } else { document.body.removeAttribute('data-has-bg'); }
   let el = document.getElementById('chatBgStyleOverride');
   if(!el){ el = document.createElement('style'); el.id = 'chatBgStyleOverride'; document.head.appendChild(el); }
 
