@@ -5154,6 +5154,7 @@ window._callHangup=()=>endCall();
     o.meNote = s?.meNote; 
     o.bilingual = !!s?.bilingual;
     o.bilingualLang = s?.bilingualLang || 'English';
+    o.timeSense = s?.timeSense !== false;
     return o;
   }
   function getPref(){
@@ -6827,6 +6828,7 @@ if(document.getElementById('bilingualSwitch')) {
       document.getElementById('bilingualSwitch').checked = !!st.bilingual;
       document.getElementById('bilingualLangBox').style.display = st.bilingual ? 'block' : 'none';
       if(document.getElementById('bilingualLangSelect')) document.getElementById('bilingualLangSelect').value = st.bilingualLang || 'English';
+  if(document.getElementById('timeSenseSwitch')) document.getElementById('timeSenseSwitch').checked = st.timeSense;
   }
     $('meNameInput').value=me.name||''; $('meNoteInput').value=me.note||'';
     $('mePersonaInput').value=me.persona||''; $('meAvatarInput').value=me.avatar||''; meAvatarDraft='';
@@ -6910,6 +6912,7 @@ $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';
         isBlockedByMe: document.getElementById('blockByMeSwitch') ? !!document.getElementById('blockByMeSwitch').checked : false,
         bilingual: document.getElementById('bilingualSwitch') ? !!document.getElementById('bilingualSwitch').checked : false,
         bilingualLang: document.getElementById('bilingualLangSelect') ? document.getElementById('bilingualLangSelect').value : 'English',
+        timeSense: document.getElementById('timeSenseSwitch') ? !!document.getElementById('timeSenseSwitch').checked : true,
         msgSound: window._tempRoleAudio.msgSound,
         voiceRing: window._tempRoleAudio.voiceRing,
         videoRing: window._tempRoleAudio.videoRing,
