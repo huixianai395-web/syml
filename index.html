@@ -4285,6 +4285,14 @@ body #app #chatInput {
           <input id="innerVoiceSwitch" type="checkbox" style="transform:scale(1.1); accent-color:#5c7094;" />
         </div>
       </div>
+      <!-- 🌟 蓝色高定：时间感知开关 -->
+      <div class="card">
+        <div class="small">时间感知 (AI 拥有真实时间观念)</div>
+        <div class="row" style="margin-top:8px;justify-content:space-between;">
+          <span class="small" style="color:#888;">关闭后，AI 将不再感知现实时间的流逝</span>
+          <input id="timeSenseSwitch" type="checkbox" style="transform:scale(1.1); accent-color:#5c7094;" />
+        </div>
+      </div>
       <div class="card">
         <div class="small">记忆轮数 (上下文长度)</div>
         <div class="row" style="margin-top:8px;"><input id="contextLenInput" class="input" type="number" min="5" max="500" value="30" placeholder="默认30条" /></div>
@@ -23730,5 +23738,85 @@ setTimeout(() => {
     background: rgba(0, 0, 0, 0.06) !important;
   }
 </style>
+  <!-- 🌟 蓝色高定：时间感知拦截与记忆保存引擎 -->
+<script>
+(function(){
+  // 1. 接管 normSettings，给时间感知赋予默认值并存入外挂内存
+  const oldNormSettings = window.normSettings;
+  window.normSettings = function(s) {
+    const o = oldNormSettings ? oldNormSettings(s) : (s || {});
+    o.timeSense = s?.timeSense !== false; // 默认开启
+    return o;
+  };
+
+  // 2. 接管设置面板打开动作，回填开关状态
+  const oldOpenChatSettingPage = window.openChatSettingPage;
+  window.openChatSettingPage = function() {
+    if(oldOpenChatSettingPage) oldOpenChatSettingPage();
+    if(!window.currentId) return;
+    const c = window.getContactById(window.currentId);
+    const st = window.normSettings(c?.settings);
+    const sw = document.getElementById('timeSenseSwitch');
+    if(sw) sw.checked = st.timeSense;
+  };
+
+  // 3. 拦截保存按钮，将开关状态死死锁进内存
+  const saveBtn = document.getElementById('saveChatSettingBtn');
+  if(saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      if(!window.currentId) return;
+      const c = window.getContactById(window.currentId);
+      const st = window.normSettings(c?.settings);
+      const sw = document.getElementById('timeSenseSwitch');
+      if(sw) {
+        st.timeSense = !!sw.checked;
+        if(c.isGroup) {
+          const groups = window.getGroups();
+          const idx = groups.findIndex(g => g.id === window.currentId);
+          if(idx > -1) { groups[idx].settings = st; window.setGroups(groups); }
+        } else {
+          window.updateContact(window.currentId, { settings: st });
+        }
+      }
+    });
+  }
+
+  // 4. 终极魔法：在发送给 AI 前，强行清洗掉提示词里的时间流逝感！
+  const oldBuildOnlineSystem = window.buildOnlineSystem;
+  if(oldBuildOnlineSystem) {
+    window.buildOnlineSystem = function(c, me, st) {
+      let prompt = oldBuildOnlineSystem(c, me, st);
+      if(!st.timeSense) {
+        prompt = prompt.replace(/（上下文中最早的消息发生于过去，现在是.*?，两者之间有真实的时间间隔已经流逝，请据此自然反应，不要否认过去发生的对话）/g, '');
+        prompt = prompt.replace(/9\. 具备真实的时间观念：根据"上一次消息时间与当前系统时间"的间隔，自然体现时间流逝。/g, '');
+      }
+      return prompt;
+    };
+  }
+
+  const oldBuildOfflineSystem = window.buildOfflineSystem;
+  if(oldBuildOfflineSystem) {
+    window.buildOfflineSystem = function(c, me, st) {
+      let prompt = oldBuildOfflineSystem(c, me, st);
+      if(!st.timeSense) {
+        prompt = prompt.replace(/（上下文中最早的消息发生于过去，现在是.*?，两者之间有真实的时间间隔已经流逝，请据此自然反应，不要否认过去发生的对话）/g, '');
+        prompt = prompt.replace(/【时间观念】：注意根据上一次消息时间与当前系统时间的间隔，给出符合人设的自然反应，但不要模板化。/g, '');
+      }
+      return prompt;
+    };
+  }
+
+  const oldBuildGroupSystem = window.buildGroupSystem;
+  if(oldBuildGroupSystem) {
+    window.buildGroupSystem = function(c, me, st) {
+      let prompt = oldBuildGroupSystem(c, me, st);
+      if(!st.timeSense) {
+        prompt = prompt.replace(/4\. 结合当前时间：.*?，体现真实的时间感。/g, '');
+      }
+      return prompt;
+    };
+  }
+})();
+</script>
 </body>
   </html>
