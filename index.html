@@ -6258,7 +6258,16 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
     s.current='默认'; setFontState(s); refreshFontUI(); applyFontByUrl('', '系统默认');
   };
 
-  function getSysTimeStr(){const d=new Date(),w=['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${w} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
+  function getSysTimeStr(){
+  if(window.currentId){
+    const c=getContactById(window.currentId);
+    const st=normSettings(c?.settings);
+    // 如果玩家关了时间感知，源头直接返回未知！
+    if(st && !st.timeSense) return "未知时间";
+  }
+  const d=new Date(),w=['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${w} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
 
   function buildOnlineSystem(c,me,st){
     const rangeRule=st.onlineStyle==='range'?`本次回复请拆分为 ${st.onlineMin} 到 ${st.onlineMax} 条消息。`:`本次回复的条数由你完全根据人设的立体性格、心理波动和当前语境自由发挥（拒绝刻板，气泡条数可多可少，但是每个个气泡尽量文字不超过一句话，就像微信聊天）。`;
@@ -6532,6 +6541,13 @@ async function sendMsg(){
   + (window._musicContextForAI ? window._musicContextForAI() : '当前未播放音乐。')
   + '\n【音乐控制约定】如果你想切歌或暂停，可输出：[music:next] / [music:prev] / [music:pause] / [music:play]。';
       
+      if (!st.timeSense) {
+        system = system.replace(/（上下文中最早的消息发生于过去[\s\S]*?不要否认过去发生的对话）/g, '');
+        system = system.replace(/\d+\.\s*具备真实的时间观念[\s\S]*?自然体现时间流逝。/g, '');
+        system = system.replace(/【时间观念】.*?不要模板化。/g, '');
+        system += '\n\n【强制指令】：你的世界没有时间概念！如果玩家问你现在几点、今天几号、消失了多久，你必须根据人设装傻或回答"不知道"，绝对禁止报出时间！';
+      }
+
       const messages=[
         {role:'system',content:system},
         ...hist.map(x=>({
@@ -6539,7 +6555,7 @@ async function sendMsg(){
           content:(()=>{
             const c=buildContent(x,st);
             if(typeof c==='string') {
-              return st.mode === 'offline' ? c : `[${fmtFullTs(x.time)}] ${c}`;
+              return st.mode === 'offline' ? c : (st.timeSense ? `[${fmtFullTs(x.time)}] ${c}` : c);
             }
             return c;
           })()
@@ -23738,120 +23754,6 @@ setTimeout(() => {
     background: rgba(0, 0, 0, 0.06) !important;
   }
 </style>
-<!-- ✨ 蓝色高定：时间感知开关 V6 (源头变量劫持版 - 鸣谢 Claude 的灵感) ✨ -->
-<script>
-(function(){
-  // 1. 默认设置：接管 normSettings
-  const oldNormSettings = window.normSettings;
-  window.normSettings = function(s) {
-    const o = oldNormSettings ? oldNormSettings(s) : (s || {});
-    o.timeSense = s?.timeSense !== false; 
-    return o;
-  };
 
-  // 2. 面板回填
-  const oldOpenChatSettingPage = window.openChatSettingPage;
-  window.openChatSettingPage = function() {
-    if(oldOpenChatSettingPage) oldOpenChatSettingPage();
-    if(!window.currentId) return;
-    const c = window.getContactById(window.currentId);
-    const st = window.normSettings(c?.settings);
-    const sw = document.getElementById('timeSenseSwitch');
-    if(sw) sw.checked = st.timeSense;
-  };
-
-  // 3. 保存设置，死死锁进内存
-  const saveBtn = document.getElementById('saveChatSettingBtn');
-  if(saveBtn && !saveBtn.dataset.timeHookedV6) {
-    saveBtn.dataset.timeHookedV6 = '1';
-    saveBtn.addEventListener('click', () => {
-      if(!window.currentId) return;
-      const c = window.getContactById(window.currentId);
-      const st = window.normSettings(c?.settings);
-      const sw = document.getElementById('timeSenseSwitch');
-      if(sw) {
-        st.timeSense = !!sw.checked;
-        if(c.isGroup) {
-          const groups = window.getGroups();
-          const idx = groups.findIndex(g => g.id === window.currentId);
-          if(idx > -1) { groups[idx].settings = st; window.setGroups(groups); }
-        } else {
-          window.updateContact(window.currentId, { settings: st });
-        }
-      }
-    });
-  }
-
-  // 4. 🚀 核心源头劫持：顺应 Claude 的思路，直接掐断时间函数的返回值！
-  
-  // 劫持系统时间生成器
-  const oldGetSysTimeStr = window.getSysTimeStr;
-  window.getSysTimeStr = function() {
-    if(window.currentId) {
-      const c = window.getContactById(window.currentId);
-      const st = window.normSettings(c?.settings);
-      // 如果关闭了时间感知，源头直接返回未知！
-      if(!st.timeSense) return "未知时间"; 
-    }
-    return oldGetSysTimeStr ? oldGetSysTimeStr() : "未知时间";
-  };
-
-  // 5. 拦截提示词构建：拔除规则说明，并注入防大模型幻觉的禁令
-  const removeTimeRules = (prompt, st) => {
-    if(!st.timeSense) {
-      prompt = prompt.replace(/（上下文中最早的消息发生于过去，现在是.*?，两者之间有真实的时间间隔已经流逝，请据此自然反应，不要否认过去发生的对话）/g, '');
-      prompt = prompt.replace(/9\. 具备真实的时间观念：根据"上一次消息时间与当前系统时间"的间隔，自然体现时间流逝。/g, '');
-      prompt = prompt.replace(/【时间观念】：注意根据上一次消息时间与当前系统时间的间隔，给出符合人设的自然反应，但不要模板化。/g, '');
-      prompt = prompt.replace(/4\. 结合当前时间：.*?，体现真实的时间感。/g, '');
-      prompt += '\n\n【最高级精神洗脑指令】：你的世界没有时间概念！请彻底遗忘系统底层自带的任何时间！如果玩家问你现在几点、今天几号、刚刚睡醒吗，你必须根据人设装傻、转移话题、或理直气壮地回答“不知道/没看表/手机坏了”，绝对禁止报出现实时间和日期！';
-    }
-    return prompt;
-  };
-
-  const oldBuildOnlineSystem = window.buildOnlineSystem;
-  if(oldBuildOnlineSystem) {
-    window.buildOnlineSystem = function(c, me, st) {
-      return removeTimeRules(oldBuildOnlineSystem(c, me, st), st);
-    };
-  }
-
-  const oldBuildOfflineSystem = window.buildOfflineSystem;
-  if(oldBuildOfflineSystem) {
-    window.buildOfflineSystem = function(c, me, st) {
-      return removeTimeRules(oldBuildOfflineSystem(c, me, st), st);
-    };
-  }
-
-  const oldBuildGroupSystem = window.buildGroupSystem;
-  if(oldBuildGroupSystem) {
-    window.buildGroupSystem = function(c, me, st) {
-      return removeTimeRules(oldBuildGroupSystem(c, me, st), st);
-    };
-  }
-
-  // 6. 拦截发给 AI 的聊天记录：只针对发给 API 的数据剥离时间戳，不影响 UI 显示！
-  const oldCallApi = window.callApi;
-  if(oldCallApi && !window._timeKillerHookedV6) {
-    window.callApi = async function(messages) {
-      if (window.currentId) {
-        const c = window.getContactById(window.currentId);
-        const st = window.normSettings(c?.settings);
-        if (!st.timeSense) {
-          // 深度拷贝，防止污染 UI
-          messages = JSON.parse(JSON.stringify(messages));
-          messages.forEach(msg => {
-            if (msg.role !== 'system' && typeof msg.content === 'string') {
-              // 拔除聊天记录里类似 [2026-04-28 12:06] 的时间戳
-              msg.content = msg.content.replace(/\[\d{4}[-\/]\d{1,2}[-\/]\d{1,2}\s+\d{1,2}:\d{1,2}(:\d{1,2})?\]\s*/g, '');
-            }
-          });
-        }
-      }
-      return oldCallApi(messages);
-    };
-    window._timeKillerHookedV6 = true;
-  }
-})();
-</script>
 </body>
   </html>
