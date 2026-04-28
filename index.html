@@ -23738,7 +23738,7 @@ setTimeout(() => {
     background: rgba(0, 0, 0, 0.06) !important;
   }
 </style>
- <!-- 🌟 蓝色高定：时间感知拦截与记忆保存引擎 (终极绝杀版) -->
+<!-- 🌟 蓝色高定：时间感知拦截与记忆保存引擎 (终极防偷看清洗版) -->
 <script>
 (function(){
   // 1. 接管 normSettings，给时间感知赋予默认值
@@ -23781,61 +23781,51 @@ setTimeout(() => {
     });
   }
 
-  // 4. 注入隐形暗杀标记
-  const injectFlag = (prompt, st) => {
-    if(!st.timeSense) {
-      // 抹除常规的时间流逝规则
-      prompt = prompt.replace(/（上下文中最早的消息发生于过去，现在是.*?，两者之间有真实的时间间隔已经流逝，请据此自然反应，不要否认过去发生的对话）/g, '');
-      prompt = prompt.replace(/9\. 具备真实的时间观念：根据"上一次消息时间与当前系统时间"的间隔，自然体现时间流逝。/g, '');
-      prompt = prompt.replace(/【时间观念】：注意根据上一次消息时间与当前系统时间的间隔，给出符合人设的自然反应，但不要模板化。/g, '');
-      prompt = prompt.replace(/4\. 结合当前时间：.*?，体现真实的时间感。/g, '');
-      // 贴上暗杀标记，供最后一步拦截使用
-      prompt += '\n[BLUE_TIME_KILLER_FLAG]'; 
-    }
-    return prompt;
-  };
+  // 4. 终极暴力清洗引擎：在发给 API 的最后一刻，洗掉所有时间痕迹！
+  const washTimeData = (messages) => {
+    if(!window.currentId) return messages;
+    const c = window.getContactById(window.currentId);
+    const st = window.normSettings(c?.settings);
+    
+    // 如果开关打开，直接放行，保留时间感知
+    if(st.timeSense) return messages;
 
-  // 劫持三大系统的提示词生成
-  const oldBuildOnlineSystem = window.buildOnlineSystem;
-  if(oldBuildOnlineSystem) window.buildOnlineSystem = (c, me, st) => injectFlag(oldBuildOnlineSystem(c, me, st), st);
-
-  const oldBuildOfflineSystem = window.buildOfflineSystem;
-  if(oldBuildOfflineSystem) window.buildOfflineSystem = (c, me, st) => injectFlag(oldBuildOfflineSystem(c, me, st), st);
-
-  const oldBuildGroupSystem = window.buildGroupSystem;
-  if(oldBuildGroupSystem) window.buildGroupSystem = (c, me, st) => injectFlag(oldBuildGroupSystem(c, me, st), st);
-
-  // 5. 终极暗杀：在 API 发送前一毫秒，把带有时间的字符串切掉！
-  const killTimeInMessages = (messages) => {
-    if(messages && messages[0] && messages[0].role === 'system') {
-      if(messages[0].content.includes('[BLUE_TIME_KILLER_FLAG]')) {
-        // 杀掉末尾带有具体时间的强制指令，只保留模式名称
-        messages[0].content = messages[0].content.replace(/【系统强制指令】：\[(.*?)\] 现在是.*?(?=\n|$)/g, '【系统强制指令】：[$1]');
-        // 杀掉开头的当前系统时间（群聊/电话等场景可能会有）
-        messages[0].content = messages[0].content.replace(/当前系统时间是：.*?(?=\n|$)/g, '');
-        // 擦除暗杀标记，做到神不知鬼不觉
-        messages[0].content = messages[0].content.replace('\n[BLUE_TIME_KILLER_FLAG]', '');
+    // 如果开关关闭，启动暴力物理清洗！
+    return messages.map(msg => {
+      let text = msg.content;
+      if(typeof text === 'string') {
+        // 洗掉系统强制指令里的具体时间
+        text = text.replace(/现在是\d{4}年\d{1,2}月\d{1,2}日.*?(?=\n|$|，|。)/g, '现在是未知时间');
+        // 洗掉群聊/电话开头的系统时间
+        text = text.replace(/当前(系统)?时间(是)?：.*?(?=\n|$)/g, '当前时间：未知');
+        // 🔪 核心杀招：洗掉聊天记录里每一句话前面的时间戳！(例如 [2026-04-28 11:20])
+        text = text.replace(/\[\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}\]\s/g, '');
+        // 洗掉系统提示词里的时间流逝规则
+        text = text.replace(/（上下文中最早的消息发生于过去，现在是.*?，两者之间有真实的时间间隔已经流逝，请据此自然反应，不要否认过去发生的对话）/g, '');
+        text = text.replace(/9\. 具备真实的时间观念：根据"上一次消息时间与当前系统时间"的间隔，自然体现时间流逝。/g, '');
+        text = text.replace(/【时间观念】：注意根据上一次消息时间与当前系统时间的间隔，给出符合人设的自然反应，但不要模板化。/g, '');
+        text = text.replace(/4\. 结合当前时间：.*?，体现真实的时间感。/g, '');
       }
-    }
-    return messages;
+      return { ...msg, content: text };
+    });
   };
 
-  // 拦截全局 API 调用
-  const oldCallApi = window.callApi;
-  if(oldCallApi && !window._timeKillerHooked) {
-    window.callApi = async function(messages) {
-      return oldCallApi(killTimeInMessages(messages));
-    };
-    window._timeKillerHooked = true;
-  }
+  // 5. 劫持底层的 callApi 和 callApiStream
+  if(!window._ultimateTimeKillerHooked) {
+    const oldCallApi = window.callApi;
+    if(oldCallApi) {
+      window.callApi = async function(messages) {
+        return oldCallApi(washTimeData(messages));
+      };
+    }
 
-  // 拦截流式 API 调用
-  const oldCallApiStream = window.callApiStream;
-  if(oldCallApiStream && !window._timeKillerStreamHooked) {
-    window.callApiStream = async function(messages, onChunk) {
-      return oldCallApiStream(killTimeInMessages(messages), onChunk);
-    };
-    window._timeKillerStreamHooked = true;
+    const oldCallApiStream = window.callApiStream;
+    if(oldCallApiStream) {
+      window.callApiStream = async function(messages, onChunk) {
+        return oldCallApiStream(washTimeData(messages), onChunk);
+      };
+    }
+    window._ultimateTimeKillerHooked = true;
   }
 })();
 </script>
