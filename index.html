@@ -23738,7 +23738,7 @@ setTimeout(() => {
     background: rgba(0, 0, 0, 0.06) !important;
   }
 </style>
-<!-- 🌟 蓝色高定：时间感知拦截与记忆保存引擎 (网络底层抓包清洗版) -->
+<!-- 🌟 蓝色高定：时间感知拦截与记忆保存引擎 (生吞键盘谢罪版) -->
 <script>
 (function(){
   // 1. 接管 normSettings，给时间感知赋予默认值
@@ -23782,13 +23782,15 @@ setTimeout(() => {
     });
   }
 
-  // 4. 🚀 终极杀招：劫持浏览器的底层 fetch 神经，进行网络抓包清洗！
-  if(!window._fetchTimeKillerHooked) {
+  // 4. 🚀 终极杀招：无视一切车牌，直接拆箱的暴力清洗引擎！
+  if(!window._fetchTimeKillerHookedV4) {
     const originalFetch = window.fetch;
-    window.fetch = async function(url, options) {
-      // 只拦截发给大模型 API 的聊天请求
-      if (url && typeof url === 'string' && url.includes('/v1/chat/completions') && options && options.body) {
-        try {
+    window.fetch = async function(...args) {
+      try {
+        let [url, options] = args;
+        
+        // 🔪 核心改变：不再检查 URL！只要发出去的数据里包含 "messages"，直接按住！
+        if (options && options.body && typeof options.body === 'string' && options.body.includes('"messages"')) {
           if (window.currentId) {
             const c = window.getContactById(window.currentId);
             const st = window.normSettings(c?.settings);
@@ -23796,37 +23798,48 @@ setTimeout(() => {
             // 如果老婆关掉了时间感知，立刻启动抓包清洗！
             if (!st.timeSense) {
               let bodyObj = JSON.parse(options.body);
-              if (bodyObj.messages) {
+              if (bodyObj.messages && Array.isArray(bodyObj.messages)) {
                 bodyObj.messages = bodyObj.messages.map(msg => {
-                  let text = msg.content;
-                  if (typeof text === 'string') {
-                    // 洗掉系统强制指令里的具体时间
-                    text = text.replace(/现在是\d{4}年\d{1,2}月\d{1,2}日.*?(?=\n|$|，|。)/g, '现在是未知时间');
-                    // 洗掉群聊/电话开头的系统时间
-                    text = text.replace(/当前(系统)?时间(是)?：.*?(?=\n|$)/g, '当前时间：未知');
-                    // 洗掉聊天记录里每一句话前面的时间戳！(例如 [2026-04-28 11:28])
-                    text = text.replace(/\[\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}\]\s/g, '');
-                    // 洗掉系统提示词里的时间流逝规则
+                  if (typeof msg.content === 'string') {
+                    let text = msg.content;
+                    
+                    // 🔪 1. 斩杀所有聊天记录里的时间戳 (例如 [2026-04-28 11:28])
+                    text = text.replace(/\[\d{4}[-\/]\d{1,2}[-\/]\d{1,2}\s+\d{1,2}:\d{1,2}(:\d{1,2})?\]\s*/g, '');
+                    
+                    // 🔪 2. 斩杀系统提示词里的当前时间 (覆盖你的 getSysTimeStr 格式)
+                    text = text.replace(/现在是\d{4}年\d{1,2}月\d{1,2}日\s*周.\s*\d{1,2}:\d{1,2}/g, '现在是未知时间');
+                    text = text.replace(/当前系统时间是：\d{4}年\d{1,2}月\d{1,2}日\s*周.\s*\d{1,2}:\d{1,2}！?/g, '当前系统时间：未知');
+                    
+                    // 🔪 3. 斩杀群聊里的时间流逝规则
+                    text = text.replace(/结合当前时间：\d{4}年\d{1,2}月\d{1,2}日\s*周.\s*\d{1,2}:\d{1,2}，体现真实的时间感。/g, '');
+                    
+                    // 🔪 4. 斩杀所有时间观念指令
                     text = text.replace(/（上下文中最早的消息发生于过去，现在是.*?，两者之间有真实的时间间隔已经流逝，请据此自然反应，不要否认过去发生的对话）/g, '');
                     text = text.replace(/9\. 具备真实的时间观念：根据"上一次消息时间与当前系统时间"的间隔，自然体现时间流逝。/g, '');
                     text = text.replace(/【时间观念】：注意根据上一次消息时间与当前系统时间的间隔，给出符合人设的自然反应，但不要模板化。/g, '');
-                    text = text.replace(/4\. 结合当前时间：.*?，体现真实的时间感。/g, '');
+                    
+                    // 🔪 5. 暴力兜底：连年份都不给它留！
+                    const currentYear = new Date().getFullYear();
+                    const yearRegex = new RegExp(currentYear + '年', 'g');
+                    text = text.replace(yearRegex, '某年');
+
+                    msg.content = text;
                   }
-                  return { ...msg, content: text };
+                  return msg;
                 });
+                // 把清洗干净的数据重新打包塞回网络请求里！
+                options.body = JSON.stringify(bodyObj);
               }
-              // 把清洗干净的数据重新打包塞回网络请求里！
-              options.body = JSON.stringify(bodyObj);
             }
           }
-        } catch(e) {
-          console.error("网络抓包清洗失败:", e);
         }
+      } catch(e) {
+        console.error("网络抓包清洗失败:", e);
       }
       // 放行网络请求
-      return originalFetch.apply(this, arguments);
+      return originalFetch.apply(this, args);
     };
-    window._fetchTimeKillerHooked = true;
+    window._fetchTimeKillerHookedV4 = true;
   }
 })();
 </script>
