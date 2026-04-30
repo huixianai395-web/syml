@@ -4469,7 +4469,7 @@ body #app #chatInput {
       <!-- 角色与 Voice ID 绑定 -->
       <div style="font-size:12px; color:#5c7094; font-weight:bold; margin-bottom:8px;">配置角色声纹 (Voice ID)</div>
       <select id="mmRoleSelect" class="select" style="width:100%; background:#fff; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; padding:10px 12px; margin-bottom:12px; outline:none; font-weight:bold;"></select>
-      <input id="mmVoiceId" class="input" placeholder="例如男主音色：male-qn-qingse" style="background:#fff; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; padding:10px 12px; width:100%; margin-bottom:12px; box-sizing:border-box;" />
+      <input id="mmVoiceId" class="input" placeholder="例如角色音色：male-qn-qingse" style="background:#fff; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px; padding:10px 12px; width:100%; margin-bottom:12px; box-sizing:border-box;" />
       
       <div style="display:flex; justify-content:space-between; align-items:center;">
          <div id="mmStatus" style="font-size:12px; color:#5c7094; font-weight:bold; opacity:0.8;">当前状态：基建待命，等待投喂</div>
@@ -9845,26 +9845,26 @@ window._triggerMomentsAI = async function(momentId) {
       sysPrompt = `玩家（我）刚刚发了一条朋友圈："${target.text||'[分享了图片]'}"。
 请模拟这条朋友圈的评论区，打造一个【极度真实，有血有肉的日常评论区】！
 ${timeContext}
-【根据人设和玩家互动的男主列表】：
+【根据人设和玩家互动的角色列表】：
 ${viewersInfo}
 【核心任务】：
 1. 必须虚构 3～5个玩家的【普通微信好友】和男主们穿插排队评论回复，点赞速度和回复必须极度贴合人设与当前时间。
-2. 男主们也可以看人设偶尔亲自回复那些虚构配角。
-3.男主和男主之间都有一种微妙的敌意，有危机感，绝对不会友好互动。
-4.男主和男主之间也不会知道对方的身份，都不是一个圈子的人，就当潜在情敌处理。
+2. 角色们也可以看人设偶尔亲自回复那些虚构配角。
+3.角色和角色之间都有一种微妙的敌意，有危机感，绝对不会友好互动。
+4.角色和角色之间也不会知道对方的身份，都不是一个圈子的人，就当潜在情敌处理。
 5. 整个评论区的评论总数必须在 8到 12条之间，呈现出真实的微信感！`;
     }
     else {
       const contacts = getContacts() || [];
       const npc = contacts.find(c => c.name === target.authorName) || {name: target.authorName, persona: '高冷'};
-      sysPrompt = `男主"${npc.name}"（人设：${npc.persona}）发了一条微信朋友圈："${target.text||'[分享了图片]'}"。
+      sysPrompt = `角色"${npc.name}"（人设：${npc.persona}）发了一条微信朋友圈："${target.text||'[分享了图片]'}"。
 请模拟他这条朋友圈的评论区互动，展现他真实的私人社交圈。
 ${timeContext}
 【核心任务】：
 1. 必须虚构 5~7个符合他身份的【专属微信好友】来排队吐槽或调侃他。
-2. 男主"${npc.name}"看到后，看人设亲自回复好友，语气是熟人间的互怼、高冷或玩笑，看人设决定回哪个人，要不要回。不需要全都回复，一切都看人设来绝对。
+2. 角色"${npc.name}"看到后，看人设亲自回复好友，语气是熟人间的互怼、高冷或玩笑，看人设决定回哪个人，要不要回。不需要全都回复，一切都看人设来绝对。
 3. 整个评论区总数必须在 7到 10条之间。
-4. 【绝对禁止】提其他男主！这是他的私人圈子！`;
+4. 【绝对禁止】提其他角色！这是他的私人圈子！`;
     }
 
     sysPrompt += `\n\n【必须严格输出 JSON 数组格式】（不要带markdown）：\n[\n  {\n    "name": "评论者名字",\n    "like": true或false,\n    "comment": "评论内容（极度口语化、结合当前时间）",\n    "replyTo": "回复给谁（直接评论留空；如果是回复别人，填那个人的名字）",\n    "delay": 延迟毫秒数(3000到15000之间)\n  }\n]`;
