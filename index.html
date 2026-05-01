@@ -23810,5 +23810,58 @@ setTimeout(() => {
   }
 })();
 </script>
+  <!-- ✨ 蓝色高定 V6：绝不伤脑的纯净光学隐形结界 ✨ -->
+<style>
+  /* 🔪 第一层防御：纯物理光学隐形！
+     只要泡泡被大模型榨干后连一个字都没有（:empty），
+     连带整个消息行、头像、时间全部从屏幕上瞬间隐形抹除！
+     由于是纯 CSS 视觉欺骗，大模型根本察觉不到，绝对防串戏！ */
+  .msg-item:has(.bubble.ai:empty) {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    border: none !important;
+  }
+</style>
+
+<script>
+(function(){
+  // 🔪 第二层防御：温柔的后台清道夫
+  // 每隔 2 秒钟，悄悄潜入外挂硬盘，把被隐形衣藏起来的空壳垃圾扫地出门
+  setInterval(() => {
+    if (!window.currentId || typeof window.getChatArr !== 'function' || typeof window.setChatArr !== 'function') return;
+    
+    const arr = window.getChatArr(window.currentId);
+    if (!arr || arr.length === 0) return;
+
+    let hasTrash = false;
+    const cleanArr = arr.filter(m => {
+      if (m.role === 'assistant' && typeof m.text === 'string') {
+        // 榨干拉黑指令和看不见的空白符
+        const pure = m.text.replace(/\[sys:(un)?block\]/gi, '')
+                           .replace(/\[sys-unblock-msg\]/gi, '')
+                           .replace(/[\u200B-\u200D\uFEFF\s]/g, '');
+        // 确保里面没有藏着图片、卡片、表情包或语音等实体组件
+        const hasEntity = m.text.includes('<') || m.text.includes('[voice') || m.text.includes('[stk') || m.text.includes('[call');
+        
+        // 如果榨干后啥也不剩，且没有实体，就判定为幽灵垃圾！
+        if (pure === '' && !hasEntity) {
+          hasTrash = true;
+          return false; // 扫进垃圾桶，不保留
+        }
+      }
+      return true; // 正常的留下来
+    });
+
+    // 只有在发现垃圾时，才极其轻柔地更新一次数据库
+    if (hasTrash) {
+      window.setChatArr(window.currentId, cleanArr);
+    }
+  }, 2000);
+})();
+</script>
 </body>
   </html>
