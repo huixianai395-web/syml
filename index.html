@@ -23835,5 +23835,53 @@ setTimeout(() => {
   }
 })();
 </script>
+  <!-- 🌟 蓝色高定 V4：终极数据库防火墙 (彻底根除空壳气泡) -->
+<script>
+(function(){
+  if(window._ghostBusterV4) return;
+  window._ghostBusterV4 = true;
+
+  const oldSetChatArr = window.setChatArr;
+  
+  // 🔪 劫持底层存盘函数，建立绝对防御结界
+  window.setChatArr = function(id, arr) {
+    if (arr && Array.isArray(arr)) {
+      // 在存入硬盘前，用 X光 扫描每一个气泡！
+      arr = arr.filter(m => {
+        // 放行玩家自己发的消息，绝对不误伤
+        if (m.role === 'user') return true;
+        
+        let t = String(m.text || '');
+        
+        // 榨干所有的水分和系统隐藏指令 (拉黑/解除拉黑等)
+        let pure = t.replace(/\[sys:(un)?block\]/gi, '')
+                    .replace(/\[sys-unblock-msg\]/gi, '') 
+                    .replace(/[\u200B-\u200D\uFEFF\s]/g, '');
+        
+        // 检查气泡里是否包裹着实体组件 (卡片、图片、表情包、语音、引用等)
+        let hasEntity = t.includes('<') || 
+                        t.includes('[voice') || 
+                        t.includes('[stk') || 
+                        t.includes('[call') || 
+                        t.includes('[file') || 
+                        t.includes('[img') || 
+                        m.quote;
+                        
+        // 🌟 终极审判：只有当气泡里有【真材实料】时，才允许存入硬盘！
+        return pure !== '' || hasEntity;
+      });
+    }
+    // 净化完毕，放行存入真实数据库
+    oldSetChatArr(id, arr);
+  };
+
+  // 顺手给老婆现在的屏幕做一次深度大扫除！
+  if(window.currentId && typeof window.renderChat === 'function') {
+    const arr = window.getChatArr(window.currentId);
+    window.setChatArr(window.currentId, arr); // 触发一次净化清洗
+    window.renderChat(); // 瞬间重绘屏幕
+  }
+})();
+</script>
 </body>
   </html>
