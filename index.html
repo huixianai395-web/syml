@@ -23835,55 +23835,6 @@ setTimeout(() => {
   }
 })();
 </script>
-  <!-- 🌟 蓝色高定 V5：终极渲染拦截器 (绝对粉碎空壳气泡) -->
-<script>
-(function(){
-  if(window._ghostBusterV5) return;
-  window._ghostBusterV5 = true;
-
-  // 🔪 劫持全局渲染画笔！在画到屏幕前强行擦除空壳！
-  const oldRenderChat = window.renderChat;
   
-  window.renderChat = function() {
-    if (window.currentId && typeof window.getChatArr === 'function') {
-      let arr = window.getChatArr(window.currentId);
-      if (arr && arr.length > 0) {
-        let originalLength = arr.length;
-        
-        // 用 X光 扫描每一个气泡，剔除被底层逻辑榨干的空壳
-        arr = arr.filter(m => {
-          if (m.role === 'user') return true; // 绝对不误伤宝宝发的消息
-          
-          let t = String(m.text || '');
-          
-          // 榨干隐藏指令和不可见字符
-          let pure = t.replace(/\[sys:(un)?block\]/gi, '')
-                      .replace(/\[sys-unblock-msg\]/gi, '') 
-                      .replace(/[\u200B-\u200D\uFEFF\s]/g, '');
-          
-          // 检查是否包含实体组件（HTML、语音、表情包、引用等）
-          let hasEntity = t.includes('<') || 
-                          t.includes('[voice') || 
-                          t.includes('[stk') || 
-                          t.includes('[call') || 
-                          t.includes('[file') || 
-                          t.includes('[img') || 
-                          m.quote;
-                          
-          return pure !== '' || hasEntity;
-        });
-        
-        // 如果发现了空泡泡并清洗掉，就重写回硬盘！(调用 window.setChatArr 强行刷新)
-        if (arr.length !== originalLength && typeof window.setChatArr === 'function') {
-          window.setChatArr(window.currentId, arr);
-        }
-      }
-    }
-    
-    // 清洗完毕，把干净的图纸交给原版画笔去画！绝对不会再画出空泡泡！
-    if(oldRenderChat) oldRenderChat();
-  };
-})();
-</script>
 </body>
   </html>
