@@ -23863,40 +23863,6 @@ setTimeout(() => {
   }, 2000);
 })();
 </script>
-  <!-- ✨ 蓝色高定 V9：纯净超广角导盲犬（彻底解封表情包视野，绝对不伤历史记录） ✨ -->
-<script>
-(function(){
-  // 🔪 强行接管导盲犬，只修改提示词的视野上限，绝对不碰渲染逻辑！
-  window.__stickerPromptText = function(maxLen = 1500) { 
-    // 安全获取所有表情包
-    const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
-    if(!all || all.length === 0) return '（暂无，请绝对不要发表情包！）';
-    
-    // 🌟 蓝色高定魔法：告诉大模型，表情包不仅有 ID，还有生动的名字！
-    // 这样就算它忘记发 ID 而是发了 [stk:哭哭]，咱们底层的模糊匹配也能接住！
-    let txt = all.map(x => `${x.id}(名称:${x.name || '表情'})`).join(', ');
-    
-    // 彻底砸碎 200 字符的枷锁，扩展到 1500 字符！
-    if(txt.length > maxLen) return txt.substring(0, maxLen) + '...';
-    return txt;
-  };
   
-  // 🌟 动态重写提示词构建器，强行注入超广角视野！
-  if(window.buildOnlineSystem) {
-     const oldBuildOnline = window.buildOnlineSystem;
-     window.buildOnlineSystem = function(c, me, st) {
-        let prompt = oldBuildOnline(c, me, st);
-        return prompt.replace(/__stickerPromptText\(\d+\)/g, '__stickerPromptText(1500)');
-     };
-  }
-  if(window.buildGroupSystem) {
-     const oldBuildGroup = window.buildGroupSystem;
-     window.buildGroupSystem = function(c, me, st) {
-        let prompt = oldBuildGroup(c, me, st);
-        return prompt.replace(/__stickerPromptText\(\d+\)/g, '__stickerPromptText(1500)');
-     };
-  }
-})();
-</script>
 </body>
   </html>
