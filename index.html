@@ -23894,5 +23894,27 @@ setTimeout(() => {
   }, 1000);
 })();
 </script>
+  <!-- 🌟 蓝色高定：大模型防偷懒与动态表情包轮盘引擎 -->
+<script>
+(function(){
+  // 覆盖之前的逻辑，注入随机打乱算法！
+  window.__stickerPromptText = function(ignoredMaxLen) { 
+    // 从外挂内存的映射中拉取所有表情包
+    const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
+    if(!all || all.length === 0) return '（暂无，请绝对不要发表情包！）';
+    
+    // 🌟 核心魔法：随机洗牌算法 (Fisher-Yates 变体)
+    // 每次 AI 思考前，把外挂内存里的表情包彻底打乱！
+    const shuffled = [...all].sort(() => 0.5 - Math.random());
+    
+    // 🌟 截流魔法：每次只给 AI 喂 30 个随机表情包
+    // 既保证了绝对的新鲜感，又不会撑爆它的脑容量导致偷懒
+    const selected = shuffled.slice(0, 30);
+    
+    // 极简优化：只传名字和 ID，保持 Prompt 的纯净
+    return selected.map(x => `${x.id}(含义:${x.name || '表情'})`).join(', ');
+  };
+})();
+</script>
 </body>
   </html>
