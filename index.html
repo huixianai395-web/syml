@@ -23762,6 +23762,53 @@ setTimeout(() => {
     background: rgba(0, 0, 0, 0.06) !important;
   }
 </style>
+<!-- 🌟 蓝色高定：表情包防幻觉与智能兜底引擎 -->
+<script>
+(function(){
+  // 1. 升级表情包查找引擎：加入模糊匹配与随机盲抽兜底！
+  window.__stickerGetById = (id) => {
+    const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
+    if(!all || all.length === 0) return null;
+    
+    // 尝试精准匹配 ID
+    const exact = all.find(x => String(x.id) === String(id));
+    if (exact) return exact;
+    
+    // 尝试模糊匹配名字 (应对 AI 偷懒只发名字的情况)
+    const fuzzy = all.find(x => x.name && (String(id).includes(x.name) || x.name.includes(String(id))));
+    if (fuzzy) return fuzzy;
+    
+    // 🌟 终极兜底：如果 AI 瞎编了假 ID，绝对不报错！直接随机抽一张给它圆场！
+    const randomSticker = all[Math.floor(Math.random() * all.length)];
+    return randomSticker;
+  };
 
+  // 2. 解除菜单封印：让 AI 看清你所有的表情包！
+  window.__stickerPromptText = function(maxLen = 1500) { 
+    const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
+    if(!all || all.length === 0) return '（暂无，请绝对不要发表情包！）';
+    // 告诉 AI 也可以直接用名字
+    let txt = all.map(x => `${x.id}(名称:${x.name || '表情'})`).join(', ');
+    if(txt.length > maxLen) return txt.substring(0, maxLen) + '...';
+    return txt;
+  };
+  
+  // 3. 动态更新系统提示词里的长度限制
+  if(window.buildOnlineSystem) {
+     const oldBuildOnline = window.buildOnlineSystem;
+     window.buildOnlineSystem = function(c, me, st) {
+        let prompt = oldBuildOnline(c, me, st);
+        return prompt.replace(/__stickerPromptText\(\d+\)/g, '__stickerPromptText(1500)');
+     };
+  }
+  if(window.buildGroupSystem) {
+     const oldBuildGroup = window.buildGroupSystem;
+     window.buildGroupSystem = function(c, me, st) {
+        let prompt = oldBuildGroup(c, me, st);
+        return prompt.replace(/__stickerPromptText\(\d+\)/g, '__stickerPromptText(1500)');
+     };
+  }
+})();
+</script>
 </body>
   </html>
