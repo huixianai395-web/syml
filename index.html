@@ -23483,78 +23483,103 @@ setTimeout(async () => {
   console.log("✨ PWA 独立应用声明书已安全递交！");
 }, 2000); // 延迟 2 秒执行，绝对不抢占任何核心功能的性能！
 </script>
-  <!-- 🌟 蓝色高定 MAX 版：全场景空白气泡粉碎机 -->
+  <!-- ✨ 蓝色高定 V3 终极版：物理级空壳气泡清道夫雷达 ✨ -->
 <script>
 (function(){
-  // 核心鉴定器：用 X 光扫描一个气泡是不是真的“空壳”
-  function isGhostBubble(text) {
-    if (!text) return true;
-    
-    // 1. 剔除所有系统隐藏标签 (比如拉黑/解除拉黑)
-    let pure = text.replace(/\[sys:(un)?block\]/g, '');
-    
-    // 2. 剔除零宽字符、空格、回车等看不见的占位符
-    pure = pure.replace(/[\u200B-\u200D\uFEFF\s]/g, '');
-    
-    // 3. 剔除 HTML 标签后，看看还剩不剩纯文本
-    const noHtml = pure.replace(/<[^>]*>/g, '');
-    
-    // 如果剔除后连一个字都没有，并且里面没有包含任何多媒体元素（图片、卡片、语音），那就是纯纯的幽灵！
-    if (noHtml === '' && !text.includes('<img') && !text.includes('class="card-') && !text.includes('class="bubble-voice"')) {
-      return true;
+  function initGhostSweeper() {
+    const msgsContainer = document.getElementById('chatMsgs');
+    // 如果聊天室还没加载出来，等半秒钟再试
+    if(!msgsContainer) {
+      setTimeout(initGhostSweeper, 500);
+      return;
     }
-    return false;
-  }
 
-  // 🌟 拦截写入外挂内存的终极安检门
-  if(!window._ghostBubbleHookedV2) {
-    const oldSetChatArr = window.setChatArr;
-    window.setChatArr = function(id, arr) {
-      if (arr && arr.length > 0) {
-        // 倒序遍历，安全删除，绝不漏掉一个空壳！
-        for (let i = arr.length - 1; i >= 0; i--) {
-          let msg = arr[i];
-          if (msg.role === 'assistant' && typeof msg.text === 'string') {
-            if (isGhostBubble(msg.text)) {
-              arr.splice(i, 1); // 物理超度！
-            }
+    // 🔪 核心杀毒引擎
+    function cleanGhostBubbles() {
+      if(!window.currentId) return;
+      const items = msgsContainer.querySelectorAll('.msg-item');
+      let ghosts = [];
+      
+      items.forEach(item => {
+        const mid = item.getAttribute('data-mid');
+        if(!mid) return;
+        
+        // 分别扫描线上模式的气泡和线下模式的卡片
+        const aiBubble = item.querySelector('.bubble.ai');
+        const offlineBody = item.querySelector('.offline-body');
+        
+        let textToCheck = null;
+
+        if(aiBubble) {
+          // 绝对放过带有卡片、图片、语音的实体气泡！
+          if(aiBubble.classList.contains('has-html') || 
+             aiBubble.classList.contains('bubble-card') || 
+             aiBubble.querySelector('img') || 
+             aiBubble.querySelector('.bubble-voice')) {
+            return;
+          }
+          textToCheck = aiBubble.textContent || '';
+        } else if (offlineBody) {
+          textToCheck = offlineBody.textContent || '';
+        }
+
+        if(textToCheck !== null) {
+          // 榨干所有水分和隐藏指令，看看还剩什么
+          let pure = textToCheck.replace(/\[sys:(un)?block\]/g, '')
+                                .replace(/[\u200B-\u200D\uFEFF\s]/g, '');
+                     
+          if(pure === '') {
+            ghosts.push({ item, mid });
           }
         }
+      });
+
+      if(ghosts.length > 0) {
+        let arr = window.getChatArr(window.currentId) || [];
+        let dbChanged = false;
+        
+        ghosts.forEach(g => {
+          // 1. 物理超度：直接从屏幕上抹除！连一毫秒的残影都不留！
+          g.item.remove();
+          
+          // 2. 灵魂抹杀：从数据库里彻底剔除！
+          const idx = arr.findIndex(m => m.id === g.mid);
+          if(idx > -1) {
+            arr.splice(idx, 1);
+            dbChanged = true;
+          }
+        });
+        
+        // 3. 重新封印硬盘
+        if(dbChanged) {
+          window.setChatArr(window.currentId, arr);
+        }
       }
-      if(oldSetChatArr) oldSetChatArr(id, arr);
-    };
-    window._ghostBubbleHookedV2 = true;
+    }
+
+    // 开机先做一次全盘大扫除
+    cleanGhostBubbles();
+
+    // 📡 挂载高精度雷达，死死盯住屏幕的每一次变化
+    const observer = new MutationObserver((mutations) => {
+      let shouldCheck = false;
+      for(let m of mutations) {
+        if(m.addedNodes.length > 0) {
+          shouldCheck = true;
+          break;
+        }
+      }
+      if(shouldCheck) {
+        // 延迟 50 毫秒，等系统把气泡完全画好，雷达再动手粉碎！
+        setTimeout(cleanGhostBubbles, 50);
+      }
+    });
+
+    observer.observe(msgsContainer, { childList: true, subtree: true });
   }
 
-  // 🌟 瞬间清剿历史遗留的空白气泡 (包括你现在已经看到的那些)
-  setTimeout(() => {
-    const allChats = window.getChats ? window.getChats() : {};
-    let cleanedAny = false;
-    
-    Object.keys(allChats).forEach(cid => {
-        let chatArr = allChats[cid];
-        let originalLen = chatArr.length;
-        chatArr = chatArr.filter(m => {
-            if (m.role === 'assistant' && typeof m.text === 'string') {
-                return !isGhostBubble(m.text); // 不是幽灵才放行
-            }
-            return true;
-        });
-        if (chatArr.length !== originalLen) {
-            allChats[cid] = chatArr;
-            cleanedAny = true;
-        }
-    });
-    
-    // 如果吸到了垃圾，就静默更新硬盘并重绘屏幕
-    if (cleanedAny) {
-        window.setChats(allChats);
-        if (typeof window.renderChat === 'function') window.renderChat();
-        console.log('✨ 全宇宙幽灵气泡大扫除完成！');
-    }
-  }, 1500);
+  initGhostSweeper();
 })();
-
 </script>
   <script>
 // 🍓 终极底层修复补丁：强制重绘引擎 + 个人中心头像永固 (V3 破壁版) 🍓
