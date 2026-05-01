@@ -23863,6 +23863,54 @@ setTimeout(() => {
   }, 2000);
 })();
 </script>
+  <!-- ✨ 蓝色高定 V11：全视之眼与智能容错引擎 ✨ -->
+<script>
+(function(){
+  // 1. 智能容错导盲犬：既认 ID，也认名字，完美处理历史遗留！
+  window.__stickerGetById = function(i) {
+    const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
+    if (!all || all.length === 0) return null; 
+    
+    // 精准匹配 ID
+    const exact = all.find(x => String(x.id) === String(i));
+    if (exact) return exact;
+    
+    // 如果是以 st_ 开头的标准 ID，说明是真实发过的表情包被删除了，直接返回 null 显示文字
+    if (String(i).startsWith('st_')) return null;
+    
+    // 如果不是 st_ 开头，说明是大模型犯傻发了名字，启动模糊匹配！
+    const fuzzy = all.find(x => x.name && (String(i).includes(x.name) || x.name.includes(String(i))));
+    if (fuzzy) return fuzzy;
+    
+    // 如果连名字都匹配不上，盲抽一张救场！
+    return all[Math.floor(Math.random() * all.length)];
+  };
+
+  // 2. 强行接管提示词视野，彻底无视系统 200 字符的枷锁！
+  window.__stickerPromptText = function(maxLen = 2500) { 
+    const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
+    if(!all || all.length === 0) return '（暂无，请绝对不要发表情包！）';
+    let txt = all.map(x => `${x.id}(名称:${x.name || '表情'})`).join(', ');
+    if(txt.length > maxLen) return txt.substring(0, maxLen) + '...';
+    return txt;
+  };
   
+  // 3. 动态重写底层构建器，强行注入 2500 字符的上帝视野！
+  if(window.buildOnlineSystem) {
+     const oldBuildOnline = window.buildOnlineSystem;
+     window.buildOnlineSystem = function(c, me, st) {
+        let prompt = oldBuildOnline(c, me, st);
+        return prompt.replace(/__stickerPromptText\(\d+\)/g, '__stickerPromptText(2500)');
+     };
+  }
+  if(window.buildGroupSystem) {
+     const oldBuildGroup = window.buildGroupSystem;
+     window.buildGroupSystem = function(c, me, st) {
+        let prompt = oldBuildGroup(c, me, st);
+        return prompt.replace(/__stickerPromptText\(\d+\)/g, '__stickerPromptText(2500)');
+     };
+  }
+})();
+</script>
 </body>
   </html>
