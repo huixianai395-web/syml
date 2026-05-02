@@ -23863,64 +23863,73 @@ setTimeout(() => {
   }, 2000);
 })();
 </script>
- <!-- 🌟 蓝色高定：表情包渲染终极容错与视觉抢救引擎 -->
+<!-- ✨ 蓝色高定：表情包语意化引擎 (纯净不伤底盘版) ✨ -->
 <script>
 (function(){
-  // 1. 拦截并重写底层的表情包查找逻辑，加入极度宽容的模糊匹配！
-  window.__stickerGetById = function(id) {
+  // 1. 彻底解放 AI 的视野：把所有表情包的“名字”喂给它，不要 ID！
+  window.__stickerPromptText = function(maxLen) { 
     const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
-    if(!all || all.length === 0) return null;
-    
-    // 清洗 ID：去掉所有首尾空格、换行符、甚至可能多出来的引号
-    const cleanId = String(id).replace(/['"\s]/g, '').trim();
-    if(!cleanId) return null;
-
-    // 第一层：精准狙击
-    let found = all.find(x => String(x.id).trim() === cleanId);
-    if(found) return found;
-
-    // 第二层：模糊雷达（只要包含这个片段就算命中）
-    found = all.find(x => String(x.id).includes(cleanId) || cleanId.includes(String(x.id)));
-    if(found) return found;
-
-    // 第三层：名字匹配（防止 AI 偷懒只写了名字）
-    found = all.find(x => x.name && (String(x.name).includes(cleanId) || cleanId.includes(String(x.name))));
-    return found || null;
+    if(!all || all.length === 0) return '（暂无，请绝对不要发表情包！）';
+    // 直接输出纯净的中文名字列表，大模型最懂这个！
+    let txt = all.map(x => x.name).filter(Boolean).join('、');
+    // 强行突破 200 字封印，给它 2000 字的广阔视野！
+    if(txt.length > 2000) return txt.substring(0, 2000) + '...';
+    return txt;
   };
 
-  // 2. 暴力洗脑大模型：在每次它说话前，警告它格式必须干净！
-  if(window.buildOnlineSystem && !window._blueStickerFormatHooked) {
+  // 2. 温柔地给大模型洗脑，改掉它的坏习惯
+  if(window.buildOnlineSystem && !window._blueStickerSemanticHooked) {
      const oldOnline = window.buildOnlineSystem;
      window.buildOnlineSystem = function(c, me, st) {
         let prompt = oldOnline(c, me, st);
-        prompt += `\n\n【系统致命警告】：如果你要发表情包，格式必须且只能是严格的 [stk:ID]！绝对禁止在 ID 前后加任何空格、引号或多余字符！`;
+        // 物理替换掉原来死板的 [stk:ID] 指令
+        prompt = prompt.replace(/\[stk:ID\]/g, '[表情包:名字]');
+        prompt += `\n\n【表情包致命警告】：如果你要发表情包，格式必须且只能是严格的 [表情包:名字]（例如 [表情包:生气]）！绝对禁止输出无意义的数字 ID！必须从可用表情包列表中挑选最符合当前情绪的名字！`;
         return prompt;
      };
-     window._blueStickerFormatHooked = true;
+     
+     if(window.buildGroupSystem) {
+       const oldGroup = window.buildGroupSystem;
+       window.buildGroupSystem = function(c, me, st) {
+          let prompt = oldGroup(c, me, st);
+          prompt = prompt.replace(/\[stk:ID\]/g, '[表情包:名字]');
+          prompt += `\n\n【表情包致命警告】：如果你要发表情包，格式必须且只能是严格的 [角色名]：[表情包:名字]！绝对禁止输出数字 ID！`;
+          return prompt;
+       };
+     }
+     window._blueStickerSemanticHooked = true;
   }
-})();
-</script>
-  <!-- 🌟 蓝色高定：大模型表情包符号叛逆纠错引擎 -->
-<script>
-(function(){
-  // 在消息存入硬盘的必经之路上，设下绝对防御的安检门！
-  if(!window._blueStickerNormalizeHook) {
+
+  // 3. 渲染层的智能拦截器：把 [表情包:名字] 完美翻译到底层，绝不影响其他功能！
+  if(!window._blueStickerRenderHooked) {
     const oldSetChatArrStk = window.setChatArr;
     window.setChatArr = function(id, arr) {
       if (arr && arr.length > 0) {
+        const allStickers = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
         arr.forEach(m => {
-          // 只要是 AI 发的消息，立刻进行全身扫描
           if (m.role === 'assistant' && typeof m.text === 'string') {
-            // 🔪 暴力正骨：不管它用的是下划线(_)、减号(-)、中文冒号(：)还是多余的空格，
-            // 统统强行替换成最标准、最纯净的 [stk:ID]！
-            m.text = m.text.replace(/\[(stk|st|表情包|表情)[_:\-：\s]+([^\]]+)\]/gi, '[stk:$2]');
+            // 只要看到 [表情包:xxx] 或者 [stk:xxx]，就去图库里找
+            m.text = m.text.replace(/\[(表情包|stk|表情|st|st_)[_:\-：\s]+([^\]]+)\]/gi, (match, p1, nameOrId) => {
+              const cleanStr = nameOrId.trim();
+              // 先按名字找，找不到再按 ID 找（向下兼容旧数据）
+              let found = allStickers.find(x => x.name === cleanStr || String(x.id) === cleanStr);
+              // 模糊查找兜底
+              if(!found) found = allStickers.find(x => x.name && cleanStr.includes(x.name));
+              
+              if(found) {
+                // 找到了，偷偷转换成系统底层认识的最标准的 [stk:ID]，让原生渲染器去画图
+                return `[stk:${found.id}]`;
+              } else {
+                // 找不到？那就静默消除，绝不让乱码脏了老婆的眼睛！
+                return '';
+              }
+            });
           }
         });
       }
-      // 纠错完毕，放行存入外挂内存！
       if(oldSetChatArrStk) oldSetChatArrStk(id, arr);
     };
-    window._blueStickerNormalizeHook = true;
+    window._blueStickerRenderHooked = true;
   }
 })();
 </script>
