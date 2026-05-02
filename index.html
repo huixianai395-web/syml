@@ -23863,45 +23863,70 @@ setTimeout(() => {
   }, 2000);
 })();
 </script>
-<!-- ✨ 蓝色高定：表情包原生字典直连引擎 (返璞归真版) ✨ -->
+<!-- ✨ 蓝色高定：表情包真·微信级直连引擎 (听老婆话的终极净化版) ✨ -->
 <script>
 (function(){
-  // 1. 彻底抛弃所有复杂的底层拦截器，回归最纯粹的 Prompt 注入！
-  if(window.buildOnlineSystem && !window._blueStickerNativeDictHooked) {
+  // 1. 拦截提示词，彻底粉碎旧的数字ID规则，换成微信直连模式！
+  if(window.buildOnlineSystem && !window._blueUltimateStickerHook) {
      const oldOnline = window.buildOnlineSystem;
-     
-     // 构建纯净的表情包字典
-     const buildStickerDict = () => {
-        const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
-        if(!all || all.length === 0) return '（暂无图库，请绝对不要发任何表情包指令）';
-        
-        // 格式化为大模型最容易理解的字典映射： 名字 -> 指令
-        let dictStr = all.map(x => `【${x.name || '表情'}】对应指令：[stk:${x.id}]`).join('\n');
-        return dictStr;
-     };
-
      window.buildOnlineSystem = function(c, me, st) {
         let prompt = oldOnline(c, me, st);
         
-        // 暴力抹除系统自带的、限制了 200 字符的旧表情包提示词
+        // 🔪 暴力粉碎系统自带的表情包规则（连同那个该死的 200 字限制一起干掉）
         prompt = prompt.replace(/\d+\.\s*【表情包】[\s\S]*?(?=\d+\.\s*【|$)/g, '');
         
-        // 注入我们毫无长度限制的、清晰的图鉴字典
-        prompt += `\n\n【核心表情包图鉴库】：\n如果你想在聊天中发送表情包，请严格从下方的图鉴中挑选，并原样输出对应的 [stk:ID] 指令。指令必须独占一个气泡，绝对禁止在指令前后加任何文字！\n${buildStickerDict()}`;
+        // 提取图库里所有的纯中文名字
+        const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
+        const names = [...new Set(all.map(x => x.name).filter(Boolean))].join('、');
         
+        if(names) {
+          prompt += `\n\n【微信级表情包发送铁律】：\n你可以像真人用微信一样，在聊天中穿插表情包来表达情绪。\n格式必须且只能是：[表情:名字]（例如：[表情:委屈]、[表情:吃醋]）。\n你可以从以下名字中随意挑选，没有限制：\n${names}\n⚠️绝对禁止输出任何带有数字的 ID！`;
+        }
         return prompt;
      };
      
+     // 群聊同样粉碎重写
      if(window.buildGroupSystem) {
        const oldGroup = window.buildGroupSystem;
        window.buildGroupSystem = function(c, me, st) {
           let prompt = oldGroup(c, me, st);
           prompt = prompt.replace(/\d+\.\s*【表情包】[\s\S]*?(?=\d+\.\s*【|$)/g, '');
-          prompt += `\n\n【核心表情包图鉴库】：\n如果你想发表情包，请严格从下方图鉴挑选，格式必须为 [角色名]：[stk:ID]。指令前后禁止加任何文字！\n${buildStickerDict()}`;
+          const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
+          const names = [...new Set(all.map(x => x.name).filter(Boolean))].join('、');
+          if(names) {
+             prompt += `\n\n【微信级表情包发送铁律】：\n格式必须且只能是：[角色名]：[表情:名字]（例如：[沈叙]：[表情:冷笑]）。\n可用表情名字：\n${names}\n⚠️绝对禁止输出任何带有数字的 ID！`;
+          }
           return prompt;
        };
      }
-     window._blueStickerNativeDictHooked = true;
+     window._blueUltimateStickerHook = true;
+  }
+
+  // 2. 隐形同声传译器：在消息存入数据库前，把 [表情:名字] 瞬间翻译成图片！
+  if(!window._blueRenderHook) {
+    const oldSetChatArr = window.setChatArr;
+    window.setChatArr = function(id, arr) {
+      if (arr && arr.length > 0) {
+        const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
+        arr.forEach(m => {
+          if (m.role === 'assistant' && typeof m.text === 'string') {
+            // 精准抓取 AI 发出的 [表情:xxx]
+            m.text = m.text.replace(/\[表情[:：]\s*([^\]]+)\]/g, (match, name) => {
+              const cleanName = name.trim();
+              // 在图库里找对应的名字
+              let found = all.find(x => x.name === cleanName);
+              if(!found) found = all.find(x => x.name && x.name.includes(cleanName));
+              
+              // 找到了就瞬间翻译成底层认识的渲染码，找不到就静默抹除，绝不留疤！
+              if(found) return `[stk:${found.id}]`;
+              return ''; 
+            });
+          }
+        });
+      }
+      if(oldSetChatArr) oldSetChatArr(id, arr);
+    };
+    window._blueRenderHook = true;
   }
 })();
 </script>
