@@ -23863,6 +23863,42 @@ setTimeout(() => {
   }, 2000);
 })();
 </script>
- 
+ <!-- 🌟 蓝色高定：表情包渲染终极容错与视觉抢救引擎 -->
+<script>
+(function(){
+  // 1. 拦截并重写底层的表情包查找逻辑，加入极度宽容的模糊匹配！
+  window.__stickerGetById = function(id) {
+    const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
+    if(!all || all.length === 0) return null;
+    
+    // 清洗 ID：去掉所有首尾空格、换行符、甚至可能多出来的引号
+    const cleanId = String(id).replace(/['"\s]/g, '').trim();
+    if(!cleanId) return null;
+
+    // 第一层：精准狙击
+    let found = all.find(x => String(x.id).trim() === cleanId);
+    if(found) return found;
+
+    // 第二层：模糊雷达（只要包含这个片段就算命中）
+    found = all.find(x => String(x.id).includes(cleanId) || cleanId.includes(String(x.id)));
+    if(found) return found;
+
+    // 第三层：名字匹配（防止 AI 偷懒只写了名字）
+    found = all.find(x => x.name && (String(x.name).includes(cleanId) || cleanId.includes(String(x.name))));
+    return found || null;
+  };
+
+  // 2. 暴力洗脑大模型：在每次它说话前，警告它格式必须干净！
+  if(window.buildOnlineSystem && !window._blueStickerFormatHooked) {
+     const oldOnline = window.buildOnlineSystem;
+     window.buildOnlineSystem = function(c, me, st) {
+        let prompt = oldOnline(c, me, st);
+        prompt += `\n\n【系统致命警告】：如果你要发表情包，格式必须且只能是严格的 [stk:ID]！绝对禁止在 ID 前后加任何空格、引号或多余字符！`;
+        return prompt;
+     };
+     window._blueStickerFormatHooked = true;
+  }
+})();
+</script>
 </body>
   </html>
