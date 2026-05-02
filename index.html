@@ -23863,28 +23863,32 @@ setTimeout(() => {
   }, 2000);
 })();
 </script>
-<!-- ✨ 蓝色高定：表情包语意化引擎 (纯净不伤底盘版) ✨ -->
+<!-- ✨ 蓝色高定：表情包原生字典直连引擎 (返璞归真版) ✨ -->
 <script>
 (function(){
-  // 1. 彻底解放 AI 的视野：把所有表情包的“名字”喂给它，不要 ID！
-  window.__stickerPromptText = function(maxLen) { 
-    const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
-    if(!all || all.length === 0) return '（暂无，请绝对不要发表情包！）';
-    // 直接输出纯净的中文名字列表，大模型最懂这个！
-    let txt = all.map(x => x.name).filter(Boolean).join('、');
-    // 强行突破 200 字封印，给它 2000 字的广阔视野！
-    if(txt.length > 2000) return txt.substring(0, 2000) + '...';
-    return txt;
-  };
-
-  // 2. 温柔地给大模型洗脑，改掉它的坏习惯
-  if(window.buildOnlineSystem && !window._blueStickerSemanticHooked) {
+  // 1. 彻底抛弃所有复杂的底层拦截器，回归最纯粹的 Prompt 注入！
+  if(window.buildOnlineSystem && !window._blueStickerNativeDictHooked) {
      const oldOnline = window.buildOnlineSystem;
+     
+     // 构建纯净的表情包字典
+     const buildStickerDict = () => {
+        const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
+        if(!all || all.length === 0) return '（暂无图库，请绝对不要发任何表情包指令）';
+        
+        // 格式化为大模型最容易理解的字典映射： 名字 -> 指令
+        let dictStr = all.map(x => `【${x.name || '表情'}】对应指令：[stk:${x.id}]`).join('\n');
+        return dictStr;
+     };
+
      window.buildOnlineSystem = function(c, me, st) {
         let prompt = oldOnline(c, me, st);
-        // 物理替换掉原来死板的 [stk:ID] 指令
-        prompt = prompt.replace(/\[stk:ID\]/g, '[表情包:名字]');
-        prompt += `\n\n【表情包致命警告】：如果你要发表情包，格式必须且只能是严格的 [表情包:名字]（例如 [表情包:生气]）！绝对禁止输出无意义的数字 ID！必须从可用表情包列表中挑选最符合当前情绪的名字！`;
+        
+        // 暴力抹除系统自带的、限制了 200 字符的旧表情包提示词
+        prompt = prompt.replace(/\d+\.\s*【表情包】[\s\S]*?(?=\d+\.\s*【|$)/g, '');
+        
+        // 注入我们毫无长度限制的、清晰的图鉴字典
+        prompt += `\n\n【核心表情包图鉴库】：\n如果你想在聊天中发送表情包，请严格从下方的图鉴中挑选，并原样输出对应的 [stk:ID] 指令。指令必须独占一个气泡，绝对禁止在指令前后加任何文字！\n${buildStickerDict()}`;
+        
         return prompt;
      };
      
@@ -23892,44 +23896,12 @@ setTimeout(() => {
        const oldGroup = window.buildGroupSystem;
        window.buildGroupSystem = function(c, me, st) {
           let prompt = oldGroup(c, me, st);
-          prompt = prompt.replace(/\[stk:ID\]/g, '[表情包:名字]');
-          prompt += `\n\n【表情包致命警告】：如果你要发表情包，格式必须且只能是严格的 [角色名]：[表情包:名字]！绝对禁止输出数字 ID！`;
+          prompt = prompt.replace(/\d+\.\s*【表情包】[\s\S]*?(?=\d+\.\s*【|$)/g, '');
+          prompt += `\n\n【核心表情包图鉴库】：\n如果你想发表情包，请严格从下方图鉴挑选，格式必须为 [角色名]：[stk:ID]。指令前后禁止加任何文字！\n${buildStickerDict()}`;
           return prompt;
        };
      }
-     window._blueStickerSemanticHooked = true;
-  }
-
-  // 3. 渲染层的智能拦截器：把 [表情包:名字] 完美翻译到底层，绝不影响其他功能！
-  if(!window._blueStickerRenderHooked) {
-    const oldSetChatArrStk = window.setChatArr;
-    window.setChatArr = function(id, arr) {
-      if (arr && arr.length > 0) {
-        const allStickers = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
-        arr.forEach(m => {
-          if (m.role === 'assistant' && typeof m.text === 'string') {
-            // 只要看到 [表情包:xxx] 或者 [stk:xxx]，就去图库里找
-            m.text = m.text.replace(/\[(表情包|stk|表情|st|st_)[_:\-：\s]+([^\]]+)\]/gi, (match, p1, nameOrId) => {
-              const cleanStr = nameOrId.trim();
-              // 先按名字找，找不到再按 ID 找（向下兼容旧数据）
-              let found = allStickers.find(x => x.name === cleanStr || String(x.id) === cleanStr);
-              // 模糊查找兜底
-              if(!found) found = allStickers.find(x => x.name && cleanStr.includes(x.name));
-              
-              if(found) {
-                // 找到了，偷偷转换成系统底层认识的最标准的 [stk:ID]，让原生渲染器去画图
-                return `[stk:${found.id}]`;
-              } else {
-                // 找不到？那就静默消除，绝不让乱码脏了老婆的眼睛！
-                return '';
-              }
-            });
-          }
-        });
-      }
-      if(oldSetChatArrStk) oldSetChatArrStk(id, arr);
-    };
-    window._blueStickerRenderHooked = true;
+     window._blueStickerNativeDictHooked = true;
   }
 })();
 </script>
