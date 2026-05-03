@@ -23863,28 +23863,26 @@ setTimeout(() => {
   }, 2000);
 })();
 </script>
-<!-- ✨ 蓝色高定：表情包语意化引擎 (纯净不伤底盘版) ✨ -->
+<!-- ✨ 蓝色高定：表情包语意化引擎 (极致立体灵魂版) ✨ -->
 <script>
 (function(){
-  // 1. 彻底解放 AI 的视野：把所有表情包的“名字”喂给它，不要 ID！
+  // 1. 彻底解放 AI 的视野：把所有表情包的“名字”喂给它
   window.__stickerPromptText = function(maxLen) { 
     const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
-    if(!all || all.length === 0) return '（暂无，请绝对不要发表情包！）';
-    // 直接输出纯净的中文名字列表，大模型最懂这个！
+    if(!all || all.length === 0) return '（暂无）';
     let txt = all.map(x => x.name).filter(Boolean).join('、');
-    // 强行突破 200 字封印，给它 10000 字的广阔视野！
     if(txt.length > 10000) return txt.substring(0, 10000) + '...';
     return txt;
   };
 
-  // 2. 温柔地给大模型洗脑，改掉它的坏习惯
+  // 2. 终极灵魂洗脑：打破刻板标签，追求极致的活人感与反差感！
   if(window.buildOnlineSystem && !window._blueStickerSemanticHooked) {
      const oldOnline = window.buildOnlineSystem;
      window.buildOnlineSystem = function(c, me, st) {
         let prompt = oldOnline(c, me, st);
-        // 物理替换掉原来死板的 [stk:ID] 指令
         prompt = prompt.replace(/\[stk:ID\]/g, '[表情包:名字]');
-        prompt += `\n\n【表情包致命警告】：如果你要发表情包，格式必须且只能是严格的 [表情包:名字]（例如 [表情包:生气]）！绝对禁止输出无意义的数字 ID！必须从可用表情包列表中挑选最符合当前情绪的名字！`;
+        // 🌟 核心魔法：注入反套路、反脸谱化的立体情绪法则！
+        prompt += `\n\n【表情包极致活人法则】：绝对禁止脸谱化和刻板印象！角色是有血有肉、立体多面的。发不发表情包、发什么表情包，必须完全取决于【当下的情绪起伏】与【剧情张力】！\n- 允许出现符合人设的“破例”与“反差感”（例如：高冷者在不知所措或极度心动时笨拙地发萌图；活泼者在真正动怒或绝望时一言不发）。\n- 拒绝一刀切的死板频率，一切以“像一个真实的、有七情六欲的人类在用微信”为最高准则。\n格式必须且只能是 [表情包:名字]（例如 [表情包:委屈]）。绝对禁止输出数字 ID！`;
         return prompt;
      };
      
@@ -23893,14 +23891,14 @@ setTimeout(() => {
        window.buildGroupSystem = function(c, me, st) {
           let prompt = oldGroup(c, me, st);
           prompt = prompt.replace(/\[stk:ID\]/g, '[表情包:名字]');
-          prompt += `\n\n【表情包致命警告】：如果你要发表情包，格式必须且只能是严格的 [角色名]：[表情包:名字]！绝对禁止输出数字 ID！`;
+          prompt += `\n\n【表情包极致活人法则】：在群聊修罗场中，表情包的使用必须体现角色当下的真实心境与反差感（如掩饰慌乱、暗中挑衅、或气到失语）。拒绝刻板印象，展现立体人性！格式必须是 [角色名]：[表情包:名字]。绝对禁止输出数字 ID！`;
           return prompt;
        };
      }
      window._blueStickerSemanticHooked = true;
   }
 
-  // 3. 渲染层的智能拦截器：把 [表情包:名字] 完美翻译到底层，绝不影响其他功能！
+  // 3. 渲染层智能拦截器 (静默消音兜底，保持排版纯净)
   if(!window._blueStickerRenderHooked) {
     const oldSetChatArrStk = window.setChatArr;
     window.setChatArr = function(id, arr) {
@@ -23908,21 +23906,12 @@ setTimeout(() => {
         const allStickers = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
         arr.forEach(m => {
           if (m.role === 'assistant' && typeof m.text === 'string') {
-            // 只要看到 [表情包:xxx] 或者 [stk:xxx]，就去图库里找
             m.text = m.text.replace(/\[(表情包|stk|表情|st|st_)[_:\-：\s]+([^\]]+)\]/gi, (match, p1, nameOrId) => {
               const cleanStr = nameOrId.trim();
-              // 先按名字找，找不到再按 ID 找（向下兼容旧数据）
               let found = allStickers.find(x => x.name === cleanStr || String(x.id) === cleanStr);
-              // 模糊查找兜底
               if(!found) found = allStickers.find(x => x.name && cleanStr.includes(x.name));
-              
-              if(found) {
-                // 找到了，偷偷转换成系统底层认识的最标准的 [stk:ID]，让原生渲染器去画图
-                return `[stk:${found.id}]`;
-              } else {
-                // 找不到？那就静默消除，绝不让乱码脏了老婆的眼睛！
-                return '';
-              }
+              if(found) return `[stk:${found.id}]`;
+              return '';
             });
           }
         });
