@@ -23863,10 +23863,10 @@ setTimeout(() => {
   }, 2000);
 })();
 </script>
-<!-- ✨ 蓝色高定：表情包语意化引擎 (极致立体灵魂版) ✨ -->
+<!-- ✨ 蓝色高定：表情包语意化引擎 (终极防裸奔绞杀版) ✨ -->
 <script>
 (function(){
-  // 1. 彻底解放 AI 的视野：把所有表情包的“名字”喂给它
+  // 1. 彻底解放 AI 的视野
   window.__stickerPromptText = function(maxLen) { 
     const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
     if(!all || all.length === 0) return '（暂无）';
@@ -23881,8 +23881,7 @@ setTimeout(() => {
      window.buildOnlineSystem = function(c, me, st) {
         let prompt = oldOnline(c, me, st);
         prompt = prompt.replace(/\[stk:ID\]/g, '[表情包:名字]');
-        // 🌟 核心魔法：注入反套路、反脸谱化的立体情绪法则！
-        prompt += `\n\n【表情包极致活人法则】：绝对禁止脸谱化和刻板印象！角色是有血有肉、立体多面的。真实的人不会每条消息都发表情包，发得太频繁反而显得不真实。发不发表情包、发什么表情包，必须完全取决于角色人设【当下的情绪起伏】与【剧情张力】！\n- 允许出现符合人设的“破例”与“反差感”。\n- 拒绝一刀切的死板频率，一切以“像一个真实的、有七情六欲的人类在用微信”为最高准则。\n格式必须且只能是 [表情包:名字]（例如 [表情包:委屈]）。绝对禁止输出数字 ID！`;
+        prompt += `\n\n【表情包极致活人法则】：绝对禁止脸谱化和刻板印象！角色是有血有肉、立体多面的。禁止每条都带表情包，真实的人不会每条消息都发表情包，发得太频繁反而显得不真实。发不发表情包、发什么表情包，必须完全取决于角色人设【当下的情绪起伏】与【剧情张力】！\n- 允许偶尔出现符合人设的“破例”与“反差感”。\n- 拒绝一刀切的死板频率，一切以“像一个真实的、有七情六欲的人类在用微信”为最高准则。\n格式必须且只能是 [表情包:名字]（例如 [表情包:委屈]）。⚠️绝对禁止直接输出任何裸露的 st_ 数字 ID！`;
         return prompt;
      };
      
@@ -23891,14 +23890,14 @@ setTimeout(() => {
        window.buildGroupSystem = function(c, me, st) {
           let prompt = oldGroup(c, me, st);
           prompt = prompt.replace(/\[stk:ID\]/g, '[表情包:名字]');
-          prompt += `\n\n【表情包极致活人法则】：在群聊修罗场中，表情包的使用必须体现角色当下的真实心境与反差感（如掩饰慌乱、暗中挑衅、或气到失语）。拒绝刻板印象，展现立体人性！格式必须是 [角色名]：[表情包:名字]。绝对禁止输出数字 ID！`;
+          prompt += `\n\n【表情包极致活人法则】：在群聊修罗场中，表情包的使用必须体现角色当下的真实心境与反差感。拒绝刻板印象，禁止每条都带表情包，真实的人不会每条消息都发表情包，发得太频繁反而显得不真实。展现立体人性！格式必须是 [角色名]：[表情包:名字]。⚠️绝对禁止直接输出任何裸露的 st_ 数字 ID！`;
           return prompt;
        };
      }
      window._blueStickerSemanticHooked = true;
   }
 
-  // 3. 渲染层智能拦截器 (静默消音兜底，保持排版纯净)
+  // 3. 渲染层智能拦截器 (双重雷达，专治大模型裸奔)
   if(!window._blueStickerRenderHooked) {
     const oldSetChatArrStk = window.setChatArr;
     window.setChatArr = function(id, arr) {
@@ -23906,12 +23905,20 @@ setTimeout(() => {
         const allStickers = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
         arr.forEach(m => {
           if (m.role === 'assistant' && typeof m.text === 'string') {
+            // 🌟 第一道防线：抓取乖乖穿衣服的 [表情包:xxx] 或 [stk:xxx]
             m.text = m.text.replace(/\[(表情包|stk|表情|st|st_)[_:\-：\s]+([^\]]+)\]/gi, (match, p1, nameOrId) => {
               const cleanStr = nameOrId.trim();
               let found = allStickers.find(x => x.name === cleanStr || String(x.id) === cleanStr);
               if(!found) found = allStickers.find(x => x.name && cleanStr.includes(x.name));
               if(found) return `[stk:${found.id}]`;
               return '';
+            });
+            
+            // 🌟 第二道防线：无情绞杀直接裸奔的 st_xxxxxxxx_xxxxxx 机器码！
+            m.text = m.text.replace(/st_\d+_\d+/gi, (match) => {
+              let found = allStickers.find(x => String(x.id) === match);
+              if(found) return `[stk:${found.id}]`;
+              return ''; // 找不到直接物理消灭，绝对不留乱码！
             });
           }
         });
@@ -23921,6 +23928,6 @@ setTimeout(() => {
     window._blueStickerRenderHooked = true;
   }
 })();
-</script>
+    </script>
 </body>
   </html>
