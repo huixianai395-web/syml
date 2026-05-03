@@ -6295,7 +6295,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 4. 【代码防粘连绝对规则】：凡是回复中包含HTML代码，必须遵守以下全部要求：a)代码必须是以<!DOCTYPE html>开头的完整文档，禁止发片段；b)整个HTML文档必须作为一个完整字符串放在JSON数组的一条里，禁止拆分成多条；c)禁止添加任何markdown标记如\`\`\`html；d)代码前后的对话文字必须和代码分开，各自独立一条。⚠️发红包、定位、模拟发图等功能【绝对不是】发代码，严禁加上<!DOCTYPE html>，必须直接输出卡片的div！`,
 `5. messages数组里的每一条都只能是角色说的话（纯对话文本），严禁混入任何动作描写、心理描写、场景描写、旁白叙述。`,
       rangeRule,
-`6. 【表情包】你可以像真人一样发文字，也可以偶尔发1张表情包。若要发表情包，请让某一条消息内容严格等于：[stk:ID]，ID必须从下方列表中原样复制。可用表情包列表：\n${window.__stickerPromptText?window.__stickerPromptText(5000):'（暂无）'}`,
+`6. 【表情包】你可以像真人一样发文字，也可以偶尔发1张表情包。若要发表情包，请让某一条消息内容严格等于：[stk:ID]，ID必须从下方列表中原样复制。可用表情包列表：\n${window.__stickerPromptText?window.__stickerPromptText(10000):'（暂无）'}`,
 `7. 【语音消息】你可以发语音，让某一条消息严格等于：[voice:秒数:语音内容]，秒数根据内容长度估算（2-60）。语音消息表达更私密亲昵的语气。整条语音消息只能是[voice:秒数:内容]，绝对禁止前后添加任何时间戳、标点或说明文字。语音内容本身禁止带括号、动作描述或神态说明，只能是说出口的话。点开的语音内容绝对禁止🚫带任何括号和心理、情绪描述词不然打你屁股一百下，再也不理你！！只能发从嘴里说出来的话和微信语音格式一模一样`,
 `8. 【通话】你可以主动发起语音或视频通话，让某一条消息严格等于：[call:voice] 或 [call:video]。需要挂断时某一条消息严格等于 [endcall]。发起通话和挂断指令必须单独一条，不能和文字混在一起。`,
 `9. 具备真实的时间观念：根据"上一次消息时间与当前系统时间"的间隔，自然体现时间流逝。`, 
@@ -6351,7 +6351,7 @@ fatal_pattern: {"messages":...}→BLOCK`;
 4. 【代码防粘连绝对规则】：凡回复中包含HTML代码：a)必须是以<!DOCTYPE html>开头的完整文档，禁止发片段；b)整个HTML文档作为一个完整字符串放在JSON数组的一条里，禁止拆分；c)禁止添加任何markdown标记如\`\`\`html；d)代码前后的对话文字必须和代码分开，各自独立一条。若输出HTML，按钮和交互元素的点击事件必须用onclick属性直接写在标签上，禁止使用addEventListener。
 5. 遇到代码输出（指网页开发代码）时，结构必须严格切分为：["[名字]：代码前的铺垫","[名字]：html代码块","[名字]：代码后的互动"]。⚠️发红包、定位、模拟发图等卡片【绝对不是】发代码，严禁加上<!DOCTYPE html>，必须直接输出卡片的div！
 6. messages数组里的每一条都只能是角色说的话（纯对话文本），严禁混入任何动作描写、心理描写、场景描写、旁白叙述。如果只有引用没有回复，禁止输出该条消息。
-7. 【表情包】你可以发表情包，让某一条消息严格等于：[名字]：[stk:ID]。⚠️【致命红线】：表情包必须独占一个气泡！[stk:ID]的前后绝对、绝对禁止加上任何文字！如果既想发表情又想说话，必须分成两条消息（两条数组元素）！可用表情包列表：\n${window.__stickerPromptText ? window.__stickerPromptText(5000) : '（暂无）'}
+7. 【表情包】你可以发表情包，让某一条消息严格等于：[名字]：[stk:ID]。⚠️【致命红线】：表情包必须独占一个气泡！[stk:ID]的前后绝对、绝对禁止加上任何文字！如果既想发表情又想说话，必须分成两条消息（两条数组元素）！可用表情包列表：\n${window.__stickerPromptText ? window.__stickerPromptText(10000) : '（暂无）'}
 8. 【语音消息】可以发语音，让某一条消息严格等于：[名字]：[voice:秒数:语音内容]，秒数根据内容长度估算（2-60）。语音消息表达更私密亲昵的语气。（注意：语音内容中不得包含。！？，等标点，用纯文字表达）
 9. 【通话】可以主动发起语音或视频通话，让某一条消息严格等于：[名字]：[call:voice] 或 [名字]：[call:video]。需要挂断时某一条消息严格等于 [名字]：[endcall]。发起通话和挂断指令必须单独一条，不能和文字混在一起。
 10. 每条消息必须带正常中文标点，禁止无标点长句。
@@ -8733,7 +8733,7 @@ function stAllStickersFlat(){
 }
 
 // 🌟 蓝色高定：AI 潜意识表情包导盲犬！告诉它到底有哪些表情包！
-window.__stickerPromptText = function(maxLen = 5000) {
+window.__stickerPromptText = function(maxLen = 10000) {
   const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
   if(!all || all.length === 0) return '（暂无，请绝对不要发表情包！）';
   let txt = all.map(x => `${x.id}(代表含义:${x.name || '表情'})`).join(', ');
@@ -23784,7 +23784,7 @@ setTimeout(() => {
   };
 
   // 2. 解除菜单封印：让 AI 看清你所有的表情包！
-  window.__stickerPromptText = function(maxLen = 1500) { 
+  window.__stickerPromptText = function(maxLen = 10000) { 
     const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
     if(!all || all.length === 0) return '（暂无，请绝对不要发表情包！）';
     // 告诉 AI 也可以直接用名字
@@ -23798,14 +23798,14 @@ setTimeout(() => {
      const oldBuildOnline = window.buildOnlineSystem;
      window.buildOnlineSystem = function(c, me, st) {
         let prompt = oldBuildOnline(c, me, st);
-        return prompt.replace(/__stickerPromptText\(\d+\)/g, '__stickerPromptText(1500)');
+        return prompt.replace(/__stickerPromptText\(\d+\)/g, '__stickerPromptText(10000)');
      };
   }
   if(window.buildGroupSystem) {
      const oldBuildGroup = window.buildGroupSystem;
      window.buildGroupSystem = function(c, me, st) {
         let prompt = oldBuildGroup(c, me, st);
-        return prompt.replace(/__stickerPromptText\(\d+\)/g, '__stickerPromptText(1500)');
+        return prompt.replace(/__stickerPromptText\(\d+\)/g, '__stickerPromptText(10000)');
      };
   }
 })();
@@ -23872,8 +23872,8 @@ setTimeout(() => {
     if(!all || all.length === 0) return '（暂无，请绝对不要发表情包！）';
     // 直接输出纯净的中文名字列表，大模型最懂这个！
     let txt = all.map(x => x.name).filter(Boolean).join('、');
-    // 强行突破 200 字封印，给它 2000 字的广阔视野！
-    if(txt.length > 2000) return txt.substring(0, 2000) + '...';
+    // 强行突破 200 字封印，给它 10000 字的广阔视野！
+    if(txt.length > 10000) return txt.substring(0, 10000) + '...';
     return txt;
   };
 
