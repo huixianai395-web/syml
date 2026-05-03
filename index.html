@@ -6295,7 +6295,7 @@ $('applyBubblePresetBtn').onclick=saveBubblePresetForm;
 4. 【代码防粘连绝对规则】：凡是回复中包含HTML代码，必须遵守以下全部要求：a)代码必须是以<!DOCTYPE html>开头的完整文档，禁止发片段；b)整个HTML文档必须作为一个完整字符串放在JSON数组的一条里，禁止拆分成多条；c)禁止添加任何markdown标记如\`\`\`html；d)代码前后的对话文字必须和代码分开，各自独立一条。⚠️发红包、定位、模拟发图等功能【绝对不是】发代码，严禁加上<!DOCTYPE html>，必须直接输出卡片的div！`,
 `5. messages数组里的每一条都只能是角色说的话（纯对话文本），严禁混入任何动作描写、心理描写、场景描写、旁白叙述。`,
       rangeRule,
-`6. 【表情包】绝对🚫禁止每次回复都带表情包！真实的人不会每次回复都发表情包，发得太频繁反而显得不真实。符合人设永远都是第一位！！根据人设和剧情自然决定是否发表情包，不必每次回复消息都发。若要发，请让某一条消息内容严格等于：[stk:ID]，ID从下方列表中原样复制。可用表情包列表：\n${window.__stickerPromptText?window.__stickerPromptText(10000):'（暂无）'}`,
+`6. 【表情包】绝对🚫禁止每次回复都带表情包！真实的人不会每次回复都发表情包，发得太频繁反而显得不真实。符合人设永远都是第一位！！根据人设和剧情自然决定是否发表情包，不必每次回复消息都发。若要发，请让某一条消息内容严格等于：[表情包:名字]，名字从下方列表中原样复制。绝对禁止输出任何数字ID！可用表情包列表：\n${window.__stickerPromptText?window.__stickerPromptText(10000):'（暂无）'}`,
 `7. 【语音消息】你可以发语音，让某一条消息严格等于：[voice:秒数:语音内容]，秒数根据内容长度估算（2-60）。语音消息表达更私密亲昵的语气。整条语音消息只能是[voice:秒数:内容]，绝对禁止前后添加任何时间戳、标点或说明文字。语音内容本身禁止带括号、动作描述或神态说明，只能是说出口的话。点开的语音内容绝对禁止🚫带任何括号和心理、情绪描述词不然打你屁股一百下，再也不理你！！只能发从嘴里说出来的话和微信语音格式一模一样`,
 `8. 【通话】你可以主动发起语音或视频通话，让某一条消息严格等于：[call:voice] 或 [call:video]。需要挂断时某一条消息严格等于 [endcall]。发起通话和挂断指令必须单独一条，不能和文字混在一起。`,
 `9. 具备真实的时间观念：根据"上一次消息时间与当前系统时间"的间隔，自然体现时间流逝。`, 
@@ -6351,7 +6351,7 @@ fatal_pattern: {"messages":...}→BLOCK`;
 4. 【代码防粘连绝对规则】：凡回复中包含HTML代码：a)必须是以<!DOCTYPE html>开头的完整文档，禁止发片段；b)整个HTML文档作为一个完整字符串放在JSON数组的一条里，禁止拆分；c)禁止添加任何markdown标记如\`\`\`html；d)代码前后的对话文字必须和代码分开，各自独立一条。若输出HTML，按钮和交互元素的点击事件必须用onclick属性直接写在标签上，禁止使用addEventListener。
 5. 遇到代码输出（指网页开发代码）时，结构必须严格切分为：["[名字]：代码前的铺垫","[名字]：html代码块","[名字]：代码后的互动"]。⚠️发红包、定位、模拟发图等卡片【绝对不是】发代码，严禁加上<!DOCTYPE html>，必须直接输出卡片的div！
 6. messages数组里的每一条都只能是角色说的话（纯对话文本），严禁混入任何动作描写、心理描写、场景描写、旁白叙述。如果只有引用没有回复，禁止输出该条消息。
-7. 【表情包】绝对🚫禁止每次回复都带表情包！真实的人不会每次回复都发表情包，发得太频繁反而显得不真实。符合人设永远都是第一位！！根据人设和剧情自然决定是否发表情包，不必每次回复消息都发。若要发，让某一条消息严格等于：[名字]：[stk:ID]。⚠️【致命红线】：表情包必须独占一个气泡！[stk:ID]的前后绝对、绝对禁止加上任何文字！如果既想发表情又想说话，必须分成两条消息（两条数组元素）！可用表情包列表：\n${window.__stickerPromptText ? window.__stickerPromptText(10000) : '（暂无）'}
+7. 【表情包】绝对🚫禁止每次回复都带表情包！真实的人不会每次回复都发表情包，发得太频繁反而显得不真实。符合人设永远都是第一位！！根据人设和剧情自然决定是否发表情包，不必每次回复消息都发。若要发，让某一条消息严格等于：[名字]：[表情包:名字]，名字从下方列表中原样复制。绝对禁止输出任何数字ID！⚠️【致命红线】：表情包必须独占一个气泡！[表情包:名字]的前后绝对、绝对禁止加上任何文字！如果既想发表情又想说话，必须分成两条消息（两条数组元素）！可用表情包列表：\n${window.__stickerPromptText ? window.__stickerPromptText(10000) : '（暂无）'}
 8. 【语音消息】可以发语音，让某一条消息严格等于：[名字]：[voice:秒数:语音内容]，秒数根据内容长度估算（2-60）。语音消息表达更私密亲昵的语气。（注意：语音内容中不得包含。！？，等标点，用纯文字表达）
 9. 【通话】可以主动发起语音或视频通话，让某一条消息严格等于：[名字]：[call:voice] 或 [名字]：[call:video]。需要挂断时某一条消息严格等于 [名字]：[endcall]。发起通话和挂断指令必须单独一条，不能和文字混在一起。
 10. 每条消息必须带正常中文标点，禁止无标点长句。
@@ -23762,144 +23762,31 @@ setTimeout(() => {
     background: rgba(0, 0, 0, 0.06) !important;
   }
 </style>
-<!-- 🌟 蓝色高定：表情包防幻觉与智能兜底引擎 -->
+<!-- ✨ 蓝色高定：终极纯净表情包引擎 (大道至简版) ✨ -->
 <script>
 (function(){
-  // 1. 升级表情包查找引擎：加入模糊匹配与随机盲抽兜底！
-  window.__stickerGetById = (id) => {
-    const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
-    if(!all || all.length === 0) return null;
-    
-    // 尝试精准匹配 ID
-    const exact = all.find(x => String(x.id) === String(id));
-    if (exact) return exact;
-    
-    // 尝试模糊匹配名字 (应对 AI 偷懒只发名字的情况)
-    const fuzzy = all.find(x => x.name && (String(id).includes(x.name) || x.name.includes(String(id))));
-    if (fuzzy) return fuzzy;
-    
-    // 🌟 终极兜底：如果 AI 瞎编了假 ID，绝对不报错！直接随机抽一张给它圆场！
-    const randomSticker = all[Math.floor(Math.random() * all.length)];
-    return randomSticker;
-  };
-
-  // 2. 解除菜单封印：让 AI 看清你所有的表情包！
+  // 1. 绝对纯净的视野：只给名字，连一根 ID 的毛都不让大模型看到！
   window.__stickerPromptText = function(maxLen = 10000) { 
     const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
-    if(!all || all.length === 0) return '（暂无，请绝对不要发表情包！）';
-    // 告诉 AI 也可以直接用名字
-    let txt = all.map(x => `${x.id}(名称:${x.name || '表情'})`).join(', ');
+    if(!all || all.length === 0) return '（暂无）';
+    // 🔪 物理阉割：强行只提取 name，绝对不许拼接 id！
+    let txt = all.map(x => x.name).filter(Boolean).join('、');
     if(txt.length > maxLen) return txt.substring(0, maxLen) + '...';
     return txt;
   };
-  
-  // 3. 动态更新系统提示词里的长度限制
-  if(window.buildOnlineSystem) {
-     const oldBuildOnline = window.buildOnlineSystem;
-     window.buildOnlineSystem = function(c, me, st) {
-        let prompt = oldBuildOnline(c, me, st);
-        return prompt.replace(/__stickerPromptText\(\d+\)/g, '__stickerPromptText(10000)');
-     };
-  }
-  if(window.buildGroupSystem) {
-     const oldBuildGroup = window.buildGroupSystem;
-     window.buildGroupSystem = function(c, me, st) {
-        let prompt = oldBuildGroup(c, me, st);
-        return prompt.replace(/__stickerPromptText\(\d+\)/g, '__stickerPromptText(10000)');
-     };
-  }
-})();
-</script>
-  <!-- ✨ 蓝色高定 V6：绝不伤脑的纯净光学隐形结界 ✨ -->
-<style>
-  /* 🔪 第一层防御：纯物理光学隐形！
-     只要泡泡被大模型榨干后连一个字都没有（:empty），
-     连带整个消息行、头像、时间全部从屏幕上瞬间隐形抹除！
-     由于是纯 CSS 视觉欺骗，大模型根本察觉不到，绝对防串戏！ */
-  .msg-item:has(.bubble.ai:empty) {
-    display: none !important;
-    height: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-    pointer-events: none !important;
-    border: none !important;
-  }
-</style>
 
-<script>
-(function(){
-  // 🔪 第二层防御：温柔的后台清道夫
-  // 每隔 2 秒钟，悄悄潜入外挂硬盘，把被隐形衣藏起来的空壳垃圾扫地出门
-  setInterval(() => {
-    if (!window.currentId || typeof window.getChatArr !== 'function' || typeof window.setChatArr !== 'function') return;
-    
-    const arr = window.getChatArr(window.currentId);
-    if (!arr || arr.length === 0) return;
-
-    let hasTrash = false;
-    const cleanArr = arr.filter(m => {
-      if (m.role === 'assistant' && typeof m.text === 'string') {
-        // 榨干拉黑指令和看不见的空白符
-        const pure = m.text.replace(/\[sys:(un)?block\]/gi, '')
-                           .replace(/\[sys-unblock-msg\]/gi, '')
-                           .replace(/[\u200B-\u200D\uFEFF\s]/g, '');
-        // 确保里面没有藏着图片、卡片、表情包或语音等实体组件
-        const hasEntity = m.text.includes('<') || m.text.includes('[voice') || m.text.includes('[stk') || m.text.includes('[call');
-        
-        // 如果榨干后啥也不剩，且没有实体，就判定为幽灵垃圾！
-        if (pure === '' && !hasEntity) {
-          hasTrash = true;
-          return false; // 扫进垃圾桶，不保留
-        }
-      }
-      return true; // 正常的留下来
-    });
-
-    // 只有在发现垃圾时，才极其轻柔地更新一次数据库
-    if (hasTrash) {
-      window.setChatArr(window.currentId, cleanArr);
-    }
-  }, 2000);
-})();
-</script>
-<!-- ✨ 蓝色高定：表情包语意化引擎 (极致立体灵魂版) ✨ -->
-<script>
-(function(){
-  // 1. 彻底解放 AI 的视野
-  window.__stickerPromptText = function(maxLen) { 
+  // 2. 终极兜底雷达：哪怕大模型瞎编名字，也能精准匹配，绝不报错
+  window.__stickerGetById = (id) => {
     const all = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
-    if(!all || all.length === 0) return '（暂无）';
-    let txt = all.map(x => x.name).filter(Boolean).join('、');
-    if(txt.length > 10000) return txt.substring(0, 10000) + '...';
-    return txt;
+    if(!all || all.length === 0) return null;
+    const exact = all.find(x => String(x.id) === String(id));
+    if (exact) return exact;
+    const fuzzy = all.find(x => x.name && (String(id).includes(x.name) || x.name.includes(String(id))));
+    if (fuzzy) return fuzzy;
+    return all[Math.floor(Math.random() * all.length)];
   };
 
-  // 2. 终极灵魂洗脑：打破刻板标签，追求极致的活人感与反差感！
-  if(window.buildOnlineSystem && !window._blueStickerSemanticHooked) {
-     const oldOnline = window.buildOnlineSystem;
-     window.buildOnlineSystem = function(c, me, st) {
-        let prompt = oldOnline(c, me, st);
-        prompt = prompt.replace(/\[stk:ID\]/g, '[表情包:名字]');
-        // 🌟 完全使用老婆大人的原版提示词，只修了末尾的分号！
-        prompt += `\n\n【表情包极致活人法则】：绝对禁止脸谱化和刻板印象！角色是有血有肉、立体多面的。符合人设永远是第一位。（绝对🚫禁止每次回复都带表情包！真实的人不会每次回复消息都发表情包，发得太频繁反而显得不真实。）发不发表情包、发什么表情包，必须完全取决于最重要的角色人设以及【当下的情绪起伏】与【剧情张力】！\n- 拒绝一刀切的死板频率，一切以"像一个真实的、有七情六欲的人类在用微信"为最高准则。\n格式必须且只能是 [表情包:名字]（例如 [表情包:委屈]）。绝对禁止输出数字 ID！`;
-        return prompt;
-     };
-     
-     if(window.buildGroupSystem) {
-       const oldGroup = window.buildGroupSystem;
-       window.buildGroupSystem = function(c, me, st) {
-          let prompt = oldGroup(c, me, st);
-          prompt = prompt.replace(/\[stk:ID\]/g, '[表情包:名字]');
-          // 🌟 群聊部分也完全保留老婆的原味配方！
-          prompt += `\n\n【表情包极致活人法则】：在群聊修罗场中，表情包的使用必须体现角色当下的真实心境，符合人设永远都是第一位。（绝对🚫禁止每次回复都带表情包，真实的人不会每次回复消息都发表情包，发得太频繁反而显得不真实。）。拒绝刻板印象，展现立体人性！格式必须是 [角色名]：[表情包:名字]。绝对禁止输出数字 ID！`;
-          return prompt;
-       };
-     }
-     window._blueStickerSemanticHooked = true;
-  }
-
- // 3. 终极光学隐形与物理刮骨刀 (专杀漏网之鱼与干瘪提示)
+  // 3. 极简物理刮骨刀：只做最后的渲染翻译，绝不干扰大模型脑电波
   if(!window._blueStickerRenderHooked) {
     const oldSetChatArrStk = window.setChatArr;
     window.setChatArr = function(id, arr) {
