@@ -2325,6 +2325,25 @@ body #app #chatInput {
   height: calc(44px + var(--safe-top)) !important;
   box-sizing: border-box !important;
 }
+    /* 🌟 蓝色高定：非破坏性头像框悬浮引擎 */
+  .avatar-wrap {
+    position: relative !important;
+    display: inline-block !important;
+    flex-shrink: 0 !important;
+  }
+  .avatar-frame-overlay {
+    position: absolute !important;
+    /* 让边框比头像大一圈，完美包裹！ */
+    top: -15% !important; 
+    left: -15% !important; 
+    width: 130% !important; 
+    height: 130% !important; 
+    pointer-events: none !important; /* 绝对不阻挡原头像的点击事件 */
+    z-index: 10 !important;
+    background-size: contain !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+  }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
@@ -4081,6 +4100,8 @@ body #app #chatInput {
 <div class="row"><button class="btn" id="meAvatarPickBtn" style="background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:600; padding:8px 14px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">上传</button><input id="meAvatarInput" class="input" placeholder="https://..." style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px;" /></div>
         <input id="meAvatarFile" type="file" accept="image/*" class="hidden" />
 <img id="meAvatarPreview" class="preview-img hidden" style="margin-top:8px;" />
+        <div class="small" style="margin-top:8px;">我方头像框（透明底 PNG）</div>
+<input id="meAvatarFrameInput" class="input" placeholder="https://... (留空则不显示)" style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px;" />
         <div class="small" style="margin-top:8px;">我方人设</div><textarea id="mePersonaInput" class="ta" style="min-height:90px;"></textarea>
       </div>
 
@@ -4093,6 +4114,8 @@ body #app #chatInput {
 <div class="row"><button class="btn" id="roleAvatarPickBtn" style="background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:600; padding:8px 14px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">上传</button><input id="roleAvatarInput" class="input" placeholder="https://..." style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px;" /></div>
         <input id="roleAvatarFile" type="file" accept="image/*" class="hidden" />
 <img id="roleAvatarPreview" class="preview-img hidden" style="margin-top:8px;" />
+        <div class="small" style="margin-top:8px;">对方头像框（透明底 PNG）</div>
+<input id="roleAvatarFrameInput" class="input" placeholder="https://... (留空则不显示)" style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px;" />
         <div class="small" style="margin-top:8px;">对方人设</div><textarea id="rolePersonaInput" class="ta" style="min-height:95px;"></textarea>
         <!-- 🌟 蓝色高定：异国语境开关 (纯净 SVG 图标) -->
 <div style="margin-top:16px; padding-top:16px; border-top:1px dashed #eef4fa;">
