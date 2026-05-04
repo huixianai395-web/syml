@@ -23839,5 +23839,97 @@ setTimeout(() => {
   }
 })();
 </script>
+  <!-- 🌟 蓝色高定：头像框外挂神经元引擎 (绝对安全，零冲突版) -->
+<script>
+(function(){
+  // 1. 劫持设置面板的【打开】动作，把外挂内存里的头像框链接填进输入框
+  const oldOpenChatSetting = window.openChatSettingPage;
+  if(oldOpenChatSetting && !window._avatarFrameHooked) {
+    window.openChatSettingPage = function() {
+      oldOpenChatSetting(); // 先让原系统把面板打开
+      
+      // 然后我们偷偷把链接塞进去
+      if(window.currentId) {
+        const c = window.getContactById(window.currentId);
+        const st = window.normSettings(c?.settings);
+        const me = window.getMe ? window.getMe() : {};
+        
+        const meInput = document.getElementById('meAvatarFrameInput');
+        const roleInput = document.getElementById('roleAvatarFrameInput');
+        
+        if(meInput) meInput.value = me.avatarFrame || '';
+        if(roleInput) roleInput.value = st.roleAvatarFrame || '';
+      }
+    };
+  }
+
+  // 2. 劫持设置面板的【保存】动作，把输入框里的链接死死锁进内存
+  const saveBtn = document.getElementById('saveChatSettingBtn');
+  if(saveBtn && !window._avatarFrameHooked) {
+    const oldSaveClick = saveBtn.onclick;
+    saveBtn.onclick = function(e) {
+      if(window.currentId) {
+        // 保存我方头像框
+        const meInput = document.getElementById('meAvatarFrameInput');
+        if(meInput && window.getMe && window.setMe) {
+          const me = window.getMe();
+          me.avatarFrame = meInput.value.trim();
+          window.setMe(me);
+        }
+        
+        // 保存对方头像框
+        const roleInput = document.getElementById('roleAvatarFrameInput');
+        const c = window.getContactById(window.currentId);
+        if(roleInput && c && window.updateContact) {
+          const st = window.normSettings(c.settings);
+          st.roleAvatarFrame = roleInput.value.trim();
+          window.updateContact(window.currentId, { settings: st });
+        }
+      }
+      // 执行原有的保存逻辑，完美收尾
+      if(oldSaveClick) oldSaveClick.call(this, e);
+    };
+  }
+
+  // 3. 劫持【渲染】引擎，每次画出头像时，自动套上魔法相框！
+  const oldRenderChat = window.renderChat;
+  if(oldRenderChat && !window._avatarFrameHooked) {
+    window.renderChat = function() {
+      oldRenderChat(); // 先让原系统把聊天记录画出来
+      
+      if(!window.currentId) return;
+      const c = window.getContactById(window.currentId);
+      const st = window.normSettings(c?.settings);
+      const me = window.getMe ? window.getMe() : {};
+      
+      const myFrame = me.avatarFrame || '';
+      const taFrame = st.roleAvatarFrame || '';
+
+      // 扫描屏幕上所有的头像，悄悄施加空间叠层魔法
+      document.querySelectorAll('#chatRoom .msg-item').forEach(item => {
+        const isMe = item.querySelector('.msg-block.me, .msg-row.me');
+        const frameUrl = isMe ? myFrame : taFrame;
+        
+        if(frameUrl) {
+          const img = item.querySelector('.chat-avatar');
+          // 如果还没有被包裹过，就给它套上相框！
+          if(img && img.parentElement && !img.parentElement.classList.contains('avatar-wrap')) {
+            const wrap = document.createElement('div');
+            wrap.className = 'avatar-wrap';
+            img.parentNode.insertBefore(wrap, img);
+            wrap.appendChild(img);
+            
+            const overlay = document.createElement('div');
+            overlay.className = 'avatar-frame-overlay';
+            overlay.style.backgroundImage = `url(${frameUrl})`;
+            wrap.appendChild(overlay);
+          }
+        }
+      });
+    };
+    window._avatarFrameHooked = true; // 挂上安全锁，防止重复注入
+  }
+})();
+</script>
 </body>
   </html>
