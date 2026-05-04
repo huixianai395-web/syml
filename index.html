@@ -23855,7 +23855,7 @@ setTimeout(() => {
   }
 })();
 </script>
-  <!-- 🌟 蓝色高定：头像框终极空间叠层引擎 (V5 绝对补全版) -->
+  <!-- 🌟 蓝色高定：头像框终极空间叠层引擎 (V6 绝对穿透版) -->
 <script>
 (function(){
   // 1. 强行注入 CSS，自带布局防塌陷护盾
@@ -23863,10 +23863,15 @@ setTimeout(() => {
     const style = document.createElement('style');
     style.id = 'blueAvatarFrameCss';
     style.innerHTML = `
-      .avatar-wrap { position: relative !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important; }
+      .avatar-wrap { position: relative !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important; }
       .avatar-frame-overlay { position: absolute !important; top: -20% !important; left: -20% !important; width: 140% !important; height: 140% !important; pointer-events: none !important; z-index: 10 !important; background-size: contain !important; background-position: center !important; background-repeat: no-repeat !important; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.1)); }
     `;
     document.head.appendChild(style);
+  }
+
+  // 🌟 核心破壁探针：无视闭包，强行抓取真实 ID
+  function getRealCurrentId() {
+    return window._exposed_currentId || window.__radarChatId;
   }
 
   // 2. 核心神经元：无损读取并瞬间触发预览
@@ -23890,13 +23895,14 @@ setTimeout(() => {
     }
   };
 
-  // 3. 劫持设置面板【打开】动作，回填外挂内存数据
-  const oldOpenChatSetting = window.openChatSettingPage;
-  if(oldOpenChatSetting && !window._avatarFrameHookedV5) {
-    window.openChatSettingPage = function() {
-      oldOpenChatSetting(); 
-      if(window.currentId) {
-        const c = window.getContactById(window.currentId);
+  // 3. 暴力监听设置按钮，突破闭包黑盒回填数据！
+  const settingBtn = document.getElementById('chatSettingBtn');
+  if(settingBtn && !window._avatarFrameHookedV6) {
+    settingBtn.addEventListener('click', () => {
+      setTimeout(() => {
+        const cid = getRealCurrentId();
+        if(!cid) return;
+        const c = window.getContactById ? window.getContactById(cid) : null;
         const me = window.getMe ? window.getMe() : {};
         
         const meInput = document.getElementById('meAvatarFrameInput');
@@ -23906,14 +23912,15 @@ setTimeout(() => {
         
         if(meInput) { meInput.value = me.frameUrl || ''; if(me.frameUrl && mePrev) { mePrev.src = me.frameUrl; mePrev.classList.remove('hidden'); } else if(mePrev) mePrev.classList.add('hidden'); }
         if(roleInput) { roleInput.value = c?.frameUrl || ''; if(c?.frameUrl && rolePrev) { rolePrev.src = c.frameUrl; rolePrev.classList.remove('hidden'); } else if(rolePrev) rolePrev.classList.add('hidden'); }
-      }
-    };
+      }, 50);
+    });
   }
 
   // 4. 核心魔法：精准定位，施加相框
   function applyFrames() {
-    if(!window.currentId) return;
-    const c = window.getContactById(window.currentId);
+    const cid = getRealCurrentId();
+    if(!cid) return;
+    const c = window.getContactById ? window.getContactById(cid) : null;
     const me = window.getMe ? window.getMe() : {};
     const myFrame = me.frameUrl || '';
     const taFrame = c?.frameUrl || '';
@@ -23924,11 +23931,11 @@ setTimeout(() => {
       
       if(frameUrl) {
         const img = item.querySelector('.chat-avatar');
-        if(img && img.parentElement && !img.parentElement.classList.contains('avatar-wrap')) {
+        if(img && window.getComputedStyle(img).display !== 'none' && img.parentElement && !img.parentElement.classList.contains('avatar-wrap')) {
           const wrap = document.createElement('div');
           wrap.className = 'avatar-wrap';
-          wrap.style.width = window.getComputedStyle(img).width;
-          wrap.style.height = window.getComputedStyle(img).height;
+          wrap.style.margin = window.getComputedStyle(img).margin;
+          img.style.margin = '0';
           
           img.parentNode.insertBefore(wrap, img);
           wrap.appendChild(img);
@@ -23947,27 +23954,28 @@ setTimeout(() => {
   const chatBox = document.getElementById('chatMsgs');
   if(chatBox) chatObserver.observe(chatBox, { childList: true, subtree: true });
 
-  // 6. 劫持保存动作，锁入外挂内存
+  // 6. 暴力劫持保存动作，死死锁入外挂内存
   const saveBtn = document.getElementById('saveChatSettingBtn');
-  if(saveBtn && !window._avatarFrameHookedV5) {
-    const oldSaveClick = saveBtn.onclick;
-    saveBtn.onclick = function(e) {
-      if(window.currentId) {
-        const meInput = document.getElementById('meAvatarFrameInput');
-        if(meInput && window.getMe && window.setMe) {
-          const me = window.getMe();
-          me.frameUrl = meInput.value.trim();
-          window.setMe(me);
-        }
-        const roleInput = document.getElementById('roleAvatarFrameInput');
-        if(roleInput && window.updateContact) {
-          window.updateContact(window.currentId, { frameUrl: roleInput.value.trim() });
-        }
+  if(saveBtn && !window._avatarFrameHookedV6) {
+    saveBtn.addEventListener('click', () => {
+      const cid = getRealCurrentId();
+      if(!cid) return;
+      
+      const meInput = document.getElementById('meAvatarFrameInput');
+      if(meInput && window.getMe && window.setMe) {
+        const me = window.getMe();
+        me.frameUrl = meInput.value.trim();
+        window.setMe(me);
       }
-      if(oldSaveClick) oldSaveClick.call(this, e);
-      setTimeout(applyFrames, 50);
-    };
-    window._avatarFrameHookedV5 = true;
+      
+      const roleInput = document.getElementById('roleAvatarFrameInput');
+      if(roleInput && window.updateContact) {
+        window.updateContact(cid, { frameUrl: roleInput.value.trim() });
+      }
+      
+      setTimeout(applyFrames, 80);
+    });
+    window._avatarFrameHookedV6 = true;
   }
 })();
 </script>
