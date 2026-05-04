@@ -23855,7 +23855,7 @@ setTimeout(() => {
   }
 })();
 </script>
-  <!-- 🌟 蓝色高定：头像框终极空间叠层引擎 (V6 绝对穿透版) -->
+  <!-- 🌟 蓝色高定：头像框终极空间叠层引擎 (V7 独立内存防吞版) -->
 <script>
 (function(){
   // 1. 强行注入 CSS，自带布局防塌陷护盾
@@ -23869,12 +23869,19 @@ setTimeout(() => {
     document.head.appendChild(style);
   }
 
-  // 🌟 核心破壁探针：无视闭包，强行抓取真实 ID
+  // 2. 🌟 蓝色高定：完全独立的外挂记忆中枢 (绝对防吞！)
+  function getFrames() {
+    try { return JSON.parse(localStorage.getItem('mp_blue_avatar_frames') || '{}'); } 
+    catch(e) { return {}; }
+  }
+  function saveFrames(data) {
+    localStorage.setItem('mp_blue_avatar_frames', JSON.stringify(data));
+  }
   function getRealCurrentId() {
     return window._exposed_currentId || window.__radarChatId;
   }
 
-  // 2. 核心神经元：无损读取并瞬间触发预览
+  // 3. 无损读取并瞬间触发预览
   window._handleFrameUpload = function(inputEl, targetInputId, previewId) {
     const f = inputEl.files?.[0]; 
     if(!f) return;
@@ -23895,35 +23902,36 @@ setTimeout(() => {
     }
   };
 
-  // 3. 暴力监听设置按钮，突破闭包黑盒回填数据！
+  // 4. 暴力监听设置按钮，回填独立内存数据
   const settingBtn = document.getElementById('chatSettingBtn');
-  if(settingBtn && !window._avatarFrameHookedV6) {
+  if(settingBtn && !window._avatarFrameHookedV7) {
     settingBtn.addEventListener('click', () => {
       setTimeout(() => {
         const cid = getRealCurrentId();
         if(!cid) return;
-        const c = window.getContactById ? window.getContactById(cid) : null;
-        const me = window.getMe ? window.getMe() : {};
+        const frames = getFrames();
         
         const meInput = document.getElementById('meAvatarFrameInput');
         const roleInput = document.getElementById('roleAvatarFrameInput');
         const mePrev = document.getElementById('meFramePreview');
         const rolePrev = document.getElementById('roleFramePreview');
         
-        if(meInput) { meInput.value = me.frameUrl || ''; if(me.frameUrl && mePrev) { mePrev.src = me.frameUrl; mePrev.classList.remove('hidden'); } else if(mePrev) mePrev.classList.add('hidden'); }
-        if(roleInput) { roleInput.value = c?.frameUrl || ''; if(c?.frameUrl && rolePrev) { rolePrev.src = c.frameUrl; rolePrev.classList.remove('hidden'); } else if(rolePrev) rolePrev.classList.add('hidden'); }
+        const meUrl = frames['me'] || '';
+        const roleUrl = frames[cid] || '';
+
+        if(meInput) { meInput.value = meUrl; if(meUrl && mePrev) { mePrev.src = meUrl; mePrev.classList.remove('hidden'); } else if(mePrev) mePrev.classList.add('hidden'); }
+        if(roleInput) { roleInput.value = roleUrl; if(roleUrl && rolePrev) { rolePrev.src = roleUrl; rolePrev.classList.remove('hidden'); } else if(rolePrev) rolePrev.classList.add('hidden'); }
       }, 50);
     });
   }
 
-  // 4. 核心魔法：精准定位，施加相框
+  // 5. 核心魔法：精准定位，施加相框
   function applyFrames() {
     const cid = getRealCurrentId();
     if(!cid) return;
-    const c = window.getContactById ? window.getContactById(cid) : null;
-    const me = window.getMe ? window.getMe() : {};
-    const myFrame = me.frameUrl || '';
-    const taFrame = c?.frameUrl || '';
+    const frames = getFrames();
+    const myFrame = frames['me'] || '';
+    const taFrame = frames[cid] || '';
 
     document.querySelectorAll('#chatRoom .msg-item').forEach(item => {
       const isMe = item.querySelector('.me') !== null;
@@ -23949,33 +23957,31 @@ setTimeout(() => {
     });
   }
 
-  // 5. 满级雷达：盯住聊天室
+  // 6. 满级雷达：盯住聊天室
   const chatObserver = new MutationObserver(() => { applyFrames(); });
   const chatBox = document.getElementById('chatMsgs');
   if(chatBox) chatObserver.observe(chatBox, { childList: true, subtree: true });
 
-  // 6. 暴力劫持保存动作，死死锁入外挂内存
+  // 7. 暴力劫持保存动作，死死锁入全新独立内存
   const saveBtn = document.getElementById('saveChatSettingBtn');
-  if(saveBtn && !window._avatarFrameHookedV6) {
+  if(saveBtn && !window._avatarFrameHookedV7) {
     saveBtn.addEventListener('click', () => {
       const cid = getRealCurrentId();
       if(!cid) return;
       
+      const frames = getFrames();
+      
       const meInput = document.getElementById('meAvatarFrameInput');
-      if(meInput && window.getMe && window.setMe) {
-        const me = window.getMe();
-        me.frameUrl = meInput.value.trim();
-        window.setMe(me);
-      }
+      if(meInput) frames['me'] = meInput.value.trim();
       
       const roleInput = document.getElementById('roleAvatarFrameInput');
-      if(roleInput && window.updateContact) {
-        window.updateContact(cid, { frameUrl: roleInput.value.trim() });
-      }
+      if(roleInput) frames[cid] = roleInput.value.trim();
+      
+      saveFrames(frames); // ✨ 直接写入独立硬盘，绝对不丢！
       
       setTimeout(applyFrames, 80);
     });
-    window._avatarFrameHookedV6 = true;
+    window._avatarFrameHookedV7 = true;
   }
 })();
 </script>
