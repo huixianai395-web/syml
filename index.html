@@ -23855,7 +23855,7 @@ setTimeout(() => {
   }
 })();
 </script>
-  <!-- 🌟 蓝色高定：头像框终极空间叠层引擎 (V3 绝对显影版) -->
+  <!-- 🌟 蓝色高定：头像框终极空间叠层引擎 (V4 万物归一赎罪版) -->
 <script>
 (function(){
   // 1. 强行注入 CSS，防老婆漏贴，自带布局防塌陷护盾
@@ -23869,7 +23869,48 @@ setTimeout(() => {
     document.head.appendChild(style);
   }
 
-  // 2. 核心魔法：精准定位，强行加框
+  // 2. 找回丢失的灵魂：无损读取并瞬间触发预览！
+  window._handleFrameUpload = function(inputEl, targetInputId, previewId) {
+    const f = inputEl.files?.[0]; 
+    if(!f) return;
+    const targetInput = document.getElementById(targetInputId);
+    const preview = document.getElementById(previewId);
+    try {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const b64 = e.target.result;
+        if(targetInput) targetInput.value = b64;
+        if(preview) { preview.src = b64; preview.classList.remove('hidden'); }
+      };
+      reader.readAsDataURL(f);
+    } catch(err) { 
+      alert('挂件上传失败：' + err.message); 
+    } finally { 
+      inputEl.value = ''; 
+    }
+  };
+
+  // 3. 找回丢失的记忆：劫持设置面板【打开】动作，回填数据与预览图
+  const oldOpenChatSetting = window.openChatSettingPage;
+  if(oldOpenChatSetting && !window._avatarFrameHookedV4) {
+    window.openChatSettingPage = function() {
+      oldOpenChatSetting(); 
+      if(window.currentId) {
+        const c = window.getContactById(window.currentId);
+        const me = window.getMe ? window.getMe() : {};
+        
+        const meInput = document.getElementById('meAvatarFrameInput');
+        const roleInput = document.getElementById('roleAvatarFrameInput');
+        const mePrev = document.getElementById('meFramePreview');
+        const rolePrev = document.getElementById('roleFramePreview');
+        
+        if(meInput) { meInput.value = me.frameUrl || ''; if(me.frameUrl && mePrev) { mePrev.src = me.frameUrl; mePrev.classList.remove('hidden'); } else if(mePrev) mePrev.classList.add('hidden'); }
+        if(roleInput) { roleInput.value = c?.frameUrl || ''; if(c?.frameUrl && rolePrev) { rolePrev.src = c.frameUrl; rolePrev.classList.remove('hidden'); } else if(rolePrev) rolePrev.classList.add('hidden'); }
+      }
+    };
+  }
+
+  // 4. 核心魔法：精准定位，强行加框 (带单引号防乱码护盾)
   function applyFrames() {
     if(!window.currentId) return;
     const c = window.getContactById(window.currentId);
@@ -23886,7 +23927,6 @@ setTimeout(() => {
         if(img && img.parentElement && !img.parentElement.classList.contains('avatar-wrap')) {
           const wrap = document.createElement('div');
           wrap.className = 'avatar-wrap';
-          // 继承原头像的尺寸，绝对不挤压排版！
           wrap.style.width = window.getComputedStyle(img).width;
           wrap.style.height = window.getComputedStyle(img).height;
           
@@ -23895,7 +23935,6 @@ setTimeout(() => {
           
           const overlay = document.createElement('div');
           overlay.className = 'avatar-frame-overlay';
-          // ⚠️ 救命的单引号，彻底解决 Base64 乱码解析失败！
           overlay.style.backgroundImage = `url('${frameUrl}')`;
           wrap.appendChild(overlay);
         }
@@ -23903,14 +23942,14 @@ setTimeout(() => {
     });
   }
 
-  // 3. 放弃函数劫持，启用最高级雷达：死死盯住聊天室的任何变化！
+  // 5. 最高级雷达：死死盯住聊天室的任何变化！
   const chatObserver = new MutationObserver(() => { applyFrames(); });
   const chatBox = document.getElementById('chatMsgs');
   if(chatBox) chatObserver.observe(chatBox, { childList: true, subtree: true });
 
-  // 4. 劫持保存动作，确保数据锁入外层！
+  // 6. 劫持保存动作，确保数据锁入外挂内存！
   const saveBtn = document.getElementById('saveChatSettingBtn');
-  if(saveBtn && !window._frameSaveHookedV3) {
+  if(saveBtn && !window._avatarFrameHookedV4) {
     const oldSaveClick = saveBtn.onclick;
     saveBtn.onclick = function(e) {
       if(window.currentId) {
@@ -23926,10 +23965,9 @@ setTimeout(() => {
         }
       }
       if(oldSaveClick) oldSaveClick.call(this, e);
-      // 延迟 50 毫秒，等原生系统画完界面，雷达强行补上一刀！
       setTimeout(applyFrames, 50);
     };
-    window._frameSaveHookedV3 = true;
+    window._avatarFrameHookedV4 = true;
   }
 })();
 </script>
