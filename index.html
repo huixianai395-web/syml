@@ -4100,13 +4100,16 @@ body #app #chatInput {
 <div class="row"><button class="btn" id="meAvatarPickBtn" style="background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:600; padding:8px 14px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">上传</button><input id="meAvatarInput" class="input" placeholder="https://..." style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px;" /></div>
         <input id="meAvatarFile" type="file" accept="image/*" class="hidden" />
 <img id="meAvatarPreview" class="preview-img hidden" style="margin-top:8px;" />
-        <!-- 我方头像挂件 (终极防断触版) -->
+        <!-- 我方头像挂件 (带绝美预览图版) -->
   <div class="small" style="margin-top:8px;">我方头像挂件（透明底 PNG）</div>
   <div class="row">
-    <button class="btn" style="background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:600; padding:8px 14px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'" onclick="document.getElementById('meFrameFile').click()">上传</button>
-    <input id="meAvatarFrameInput" class="input" placeholder="支持直链或点击上传..." style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px;" />
+    <div style="flex-shrink:0; display:flex; flex-direction:column; align-items:center;">
+      <button class="btn" style="width:44px; height:44px; border-radius:50%; background:#fff; border:1px solid #dce5f0; color:#5c7094; font-size:12px; font-weight:bold; padding:0; box-shadow:0 2px 6px rgba(0,0,0,0.05); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'" onclick="document.getElementById('meFrameFile').click()">上传</button>
+    </div>
+    <input id="meAvatarFrameInput" class="input" placeholder="支持直链或点击上传..." style="flex:1; background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px;" oninput="document.getElementById('meFramePreview').src=this.value; document.getElementById('meFramePreview').classList.remove('hidden');" />
   </div>
-  <input id="meFrameFile" type="file" accept="image/png, image/gif" class="hidden" onchange="window._handleFrameUpload(this, 'meAvatarFrameInput', 'meFramePickBtn')" />
+  <input id="meFrameFile" type="file" accept="image/png, image/gif" class="hidden" onchange="window._handleFrameUpload(this, 'meAvatarFrameInput', 'meFramePreview')" />
+  <img id="meFramePreview" class="preview-img hidden" style="margin-top:8px; width:64px; height:64px; object-fit:contain; background:transparent; border:1px dashed #dce5f0;" />
         <div class="small" style="margin-top:8px;">我方人设</div><textarea id="mePersonaInput" class="ta" style="min-height:90px;"></textarea>
       </div>
 
@@ -4119,13 +4122,16 @@ body #app #chatInput {
 <div class="row"><button class="btn" id="roleAvatarPickBtn" style="background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:600; padding:8px 14px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">上传</button><input id="roleAvatarInput" class="input" placeholder="https://..." style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px;" /></div>
         <input id="roleAvatarFile" type="file" accept="image/*" class="hidden" />
 <img id="roleAvatarPreview" class="preview-img hidden" style="margin-top:8px;" />
-        <!-- 对方头像挂件 (终极防断触版) -->
+        <!-- 对方头像挂件 (带绝美预览图版) -->
   <div class="small" style="margin-top:8px;">对方头像挂件（透明底 PNG）</div>
   <div class="row">
-    <button class="btn" style="background:rgba(238,244,250,0.6); color:#5c7094; border:1px solid #dce5f0; border-radius:10px; font-weight:600; padding:8px 14px; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'" onclick="document.getElementById('roleFrameFile').click()">上传</button>
-    <input id="roleAvatarFrameInput" class="input" placeholder="支持直链或点击上传..." style="background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px;" />
+    <div style="flex-shrink:0; display:flex; flex-direction:column; align-items:center;">
+      <button class="btn" style="width:44px; height:44px; border-radius:50%; background:#fff; border:1px solid #dce5f0; color:#5c7094; font-size:12px; font-weight:bold; padding:0; box-shadow:0 2px 6px rgba(0,0,0,0.05); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'" onclick="document.getElementById('roleFrameFile').click()">上传</button>
+    </div>
+    <input id="roleAvatarFrameInput" class="input" placeholder="支持直链或点击上传..." style="flex:1; background:#f8fafc; border:1px solid #dce5f0; color:#5c7094; border-radius:10px; font-size:13px;" oninput="document.getElementById('roleFramePreview').src=this.value; document.getElementById('roleFramePreview').classList.remove('hidden');" />
   </div>
-  <input id="roleFrameFile" type="file" accept="image/png, image/gif" class="hidden" onchange="window._handleFrameUpload(this, 'roleAvatarFrameInput', 'roleFramePickBtn')" />
+  <input id="roleFrameFile" type="file" accept="image/png, image/gif" class="hidden" onchange="window._handleFrameUpload(this, 'roleAvatarFrameInput', 'roleFramePreview')" />
+  <img id="roleFramePreview" class="preview-img hidden" style="margin-top:8px; width:64px; height:64px; object-fit:contain; background:transparent; border:1px dashed #dce5f0;" />
         <div class="small" style="margin-top:8px;">对方人设</div><textarea id="rolePersonaInput" class="ta" style="min-height:95px;"></textarea>
         <!-- 🌟 蓝色高定：异国语境开关 (纯净 SVG 图标) -->
 <div style="margin-top:16px; padding-top:16px; border-top:1px dashed #eef4fa;">
@@ -23849,84 +23855,86 @@ setTimeout(() => {
   }
 })();
 </script>
-  <!-- 🌟 蓝色高定：头像框外挂神经元引擎 (终极防断触版) -->
+  <!-- 🌟 蓝色高定：头像框外挂神经元引擎 (V2 终极防清洗版) -->
 <script>
 (function(){
-  // 1. 无损 Base64 读取引擎 (全局暴露，供 HTML 直接调用)
-  window._handleFrameUpload = function(inputEl, targetInputId, btnId) {
+  // 1. 无损读取并瞬间触发预览！
+  window._handleFrameUpload = function(inputEl, targetInputId, previewId) {
     const f = inputEl.files?.[0]; 
     if(!f) return;
-    const btn = document.getElementById(btnId);
     const targetInput = document.getElementById(targetInputId);
+    const preview = document.getElementById(previewId);
     try {
-      if(btn) btn.textContent = '读取中';
       const reader = new FileReader();
       reader.onload = (e) => {
-        if(targetInput) targetInput.value = e.target.result;
-        if(btn) btn.textContent = '上传';
+        const b64 = e.target.result;
+        if(targetInput) targetInput.value = b64;
+        if(preview) { preview.src = b64; preview.classList.remove('hidden'); }
       };
       reader.readAsDataURL(f);
     } catch(err) { 
       alert('挂件上传失败：' + err.message); 
-      if(btn) btn.textContent = '上传';
     } finally { 
       inputEl.value = ''; 
     }
   };
 
-  // 2. 劫持设置面板的【打开】动作，回填数据
+  // 2. 劫持设置面板的【打开】动作，回填数据与预览图
   const oldOpenChatSetting = window.openChatSettingPage;
-  if(oldOpenChatSetting && !window._avatarFrameHooked) {
+  if(oldOpenChatSetting && !window._avatarFrameHookedV2) {
     window.openChatSettingPage = function() {
       oldOpenChatSetting(); 
       if(window.currentId) {
         const c = window.getContactById(window.currentId);
-        const st = window.normSettings(c?.settings);
         const me = window.getMe ? window.getMe() : {};
+        
         const meInput = document.getElementById('meAvatarFrameInput');
         const roleInput = document.getElementById('roleAvatarFrameInput');
-        if(meInput) meInput.value = me.avatarFrame || '';
-        if(roleInput) roleInput.value = st.roleAvatarFrame || '';
+        const mePrev = document.getElementById('meFramePreview');
+        const rolePrev = document.getElementById('roleFramePreview');
+        
+        // 核心：读取最外层的 frameUrl 属性！
+        if(meInput) { meInput.value = me.frameUrl || ''; if(me.frameUrl && mePrev) { mePrev.src = me.frameUrl; mePrev.classList.remove('hidden'); } else if(mePrev) mePrev.classList.add('hidden'); }
+        if(roleInput) { roleInput.value = c.frameUrl || ''; if(c.frameUrl && rolePrev) { rolePrev.src = c.frameUrl; rolePrev.classList.remove('hidden'); } else if(rolePrev) rolePrev.classList.add('hidden'); }
       }
     };
   }
 
-  // 3. 劫持设置面板的【保存】动作，锁入内存
+  // 3. 劫持保存动作，避开 settings 覆写雷区！
   const saveBtn = document.getElementById('saveChatSettingBtn');
-  if(saveBtn && !window._avatarFrameHooked) {
+  if(saveBtn && !window._avatarFrameHookedV2) {
     const oldSaveClick = saveBtn.onclick;
     saveBtn.onclick = function(e) {
       if(window.currentId) {
+        // 我方存入 getMe 的最外层
         const meInput = document.getElementById('meAvatarFrameInput');
         if(meInput && window.getMe && window.setMe) {
           const me = window.getMe();
-          me.avatarFrame = meInput.value.trim();
+          me.frameUrl = meInput.value.trim();
           window.setMe(me);
         }
+        // 对方存入 contact 的最外层，绝对不会被洗掉！
         const roleInput = document.getElementById('roleAvatarFrameInput');
-        const c = window.getContactById(window.currentId);
-        if(roleInput && c && window.updateContact) {
-          const st = window.normSettings(c.settings);
-          st.roleAvatarFrame = roleInput.value.trim();
-          window.updateContact(window.currentId, { settings: st });
+        if(roleInput && window.updateContact) {
+          window.updateContact(window.currentId, { frameUrl: roleInput.value.trim() });
         }
       }
+      // 执行原有的保存逻辑
       if(oldSaveClick) oldSaveClick.call(this, e);
     };
   }
 
-  // 4. 劫持【渲染】引擎，施加空间叠层魔法
+  // 4. 渲染引擎，施加空间叠层魔法
   const oldRenderChat = window.renderChat;
-  if(oldRenderChat && !window._avatarFrameHooked) {
+  if(oldRenderChat && !window._avatarFrameHookedV2) {
     window.renderChat = function() {
       oldRenderChat(); 
       if(!window.currentId) return;
       const c = window.getContactById(window.currentId);
-      const st = window.normSettings(c?.settings);
       const me = window.getMe ? window.getMe() : {};
       
-      const myFrame = me.avatarFrame || '';
-      const taFrame = st.roleAvatarFrame || '';
+      const myFrame = me.frameUrl || '';
+      const taFrame = c.frameUrl || '';
 
       document.querySelectorAll('#chatRoom .msg-item').forEach(item => {
         const isMe = item.querySelector('.me') !== null;
@@ -23948,7 +23956,7 @@ setTimeout(() => {
         }
       });
     };
-    window._avatarFrameHooked = true; 
+    window._avatarFrameHookedV2 = true; 
   }
 })();
 </script>
