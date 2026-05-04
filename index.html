@@ -5760,25 +5760,26 @@ window._ivManageMode = false;
       return `${quote}<div class="bubble ${cls} ${hidden}" style="width:${w}px;cursor:pointer;" onclick="var el=document.getElementById('${vid}');if(el)el.classList.toggle('hidden'); window._playVoiceClone(this, '${safeVoiceText}', '${roleIdForVoice}');"><div class="bubble-voice"><div class="voice-waves">${waves}</div><div class="voice-dur">${dur}″</div></div></div><div id="${vid}" class="voice-reveal hidden" style="${vtext.includes('bubble-bilingual') ? 'padding:0; background:transparent;' : ''}">${finalVtext}</div>${ts}`;
   }
 
+    // 🔪 蓝色高定：终极引用提取刀！无论 [quote] 藏在双语 HTML 里还是哪里，统统揪出来！
+    let qHtml = '';
+    let bodyText = t;
+    const flexQuoteMatch = bodyText.match(/\[quote\]([\s\S]*?)\[\/quote\]/i);
+    if(flexQuoteMatch) {
+        qHtml = `<div class="msg-quote"><div class="q-content">${esc(flexQuoteMatch[1].trim())}</div></div>`;
+        // 物理抹除所有的 [quote]...[/quote]，防止双语字幕里出现两次
+        bodyText = bodyText.replace(/\[quote\][\s\S]*?\[\/quote\]/gi, '').trim();
+    }
+
     // 🌟 蓝色高定：第三道闸门，纯文字的双语字幕拦截器（带引用兼容版）
     if(t.includes('bubble-bilingual')){
-      let finalBody = t;
-      let qHtml = '';
-      const quoteMatch = t.match(/^\[quote\]([\s\S]*?)\[\/quote\]([\s\S]*)$/);
-      if(quoteMatch){
-        qHtml = `<div class="msg-quote"><div class="q-content">${esc(quoteMatch[1].trim())}</div></div>`;
-        finalBody = quoteMatch[2].trim();
-      }
-      return `${quote}${qHtml}<div class="bubble ${cls} ${hidden}">${finalBody}</div>${ts}`;
-  }
-    const quoteMatch = t.match(/^\[quote\]([\s\S]*?)\[\/quote\]([\s\S]*)$/);
-    if(quoteMatch){
-      const qText=quoteMatch[1].trim();
-      const body=quoteMatch[2].trim();
-      const qHtml=`<div class="msg-quote"><div class="q-content">${esc(qText)}</div></div>`;
-      const bodyHtml = body ? `<div class="bubble ${cls} ${hidden}">${esc(body)}</div>` : '';
-      return `${quote}${qHtml}${bodyHtml}${ts}`;
+      return `${quote}${qHtml}<div class="bubble ${cls} ${hidden}">${bodyText}</div>${ts}`;
     }
+
+    // 第四道闸门：普通引用气泡
+    if(qHtml){
+      const bodyHtml = bodyText ? `<div class="bubble ${cls} ${hidden}">${esc(bodyText)}</div>` : '';
+      return `${quote}${qHtml}${bodyHtml}${ts}`;
+  }
     if(t.startsWith('[img]') && t.endsWith('[/img]')){
       const src = t.slice(5, -6);
       return `${quote}<div class="bubble ${cls} ${hidden} bubble-card" style="padding:0;background:transparent;border:none;box-shadow:none;"><img class="bubble-img" src="${src}" onclick="document.getElementById('previewModalImg').src=this.src;document.getElementById('modalPreview').classList.add('active')"></div>${ts}`;
