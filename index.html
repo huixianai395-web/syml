@@ -23864,7 +23864,7 @@ setTimeout(() => {
   }
 })();
 </script>
-  <!-- 🌟 蓝色高定：头像框终极空间叠层引擎 (V11 毫秒级实时同步版) -->
+  <!-- 🌟 蓝色高定：头像框终极空间叠层引擎 (V12 丝滑显影防粘连版) -->
 <script>
 (function(){
   if(!document.getElementById('blueAvatarFrameCss')) {
@@ -23874,7 +23874,8 @@ setTimeout(() => {
       .avatar-wrap { position: relative !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important; }
       body.round-frame-mode .avatar-wrap .chat-avatar { border-radius: 50% !important; } 
       body.round-frame-mode .preview-img.frame-prev { border-radius: 50% !important; }
-      .avatar-frame-overlay { position: absolute !important; top: -20% !important; left: -20% !important; width: 140% !important; height: 140% !important; pointer-events: none !important; z-index: 10 !important; background-size: contain !important; background-position: center !important; background-repeat: no-repeat !important; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.1)); }
+      /* ✨ 蓝色高定：砸碎多余阴影，收紧尺寸至 130%，完美贴合防重影！ */
+      .avatar-frame-overlay { position: absolute !important; top: -15% !important; left: -15% !important; width: 130% !important; height: 130% !important; pointer-events: none !important; z-index: 10 !important; background-size: contain !important; background-position: center !important; background-repeat: no-repeat !important; }
     `;
     document.head.appendChild(style);
   }
@@ -23883,7 +23884,7 @@ setTimeout(() => {
   function saveFrames(data) { localStorage.setItem('mp_blue_avatar_frames', JSON.stringify(data)); }
   function getRealCurrentId() { return window._exposed_currentId || window.__radarChatId; }
 
-  // 🌟 核心魔法：毫秒级实时保存机制，彻底废弃旧系统的保存按钮！
+  // 🌟 核心魔法：毫秒级实时保存机制
   window._forceSaveFramesRealTime = function() {
     const cid = getRealCurrentId();
     if(!cid) return;
@@ -23911,7 +23912,7 @@ setTimeout(() => {
         const b64 = e.target.result;
         if(targetInput) { targetInput.value = b64; }
         if(preview) { preview.src = b64; preview.classList.remove('hidden'); preview.classList.add('frame-prev'); }
-        window._forceSaveFramesRealTime(); // 传完瞬间，直接死锁进硬盘！
+        window._forceSaveFramesRealTime(); 
       };
       reader.readAsDataURL(f);
     } catch(err) { alert('挂件上传失败：' + err.message); } finally { inputEl.value = ''; }
@@ -23919,7 +23920,7 @@ setTimeout(() => {
 
   // 劫持打开动作，单纯回填数据
   const oldOpenChatSetting = window.openChatSettingPage;
-  if(oldOpenChatSetting && !window._avatarFrameHookedV11) {
+  if(oldOpenChatSetting && !window._avatarFrameHookedV12) {
     window.openChatSettingPage = function() {
       oldOpenChatSetting(); 
       setTimeout(() => {
@@ -23937,27 +23938,17 @@ setTimeout(() => {
         const meUrl = frames['me'] || '';
         const roleUrl = frames[cid] || '';
 
-        if(meInput) { 
-          meInput.value = meUrl; 
-          if(meUrl && mePrev) { mePrev.src = meUrl; mePrev.classList.remove('hidden'); } else if(mePrev) mePrev.classList.add('hidden');
-          meInput.oninput = window._forceSaveFramesRealTime; // 手动粘贴链接也实时保存！
-        }
-        if(roleInput) { 
-          roleInput.value = roleUrl; 
-          if(roleUrl && rolePrev) { rolePrev.src = roleUrl; rolePrev.classList.remove('hidden'); } else if(rolePrev) rolePrev.classList.add('hidden');
-          roleInput.oninput = window._forceSaveFramesRealTime; // 手动粘贴链接也实时保存！
-        }
+        if(meInput) { meInput.value = meUrl; if(meUrl && mePrev) { mePrev.src = meUrl; mePrev.classList.remove('hidden'); } else if(mePrev) mePrev.classList.add('hidden'); meInput.oninput = window._forceSaveFramesRealTime; }
+        if(roleInput) { roleInput.value = roleUrl; if(roleUrl && rolePrev) { rolePrev.src = roleUrl; rolePrev.classList.remove('hidden'); } else if(rolePrev) rolePrev.classList.add('hidden'); roleInput.oninput = window._forceSaveFramesRealTime; }
         
         const sw = document.getElementById('frameShapeSwitch');
-        if(sw) {
-          sw.checked = !!frames['isRound'];
-          document.body.classList.toggle('round-frame-mode', sw.checked);
-        }
+        if(sw) { sw.checked = !!frames['isRound']; document.body.classList.toggle('round-frame-mode', sw.checked); }
       }, 50);
     };
-    window._avatarFrameHookedV11 = true;
+    window._avatarFrameHookedV12 = true;
   }
 
+  // 🌟 终极防粘连与脱壳引擎！
   function applyFrames() {
     const cid = getRealCurrentId();
     if(!cid) return;
@@ -23970,19 +23961,39 @@ setTimeout(() => {
     document.querySelectorAll('#chatRoom .msg-item').forEach(item => {
       const isMe = item.querySelector('.me') !== null;
       const frameUrl = isMe ? myFrame : taFrame;
+      const img = item.querySelector('.chat-avatar');
+      if(!img) return;
+
+      const isWrapped = img.parentElement && img.parentElement.classList.contains('avatar-wrap');
+
       if(frameUrl) {
-        const img = item.querySelector('.chat-avatar');
-        if(img && window.getComputedStyle(img).display !== 'none' && img.parentElement && !img.parentElement.classList.contains('avatar-wrap')) {
+        if(!isWrapped) {
+          // 状态1：需要相框，且尚未包裹 -> 穿上外套
           const wrap = document.createElement('div');
           wrap.className = 'avatar-wrap';
           wrap.style.margin = window.getComputedStyle(img).margin;
           img.style.margin = '0';
           img.parentNode.insertBefore(wrap, img);
           wrap.appendChild(img);
+          
           const overlay = document.createElement('div');
           overlay.className = 'avatar-frame-overlay';
           overlay.style.backgroundImage = `url('${frameUrl}')`;
           wrap.appendChild(overlay);
+        } else {
+          // 状态2：需要相框，且已经包裹 -> 实时换装！绝对不再装死！
+          const overlay = img.parentElement.querySelector('.avatar-frame-overlay');
+          if(overlay) overlay.style.backgroundImage = `url('${frameUrl}')`;
+        }
+      } else {
+        if(isWrapped) {
+          // 状态3：不需要相框，但被包裹了 -> 暴力脱壳！恢复原状！
+          const wrap = img.parentElement;
+          wrap.parentNode.insertBefore(img, wrap);
+          img.style.margin = wrap.style.margin;
+          const overlay = wrap.querySelector('.avatar-frame-overlay');
+          if(overlay) overlay.remove();
+          wrap.remove();
         }
       }
     });
