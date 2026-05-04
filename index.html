@@ -4133,13 +4133,13 @@ body #app #chatInput {
   <input id="roleFrameFile" type="file" accept="image/png, image/gif" class="hidden" onchange="window._handleFrameUpload(this, 'roleAvatarFrameInput', 'roleFramePreview')" />
   <img id="roleFramePreview" class="preview-img hidden" style="margin-top:8px; width:64px; height:64px; object-fit:contain; background:transparent; border:1px dashed #dce5f0;" />
 
-  <!-- 🌟 蓝色高定：强制满月塑形物理开关 (全局生效) -->
-  <div style="margin-top:16px; padding-top:16px; border-top:1px dashed #eef4fa; display:flex; justify-content:space-between; align-items:center;">
+  <!-- 🌟 蓝色高定：强制满月塑形物理开关 (带最高级防遮挡护盾与实时保存) -->
+  <div style="position:relative; z-index:999; margin-top:16px; padding-top:16px; border-top:1px dashed #eef4fa; display:flex; justify-content:space-between; align-items:center;">
     <div style="font-size:13px; color:#5c7094; font-weight:bold; display:flex; align-items:center; gap:6px;">
       <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg>
       头像与挂件底图强制裁切为满月 (圆形)
     </div>
-    <input type="checkbox" id="frameShapeSwitch" style="transform:scale(1.2); accent-color:#5c7094; cursor:pointer;" onchange="document.body.classList.toggle('round-frame-mode', this.checked)">
+    <input type="checkbox" id="frameShapeSwitch" style="position:relative; z-index:1000; transform:scale(1.2); accent-color:#5c7094; cursor:pointer;" onchange="document.body.classList.toggle('round-frame-mode', this.checked); window._forceSaveFramesRealTime && window._forceSaveFramesRealTime();">
   </div>
         <div class="small" style="margin-top:8px;">对方人设</div><textarea id="rolePersonaInput" class="ta" style="min-height:95px;"></textarea>
         <!-- 🌟 蓝色高定：异国语境开关 (纯净 SVG 图标) -->
@@ -23864,10 +23864,9 @@ setTimeout(() => {
   }
 })();
 </script>
-  <!-- 🌟 蓝色高定：头像框终极空间叠层引擎 (V10 物理显形版) -->
+  <!-- 🌟 蓝色高定：头像框终极空间叠层引擎 (V11 毫秒级实时同步版) -->
 <script>
 (function(){
-  // 1. 强行注入 CSS，防塌陷并加入动态圆角魔法
   if(!document.getElementById('blueAvatarFrameCss')) {
     const style = document.createElement('style');
     style.id = 'blueAvatarFrameCss';
@@ -23884,7 +23883,23 @@ setTimeout(() => {
   function saveFrames(data) { localStorage.setItem('mp_blue_avatar_frames', JSON.stringify(data)); }
   function getRealCurrentId() { return window._exposed_currentId || window.__radarChatId; }
 
-  // 2. 无损读取并瞬间触发预览
+  // 🌟 核心魔法：毫秒级实时保存机制，彻底废弃旧系统的保存按钮！
+  window._forceSaveFramesRealTime = function() {
+    const cid = getRealCurrentId();
+    if(!cid) return;
+    const frames = getFrames();
+    const meInput = document.getElementById('meAvatarFrameInput');
+    const roleInput = document.getElementById('roleAvatarFrameInput');
+    const sw = document.getElementById('frameShapeSwitch');
+    
+    if(meInput) frames['me'] = meInput.value.trim();
+    if(roleInput) frames[cid] = roleInput.value.trim();
+    if(sw) frames['isRound'] = sw.checked;
+    
+    saveFrames(frames);
+    applyFrames();
+  };
+
   window._handleFrameUpload = function(inputEl, targetInputId, previewId) {
     const f = inputEl.files?.[0]; 
     if(!f) return;
@@ -23894,22 +23909,22 @@ setTimeout(() => {
       const reader = new FileReader();
       reader.onload = (e) => {
         const b64 = e.target.result;
-        if(targetInput) targetInput.value = b64;
+        if(targetInput) { targetInput.value = b64; }
         if(preview) { preview.src = b64; preview.classList.remove('hidden'); preview.classList.add('frame-prev'); }
+        window._forceSaveFramesRealTime(); // 传完瞬间，直接死锁进硬盘！
       };
       reader.readAsDataURL(f);
     } catch(err) { alert('挂件上传失败：' + err.message); } finally { inputEl.value = ''; }
   };
 
-  // 3. 劫持打开动作，单纯回填数据，不再玩幽灵注入！
+  // 劫持打开动作，单纯回填数据
   const oldOpenChatSetting = window.openChatSettingPage;
-  if(oldOpenChatSetting && !window._avatarFrameHookedV10) {
+  if(oldOpenChatSetting && !window._avatarFrameHookedV11) {
     window.openChatSettingPage = function() {
       oldOpenChatSetting(); 
       setTimeout(() => {
         const cid = getRealCurrentId();
         if(!cid) return;
-        
         const frames = getFrames();
         const meInput = document.getElementById('meAvatarFrameInput');
         const roleInput = document.getElementById('roleAvatarFrameInput');
@@ -23922,10 +23937,17 @@ setTimeout(() => {
         const meUrl = frames['me'] || '';
         const roleUrl = frames[cid] || '';
 
-        if(meInput) { meInput.value = meUrl; if(meUrl && mePrev) { mePrev.src = meUrl; mePrev.classList.remove('hidden'); } else if(mePrev) mePrev.classList.add('hidden'); }
-        if(roleInput) { roleInput.value = roleUrl; if(roleUrl && rolePrev) { rolePrev.src = roleUrl; rolePrev.classList.remove('hidden'); } else if(rolePrev) rolePrev.classList.add('hidden'); }
+        if(meInput) { 
+          meInput.value = meUrl; 
+          if(meUrl && mePrev) { mePrev.src = meUrl; mePrev.classList.remove('hidden'); } else if(mePrev) mePrev.classList.add('hidden');
+          meInput.oninput = window._forceSaveFramesRealTime; // 手动粘贴链接也实时保存！
+        }
+        if(roleInput) { 
+          roleInput.value = roleUrl; 
+          if(roleUrl && rolePrev) { rolePrev.src = roleUrl; rolePrev.classList.remove('hidden'); } else if(rolePrev) rolePrev.classList.add('hidden');
+          roleInput.oninput = window._forceSaveFramesRealTime; // 手动粘贴链接也实时保存！
+        }
         
-        // 物理回填开关状态
         const sw = document.getElementById('frameShapeSwitch');
         if(sw) {
           sw.checked = !!frames['isRound'];
@@ -23933,9 +23955,9 @@ setTimeout(() => {
         }
       }, 50);
     };
+    window._avatarFrameHookedV11 = true;
   }
 
-  // 4. 施加相框
   function applyFrames() {
     const cid = getRealCurrentId();
     if(!cid) return;
@@ -23969,29 +23991,6 @@ setTimeout(() => {
   const chatObserver = new MutationObserver(() => { applyFrames(); });
   const chatBox = document.getElementById('chatMsgs');
   if(chatBox) chatObserver.observe(chatBox, { childList: true, subtree: true });
-
-  // 5. 保存数据
-  const saveBtn = document.getElementById('saveChatSettingBtn');
-  if(saveBtn && !window._avatarFrameHookedV10) {
-    saveBtn.addEventListener('click', () => {
-      const cid = getRealCurrentId();
-      if(!cid) return;
-      const frames = getFrames();
-      
-      const meInput = document.getElementById('meAvatarFrameInput');
-      if(meInput) frames['me'] = meInput.value.trim();
-      
-      const roleInput = document.getElementById('roleAvatarFrameInput');
-      if(roleInput) frames[cid] = roleInput.value.trim();
-      
-      const sw = document.getElementById('frameShapeSwitch');
-      if(sw) frames['isRound'] = sw.checked;
-
-      saveFrames(frames); 
-      setTimeout(applyFrames, 80);
-    });
-    window._avatarFrameHookedV10 = true;
-  }
 })();
 </script>
 </body>
