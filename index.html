@@ -4133,14 +4133,7 @@ body #app #chatInput {
   <input id="roleFrameFile" type="file" accept="image/png, image/gif" class="hidden" onchange="window._handleFrameUpload(this, 'roleAvatarFrameInput', 'roleFramePreview')" />
   <img id="roleFramePreview" class="preview-img hidden" style="margin-top:8px; width:64px; height:64px; object-fit:contain; background:transparent; border:1px dashed #dce5f0;" />
 
-  <!-- 🌟 蓝色高定：强制满月塑形物理开关 (带最高级防遮挡护盾与实时保存) -->
-  <div style="position:relative; z-index:999; margin-top:16px; padding-top:16px; border-top:1px dashed #eef4fa; display:flex; justify-content:space-between; align-items:center;">
-    <div style="font-size:13px; color:#5c7094; font-weight:bold; display:flex; align-items:center; gap:6px;">
-      <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg>
-      头像与挂件底图强制裁切为满月 (圆形)
-    </div>
-    <input type="checkbox" id="frameShapeSwitch" style="position:relative; z-index:1000; transform:scale(1.2); accent-color:#5c7094; cursor:pointer;" onchange="document.body.classList.toggle('round-frame-mode', this.checked); window._forceSaveFramesRealTime && window._forceSaveFramesRealTime();">
-  </div>
+
         <div class="small" style="margin-top:8px;">对方人设</div><textarea id="rolePersonaInput" class="ta" style="min-height:95px;"></textarea>
         <!-- 🌟 蓝色高定：异国语境开关 (纯净 SVG 图标) -->
 <div style="margin-top:16px; padding-top:16px; border-top:1px dashed #eef4fa;">
@@ -23864,18 +23857,17 @@ setTimeout(() => {
   }
 })();
 </script>
-  <!-- 🌟 蓝色高定：头像框终极空间叠层引擎 (V12 丝滑显影防粘连版) -->
+  <!-- 🌟 蓝色高定：头像框终极空间叠层引擎 (V13 纯净方形动态版) -->
 <script>
 (function(){
+  // 1. 极简 CSS 注入，剥离所有变圆逻辑，专心服务于高级方形底图
   if(!document.getElementById('blueAvatarFrameCss')) {
     const style = document.createElement('style');
     style.id = 'blueAvatarFrameCss';
     style.innerHTML = `
       .avatar-wrap { position: relative !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important; }
-      body.round-frame-mode .avatar-wrap .chat-avatar { border-radius: 50% !important; } 
-      body.round-frame-mode .preview-img.frame-prev { border-radius: 50% !important; }
-      /* ✨ 蓝色高定：砸碎多余阴影，收紧尺寸至 130%，完美贴合防重影！ */
-      .avatar-frame-overlay { position: absolute !important; top: -15% !important; left: -15% !important; width: 130% !important; height: 130% !important; pointer-events: none !important; z-index: 10 !important; background-size: contain !important; background-position: center !important; background-repeat: no-repeat !important; }
+      /* ✨ 砸碎一切多余修饰，完美适配默认的高级圆角方形，彻底解决粘连！ */
+      .avatar-frame-overlay { position: absolute !important; top: -18% !important; left: -18% !important; width: 136% !important; height: 136% !important; pointer-events: none !important; z-index: 10 !important; background-size: contain !important; background-position: center !important; background-repeat: no-repeat !important; }
     `;
     document.head.appendChild(style);
   }
@@ -23884,18 +23876,16 @@ setTimeout(() => {
   function saveFrames(data) { localStorage.setItem('mp_blue_avatar_frames', JSON.stringify(data)); }
   function getRealCurrentId() { return window._exposed_currentId || window.__radarChatId; }
 
-  // 🌟 核心魔法：毫秒级实时保存机制
+  // 🌟 核心魔法：毫秒级实时保存机制 (去除多余开关依赖)
   window._forceSaveFramesRealTime = function() {
     const cid = getRealCurrentId();
     if(!cid) return;
     const frames = getFrames();
     const meInput = document.getElementById('meAvatarFrameInput');
     const roleInput = document.getElementById('roleAvatarFrameInput');
-    const sw = document.getElementById('frameShapeSwitch');
     
     if(meInput) frames['me'] = meInput.value.trim();
     if(roleInput) frames[cid] = roleInput.value.trim();
-    if(sw) frames['isRound'] = sw.checked;
     
     saveFrames(frames);
     applyFrames();
@@ -23911,7 +23901,7 @@ setTimeout(() => {
       reader.onload = (e) => {
         const b64 = e.target.result;
         if(targetInput) { targetInput.value = b64; }
-        if(preview) { preview.src = b64; preview.classList.remove('hidden'); preview.classList.add('frame-prev'); }
+        if(preview) { preview.src = b64; preview.classList.remove('hidden'); }
         window._forceSaveFramesRealTime(); 
       };
       reader.readAsDataURL(f);
@@ -23920,7 +23910,7 @@ setTimeout(() => {
 
   // 劫持打开动作，单纯回填数据
   const oldOpenChatSetting = window.openChatSettingPage;
-  if(oldOpenChatSetting && !window._avatarFrameHookedV12) {
+  if(oldOpenChatSetting && !window._avatarFrameHookedV13) {
     window.openChatSettingPage = function() {
       oldOpenChatSetting(); 
       setTimeout(() => {
@@ -23931,32 +23921,24 @@ setTimeout(() => {
         const roleInput = document.getElementById('roleAvatarFrameInput');
         const mePrev = document.getElementById('meFramePreview');
         const rolePrev = document.getElementById('roleFramePreview');
-        
-        if(mePrev) mePrev.classList.add('frame-prev');
-        if(rolePrev) rolePrev.classList.add('frame-prev');
 
         const meUrl = frames['me'] || '';
         const roleUrl = frames[cid] || '';
 
         if(meInput) { meInput.value = meUrl; if(meUrl && mePrev) { mePrev.src = meUrl; mePrev.classList.remove('hidden'); } else if(mePrev) mePrev.classList.add('hidden'); meInput.oninput = window._forceSaveFramesRealTime; }
         if(roleInput) { roleInput.value = roleUrl; if(roleUrl && rolePrev) { rolePrev.src = roleUrl; rolePrev.classList.remove('hidden'); } else if(rolePrev) rolePrev.classList.add('hidden'); roleInput.oninput = window._forceSaveFramesRealTime; }
-        
-        const sw = document.getElementById('frameShapeSwitch');
-        if(sw) { sw.checked = !!frames['isRound']; document.body.classList.toggle('round-frame-mode', sw.checked); }
       }, 50);
     };
-    window._avatarFrameHookedV12 = true;
+    window._avatarFrameHookedV13 = true;
   }
 
-  // 🌟 终极防粘连与脱壳引擎！
+  // 🌟 终极防粘连与脱壳引擎！(纯净版)
   function applyFrames() {
     const cid = getRealCurrentId();
     if(!cid) return;
     const frames = getFrames();
     const myFrame = frames['me'] || '';
     const taFrame = frames[cid] || '';
-
-    document.body.classList.toggle('round-frame-mode', !!frames['isRound']);
 
     document.querySelectorAll('#chatRoom .msg-item').forEach(item => {
       const isMe = item.querySelector('.me') !== null;
@@ -23968,7 +23950,6 @@ setTimeout(() => {
 
       if(frameUrl) {
         if(!isWrapped) {
-          // 状态1：需要相框，且尚未包裹 -> 穿上外套
           const wrap = document.createElement('div');
           wrap.className = 'avatar-wrap';
           wrap.style.margin = window.getComputedStyle(img).margin;
@@ -23978,16 +23959,14 @@ setTimeout(() => {
           
           const overlay = document.createElement('div');
           overlay.className = 'avatar-frame-overlay';
-          overlay.style.backgroundImage = `url('${frameUrl}')`;
+          overlay.style.backgroundImage = `url('\${frameUrl}')`;
           wrap.appendChild(overlay);
         } else {
-          // 状态2：需要相框，且已经包裹 -> 实时换装！绝对不再装死！
           const overlay = img.parentElement.querySelector('.avatar-frame-overlay');
-          if(overlay) overlay.style.backgroundImage = `url('${frameUrl}')`;
+          if(overlay) overlay.style.backgroundImage = `url('\${frameUrl}')`;
         }
       } else {
         if(isWrapped) {
-          // 状态3：不需要相框，但被包裹了 -> 暴力脱壳！恢复原状！
           const wrap = img.parentElement;
           wrap.parentNode.insertBefore(img, wrap);
           img.style.margin = wrap.style.margin;
