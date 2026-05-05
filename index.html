@@ -23855,16 +23855,17 @@ setTimeout(() => {
   }
 })();
 </script>
-  <!-- 🌟 蓝色高定：头像框终极空间叠层引擎 (V10 完美方框动态修复版) -->
+  <!-- 🌟 蓝色高定：头像框终极空间叠层引擎 (V11 全格式通杀动态版) -->
 <script>
 (function(){
-  // 1. 强行注入 CSS，自带布局防塌陷护盾 (完美保留你的方形底图审美！)
+  // 1. 强行注入 CSS，修改为适应 img 标签的 object-fit 渲染
   if(!document.getElementById('blueAvatarFrameCss')) {
     const style = document.createElement('style');
     style.id = 'blueAvatarFrameCss';
     style.innerHTML = `
       .avatar-wrap { position: relative !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important; }
-      .avatar-frame-overlay { position: absolute !important; top: -20% !important; left: -20% !important; width: 140% !important; height: 140% !important; pointer-events: none !important; z-index: 10 !important; background-size: contain !important; background-position: center !important; background-repeat: no-repeat !important; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.1)); }
+      /* ✨ 核心魔法：从 div 升级为真实的 img 标签，自带 object-fit 完美缩放，通杀所有动态格式！ */
+      .avatar-frame-overlay { position: absolute !important; top: -20% !important; left: -20% !important; width: 140% !important; height: 140% !important; pointer-events: none !important; z-index: 10 !important; object-fit: contain !important; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.1)); }
     `;
     document.head.appendChild(style);
   }
@@ -23874,7 +23875,7 @@ setTimeout(() => {
   function saveFrames(data) { localStorage.setItem('mp_blue_avatar_frames', JSON.stringify(data)); }
   function getRealCurrentId() { return window._exposed_currentId || window.__radarChatId; }
 
-  // 3. 无损读取并瞬间触发预览 (原生完美支持 GIF 动图！)
+  // 3. 无损读取并瞬间触发预览 
   window._handleFrameUpload = function(inputEl, targetInputId, previewId) {
     const f = inputEl.files?.[0]; 
     if(!f) return;
@@ -23893,7 +23894,7 @@ setTimeout(() => {
 
   // 4. 暴力监听设置按钮，回填独立内存数据
   const settingBtn = document.getElementById('chatSettingBtn');
-  if(settingBtn && !window._avatarFrameHookedV10) {
+  if(settingBtn && !window._avatarFrameHookedV11) {
     settingBtn.addEventListener('click', () => {
       setTimeout(() => {
         const cid = getRealCurrentId();
@@ -23914,7 +23915,7 @@ setTimeout(() => {
     });
   }
 
-  // 5. 核心魔法：精准定位，施加与剥离相框 (✨ 修复了删不掉的 Bug！)
+  // 5. 核心魔法：精准定位，施加真实的 <img> 标签！
   function applyFrames() {
     const cid = getRealCurrentId();
     if(!cid) return;
@@ -23932,7 +23933,6 @@ setTimeout(() => {
 
       if(frameUrl) {
         if(!isWrapped) {
-          // 状态1：穿上外套
           const wrap = document.createElement('div');
           wrap.className = 'avatar-wrap';
           wrap.style.margin = window.getComputedStyle(img).margin;
@@ -23940,18 +23940,17 @@ setTimeout(() => {
           img.parentNode.insertBefore(wrap, img);
           wrap.appendChild(img);
           
-          const overlay = document.createElement('div');
+          // ✨ 砸碎旧墙，直接召唤真实的图片标签！
+          const overlay = document.createElement('img');
           overlay.className = 'avatar-frame-overlay';
-          overlay.style.backgroundImage = `url('${frameUrl}')`;
+          overlay.src = frameUrl; // 直接赋予 src，打破背景图限制！
           wrap.appendChild(overlay);
         } else {
-          // 状态2：更新外套
           const overlay = img.parentElement.querySelector('.avatar-frame-overlay');
-          if(overlay) overlay.style.backgroundImage = `url('${frameUrl}')`;
+          if(overlay) overlay.src = frameUrl; // 实时换装！
         }
       } else {
         if(isWrapped) {
-          // 状态3：✨ 强行脱下外套，恢复原状！
           const wrap = img.parentElement;
           wrap.parentNode.insertBefore(img, wrap);
           img.style.margin = wrap.style.margin;
@@ -23963,14 +23962,12 @@ setTimeout(() => {
     });
   }
 
-  // 6. 满级雷达：盯住聊天室
   const chatObserver = new MutationObserver(() => { applyFrames(); });
   const chatBox = document.getElementById('chatMsgs');
   if(chatBox) chatObserver.observe(chatBox, { childList: true, subtree: true });
 
-  // 7. 暴力劫持保存动作，死死锁入全新独立内存
   const saveBtn = document.getElementById('saveChatSettingBtn');
-  if(saveBtn && !window._avatarFrameHookedV10) {
+  if(saveBtn && !window._avatarFrameHookedV11) {
     saveBtn.addEventListener('click', () => {
       const cid = getRealCurrentId();
       if(!cid) return;
@@ -23982,9 +23979,9 @@ setTimeout(() => {
       if(roleInput) frames[cid] = roleInput.value.trim();
       
       saveFrames(frames);
-      setTimeout(applyFrames, 80); // 点一次保存，瞬间同步！
+      setTimeout(applyFrames, 80); 
     });
-    window._avatarFrameHookedV10 = true;
+    window._avatarFrameHookedV11 = true;
   }
 })();
 </script>
