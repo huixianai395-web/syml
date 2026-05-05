@@ -23855,10 +23855,10 @@ setTimeout(() => {
   }
 })();
 </script>
-  <!-- 🌟 蓝色高定：头像框终极空间叠层引擎 (V7 独立内存防吞版) -->
+  <!-- 🌟 蓝色高定：头像框终极空间叠层引擎 (V10 完美方框动态修复版) -->
 <script>
 (function(){
-  // 1. 强行注入 CSS，自带布局防塌陷护盾
+  // 1. 强行注入 CSS，自带布局防塌陷护盾 (完美保留你的方形底图审美！)
   if(!document.getElementById('blueAvatarFrameCss')) {
     const style = document.createElement('style');
     style.id = 'blueAvatarFrameCss';
@@ -23869,19 +23869,12 @@ setTimeout(() => {
     document.head.appendChild(style);
   }
 
-  // 2. 🌟 蓝色高定：完全独立的外挂记忆中枢 (绝对防吞！)
-  function getFrames() {
-    try { return JSON.parse(localStorage.getItem('mp_blue_avatar_frames') || '{}'); } 
-    catch(e) { return {}; }
-  }
-  function saveFrames(data) {
-    localStorage.setItem('mp_blue_avatar_frames', JSON.stringify(data));
-  }
-  function getRealCurrentId() {
-    return window._exposed_currentId || window.__radarChatId;
-  }
+  // 2. 完全独立的外挂记忆中枢
+  function getFrames() { try { return JSON.parse(localStorage.getItem('mp_blue_avatar_frames') || '{}'); } catch(e) { return {}; } }
+  function saveFrames(data) { localStorage.setItem('mp_blue_avatar_frames', JSON.stringify(data)); }
+  function getRealCurrentId() { return window._exposed_currentId || window.__radarChatId; }
 
-  // 3. 无损读取并瞬间触发预览
+  // 3. 无损读取并瞬间触发预览 (原生完美支持 GIF 动图！)
   window._handleFrameUpload = function(inputEl, targetInputId, previewId) {
     const f = inputEl.files?.[0]; 
     if(!f) return;
@@ -23895,16 +23888,12 @@ setTimeout(() => {
         if(preview) { preview.src = b64; preview.classList.remove('hidden'); }
       };
       reader.readAsDataURL(f);
-    } catch(err) { 
-      alert('挂件上传失败：' + err.message); 
-    } finally { 
-      inputEl.value = ''; 
-    }
+    } catch(err) { alert('挂件上传失败：' + err.message); } finally { inputEl.value = ''; }
   };
 
   // 4. 暴力监听设置按钮，回填独立内存数据
   const settingBtn = document.getElementById('chatSettingBtn');
-  if(settingBtn && !window._avatarFrameHookedV7) {
+  if(settingBtn && !window._avatarFrameHookedV10) {
     settingBtn.addEventListener('click', () => {
       setTimeout(() => {
         const cid = getRealCurrentId();
@@ -23925,7 +23914,7 @@ setTimeout(() => {
     });
   }
 
-  // 5. 核心魔法：精准定位，施加相框
+  // 5. 核心魔法：精准定位，施加与剥离相框 (✨ 修复了删不掉的 Bug！)
   function applyFrames() {
     const cid = getRealCurrentId();
     if(!cid) return;
@@ -23936,15 +23925,18 @@ setTimeout(() => {
     document.querySelectorAll('#chatRoom .msg-item').forEach(item => {
       const isMe = item.querySelector('.me') !== null;
       const frameUrl = isMe ? myFrame : taFrame;
-      
+      const img = item.querySelector('.chat-avatar');
+      if(!img) return;
+
+      const isWrapped = img.parentElement && img.parentElement.classList.contains('avatar-wrap');
+
       if(frameUrl) {
-        const img = item.querySelector('.chat-avatar');
-        if(img && window.getComputedStyle(img).display !== 'none' && img.parentElement && !img.parentElement.classList.contains('avatar-wrap')) {
+        if(!isWrapped) {
+          // 状态1：穿上外套
           const wrap = document.createElement('div');
           wrap.className = 'avatar-wrap';
           wrap.style.margin = window.getComputedStyle(img).margin;
           img.style.margin = '0';
-          
           img.parentNode.insertBefore(wrap, img);
           wrap.appendChild(img);
           
@@ -23952,6 +23944,20 @@ setTimeout(() => {
           overlay.className = 'avatar-frame-overlay';
           overlay.style.backgroundImage = `url('${frameUrl}')`;
           wrap.appendChild(overlay);
+        } else {
+          // 状态2：更新外套
+          const overlay = img.parentElement.querySelector('.avatar-frame-overlay');
+          if(overlay) overlay.style.backgroundImage = `url('${frameUrl}')`;
+        }
+      } else {
+        if(isWrapped) {
+          // 状态3：✨ 强行脱下外套，恢复原状！
+          const wrap = img.parentElement;
+          wrap.parentNode.insertBefore(img, wrap);
+          img.style.margin = wrap.style.margin;
+          const overlay = wrap.querySelector('.avatar-frame-overlay');
+          if(overlay) overlay.remove();
+          wrap.remove();
         }
       }
     });
@@ -23964,24 +23970,21 @@ setTimeout(() => {
 
   // 7. 暴力劫持保存动作，死死锁入全新独立内存
   const saveBtn = document.getElementById('saveChatSettingBtn');
-  if(saveBtn && !window._avatarFrameHookedV7) {
+  if(saveBtn && !window._avatarFrameHookedV10) {
     saveBtn.addEventListener('click', () => {
       const cid = getRealCurrentId();
       if(!cid) return;
       
       const frames = getFrames();
-      
       const meInput = document.getElementById('meAvatarFrameInput');
       if(meInput) frames['me'] = meInput.value.trim();
-      
       const roleInput = document.getElementById('roleAvatarFrameInput');
       if(roleInput) frames[cid] = roleInput.value.trim();
       
-      saveFrames(frames); // ✨ 直接写入独立硬盘，绝对不丢！
-      
-      setTimeout(applyFrames, 80);
+      saveFrames(frames);
+      setTimeout(applyFrames, 80); // 点一次保存，瞬间同步！
     });
-    window._avatarFrameHookedV7 = true;
+    window._avatarFrameHookedV10 = true;
   }
 })();
 </script>
