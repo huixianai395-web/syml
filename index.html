@@ -16336,7 +16336,7 @@ ${chatCtx}
     const reader = new FileReader();
     reader.onload = function(ev) {
       window._tempCloneAudioBase64 = ev.target.result;
-      document.getElementById('cloneUploadHint').textContent = '✅ 原声解析成功，待刻入！';
+      document.getElementById('cloneUploadHint').textContent = '原声解析成功，待刻入！';
       document.getElementById('cloneUploadHint').style.color = '#5c7094';
       document.getElementById('cloneUploadArea').style.borderColor = '#dce5f0';
     };
@@ -23982,6 +23982,62 @@ setTimeout(() => {
       setTimeout(applyFrames, 80); 
     });
     window._avatarFrameHookedV11 = true;
+  }
+})();
+</script>
+  <!-- 🌟 蓝色高定：群聊连体婴物理切割手术刀 (底层 API 拦截版) -->
+<script>
+(function(){
+  // 1. 拦截大模型返回的数据，强行切开糊在一起的群聊气泡
+  if(window.callApi && !window._blueCallApiHookedForGroup) {
+    const oldCallApi = window.callApi;
+    window.callApi = async function(messages) {
+      let out = await oldCallApi(messages);
+      
+      try {
+        const splitRegex = /(\[[^\[\]]{1,15}\][：:])/g;
+        const cleaned = out.replace(/```json|```/g, '').trim();
+        const match = cleaned.match(/\{[\s\S]*\}/);
+        if(match) {
+          let data = JSON.parse(match[0]);
+          if(data.messages && Array.isArray(data.messages)) {
+            let newMessages = [];
+            data.messages.forEach(msg => {
+               if(typeof msg === 'string' && splitRegex.test(msg)) {
+                  const tokens = msg.split(splitRegex);
+                  let firstPart = tokens[0].trim();
+                  if(firstPart) newMessages.push(firstPart);
+                  for(let i = 1; i < tokens.length; i+=2) {
+                     let combined = (tokens[i] + (tokens[i+1] || '')).trim();
+                     if(combined) newMessages.push(combined);
+                  }
+               } else {
+                  newMessages.push(msg);
+               }
+            });
+            data.messages = newMessages;
+            out = out.replace(match[0], JSON.stringify(data, null, 2));
+          }
+        }
+      } catch(e) {}
+      
+      return out;
+    };
+    window._blueCallApiHookedForGroup = true;
+  }
+
+  // 2. 顺手加强群聊提示词，从源头恐吓大模型
+  if(window.buildGroupSystem && !window._blueGroupSysHooked) {
+    const oldBuildGroupSystem = window.buildGroupSystem;
+    window.buildGroupSystem = function(c, me, st) {
+      let sys = oldBuildGroupSystem(c, me, st);
+      sys = sys.replace(
+        '每条消息开头必须带发送者名字，格式为[名字]：，严禁出现无名字前缀的裸消息。',
+        '每条消息开头必须带发送者名字，格式为[名字]：，严禁出现无名字前缀的裸消息。⚠️【绝对禁止】把多个人的对话糊在同一个双引号字符串里！必须把每个人说的话，拆分成数组里独立的一条！'
+      );
+      return sys;
+    };
+    window._blueGroupSysHooked = true;
   }
 })();
 </script>
