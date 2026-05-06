@@ -24041,5 +24041,103 @@ setTimeout(() => {
   }
 })();
 </script>
+  <!-- 🌟 蓝色高定：终极 JSON 防漏盾 & 群聊读心术补丁 -->
+<script>
+(function(){
+  // ================= 1. 终极防漏盾：物理粉碎裸露的 JSON 代码 =================
+  // 拦截底层渲染引擎，在气泡上墙前进行最后一道安检
+  if(!window._blueJsonShieldHooked) {
+    const oldSetChatArr = window.setChatArr;
+    window.setChatArr = function(id, arr) {
+      if (arr && arr.length > 0) {
+        arr.forEach(m => {
+          if (m.role === 'assistant' && typeof m.text === 'string') {
+            // 如果检测到大模型发疯，漏出了底层键名
+            if (m.text.includes('"messages"') || m.text.includes('"inner_voice"')) {
+              // 暴力清洗：把丑陋的 JSON 格式硬生生刮掉，只留纯文本！
+              m.text = m.text.replace(/"current_status"\s*:\s*"([^"]*)",?/g, '')
+                             .replace(/"inner_voice"\s*:\s*"([^"]*)",?/g, '')
+                             .replace(/"messages"\s*:\s*\[/g, '')
+                             .replace(/\]\s*\}?/g, '')
+                             .replace(/^{/g, '')
+                             .replace(/"\s*,\s*"/g, '<br><br>') // 把数组逗号换成优雅的换行
+                             .replace(/"/g, ''); // 抹除多余双引号
+            }
+          }
+        });
+      }
+      if(oldSetChatArr) oldSetChatArr(id, arr);
+    };
+    window._blueJsonShieldHooked = true;
+  }
+
+  // ================= 2. 群聊读心术无损开启引擎 =================
+  // 悄无声息地修改群聊系统提示词，要求输出内心戏
+  if(!window._blueGroupMindReaderHooked) {
+    const oldBuildGroupSystem = window.buildGroupSystem;
+    if (oldBuildGroupSystem) {
+      window.buildGroupSystem = function(c, me, st) {
+        let sys = oldBuildGroupSystem(c, me, st);
+        // 强行把单聊的格式要求塞进群聊
+        sys = sys.replace(
+          '{"messages":["[名字]：...","[名字]：..."]}',
+          '{"inner_voice": "抓取当前修罗场中，某个角色最强烈的内心OS，无则留空", "messages":["[名字]：...","[名字]：..."]}'
+        );
+        return sys;
+      };
+    }
+    window._blueGroupMindReaderHooked = true;
+  }
+
+  // 拦截群聊解析逻辑，把群聊的心声也存进单人一样的历史记录里
+  if(!window._blueGroupIvParserHooked) {
+    const oldSendToAI = window._sendToAI;
+    if (oldSendToAI) {
+      window._sendToAI = async function(chatId, hiddenPrompt, isSilent) {
+        // 借用原函数，但我们要在外围加一层监控
+        const c = window.getContactById(chatId);
+        const st = window.normSettings(c?.settings);
+        
+        // 如果是群聊，且开启了读心术
+        if (c && c.isGroup && st.innerVoice) {
+          // 这里我们只是为了提醒大模型，实际的解析在 callApi 的返回里
+          // 因为原代码在单聊时已经有提取 inner_voice 的逻辑，群聊被跳过了
+          // 我们重写一下 callApi 的外壳来捕获它
+        }
+        return oldSendToAI(chatId, hiddenPrompt, isSilent);
+      };
+    }
+    
+    // 拦截全局的 callApi，精准捕捉任何含有 inner_voice 的群聊回复
+    const oldCallApi = window.callApi;
+    window.callApi = async function(messages) {
+      const out = await oldCallApi(messages);
+      try {
+        const cleaned = out.replace(/```json|```/g, '').trim();
+        const match = cleaned.match(/\{[\s\S]*\}/);
+        if(match && window.currentId) {
+           const data = JSON.parse(match[0]);
+           const c = window.getContactById(window.currentId);
+           const st = window.normSettings(c?.settings);
+           // 如果是群聊且开启了读心术，把心声存入群聊的 settings 里！
+           if (c && c.isGroup && st.innerVoice && data.inner_voice) {
+               if(!st.voiceHistory) st.voiceHistory = [];
+               st.voiceHistory.unshift({ id: 'iv_' + Date.now(), text: data.inner_voice, time: Date.now() });
+               // 更新群聊设置
+               const groups = window.getGroups();
+               const idx = groups.findIndex(g => g.id === window.currentId);
+               if(idx > -1) {
+                 groups[idx].settings = st;
+                 window.setGroups(groups);
+               }
+           }
+        }
+      } catch(e) {}
+      return out;
+    };
+    window._blueGroupIvParserHooked = true;
+  }
+})();
+</script>
 </body>
   </html>
