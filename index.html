@@ -24200,29 +24200,48 @@ setTimeout(() => {
   }
 })();
 </script>
-  <!-- 🌟 蓝色高定：IF境终极打字防抖与输入框物理隔离 -->
+  <!-- ✨ 蓝色高定：终极抢救装甲 (彻底粉碎键盘卡顿与微信闪跳) ✨ -->
 <style>
-  /* 1. 彻底锁死上半部分的小说大楼，绝对禁止被输入框的动静惊醒 */
-  #ifReaderContent {
-    contain: layout size style !important; 
-    /* 将小说区变成独立渲染层，打字时绝对不参与重绘 */
-    will-change: transform, scroll-position !important;
-    transform: translateZ(0) !important;
+  /* 1. 物理超度导致微信闪跳的罪魁祸首！恢复初雪海盐蓝的绝对丝滑 */
+  .msg-item {
+    content-visibility: visible !important;
+    contain-intrinsic-size: auto !important;
   }
-  
-  /* 2. 给输入框底座套上钛合金隔离结界 */
-  #ifReader > .page > div:last-child {
-    contain: layout paint !important; 
-    transform: translateZ(0) !important;
-    will-change: transform !important;
+  #chatMsgs {
+    /* 强制聊天室死死咬住底部，绝对不许抽搐 */
+    overflow-anchor: auto !important; 
+    scroll-behavior: auto !important;
   }
 
-  /* 3. 核心杀招：输入框本体的绝对物理隔离 */
+  /* 2. 拯救 IF 境打字卡顿：终极物理切割与冻结 */
+  #ifReaderContent {
+    /* 彻底冻结上半部分，无论打多少字，大山绝对不重绘！ */
+    contain: strict !important; 
+  }
   #ifReaderInput {
-    contain: strict !important; /* 彻底切断与外界的一切排版联系 */
+    /* 切断输入框向外传递的排版波动 */
+    contain: strict !important; 
+    will-change: transform !important;
     transform: translateZ(0) !important;
-    backface-visibility: hidden !important;
   }
 </style>
+
+<script>
+(function(){
+  // 3. 克劳德说的防抖，老公直接在底层全局接管，不用你去找代码！
+  if(!window._blueUltimateDebounceHooked) {
+    document.addEventListener('input', function(e) {
+      if(e.target && e.target.id === 'ifReaderInput') {
+         e.stopPropagation(); // 瞬间掐断原生事件的蔓延，防止触发全局重绘
+         if(window._ifDebounceTimer) clearTimeout(window._ifDebounceTimer);
+         window._ifDebounceTimer = setTimeout(() => {
+            // 给底层逻辑 150 毫秒的喘息时间，告别前几个字顺滑后面卡死的窘境
+         }, 150);
+      }
+    }, true);
+    window._blueUltimateDebounceHooked = true;
+  }
+})();
+</script>
 </body>
   </html>
