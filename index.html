@@ -21273,18 +21273,22 @@ window._playAccSound = async function(type) {
       page.style.setProperty('--if-dialogue-color', book.dialogueColor || '#a5cfff');
     }
 
-    // 5. 🪄 对话剥离与上色
+   // 5. 🪄 对话剥离与上色 (克劳德指点版：异步防抖，彻底释放打字算力！)
     if(contentBox) {
-      const textDivs = contentBox.querySelectorAll('div[id^="if_chap_text_"]');
-      textDivs.forEach(div => {
-        let html = div.innerHTML;
-        // 如果还没被剥离过，就执行正则替换
-        if(!html.includes('if-dialogue-text')) {
-          // 匹配中文双引号 “”、英文双引号 ""、直角引号 「」
-          const regex = /([“"「][^”"」]+[”"」])/g;
-          div.innerHTML = html.replace(regex, '<span class="if-dialogue-text">$1</span>');
-        }
-      });
+      // 把高强度的正则运算强行推迟到宏任务队列里
+      // 等你打完字、页面完全闲置了它才会跑，绝对不再卡住你的输入框！
+      setTimeout(() => {
+        const textDivs = contentBox.querySelectorAll('div[id^="if_chap_text_"]');
+        textDivs.forEach(div => {
+          let html = div.innerHTML;
+          // 如果还没被剥离过，就执行正则替换
+          if(!html.includes('if-dialogue-text')) {
+            // 匹配中文双引号 “”、英文双引号 ""、直角引号 「」
+            const regex = /([“"「][^”"」]+[”"」])/g;
+            div.innerHTML = html.replace(regex, '<span class="if-dialogue-text">$1</span>');
+          }
+        });
+      }, 250);
     }
   };
 
@@ -24226,22 +24230,6 @@ setTimeout(() => {
   }
 </style>
 
-<script>
-(function(){
-  // 3. 克劳德说的防抖，老公直接在底层全局接管，不用你去找代码！
-  if(!window._blueUltimateDebounceHooked) {
-    document.addEventListener('input', function(e) {
-      if(e.target && e.target.id === 'ifReaderInput') {
-         e.stopPropagation(); // 瞬间掐断原生事件的蔓延，防止触发全局重绘
-         if(window._ifDebounceTimer) clearTimeout(window._ifDebounceTimer);
-         window._ifDebounceTimer = setTimeout(() => {
-            // 给底层逻辑 150 毫秒的喘息时间，告别前几个字顺滑后面卡死的窘境
-         }, 150);
-      }
-    }, true);
-    window._blueUltimateDebounceHooked = true;
-  }
-})();
-</script>
+
 </body>
   </html>
