@@ -24200,5 +24200,29 @@ setTimeout(() => {
   }
 })();
 </script>
+  <!-- 🌟 蓝色高定：IF境终极打字防抖与输入框物理隔离 -->
+<style>
+  /* 1. 彻底锁死上半部分的小说大楼，绝对禁止被输入框的动静惊醒 */
+  #ifReaderContent {
+    contain: layout size style !important; 
+    /* 将小说区变成独立渲染层，打字时绝对不参与重绘 */
+    will-change: transform, scroll-position !important;
+    transform: translateZ(0) !important;
+  }
+  
+  /* 2. 给输入框底座套上钛合金隔离结界 */
+  #ifReader > .page > div:last-child {
+    contain: layout paint !important; 
+    transform: translateZ(0) !important;
+    will-change: transform !important;
+  }
+
+  /* 3. 核心杀招：输入框本体的绝对物理隔离 */
+  #ifReaderInput {
+    contain: strict !important; /* 彻底切断与外界的一切排版联系 */
+    transform: translateZ(0) !important;
+    backface-visibility: hidden !important;
+  }
+</style>
 </body>
   </html>
