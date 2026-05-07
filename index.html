@@ -24145,44 +24145,39 @@ setTimeout(() => {
     will-change: transform !important;
   }
 </style>
-  <!-- 🌟 蓝色高定：IF境初雪融水级丝滑引擎 (彻底解决停顿与闪跳) -->
+  <!-- 🌟 蓝色高定：IF境绝对空间锁死与沉浸式滑动引擎 -->
 <style>
-  /* 1. 撤销激进的视界休眠，换成纯粹的 GPU 物理加速，保证排版绝对稳定 */
+  /* 1. 把整个 IF 境死死钉在屏幕上，绝对不允许整个页面连根拔起！ */
+  #ifReader {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    height: 100dvh !important; /* 智能适配手机键盘弹出的动态高度 */
+    overflow: hidden !important; /* 掐死外层的弹性滚动，告别漏底 */
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* 2. 只有中间的小说内容区可以滑动，且开启原生丝滑加速 */
   #ifReaderContent {
+    flex: 1 1 auto !important; /* 自动占满所有剩余空间 */
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important; /* 苹果专属丝滑滑动 */
+    height: 100% !important; 
+    /* 修复之前可能遗留的跳动问题 */
     transform: translateZ(0) !important;
     will-change: transform !important;
-    -webkit-overflow-scrolling: touch !important;
-    scroll-behavior: smooth !important; /* 开启原生丝滑滚动美学 */
   }
-  
-  /* 2. 移除导致高度乱跳的罪魁祸首 */
-  #ifReaderContent > div {
-    content-visibility: visible !important;
-    contain-intrinsic-size: auto !important;
+
+  /* 3. 输入框底座独立加固，键盘弹出瞬间零延迟 */
+  #ifReaderBottom {
+    flex-shrink: 0 !important; /* 绝对不允许底座被挤压变形 */
+    transform: translateZ(0) !important;
+    will-change: transform !important;
+    padding-bottom: env(safe-area-inset-bottom) !important; /* 保护苹果底部小白条 */
   }
 </style>
-
-<script>
-(function(){
-  // 3. 智能视觉神经：自动捕捉新剧情，像初雪融化般平滑滚动到底部
-  if(!window._blueIfSmoothScrollHooked) {
-    const targetNode = document.getElementById('ifReaderContent');
-    if(targetNode) {
-      const observer = new MutationObserver(() => {
-        // 给浏览器 50 毫秒的喘息时间，等排版彻底稳定后，再优雅地滑到底部
-        setTimeout(() => {
-          targetNode.scrollTo({
-            top: targetNode.scrollHeight,
-            behavior: 'smooth'
-          });
-        }, 50);
-      });
-      // 监视 IF 境里任何文字的增加和变化
-      observer.observe(targetNode, { childList: true, subtree: true });
-    }
-    window._blueIfSmoothScrollHooked = true;
-  }
-})();
-</script>
 </body>
   </html>
