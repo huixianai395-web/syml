@@ -24145,38 +24145,63 @@ setTimeout(() => {
     will-change: transform !important;
   }
 </style>
-  <!-- 🌟 蓝色高定：IF境绝对空间锁死与沉浸式滑动引擎 (防遮挡安全版) -->
+  <!-- 🌟 蓝色高定：PWA桌面端终极量子隔离与防闪跳装甲 -->
 <style>
-  /* 1. 锁死外壳：必须带有 .active 激活状态才允许显示，绝对不抢占主屏幕！ */
+  /* 1. 拯救 IF 境打字卡顿：绝对物理隔离引擎 */
   #ifReader.active {
     position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    height: 100dvh !important;
-    overflow: hidden !important;
+    inset: 0 !important;
+    height: 100% !important; /* 放弃 dvh，在苹果桌面模式 100% 才是最稳的底盘 */
+    width: 100vw !important;
     display: flex !important;
     flex-direction: column !important;
-    background: #eef4fa !important; /* 初雪海盐蓝打底，拒绝漏出异色 */
+    background: #eef4fa !important;
+    z-index: 99999 !important; 
   }
-
-  /* 2. 隔离滚动区：物理掐死苹果的“漏底”回弹！ */
-  #ifReader > .page {
-    flex: 1 1 auto !important;
-    height: auto !important;
+  
+  #ifReaderContent {
+    flex: 1 1 0% !important; /* 强制霸占剩余空间，绝对不允许被内容撑开 */
+    height: 0 !important; /* 🔪 核心杀招：切断高度继承，防止软键盘挤压引发的全局地震 */
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
-    overscroll-behavior-y: contain !important; /* 核心魔法：禁止整个网页跟着瞎滚！ */
+    contain: layout paint !important; /* 🛡️ 量子隔离墙：内部文字再多，打字时也绝对不触发全局重绘！ */
+    will-change: scroll-position !important;
+  }
+
+  /* 保护输入框底座，防止底部被吃掉一块 */
+  #ifReader > .page > div:last-child {
+    flex-shrink: 0 !important;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+    background: rgba(250,252,255,0.95) !important;
     transform: translateZ(0) !important;
   }
 
-  /* 3. 键盘减震底座：软键盘弹出时瞬间自适应，绝不卡顿 */
-  #ifReader > .page > div:last-child {
-    flex-shrink: 0 !important;
-    transform: translateZ(0) !important;
-    will-change: transform !important;
+  /* 2. 拯救微信聊天闪跳：视觉锚点与视界休眠 */
+  #chatMsgs {
+    contain: layout size !important; /* 锁定聊天室外层框架，拒绝被内部图片撑开跳动 */
+    overflow-anchor: auto !important; /* 开启原生滚动锚点，死死咬住最新一条消息 */
+  }
+  .msg-item {
+    content-visibility: auto !important; /* 视野外的气泡深度休眠，瞬间提升打开速度 */
+    contain-intrinsic-size: auto 60px !important;
   }
 </style>
+
+<script>
+(function(){
+  if(!window._blueFlickerFixHooked_V3) {
+    // 3. 终极防闪跳魔法：初次打开聊天室时，物理掐断平滑滚动，瞬间触底！
+    const oldOpenChatForFlicker = window.openChat;
+    if(oldOpenChatForFlicker) {
+      window.openChat = function(id) {
+        const msgs = document.getElementById('chatMsgs');
+        if(msgs) msgs.style.scrollBehavior = 'auto'; // 瞬间下去，不许抽搐！
+        oldOpenChatForFlicker(id);
+      };
+    }
+    window._blueFlickerFixHooked_V3 = true;
+  }
+})();
+</script>
 </body>
   </html>
