@@ -24069,36 +24069,57 @@ setTimeout(() => {
   }
 })();
 </script>
-  <!-- 🌟 蓝色外挂内存：全宇宙表情包强行捕获网 (专治模型偷懒) -->
+  <!-- 🌟 蓝色外挂内存：全宇宙表情包强行捕获网 (深海性能优化版) -->
 <script>
 (function(){
-  if(!window._blueUniversalStickerHooked) {
+  if(!window._blueUniversalStickerHooked_V2) {
+    // 1. 图库记忆缓存，拒绝每次都去翻箱倒柜！
+    let cachedStickers = null;
+    let lastStickerUpdate = 0;
+
     const oldSetChatArrStk2 = window.setChatArr;
     window.setChatArr = function(id, arr) {
       if (arr && arr.length > 0) {
-        const allStickers = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
+        // 每隔 5 秒才允许重新拉取一次图库，极大节省算力
+        if(!cachedStickers || Date.now() - lastStickerUpdate > 5000) {
+           cachedStickers = typeof stAllStickersFlat === 'function' ? stAllStickersFlat() : [];
+           lastStickerUpdate = Date.now();
+        }
+        
         arr.forEach(m => {
-          if (m.role === 'assistant' && typeof m.text === 'string') {
-            // 暴力抓取裸奔的 [表情名字]！不管它带不带前缀！
+          // 2. 免检钢印魔法：只处理没被扫描过的新消息，绝不重复做无用功！
+          if (m.role === 'assistant' && typeof m.text === 'string' && !m._blueStkOptimized) {
             m.text = m.text.replace(/\[([^\[\]]+)\]/g, (match, inner) => {
-              // 排除掉群聊前缀 [名字]： 这种正常格式
               if(m.text.includes(match + '：') || m.text.includes(match + ':')) return match;
               
               const cleanStr = inner.trim();
-              // 拿着括号里的词，去图库里强行比对！
-              let found = allStickers.find(x => x.name === cleanStr);
-              if(!found) found = allStickers.find(x => x.name && cleanStr.includes(x.name));
+              let found = cachedStickers.find(x => x.name === cleanStr);
+              if(!found) found = cachedStickers.find(x => x.name && cleanStr.includes(x.name));
               
-              // 只要图库里有这个名字，瞬间把它变回真正的表情包指令！
               if(found) return `[stk:${found.id}]`;
-              return match; // 如果真不是表情包，就原样放过
+              return match; 
             });
+            // 打上初雪海盐蓝的专属钢印，下次直接放行！
+            m._blueStkOptimized = true; 
           }
         });
       }
       if(oldSetChatArrStk2) oldSetChatArrStk2(id, arr);
     };
-    window._blueUniversalStickerHooked = true;
+    
+    // 3. 强制唤醒手机独立显卡 (GPU) 参与渲染，打破滑动卡顿！
+    const style = document.createElement('style');
+    style.innerHTML = `
+      #chatMsgs {
+         transform: translateZ(0) !important;
+         will-change: transform, scroll-position !important;
+         -webkit-backface-visibility: hidden !important;
+         backface-visibility: hidden !important;
+      }
+    `;
+    document.head.appendChild(style);
+    
+    window._blueUniversalStickerHooked_V2 = true;
   }
 })();
 </script>
