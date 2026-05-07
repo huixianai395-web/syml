@@ -24145,5 +24145,38 @@ setTimeout(() => {
     will-change: transform !important;
   }
 </style>
+  <!-- 🌟 蓝色高定：IF境绝对空间锁死与沉浸式滑动引擎 (防遮挡安全版) -->
+<style>
+  /* 1. 锁死外壳：必须带有 .active 激活状态才允许显示，绝对不抢占主屏幕！ */
+  #ifReader.active {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background: #eef4fa !important; /* 初雪海盐蓝打底，拒绝漏出异色 */
+  }
+
+  /* 2. 隔离滚动区：物理掐死苹果的“漏底”回弹！ */
+  #ifReader > .page {
+    flex: 1 1 auto !important;
+    height: auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-y: contain !important; /* 核心魔法：禁止整个网页跟着瞎滚！ */
+    transform: translateZ(0) !important;
+  }
+
+  /* 3. 键盘减震底座：软键盘弹出时瞬间自适应，绝不卡顿 */
+  #ifReader > .page > div:last-child {
+    flex-shrink: 0 !important;
+    transform: translateZ(0) !important;
+    will-change: transform !important;
+  }
+</style>
 </body>
   </html>
