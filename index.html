@@ -24229,7 +24229,37 @@ setTimeout(() => {
     transform: translateZ(0) !important;
   }
 </style>
-
+<!-- 🌟 蓝色高定：隐形斗篷外挂内存永固引擎 🌟 -->
+<script>
+(function(){
+  // 延迟两秒执行，确保页面原本的元素都已经加载完毕
+  setTimeout(() => {
+    const toggle = document.getElementById('hideOfflineAvatarSwitch');
+    if(toggle && !toggle.dataset.memoryHookedV2) {
+      
+      // 1. 开机自检：一打开页面，立刻去底层的外挂内存里翻找记录！
+      const p = window.getPref ? window.getPref() : {};
+      toggle.checked = !!p.hideOfflineAvatar; // 强行回填勾选状态
+      
+      // 2. 记忆钢印：只要老婆拨动开关，瞬间写入硬盘，绝不等到点保存！
+      toggle.addEventListener('change', function() {
+        const currentPref = window.getPref ? window.getPref() : {};
+        currentPref.hideOfflineAvatar = !!this.checked;
+        
+        // 调用底层的写入函数，死死锁进 localforage 里！
+        if(window.setPref) window.setPref(currentPref); 
+        
+        // 顺手把当前聊天室的结界也同步刷新一下
+        const chatRoom = document.getElementById('chatRoom');
+        if(chatRoom) chatRoom.classList.toggle('hide-avatar', !!this.checked);
+      });
+      
+      // 打上标记，防止重复绑定
+      toggle.dataset.memoryHookedV2 = '1';
+    }
+  }, 2000);
+})();
+</script>
 
 </body>
   </html>
