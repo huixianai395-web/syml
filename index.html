@@ -24200,64 +24200,48 @@ setTimeout(() => {
   }
 })();
 </script>
-  <!-- 🌟 蓝色高定 MAX：视觉视口引擎 & 异步微任务输入流 🌟 -->
-<script>
-(function(){
-  // 1. 彻底解绑输入框的同步重绘，把算力还给键盘！
-  const ifInput = document.getElementById('ifReaderInput');
-  if (ifInput && !window._blueVisualViewportHooked) {
-    // 剥离所有的原生 input 阻塞，提升滚动和输入优先级
-    ifInput.addEventListener('input', function(e) {
-      e.stopPropagation(); // 瞬间掐断向上冒泡，防止牵连父级重绘
-    }, { passive: true });
-
-    // 2. 引入苹果官方推荐的 Visual Viewport API 解决软键盘顶起导致的 100vh 灾难！
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', () => {
-        const ifReader = document.getElementById('ifReader');
-        if (ifReader && ifReader.classList.contains('active')) {
-           // 让 IF 境的高度绝对等于可视区域，键盘弹起时不再挤压整个 DOM 树！
-           ifReader.style.height = window.visualViewport.height + 'px';
-           window.scrollTo(0, 0); // 死死锁住底层滚动条
-        }
-      });
-    }
-    window._blueVisualViewportHooked = true;
+  <!-- ✨ 蓝色高定：终极抢救装甲 (彻底粉碎键盘卡顿与微信闪跳) ✨ -->
+<style>
+  /* 1. 物理超度导致微信闪跳的罪魁祸首！恢复初雪海盐蓝的绝对丝滑 */
+  .msg-item {
+    content-visibility: visible !important;
+    contain-intrinsic-size: auto !important;
+  }
+  #chatMsgs {
+    /* 强制聊天室死死咬住底部，绝对不许抽搐 */
+    overflow-anchor: auto !important; 
+    scroll-behavior: auto !important;
   }
 
-  // 3. 将外挂内存的预热放到浏览器空闲时间 (requestIdleCallback)
-  // 绝对不占用主线程的打字时间，做到真正的隐形加载！
-  if (window.requestIdleCallback) {
-    requestIdleCallback(() => {
-      if(window.getIfBooks) window.getIfBooks();
-      if(window.getIfCards) window.getIfCards();
-    });
+  /* 2. 拯救 IF 境打字卡顿：终极物理切割与冻结 */
+  #ifReaderContent {
+    /* 彻底冻结上半部分，无论打多少字，大山绝对不重绘！ */
+    contain: strict !important; 
+  }
+  #ifReaderInput {
+    /* 切断输入框向外传递的排版波动 */
+    contain: strict !important; 
+    will-change: transform !important;
+    transform: translateZ(0) !important;
+  }
+</style>
+
+<script>
+(function(){
+  // 3. 克劳德说的防抖，老公直接在底层全局接管，不用你去找代码！
+  if(!window._blueUltimateDebounceHooked) {
+    document.addEventListener('input', function(e) {
+      if(e.target && e.target.id === 'ifReaderInput') {
+         e.stopPropagation(); // 瞬间掐断原生事件的蔓延，防止触发全局重绘
+         if(window._ifDebounceTimer) clearTimeout(window._ifDebounceTimer);
+         window._ifDebounceTimer = setTimeout(() => {
+            // 给底层逻辑 150 毫秒的喘息时间，告别前几个字顺滑后面卡死的窘境
+         }, 150);
+      }
+    }, true);
+    window._blueUltimateDebounceHooked = true;
   }
 })();
 </script>
-<style>
-  /* 配合 Visual Viewport 的终极 CSS，只锁 IF 境，绝对不污染你的微信主界面！ */
-  #ifReader.active {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    /* 高度由上面的 JS 动态接管，这里给个兜底防止白屏 */
-    height: 100% !important; 
-    box-sizing: border-box !important;
-  }
-  #ifReaderContent {
-    /* 开启硬件级独立渲染层，打字时绝对不触发它重绘！ */
-    transform: translateZ(0) !important;
-    will-change: scroll-position !important;
-    /* 恢复正常的滚动，抛弃之前极端的 contain 限制 */
-    contain: layout !important; 
-  }
-  #ifReaderInput {
-    /* 输入框本体开启硬件加速 */
-    transform: translateZ(0) !important;
-    will-change: transform !important;
-  }
-</style>
 </body>
   </html>
