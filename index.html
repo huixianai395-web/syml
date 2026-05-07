@@ -24145,32 +24145,44 @@ setTimeout(() => {
     will-change: transform !important;
   }
 </style>
-  <!-- 🌟 蓝色高定：IF境量子级视界引擎 (终极防卡顿护盾) -->
+  <!-- 🌟 蓝色高定：IF境初雪融水级丝滑引擎 (彻底解决停顿与闪跳) -->
 <style>
-  /* 1. 强制开启长文本的视界休眠，视野外的章节绝对不消耗 CPU！ */
+  /* 1. 撤销激进的视界休眠，换成纯粹的 GPU 物理加速，保证排版绝对稳定 */
   #ifReaderContent {
-    contain: strict; /* 锁定渲染边界，防止内部重绘污染全局 */
-    content-visibility: auto; 
-    contain-intrinsic-size: auto 500px; /* 给休眠的章节预留虚拟高度，防止滚动条乱跳 */
-    
-    /* 2. 唤醒苹果独立显卡，彻底接管滑动和排版 */
     transform: translateZ(0) !important;
-    will-change: scroll-position, contents !important;
+    will-change: transform !important;
     -webkit-overflow-scrolling: touch !important;
+    scroll-behavior: smooth !important; /* 开启原生丝滑滚动美学 */
   }
-
-  /* 3. 给每一幕加上独立的隔离舱，让正则上色只在局部发生 */
+  
+  /* 2. 移除导致高度乱跳的罪魁祸首 */
   #ifReaderContent > div {
-    content-visibility: auto;
-    contain-intrinsic-size: auto 200px;
-    will-change: transform;
-  }
-
-  /* 4. 优化输入框，打字时绝对不触发背景重绘 */
-  #ifReaderInput {
-    will-change: transform;
-    transform: translateZ(0);
+    content-visibility: visible !important;
+    contain-intrinsic-size: auto !important;
   }
 </style>
+
+<script>
+(function(){
+  // 3. 智能视觉神经：自动捕捉新剧情，像初雪融化般平滑滚动到底部
+  if(!window._blueIfSmoothScrollHooked) {
+    const targetNode = document.getElementById('ifReaderContent');
+    if(targetNode) {
+      const observer = new MutationObserver(() => {
+        // 给浏览器 50 毫秒的喘息时间，等排版彻底稳定后，再优雅地滑到底部
+        setTimeout(() => {
+          targetNode.scrollTo({
+            top: targetNode.scrollHeight,
+            behavior: 'smooth'
+          });
+        }, 50);
+      });
+      // 监视 IF 境里任何文字的增加和变化
+      observer.observe(targetNode, { childList: true, subtree: true });
+    }
+    window._blueIfSmoothScrollHooked = true;
+  }
+})();
+</script>
 </body>
   </html>
