@@ -24162,6 +24162,32 @@ setTimeout(() => {
   }
 </style>
 
-
+<!-- 🌟 蓝色高定：线下头像隐形斗篷终极防覆盖装甲 🌟 -->
+<script>
+(function(){
+  if(!window._blueOfflineAvatarHookedV3) {
+    // 1. 终极劫持：不管 openChat 被其他功能覆盖了多少次，我们都在最外层再包一层铁甲！
+    const oldOpenChatForAvatar = window.openChat;
+    window.openChat = function(id) {
+      // 先让别人把门打开
+      if(oldOpenChatForAvatar) oldOpenChatForAvatar(id);
+      
+      // 门一开，我们瞬间读取外挂内存，施加隐形斗篷！
+      const p = window.getPref ? window.getPref() : {};
+      const chatRoom = document.getElementById('chatRoom');
+      if(chatRoom) chatRoom.classList.toggle('hide-avatar', !!p.hideOfflineAvatar);
+    };
+    
+    // 2. 开机自检兜底：刚打开小手机时，也强制扫描一次，绝不漏网！
+    setTimeout(() => {
+      const p = window.getPref ? window.getPref() : {};
+      const chatRoom = document.getElementById('chatRoom');
+      if(chatRoom) chatRoom.classList.toggle('hide-avatar', !!p.hideOfflineAvatar);
+    }, 1000);
+    
+    window._blueOfflineAvatarHookedV3 = true;
+  }
+})();
+</script>
 </body>
   </html>
