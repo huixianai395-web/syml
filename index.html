@@ -5996,7 +5996,17 @@ if(!isMe && isHtmlDoc(t)){
     
     setChatArr(currentId,arr);composeQuote=null;updateQuoteBar();updateContactPreview(currentId);
   }
-  function storeCurrentInput(){if(!currentId) return;const t=clean($('chatInput').value);if(!t) return;pushUser(t);$('chatInput').value='';resetInputH();renderChat();}
+  function storeCurrentInput(){
+    if(!currentId) return;
+    const t=clean($('chatInput').value);
+    if(!t) return;
+    $('chatInput').value='';
+    resetInputH();
+    setTimeout(() => {
+      pushUser(t);
+      renderChat();
+    }, 10);
+  }
   $('storeBtn').onclick=storeCurrentInput;
 
   function parseJsonMessages(text){
