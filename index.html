@@ -24178,63 +24178,105 @@ setTimeout(() => {
     will-change: auto !important;
   }
   </style>
- <!-- 🌟 蓝色高定：个人中心保存按钮终极破壁版 (绕过黑匣子暴力直写底层) -->
+ <!-- 🌟 蓝色高定：预设切换与保存的终极记忆同步引擎 (专治微信不刷新与底层固化 Bug) -->
 <script>
-setTimeout(() => {
-  const saveBtn = document.getElementById('mePageSaveBtn');
-  if (saveBtn) {
-    // 🔪 彻底覆盖原来的点击事件，拒绝任何花里胡哨的劫持！
-    saveBtn.onclick = async () => {
-      try {
-        const oldText = saveBtn.textContent;
-        saveBtn.textContent = '正在暴力轰开底层...';
-        saveBtn.style.pointerEvents = 'none';
-
-        // 1. 🔪 核心杀招：直接从外挂硬盘抓取数据，绝不依赖被困住的局部变量！
-        let data = await localforage.getItem('mp_fix_me_presets_list');
-        if(!data) {
-          // 如果硬盘是空的，强行捏一个初始骨架
-          data = { currentId: 'default', list: [{ id: 'default', name: '我', persona: '', avatar: '' }] };
+(function() {
+  // 1. 🔪 劫持下拉框切换事件，加入全局刷新与内存同步
+  setTimeout(() => {
+    const presetSelect = document.getElementById('mePresetSelect');
+    if (presetSelect && !presetSelect.dataset.blueSyncHook) {
+      presetSelect.dataset.blueSyncHook = '1';
+      presetSelect.addEventListener('change', async (e) => {
+        const data = window.getMePresets ? window.getMePresets() : await localforage.getItem('mp_fix_me_presets_list');
+        if(!data) return;
+        
+        data.currentId = e.target.value;
+        const cur = data.list.find(x => x.id === data.currentId);
+        
+        if(cur) {
+          const newMe = { name: cur.name, persona: cur.persona, avatar: cur.avatar, note: '' };
+          
+          // ✨ 核心1：同步短期记忆 (GlobalState)，让微信聊天能瞬间读到！
+          if(window.setMePresets) window.setMePresets(data);
+          if(window.setMe) window.setMe(newMe);
+          window.meAvatarDraftGlobal = cur.avatar;
+          
+          // ✨ 核心2：同步外挂硬盘，永久固化！
+          await localforage.setItem('mp_fix_me_presets_list', data);
+          await localforage.setItem('mp_fix_me', newMe);
+          
+          // ✨ 核心3：强行越权，瞬间重绘微信聊天和通讯录！
+          if(window.renderMePresetsUI) window.renderMePresetsUI();
+          if(window.renderChat) window.renderChat(); 
+          if(window.renderContacts) window.renderContacts(document.getElementById('searchInput')?.value || '');
+          
+          alert('✨ 身份已切换为：' + cur.name + '！微信聊天已瞬间同步！');
         }
-        
-        const idx = data.list.findIndex(x => x.id === data.currentId);
-        const targetIdx = idx > -1 ? idx : 0;
+      });
+    }
+  }, 1000);
 
-        // 2. 强行抓取屏幕上的最新输入文字
-        const nameVal = document.getElementById('mePageName').value.trim() || '未命名';
-        const wxidVal = document.getElementById('mePageWxID').value.trim() || 'zidingyi_baby';
-        const personaVal = document.getElementById('mePagePersona').value.trim();
-        
-        // 3. 强行抓取屏幕上的最新图片，绝不信任飘忽不定的全局变量！
-        const imgNode = document.getElementById('mePageAvatar');
-        let finalAvatar = '';
-        if (imgNode && imgNode.src && !imgNode.src.includes('placeholder')) {
-          finalAvatar = imgNode.src;
+  // 2. 🔪 完美重构保存按钮，双端同步，彻底粉碎底层固定 Bug！
+  setTimeout(() => {
+    const saveBtn = document.getElementById('mePageSaveBtn');
+    if (saveBtn) {
+      // 覆盖一切旧逻辑
+      saveBtn.onclick = async () => {
+        try {
+          const oldText = saveBtn.textContent;
+          saveBtn.textContent = '正在全宇宙同步记忆...';
+          saveBtn.style.pointerEvents = 'none';
+
+          // 抓取硬盘最新数据
+          let data = window.getMePresets ? window.getMePresets() : await localforage.getItem('mp_fix_me_presets_list');
+          if(!data) data = { currentId: 'default', list: [{ id: 'default', name: '我', persona: '', avatar: '' }] };
+          
+          const idx = data.list.findIndex(x => x.id === data.currentId);
+          const targetIdx = idx > -1 ? idx : 0;
+
+          // 抓取屏幕输入
+          const nameVal = document.getElementById('mePageName').value.trim() || '未命名';
+          const wxidVal = document.getElementById('mePageWxID').value.trim() || 'zidingyi_baby';
+          const personaVal = document.getElementById('mePagePersona').value.trim();
+          
+          const imgNode = document.getElementById('mePageAvatar');
+          let finalAvatar = window.meAvatarDraftGlobal || '';
+          if (imgNode && imgNode.src && !imgNode.src.includes('placeholder')) {
+            finalAvatar = imgNode.src;
+          }
+
+          data.list[targetIdx].name = nameVal;
+          data.list[targetIdx].wxid = wxidVal;
+          data.list[targetIdx].persona = personaVal;
+          data.list[targetIdx].avatar = finalAvatar;
+          
+          const newMe = { name: nameVal, persona: personaVal, avatar: finalAvatar, note: '' };
+
+          // ✨ 核心1：强制覆写短期记忆 (GlobalState)！
+          if(window.setMePresets) window.setMePresets(data);
+          if(window.setMe) window.setMe(newMe);
+          window.meAvatarDraftGlobal = finalAvatar;
+
+          // ✨ 核心2：暴力写入外挂硬盘！
+          await localforage.setItem('mp_fix_me_presets_list', data);
+          await localforage.setItem('mp_fix_me', newMe);
+
+          // ✨ 核心3：强行重绘所有受影响的屏幕！
+          if(window.renderMePresetsUI) window.renderMePresetsUI();
+          if(window.renderChat) window.renderChat();
+          if(window.renderContacts) window.renderContacts(document.getElementById('searchInput')?.value || '');
+
+          alert('✨ 记忆已全宇宙同步！现在去微信聊天看看，你的专属设定已经生效啦！');
+        } catch(e) {
+          alert('保存失败了宝宝：' + e.message);
+        } finally {
+          saveBtn.textContent = '保存设定';
+          saveBtn.style.pointerEvents = 'auto';
         }
-
-        // 4. 更新数据对象
-        data.list[targetIdx].name = nameVal;
-        data.list[targetIdx].wxid = wxidVal;
-        data.list[targetIdx].persona = personaVal;
-        data.list[targetIdx].avatar = finalAvatar;
-        
-        // 顺手把可能露在外面的全局变量也改了，防止其他地方读错
-        try { window.meAvatarDraftGlobal = finalAvatar; } catch(e){}
-
-        // 5. 🔪 暴力越过缓存，直接砸进外挂硬盘，await 保证写完！
-        await localforage.setItem('mp_fix_me_presets_list', data);
-        await localforage.setItem('mp_fix_me', { name: nameVal, persona: personaVal, avatar: finalAvatar, note: '' });
-
-        alert('✨ 设定与头像已暴力越过结界，死死焊入底层硬盘！');
-      } catch(e) {
-        alert('保存失败了宝宝：' + e.message);
-      } finally {
-        saveBtn.textContent = '保存设定';
-        saveBtn.style.pointerEvents = 'auto';
-      }
-    };
-  }
-}, 1500);
+      };
+    }
+  }, 1500);
+})();
 </script>
 </body>
   </html>
