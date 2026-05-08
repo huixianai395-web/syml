@@ -24178,172 +24178,125 @@ setTimeout(() => {
     will-change: auto !important;
   }
   </style>
- <!-- 🌟 蓝色高定：真理引擎 (彻底重构原生逻辑，打通个人中心与聊天设置，粉碎颜文字幽灵) -->
+ <!-- 🌟 蓝色高定：返璞归真版·绝对物理存取引擎 (放弃炫技，最笨但也最稳固的数据烙印) -->
 <script>
-(function() {
-  // 1. 🔪 彻底重塑底层记忆获取，超度颜文字幽灵！
-  window.getMePresets = function() {
-    let data = window.GlobalState ? window.GlobalState['mp_fix_me_presets_list'] : null;
-    if (!data || !data.list || data.list.length === 0) {
-      // 绝对纯净的初始骨架，再也没有奇奇怪怪的女主设定
-      data = { currentId: 'default', list: [{ id: 'default', name: '我', wxid: 'zidingyi_baby', persona: '', avatar: '' }] };
-    }
-    return data;
-  };
+setTimeout(() => {
+  // 1. 🔪 物理销毁旧保存按钮，断绝一切旧逻辑的干扰
+  const oldSaveBtn = document.getElementById('mePageSaveBtn');
+  if (oldSaveBtn) {
+    const newSaveBtn = oldSaveBtn.cloneNode(true);
+    oldSaveBtn.parentNode.replaceChild(newSaveBtn, oldSaveBtn);
 
-  // 2. 🔪 彻底重构渲染引擎，强制双向同步！
-  window.renderMePresetsUI = function() {
-    const data = window.getMePresets();
-    const cur = data.list.find(x => x.id === data.currentId) || data.list[0];
-    
-    // 回填个人中心
-    const sel = document.getElementById('mePresetSelect');
-    if(sel) {
-      sel.innerHTML = data.list.map(p => `<option value="${p.id}" ${p.id === data.currentId ? 'selected' : ''}>${p.name}</option>`).join('');
-    }
-    const nameNode = document.getElementById('mePageName');
-    if(nameNode) nameNode.value = cur.name || '';
-    const wxidNode = document.getElementById('mePageWxID');
-    if(wxidNode) wxidNode.value = cur.wxid || 'zidingyi_baby';
-    const personaNode = document.getElementById('mePagePersona');
-    if(personaNode) personaNode.value = cur.persona || '';
-    const avatarNode = document.getElementById('mePageAvatar');
-    if(avatarNode) avatarNode.src = cur.avatar || 'https://via.placeholder.com/64x64?text=我';
-    window.meAvatarDraftGlobal = cur.avatar || '';
+    newSaveBtn.onclick = async (e) => {
+      e.preventDefault();
+      newSaveBtn.textContent = '正在物理烙印...';
+      newSaveBtn.style.pointerEvents = 'none';
+      
+      try {
+        // 【最笨的方法】：直接用眼睛看屏幕上填了什么，绝不信任任何缓存！
+        const screenName = document.getElementById('mePageName').value.trim() || '未命名';
+        const screenWxid = document.getElementById('mePageWxID').value.trim() || 'zidingyi_baby';
+        const screenPersona = document.getElementById('mePagePersona').value.trim();
+        
+        // 强行抓取头像：有图就抓图，没图就抓草稿
+        const imgNode = document.getElementById('mePageAvatar');
+        let screenAvatar = window.meAvatarDraftGlobal || '';
+        if (!screenAvatar && imgNode && !imgNode.src.includes('placeholder')) {
+          screenAvatar = imgNode.src;
+        }
 
-    // ✨ 核心魔法：强行把数据填进聊天设置页，打通双脉！
-    const chatNameInput = document.getElementById('meNameInput');
-    if(chatNameInput) chatNameInput.value = cur.name || '';
-    const chatPersonaInput = document.getElementById('mePersonaInput');
-    if(chatPersonaInput) chatPersonaInput.value = cur.persona || '';
-    const chatAvatarInput = document.getElementById('meAvatarInput');
-    if(chatAvatarInput) chatAvatarInput.value = cur.avatar || '';
-    const chatAvatarPreview = document.getElementById('meAvatarPreview');
-    if(chatAvatarPreview) {
-      if(cur.avatar) {
-        chatAvatarPreview.src = cur.avatar;
-        chatAvatarPreview.classList.remove('hidden');
-      } else {
-        chatAvatarPreview.classList.add('hidden');
+        // 【最笨的方法】：直接去底层硬盘把骨架拿出来
+        let dbData = await localforage.getItem('mp_fix_me_presets_list');
+        if (!dbData || !dbData.list) {
+          dbData = { currentId: 'default', list: [{ id: 'default', name: '我', persona: '', avatar: '' }] };
+        }
+
+        // 找到当前选中的骨架，把屏幕上的肉填进去
+        let target = dbData.list.find(x => x.id === dbData.currentId);
+        if (!target) {
+          target = dbData.list[0];
+          dbData.currentId = target.id;
+        }
+
+        target.name = screenName;
+        target.wxid = screenWxid;
+        target.persona = screenPersona;
+        target.avatar = screenAvatar;
+
+        const newMeObj = { name: screenName, persona: screenPersona, avatar: screenAvatar, note: '' };
+
+        // 【最暴力的写入】：双重覆写，外挂硬盘 + 系统的全局变量，防止它反刍旧数据
+        await localforage.setItem('mp_fix_me_presets_list', dbData);
+        await localforage.setItem('mp_fix_me', newMeObj);
+        
+        if (window.GlobalState) {
+          window.GlobalState['mp_fix_me_presets_list'] = dbData;
+          window.GlobalState['mp_fix_me'] = newMeObj;
+        }
+        window.meAvatarDraftGlobal = screenAvatar;
+
+        // 强行重绘微信列表和聊天室
+        if (window.renderChat) window.renderChat();
+        if (window.renderContacts) window.renderContacts(document.getElementById('searchInput')?.value || '');
+
+        // 顺手把下拉菜单里的名字也改了
+        const sel = document.getElementById('mePresetSelect');
+        if (sel && sel.options[sel.selectedIndex]) {
+          sel.options[sel.selectedIndex].text = screenName;
+        }
+
+        alert('✨ 设定已死死钉入底层物理硬盘！绝对不会再消失了！');
+      } catch (err) {
+        alert('保存失败了宝宝：' + err.message);
+      } finally {
+        newSaveBtn.textContent = '保存设定';
+        newSaveBtn.style.pointerEvents = 'auto';
       }
-    }
-  };
+    };
+  }
 
-  // 3. 🔪 延迟绑定终极事件，覆盖所有旧逻辑
-  setTimeout(() => {
-    // 切换预设
-    const presetSelect = document.getElementById('mePresetSelect');
-    if (presetSelect) {
-      presetSelect.onchange = async (e) => {
-        const data = window.getMePresets();
-        data.currentId = e.target.value;
-        const cur = data.list.find(x => x.id === data.currentId);
-        if(cur) {
-          const newMe = { name: cur.name, persona: cur.persona, avatar: cur.avatar, note: '' };
-          if(window.setMePresets) window.setMePresets(data);
-          if(window.setMe) window.setMe(newMe);
-          
-          await localforage.setItem('mp_fix_me_presets_list', data);
-          await localforage.setItem('mp_fix_me', newMe);
-          
-          window.renderMePresetsUI(); // 瞬间重绘双页面
-          if(window.renderChat) window.renderChat();
-          if(window.renderContacts) window.renderContacts(document.getElementById('searchInput')?.value || '');
-          alert('✨ 身份已无缝切换为：' + cur.name);
-        }
-      };
-    }
-
-    // 保存预设
-    const saveBtn = document.getElementById('mePageSaveBtn');
-    if (saveBtn) {
-      saveBtn.onclick = async () => {
-        const oldText = saveBtn.textContent;
-        saveBtn.textContent = '正在烙印灵魂...';
-        saveBtn.style.pointerEvents = 'none';
-        try {
-          const data = window.getMePresets();
-          const idx = data.list.findIndex(x => x.id === data.currentId);
-          const targetIdx = idx > -1 ? idx : 0;
-
-          data.list[targetIdx].name = document.getElementById('mePageName').value.trim() || '未命名';
-          data.list[targetIdx].wxid = document.getElementById('mePageWxID').value.trim() || 'zidingyi_baby';
-          data.list[targetIdx].persona = document.getElementById('mePagePersona').value.trim();
-          
-          const imgNode = document.getElementById('mePageAvatar');
-          let finalAvatar = window.meAvatarDraftGlobal || '';
-          if (imgNode && imgNode.src && !imgNode.src.includes('placeholder')) finalAvatar = imgNode.src;
-          data.list[targetIdx].avatar = finalAvatar;
-
-          const newMe = { name: data.list[targetIdx].name, persona: data.list[targetIdx].persona, avatar: finalAvatar, note: '' };
-          
-          if(window.setMePresets) window.setMePresets(data);
-          if(window.setMe) window.setMe(newMe);
-          
-          await localforage.setItem('mp_fix_me_presets_list', data);
-          await localforage.setItem('mp_fix_me', newMe);
-          
-          window.renderMePresetsUI();
-          if(window.renderChat) window.renderChat();
-          if(window.renderContacts) window.renderContacts(document.getElementById('searchInput')?.value || '');
-          
-          alert('✨ 设定已完美保存并同步至聊天中心！');
-        } catch(e) {
-          alert('保存失败了宝宝：' + e.message);
-        } finally {
-          saveBtn.textContent = '保存设定';
-          saveBtn.style.pointerEvents = 'auto';
-        }
-      };
-    }
-
-    // 新建预设
-    const newBtn = document.getElementById('mePageNewBtn');
-    if (newBtn) {
-      newBtn.onclick = async () => {
-        const name = prompt('给新身份起个名字（比如：傲娇大小姐模式）：');
-        if(!name || !name.trim()) return;
-        const data = window.getMePresets();
-        const newId = 'p_' + Date.now();
-        data.list.push({ id: newId, name: name.trim(), wxid: 'zidingyi_baby', persona: '', avatar: '' });
-        data.currentId = newId;
-        
-        if(window.setMePresets) window.setMePresets(data);
-        await localforage.setItem('mp_fix_me_presets_list', data);
-        window.renderMePresetsUI();
-      };
-    }
-
-    // 删除预设
-    const delBtn = document.getElementById('mePageDelBtn');
-    if (delBtn) {
-      delBtn.onclick = async () => {
-        const data = window.getMePresets();
-        if(data.list.length <= 1) return alert('至少得保留一个身份呀宝宝！');
-        if(!confirm('确定要彻底抹除这个身份预设吗？')) return;
-        
-        data.list = data.list.filter(x => x.id !== data.currentId);
-        data.currentId = data.list[0].id;
-        
-        const cur = data.list[0];
-        const newMe = { name: cur.name, persona: cur.persona, avatar: cur.avatar, note: '' };
-        
-        if(window.setMePresets) window.setMePresets(data);
-        if(window.setMe) window.setMe(newMe);
-        
-        await localforage.setItem('mp_fix_me_presets_list', data);
-        await localforage.setItem('mp_fix_me', newMe);
-        
-        window.renderMePresetsUI();
-        if(window.renderChat) window.renderChat();
-        if(window.renderContacts) window.renderContacts(document.getElementById('searchInput')?.value || '');
-      };
-    }
+  // 2. 🔪 物理销毁旧切换菜单，强制屏幕回填
+  const oldSelect = document.getElementById('mePresetSelect');
+  if (oldSelect) {
+    const newSelect = oldSelect.cloneNode(true);
+    oldSelect.parentNode.replaceChild(newSelect, oldSelect);
     
-    // 初始化刷一次 UI
-    window.renderMePresetsUI();
-  }, 1500);
-})();
+    newSelect.addEventListener('change', async (e) => {
+      let dbData = await localforage.getItem('mp_fix_me_presets_list');
+      if (!dbData) return;
+      
+      dbData.currentId = e.target.value;
+      const cur = dbData.list.find(x => x.id === dbData.currentId);
+      
+      if (cur) {
+        // 【最笨的方法】：切换时，亲自把数据一行行填回输入框里
+        document.getElementById('mePageName').value = cur.name || '';
+        document.getElementById('mePageWxID').value = cur.wxid || 'zidingyi_baby';
+        document.getElementById('mePagePersona').value = cur.persona || '';
+        
+        const imgNode = document.getElementById('mePageAvatar');
+        if (imgNode) imgNode.src = cur.avatar || 'https://via.placeholder.com/64x64?text=我';
+        window.meAvatarDraftGlobal = cur.avatar || '';
+
+        const newMeObj = { name: cur.name, persona: cur.persona, avatar: cur.avatar, note: '' };
+        
+        // 再次同步硬盘与全局变量
+        await localforage.setItem('mp_fix_me_presets_list', dbData);
+        await localforage.setItem('mp_fix_me', newMeObj);
+        
+        if (window.GlobalState) {
+          window.GlobalState['mp_fix_me_presets_list'] = dbData;
+          window.GlobalState['mp_fix_me'] = newMeObj;
+        }
+
+        if (window.renderChat) window.renderChat();
+        if (window.renderContacts) window.renderContacts(document.getElementById('searchInput')?.value || '');
+        
+        alert('✨ 身份已无缝切换为：' + cur.name);
+      }
+    });
+  }
+}, 2000); // 延迟 2 秒，确保等原系统的旧代码全部加载完再进行终极刺杀
 </script>
 </body>
   </html>
