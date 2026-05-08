@@ -24178,89 +24178,125 @@ setTimeout(() => {
     will-change: auto !important;
   }
   </style>
- <!-- 🌟 蓝色高定：个人中心终极核爆同步引擎 (专治死锁与串戏，不讲武德版) -->
+ <!-- 🌟 蓝色高定：个人中心最优解引擎 (保存无缝同步，切换安全重载，粉碎颜文字幽灵) -->
 <script>
-setTimeout(() => {
-  // 1. 🔪 终极接管保存按钮：写完直接强制重启！
-  const saveBtn = document.getElementById('mePageSaveBtn');
-  if (saveBtn) {
-    saveBtn.onclick = async (e) => {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      
-      saveBtn.textContent = '正在重写全宇宙...';
-      saveBtn.style.pointerEvents = 'none';
-      
-      try {
-        // 强行抓取屏幕上的输入
-        const nameVal = document.getElementById('mePageName').value.trim() || '未命名';
-        const wxidVal = document.getElementById('mePageWxID').value.trim() || 'zidingyi_baby';
-        const personaVal = document.getElementById('mePagePersona').value.trim();
-        const imgNode = document.getElementById('mePageAvatar');
-        const finalAvatar = (imgNode && imgNode.src && !imgNode.src.includes('placeholder')) ? imgNode.src : '';
+(function() {
+  // 1. 🔪 彻底净化底层的颜文字幽灵！
+  // 覆盖原有的 getMePresets，防止它一旦找不到数据就吐出颜文字和女主设定
+  window.getMePresets = function() {
+    let data = window.GlobalState ? window.GlobalState['mp_fix_me_presets_list'] : null;
+    if (!data || !data.list || data.list.length === 0) {
+      // 绝对纯净的白纸，再也没有那个奇怪的设定了！
+      data = { currentId: 'default', list: [{ id: 'default', name: '我', wxid: 'zidingyi_baby', persona: '', avatar: '' }] };
+    }
+    return data;
+  };
 
-        // 暴力抓取底层外挂硬盘
-        let data = await localforage.getItem('mp_fix_me_presets_list');
-        if(!data) data = { currentId: 'default', list: [{ id: 'default', name: '我', persona: '', avatar: '' }] };
+  setTimeout(() => {
+    // 2. 🔪 最优解：保存按钮（绝对不刷新，瞬间物理抓取同步）
+    const oldSaveBtn = document.getElementById('mePageSaveBtn');
+    if (oldSaveBtn) {
+      // 暴力克隆，洗净之前所有可能导致白屏的旧监听器
+      const saveBtn = oldSaveBtn.cloneNode(true);
+      oldSaveBtn.parentNode.replaceChild(saveBtn, oldSaveBtn);
+
+      saveBtn.onclick = async (e) => {
+        e.preventDefault();
+        saveBtn.textContent = '正在无缝烙印...';
+        saveBtn.style.pointerEvents = 'none';
         
-        const idx = data.list.findIndex(x => x.id === data.currentId);
-        const targetIdx = idx > -1 ? idx : 0;
-
-        // 强行覆写数据
-        data.list[targetIdx].name = nameVal;
-        data.list[targetIdx].wxid = wxidVal;
-        data.list[targetIdx].persona = personaVal;
-        data.list[targetIdx].avatar = finalAvatar;
-
-        const newMe = { name: nameVal, persona: personaVal, avatar: finalAvatar, note: '' };
-
-        // 🔪 核心杀招：双重锁死外挂硬盘与浅层缓存！
-        await localforage.setItem('mp_fix_me_presets_list', data);
-        await localforage.setItem('mp_fix_me', newMe);
-        localStorage.setItem('mp_fix_me_presets_list', JSON.stringify(data));
-        localStorage.setItem('mp_fix_me', JSON.stringify(newMe));
-
-        alert('✨ 记忆已死死刻入底层！为了彻底生效，系统将瞬间重启！');
-        
-        // 💥 终极核爆：直接重启页面，让系统被迫从硬盘重新读取一切！
-        location.reload();
-      } catch(err) {
-        alert('保存失败了宝宝：' + err.message);
-        saveBtn.textContent = '保存设定';
-        saveBtn.style.pointerEvents = 'auto';
-      }
-    };
-  }
-
-  // 2. 🔪 终极接管下拉切换：切完直接强制重启！
-  const presetSelect = document.getElementById('mePresetSelect');
-  if (presetSelect) {
-    // 暴力克隆节点，洗掉之前所有绑定的乱七八糟的监听器
-    const newSelect = presetSelect.cloneNode(true);
-    presetSelect.parentNode.replaceChild(newSelect, presetSelect);
-    
-    newSelect.addEventListener('change', async (e) => {
-      let data = await localforage.getItem('mp_fix_me_presets_list');
-      if(data) {
-        data.currentId = e.target.value;
-        const cur = data.list.find(x => x.id === data.currentId);
-        if(cur) {
-          const newMe = { name: cur.name, persona: cur.persona, avatar: cur.avatar, note: '' };
+        try {
+          // 强行物理抓取屏幕上的输入，绝不信任任何虚假缓存！
+          const nameVal = document.getElementById('mePageName').value.trim() || '我';
+          const wxidVal = document.getElementById('mePageWxID').value.trim() || 'zidingyi_baby';
+          const personaVal = document.getElementById('mePagePersona').value.trim();
           
-          // 双重锁死
+          // 🔪 最核心的防丢机制：只要屏幕上有图，就死死抓下来！
+          const imgNode = document.getElementById('mePageAvatar');
+          let finalAvatar = window.meAvatarDraftGlobal || '';
+          if (imgNode && imgNode.src && !imgNode.src.includes('placeholder')) {
+            finalAvatar = imgNode.src;
+          }
+
+          // 从硬盘深处拿数据骨架
+          let data = await localforage.getItem('mp_fix_me_presets_list');
+          if(!data || !data.list) data = window.getMePresets();
+          
+          const idx = data.list.findIndex(x => x.id === data.currentId);
+          const targetIdx = idx > -1 ? idx : 0;
+
+          // 将屏幕上的血肉填入骨架
+          data.list[targetIdx].name = nameVal;
+          data.list[targetIdx].wxid = wxidVal;
+          data.list[targetIdx].persona = personaVal;
+          data.list[targetIdx].avatar = finalAvatar;
+
+          const newMe = { name: nameVal, persona: personaVal, avatar: finalAvatar, note: '' };
+
+          // 双重锁死内存与硬盘，永久固化！
           await localforage.setItem('mp_fix_me_presets_list', data);
           await localforage.setItem('mp_fix_me', newMe);
-          localStorage.setItem('mp_fix_me_presets_list', JSON.stringify(data));
-          localStorage.setItem('mp_fix_me', JSON.stringify(newMe));
-          
-          alert('✨ 身份已切换为：' + cur.name + '！即将重启以同步全宇宙！');
-          // 💥 终极核爆
-          location.reload();
+          try { localStorage.setItem('mp_fix_me_presets_list', JSON.stringify(data)); } catch(e){}
+          try { localStorage.setItem('mp_fix_me', JSON.stringify(newMe)); } catch(e){}
+
+          // 同步全局变量，防止切换页面时失忆
+          if (window.GlobalState) {
+            window.GlobalState['mp_fix_me_presets_list'] = data;
+            window.GlobalState['mp_fix_me'] = newMe;
+          }
+          if(window.setMePresets) window.setMePresets(data);
+          if(window.setMe) window.setMe(newMe);
+          window.meAvatarDraftGlobal = finalAvatar;
+
+          // 同步更新下拉框里的名字展示，不触发刷新
+          const sel = document.getElementById('mePresetSelect');
+          if (sel && sel.options[sel.selectedIndex]) {
+            sel.options[sel.selectedIndex].text = nameVal;
+          }
+
+          // 瞬间局部重绘聊天框和列表，绝不刷新网页！
+          if (window.renderChat) window.renderChat();
+          if (window.renderContacts) window.renderContacts(document.getElementById('searchInput')?.value || '');
+
+          alert('✨ 设定已完美保存！已无缝同步至聊天，头像绝不丢失！');
+        } catch (err) {
+          alert('保存失败了宝宝：' + err.message);
+        } finally {
+          saveBtn.textContent = '保存设定';
+          saveBtn.style.pointerEvents = 'auto';
         }
-      }
-    });
-  }
-}, 1500);
+      };
+    }
+
+    // 3. 🔪 最优解：切换预设（接受刷新，保证全宇宙数据最干净的重载）
+    const oldSelect = document.getElementById('mePresetSelect');
+    if (oldSelect) {
+      const newSelect = oldSelect.cloneNode(true);
+      oldSelect.parentNode.replaceChild(newSelect, oldSelect);
+      
+      newSelect.addEventListener('change', async (e) => {
+        let data = await localforage.getItem('mp_fix_me_presets_list');
+        if(data && data.list) {
+          data.currentId = e.target.value;
+          const cur = data.list.find(x => x.id === data.currentId);
+          if(cur) {
+            const newMe = { name: cur.name, persona: cur.persona, avatar: cur.avatar, note: '' };
+            
+            // 写入硬盘，准备重启
+            await localforage.setItem('mp_fix_me_presets_list', data);
+            await localforage.setItem('mp_fix_me', newMe);
+            try { localStorage.setItem('mp_fix_me_presets_list', JSON.stringify(data)); } catch(err){}
+            try { localStorage.setItem('mp_fix_me', JSON.stringify(newMe)); } catch(err){}
+            
+            alert('✨ 身份已切换为：' + cur.name + '！即将重载宇宙以完美同步聊天设置！');
+            // 最优解：直接刷新页面，让系统被迫从硬盘重新读取一切！
+            location.reload(); 
+          }
+        }
+      });
+    }
+  }, 2000); // 延迟 2 秒，确保等原系统的旧代码全部加载完再进行终极刺杀
+})();
 </script>
 </body>
   </html>
