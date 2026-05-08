@@ -24168,20 +24168,16 @@ setTimeout(() => {
     scroll-behavior: auto !important;
   }
 
- /* 2. 拯救 IF 境打字卡顿与光标漂移：iOS 专属柔性护盾 */
+  /* 2. 拯救 IF 境打字卡顿：终极物理切割与冻结 */
   #ifReaderContent {
-    contain: layout size !important; 
+    /* 彻底冻结上半部分，无论打多少字，大山绝对不重绘！ */
+    contain: strict !important; 
   }
-  
   #ifReaderInput {
-    contain: none !important; 
-    will-change: auto !important;
-    transform: none !important;
-    -webkit-appearance: none !important;
-  }
-  
-  #ifReader > .page > div:last-child {
-    transform: none !important; 
+    /* 切断输入框向外传递的排版波动 */
+    contain: strict !important; 
+    will-change: transform !important;
+    transform: translateZ(0) !important;
   }
 </style>
 
@@ -24210,43 +24206,6 @@ setTimeout(() => {
     
     window._blueOfflineAvatarHookedV3 = true;
   }
-})();
-</script>
-  <!-- 🌟 蓝色高定：iOS PWA 零延迟量子打击引擎 🌟 -->
-<script>
-(function(){
-  // 延迟加载，确保所有按钮都已经渲染完毕
-  setTimeout(() => {
-    // 1. 拯救 IF 境的发送按钮
-    const ifSendBtn = document.querySelector('#ifReader .page > div:last-child button');
-    if(ifSendBtn) {
-      ifSendBtn.removeAttribute('onclick'); // 剥夺原有的迟钝点击事件
-      ifSendBtn.onpointerdown = function(e) {
-        e.preventDefault(); // 🔪 核心杀招：强行阻断苹果的键盘回弹和 300ms 延迟！
-        window._sendIfReply();
-      };
-    }
-    
-    // 2. 拯救普通聊天的储存键
-    const storeBtn = document.getElementById('storeBtn');
-    if(storeBtn) {
-      storeBtn.onclick = null;
-      storeBtn.onpointerdown = function(e) {
-        e.preventDefault(); // 保持键盘不掉落，实现丝滑连发
-        if(typeof storeCurrentInput === 'function') storeCurrentInput();
-      };
-    }
-    
-    // 3. 拯救普通聊天的发送键
-    const sendBtn = document.getElementById('sendBtn');
-    if(sendBtn) {
-      sendBtn.onclick = null;
-      sendBtn.onpointerdown = function(e) {
-        e.preventDefault();
-        if(typeof sendMsg === 'function') sendMsg();
-      };
-    }
-  }, 2000);
 })();
 </script>
 </body>
