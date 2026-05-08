@@ -5700,6 +5700,7 @@ window._ivManageMode = false;
   function applyModeUI(){const c=getContactById(currentId),st=normSettings(c?.settings);$('chatRoom').classList.toggle('offline',st.mode==='offline');updateChatSub();}
 
   window.openChat=function(id){
+    window._chatDisplayLimit = 40;
     currentId=id;selectMode=false;selectedIds.clear();closeFloatMenu();composeQuote=null;updateQuoteBar();
     const c=getContactById(id);$('chatTitle').textContent=c?(c.note||c.name):'聊天';const p=getPref();const chatRoom=document.getElementById('chatRoom');if(chatRoom) chatRoom.classList.toggle('hide-avatar',!!p.hideOfflineAvatar);applyModeUI();renderChat();show('chatRoom');
   };
@@ -5864,7 +5865,10 @@ if(!isMe && isHtmlDoc(t)){
    
     const me = { name: st.meName||globalMe.name||'我', avatar: st.meAvatar||globalMe.avatar||'', persona: st.mePersona||globalMe.persona||'', note: st.meNote||globalMe.note||'' };
     const roleAvatar=c?.avatar||'https://via.placeholder.com/64x64?text=TA',meAvatar=me.avatar||'https://via.placeholder.com/64x64?text=我';
-    const arr=getChatArr(currentId);
+    const fullArr = getChatArr(currentId);
+    window._chatDisplayLimit = window._chatDisplayLimit || 40;
+    const arr = fullArr.slice(-window._chatDisplayLimit);
+    window._hasMoreChat = fullArr.length > window._chatDisplayLimit;
     const allContacts = getContacts();
 // 🌟 蓝色高定：干枯玫瑰粉黑名单封条物理隔离判定！
     const blockBanner = document.getElementById('blockByMeBanner');
@@ -5948,6 +5952,10 @@ if(!isMe && isHtmlDoc(t)){
         return `<div class="msg-item ${selected?'selected':''}${sCls}" data-mid="${m.id}">${cHtml}<div class="msg-row"><img class="chat-avatar" src="${currentAv}"><div class="bubble-wrap ai">${nameLabel}${renderBubbleContent(tempM,false,pref)}</div></div></div>`;
       }).join('');
     }
+    if (window._hasMoreChat && !selectMode) {
+      const loadBtn = `<div onclick="window._chatDisplayLimit += 40; renderChat();" style="text-align:center; padding:12px; color:#5c7094; font-size:12px; cursor:pointer; background:rgba(238,244,250,0.6); border-radius:12px; margin-bottom:16px; border:1px dashed #dce5f0; transition:all 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">✨ 触碰星轨，翻阅更早的记忆...</div>`;
+      $('chatMsgs').insertAdjacentHTML('afterbegin', loadBtn);
+  }
     $('chatRoom').classList.toggle('select-mode',selectMode);
     $('multiSelectBar').classList.toggle('hidden',!selectMode);
     $('multiCount').textContent=`已选 ${selectedIds.size} 项`;
