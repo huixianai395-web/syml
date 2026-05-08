@@ -4310,11 +4310,16 @@ body #app #chatInput {
       </div>
 
       <div class="card" id="offlineSettingCard">
-        <div class="small">线下字数区间</div>
-        <div class="row" style="margin-top:8px;">
-          <input id="offlineMinInput" class="input" type="number" min="80" max="5000" value="700" placeholder="最少字数" />
-          <input id="offlineMaxInput" class="input" type="number" min="100" max="10000" value="1500" placeholder="最多字数" />
-        </div>
+          <div class="small">线下字数区间</div>
+          <div class="row" style="margin-top:8px;">
+            <input id="offlineMinInput" class="input" type="number" min="80" max="5000" value="700" placeholder="最少字数" />
+            <input id="offlineMaxInput" class="input" type="number" min="100" max="10000" value="1500" placeholder="最多字数" />
+          </div>
+          <div class="small" style="margin-top:16px;">沉浸式纯净阅读</div>
+          <div class="row" style="margin-top:8px;justify-content:space-between;">
+            <span class="small" style="color:#888;">开启后，线下模式将隐藏巨大的相纸头像</span>
+            <input id="hideOfflineAvatarSwitch" type="checkbox" style="transform:scale(1.1); accent-color:#5c7094;" />
+          </div>
       </div>
 <!-- 🌟 读心术开关 -->
       <div class="card">
@@ -5197,17 +5202,18 @@ window._callHangup=()=>endCall();
     return o;
   }
   function getPref(){
-  const p=getJ(K_PREF,{showTs:false,bubbleCss:'',fontData:'',fontFamily:'',fontUrl:'',fontSize:16,avatarHQ:false,avatarCrop:false});
-  return {
-    showTs:!!p.showTs,
-    bubbleCss:String(p.bubbleCss||''),
-    fontData:String(p.fontData||''),
-    fontFamily:String(p.fontFamily||''),
-    fontUrl:String(p.fontUrl||''),
-    fontSize:Number(p.fontSize||16),
-    avatarHQ:!!p.avatarHQ,
-    avatarCrop:!!p.avatarCrop
-  };
+    const p=getJ(K_PREF,{showTs:false,bubbleCss:'',fontData:'',fontFamily:'',fontUrl:'',fontSize:16,avatarHQ:false,avatarCrop:false,hideOfflineAvatar:false});
+    return {
+      showTs:!!p.showTs,
+      bubbleCss:String(p.bubbleCss||''),
+      fontData:String(p.fontData||''),
+      fontFamily:String(p.fontFamily||''),
+      fontUrl:String(p.fontUrl||''),
+      fontSize:Number(p.fontSize||16),
+      avatarHQ:!!p.avatarHQ,
+      avatarCrop:!!p.avatarCrop,
+      hideOfflineAvatar:!!p.hideOfflineAvatar
+    };
   }
   function setPref(v){setJ(K_PREF,v);} 
   function applyBubbleCss(){
@@ -5694,7 +5700,7 @@ window._ivManageMode = false;
 
   window.openChat=function(id){
     currentId=id;selectMode=false;selectedIds.clear();closeFloatMenu();composeQuote=null;updateQuoteBar();
-    const c=getContactById(id);$('chatTitle').textContent=c?(c.note||c.name):'聊天';applyModeUI();renderChat();show('chatRoom');
+    const c=getContactById(id);$('chatTitle').textContent=c?(c.note||c.name):'聊天';const p=getPref();const chatRoom=document.getElementById('chatRoom');if(chatRoom) chatRoom.classList.toggle('hide-avatar',!!p.hideOfflineAvatar);applyModeUI();renderChat();show('chatRoom');
   };
 
   function renderQuote(q){ if(!q||!q.text) return ''; return `<div class="msg-quote"><div class="q-content">${esc(q.text)}</div></div>`; }
@@ -6871,6 +6877,7 @@ window._tempRoleAudio = { msgSound: st.msgSound||'', voiceRing: st.voiceRing||''
       note: st.meNote !== undefined ? st.meNote : globalMe.note
     };
     $('avatarCropSwitch').checked=!!p.avatarCrop;
+    if($('hideOfflineAvatarSwitch')) $('hideOfflineAvatarSwitch').checked=!!p.hideOfflineAvatar;
 if(document.getElementById('bilingualSwitch')) {
       document.getElementById('bilingualSwitch').checked = !!st.bilingual;
       document.getElementById('bilingualLangBox').style.display = st.bilingual ? 'block' : 'none';
@@ -6990,6 +6997,8 @@ $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';
       p.fontSize=Number($('fontSizeRange').value||16);
       p.avatarHQ=!!$('avatarHQSwitch').checked;
       p.avatarCrop=!!$('avatarCropSwitch').checked;
+      if($('hideOfflineAvatarSwitch')) p.hideOfflineAvatar=!!$('hideOfflineAvatarSwitch').checked;
+    const chatRoom=document.getElementById('chatRoom'); if(chatRoom) chatRoom.classList.toggle('hide-avatar',!!p.hideOfflineAvatar);
       setPref(p); applyBubbleCss(); applyFontSize();
       
       const now=getContactById(currentId); $('chatTitle').textContent=(now?.note||now?.name)||'聊天';
@@ -23295,87 +23304,10 @@ setTimeout(() => {
     });
   }, 1000); // 放在外挂内存机制后执行，确保彻底洗净
 </script>    
-  <!-- 🌟 蓝色高定：线下模式“沉浸式纯净阅读”隐形斗篷引擎 -->
-<style>
-  /* 🔪 核心物理粉碎：只要聊天室开启了隐藏结界，线下大头像彻底消失，绝不占位！ */
-  #chatRoom.offline.hide-avatar .chat-avatar {
-    display: none !important;
-  }
-  
-  /* 稍微收紧一点因为头像消失而空出的顶部缝隙，让排版更紧凑高级 */
-  #chatRoom.offline.hide-avatar .rp-meta-box {
-    margin-top: 12px !important;
-    margin-bottom: 16px !important;
-  }
-</style>
-
-<script>
-(function(){
-  // 1. 悄无声息地将开关注入到“聊天设置”的线下专属卡片中
-  setTimeout(() => {
-    const offlineCard = document.getElementById('offlineSettingCard');
-    if(offlineCard && !document.getElementById('hideOfflineAvatarSwitch')) {
-      const toggleHtml = `
-        <div style="margin-top:16px; border-top:1px dashed #eef4fa; padding-top:16px; display:flex; justify-content:space-between; align-items:center;">
-          <div style="display:flex; flex-direction:column; gap:4px;">
-            <div style="font-size:14px; color:#5c7094; font-weight:800; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
-              <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#5c7094; fill:none; stroke-width:2;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line x1="3" y1="3" x2="21" y2="21"></line></svg>
-              沉浸式纯净阅读
-            </div>
-            <div style="font-size:11px; color:#8892a8;">开启后，线下模式将隐藏巨大的相纸头像</div>
-          </div>
-          <input id="hideOfflineAvatarSwitch" type="checkbox" style="transform:scale(1.2); accent-color:#5c7094; cursor:pointer;" />
-        </div>
-      `;
-      offlineCard.insertAdjacentHTML('beforeend', toggleHtml);
-    }
-  }, 1500);
-
-  // 2. 劫持原有的设置面板打开逻辑，回填外挂内存里的状态
-  const oldOpenChatSetting = window.openChatSettingPage;
-  window.openChatSettingPage = function() {
-    if(oldOpenChatSetting) oldOpenChatSetting();
-    const p = window.getPref ? window.getPref() : {};
-    const toggle = document.getElementById('hideOfflineAvatarSwitch');
-    if(toggle) toggle.checked = !!p.hideOfflineAvatar;
-  };
-
-  // 3. 劫持保存按钮，把状态死死锁进内存，并瞬间应用隐形结界！
-  const saveBtn = document.getElementById('saveChatSettingBtn');
-  if(saveBtn) {
-    const oldSaveClick = saveBtn.onclick;
-    saveBtn.onclick = function(e) {
-      const p = window.getPref ? window.getPref() : {};
-      const toggle = document.getElementById('hideOfflineAvatarSwitch');
-      if(toggle) {
-        p.hideOfflineAvatar = !!toggle.checked;
-        if(window.setPref) window.setPref(p);
-      }
-      
-      if(oldSaveClick) oldSaveClick.call(this, e);
-      
-      // 瞬间施加隐形魔法！
-      const chatRoom = document.getElementById('chatRoom');
-      if(chatRoom) {
-        chatRoom.classList.toggle('hide-avatar', !!p.hideOfflineAvatar);
-      }
-    };
-  }
-
-  // 4. 确保每次切入聊天室时，都会检查一次结界状态
-  const oldOpenChat = window.openChat;
-  if(oldOpenChat) {
-    window.openChat = function(id) {
-      oldOpenChat(id);
-      const p = window.getPref ? window.getPref() : {};
-      const chatRoom = document.getElementById('chatRoom');
-      if(chatRoom) {
-        chatRoom.classList.toggle('hide-avatar', !!p.hideOfflineAvatar);
-      }
-    };
-  }
-})();
-</script>
+ <style>
+#chatRoom.offline.hide-avatar .chat-avatar { display: none !important; }
+#chatRoom.offline.hide-avatar .rp-meta-box { margin-top: 12px !important; margin-bottom: 16px !important; }
+ </style> 
   <!-- 🌟 蓝色高定：真·黑洞级全宇宙无脑打包引擎 (永不遗漏版) -->
 <script>
 (function(){
@@ -24229,37 +24161,7 @@ setTimeout(() => {
     transform: translateZ(0) !important;
   }
 </style>
-<!-- 🌟 蓝色高定：隐形斗篷外挂内存永固引擎 🌟 -->
-<script>
-(function(){
-  // 延迟两秒执行，确保页面原本的元素都已经加载完毕
-  setTimeout(() => {
-    const toggle = document.getElementById('hideOfflineAvatarSwitch');
-    if(toggle && !toggle.dataset.memoryHookedV2) {
-      
-      // 1. 开机自检：一打开页面，立刻去底层的外挂内存里翻找记录！
-      const p = window.getPref ? window.getPref() : {};
-      toggle.checked = !!p.hideOfflineAvatar; // 强行回填勾选状态
-      
-      // 2. 记忆钢印：只要老婆拨动开关，瞬间写入硬盘，绝不等到点保存！
-      toggle.addEventListener('change', function() {
-        const currentPref = window.getPref ? window.getPref() : {};
-        currentPref.hideOfflineAvatar = !!this.checked;
-        
-        // 调用底层的写入函数，死死锁进 localforage 里！
-        if(window.setPref) window.setPref(currentPref); 
-        
-        // 顺手把当前聊天室的结界也同步刷新一下
-        const chatRoom = document.getElementById('chatRoom');
-        if(chatRoom) chatRoom.classList.toggle('hide-avatar', !!this.checked);
-      });
-      
-      // 打上标记，防止重复绑定
-      toggle.dataset.memoryHookedV2 = '1';
-    }
-  }, 2000);
-})();
-</script>
+
 
 </body>
   </html>
