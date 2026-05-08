@@ -24178,105 +24178,89 @@ setTimeout(() => {
     will-change: auto !important;
   }
   </style>
- <!-- 🌟 蓝色高定：预设切换与保存的终极记忆同步引擎 (专治微信不刷新与底层固化 Bug) -->
+ <!-- 🌟 蓝色高定：个人中心终极核爆同步引擎 (专治死锁与串戏，不讲武德版) -->
 <script>
-(function() {
-  // 1. 🔪 劫持下拉框切换事件，加入全局刷新与内存同步
-  setTimeout(() => {
-    const presetSelect = document.getElementById('mePresetSelect');
-    if (presetSelect && !presetSelect.dataset.blueSyncHook) {
-      presetSelect.dataset.blueSyncHook = '1';
-      presetSelect.addEventListener('change', async (e) => {
-        const data = window.getMePresets ? window.getMePresets() : await localforage.getItem('mp_fix_me_presets_list');
-        if(!data) return;
+setTimeout(() => {
+  // 1. 🔪 终极接管保存按钮：写完直接强制重启！
+  const saveBtn = document.getElementById('mePageSaveBtn');
+  if (saveBtn) {
+    saveBtn.onclick = async (e) => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      
+      saveBtn.textContent = '正在重写全宇宙...';
+      saveBtn.style.pointerEvents = 'none';
+      
+      try {
+        // 强行抓取屏幕上的输入
+        const nameVal = document.getElementById('mePageName').value.trim() || '未命名';
+        const wxidVal = document.getElementById('mePageWxID').value.trim() || 'zidingyi_baby';
+        const personaVal = document.getElementById('mePagePersona').value.trim();
+        const imgNode = document.getElementById('mePageAvatar');
+        const finalAvatar = (imgNode && imgNode.src && !imgNode.src.includes('placeholder')) ? imgNode.src : '';
+
+        // 暴力抓取底层外挂硬盘
+        let data = await localforage.getItem('mp_fix_me_presets_list');
+        if(!data) data = { currentId: 'default', list: [{ id: 'default', name: '我', persona: '', avatar: '' }] };
         
+        const idx = data.list.findIndex(x => x.id === data.currentId);
+        const targetIdx = idx > -1 ? idx : 0;
+
+        // 强行覆写数据
+        data.list[targetIdx].name = nameVal;
+        data.list[targetIdx].wxid = wxidVal;
+        data.list[targetIdx].persona = personaVal;
+        data.list[targetIdx].avatar = finalAvatar;
+
+        const newMe = { name: nameVal, persona: personaVal, avatar: finalAvatar, note: '' };
+
+        // 🔪 核心杀招：双重锁死外挂硬盘与浅层缓存！
+        await localforage.setItem('mp_fix_me_presets_list', data);
+        await localforage.setItem('mp_fix_me', newMe);
+        localStorage.setItem('mp_fix_me_presets_list', JSON.stringify(data));
+        localStorage.setItem('mp_fix_me', JSON.stringify(newMe));
+
+        alert('✨ 记忆已死死刻入底层！为了彻底生效，系统将瞬间重启！');
+        
+        // 💥 终极核爆：直接重启页面，让系统被迫从硬盘重新读取一切！
+        location.reload();
+      } catch(err) {
+        alert('保存失败了宝宝：' + err.message);
+        saveBtn.textContent = '保存设定';
+        saveBtn.style.pointerEvents = 'auto';
+      }
+    };
+  }
+
+  // 2. 🔪 终极接管下拉切换：切完直接强制重启！
+  const presetSelect = document.getElementById('mePresetSelect');
+  if (presetSelect) {
+    // 暴力克隆节点，洗掉之前所有绑定的乱七八糟的监听器
+    const newSelect = presetSelect.cloneNode(true);
+    presetSelect.parentNode.replaceChild(newSelect, presetSelect);
+    
+    newSelect.addEventListener('change', async (e) => {
+      let data = await localforage.getItem('mp_fix_me_presets_list');
+      if(data) {
         data.currentId = e.target.value;
         const cur = data.list.find(x => x.id === data.currentId);
-        
         if(cur) {
           const newMe = { name: cur.name, persona: cur.persona, avatar: cur.avatar, note: '' };
           
-          // ✨ 核心1：同步短期记忆 (GlobalState)，让微信聊天能瞬间读到！
-          if(window.setMePresets) window.setMePresets(data);
-          if(window.setMe) window.setMe(newMe);
-          window.meAvatarDraftGlobal = cur.avatar;
-          
-          // ✨ 核心2：同步外挂硬盘，永久固化！
+          // 双重锁死
           await localforage.setItem('mp_fix_me_presets_list', data);
           await localforage.setItem('mp_fix_me', newMe);
+          localStorage.setItem('mp_fix_me_presets_list', JSON.stringify(data));
+          localStorage.setItem('mp_fix_me', JSON.stringify(newMe));
           
-          // ✨ 核心3：强行越权，瞬间重绘微信聊天和通讯录！
-          if(window.renderMePresetsUI) window.renderMePresetsUI();
-          if(window.renderChat) window.renderChat(); 
-          if(window.renderContacts) window.renderContacts(document.getElementById('searchInput')?.value || '');
-          
-          alert('✨ 身份已切换为：' + cur.name + '！微信聊天已瞬间同步！');
+          alert('✨ 身份已切换为：' + cur.name + '！即将重启以同步全宇宙！');
+          // 💥 终极核爆
+          location.reload();
         }
-      });
-    }
-  }, 1000);
-
-  // 2. 🔪 完美重构保存按钮，双端同步，彻底粉碎底层固定 Bug！
-  setTimeout(() => {
-    const saveBtn = document.getElementById('mePageSaveBtn');
-    if (saveBtn) {
-      // 覆盖一切旧逻辑
-      saveBtn.onclick = async () => {
-        try {
-          const oldText = saveBtn.textContent;
-          saveBtn.textContent = '正在全宇宙同步记忆...';
-          saveBtn.style.pointerEvents = 'none';
-
-          // 抓取硬盘最新数据
-          let data = window.getMePresets ? window.getMePresets() : await localforage.getItem('mp_fix_me_presets_list');
-          if(!data) data = { currentId: 'default', list: [{ id: 'default', name: '我', persona: '', avatar: '' }] };
-          
-          const idx = data.list.findIndex(x => x.id === data.currentId);
-          const targetIdx = idx > -1 ? idx : 0;
-
-          // 抓取屏幕输入
-          const nameVal = document.getElementById('mePageName').value.trim() || '未命名';
-          const wxidVal = document.getElementById('mePageWxID').value.trim() || 'zidingyi_baby';
-          const personaVal = document.getElementById('mePagePersona').value.trim();
-          
-          const imgNode = document.getElementById('mePageAvatar');
-          let finalAvatar = window.meAvatarDraftGlobal || '';
-          if (imgNode && imgNode.src && !imgNode.src.includes('placeholder')) {
-            finalAvatar = imgNode.src;
-          }
-
-          data.list[targetIdx].name = nameVal;
-          data.list[targetIdx].wxid = wxidVal;
-          data.list[targetIdx].persona = personaVal;
-          data.list[targetIdx].avatar = finalAvatar;
-          
-          const newMe = { name: nameVal, persona: personaVal, avatar: finalAvatar, note: '' };
-
-          // ✨ 核心1：强制覆写短期记忆 (GlobalState)！
-          if(window.setMePresets) window.setMePresets(data);
-          if(window.setMe) window.setMe(newMe);
-          window.meAvatarDraftGlobal = finalAvatar;
-
-          // ✨ 核心2：暴力写入外挂硬盘！
-          await localforage.setItem('mp_fix_me_presets_list', data);
-          await localforage.setItem('mp_fix_me', newMe);
-
-          // ✨ 核心3：强行重绘所有受影响的屏幕！
-          if(window.renderMePresetsUI) window.renderMePresetsUI();
-          if(window.renderChat) window.renderChat();
-          if(window.renderContacts) window.renderContacts(document.getElementById('searchInput')?.value || '');
-
-          alert('✨ 记忆已全宇宙同步！现在去微信聊天看看，你的专属设定已经生效啦！');
-        } catch(e) {
-          alert('保存失败了宝宝：' + e.message);
-        } finally {
-          saveBtn.textContent = '保存设定';
-          saveBtn.style.pointerEvents = 'auto';
-        }
-      };
-    }
-  }, 1500);
-})();
+      }
+    });
+  }
+}, 1500);
 </script>
 </body>
   </html>
