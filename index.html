@@ -24178,38 +24178,35 @@ setTimeout(() => {
     will-change: auto !important;
   }
   </style>
- <!-- 🌟 蓝色高定：绝对真理引擎 (最优解：承认架构局限，全面拥抱强制重启，确保数据 100% 绝对安全) -->
+ <!-- 🌟 蓝色高定：个人中心终极核爆同步引擎 (专治死锁与串戏，不讲武德版) -->
 <script>
 setTimeout(() => {
-  // 1. 🛡️ 个人中心保存：写完硬盘，立刻强制重启！
+  // 1. 🔪 终极接管保存按钮：写完直接强制重启！
   const saveBtn = document.getElementById('mePageSaveBtn');
   if (saveBtn) {
-    const newSaveBtn = saveBtn.cloneNode(true);
-    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-
-    newSaveBtn.onclick = async (e) => {
+    saveBtn.onclick = async (e) => {
       e.preventDefault();
-      newSaveBtn.textContent = '数据烙印中...';
-      newSaveBtn.style.pointerEvents = 'none';
+      e.stopImmediatePropagation();
+      
+      saveBtn.textContent = '正在重写全宇宙...';
+      saveBtn.style.pointerEvents = 'none';
       
       try {
+        // 强行抓取屏幕上的输入
         const nameVal = document.getElementById('mePageName').value.trim() || '未命名';
         const wxidVal = document.getElementById('mePageWxID').value.trim() || 'zidingyi_baby';
         const personaVal = document.getElementById('mePagePersona').value.trim();
-        
-        // 抓取头像
         const imgNode = document.getElementById('mePageAvatar');
-        let finalAvatar = window.meAvatarDraftGlobal || '';
-        if (imgNode && imgNode.src && !imgNode.src.includes('placeholder')) {
-          finalAvatar = imgNode.src;
-        }
+        const finalAvatar = (imgNode && imgNode.src && !imgNode.src.includes('placeholder')) ? imgNode.src : '';
 
+        // 暴力抓取底层外挂硬盘
         let data = await localforage.getItem('mp_fix_me_presets_list');
         if(!data) data = { currentId: 'default', list: [{ id: 'default', name: '我', persona: '', avatar: '' }] };
         
         const idx = data.list.findIndex(x => x.id === data.currentId);
         const targetIdx = idx > -1 ? idx : 0;
 
+        // 强行覆写数据
         data.list[targetIdx].name = nameVal;
         data.list[targetIdx].wxid = wxidVal;
         data.list[targetIdx].persona = personaVal;
@@ -24217,23 +24214,28 @@ setTimeout(() => {
 
         const newMe = { name: nameVal, persona: personaVal, avatar: finalAvatar, note: '' };
 
-        // 暴力写入硬盘
+        // 🔪 核心杀招：双重锁死外挂硬盘与浅层缓存！
         await localforage.setItem('mp_fix_me_presets_list', data);
         await localforage.setItem('mp_fix_me', newMe);
+        localStorage.setItem('mp_fix_me_presets_list', JSON.stringify(data));
+        localStorage.setItem('mp_fix_me', JSON.stringify(newMe));
 
-        // ✨ 最优解：放弃无感重绘，直接强制重启，让系统老老实实从硬盘重读一切！
+        alert('✨ 记忆已死死刻入底层！为了彻底生效，系统将瞬间重启！');
+        
+        // 💥 终极核爆：直接重启页面，让系统被迫从硬盘重新读取一切！
         location.reload();
       } catch(err) {
-        alert('保存失败：' + err.message);
-        newSaveBtn.textContent = '保存设定';
-        newSaveBtn.style.pointerEvents = 'auto';
+        alert('保存失败了宝宝：' + err.message);
+        saveBtn.textContent = '保存设定';
+        saveBtn.style.pointerEvents = 'auto';
       }
     };
   }
 
-  // 2. 🛡️ 下拉菜单切换：存完当前状态，立刻强制重启！
+  // 2. 🔪 终极接管下拉切换：切完直接强制重启！
   const presetSelect = document.getElementById('mePresetSelect');
   if (presetSelect) {
+    // 暴力克隆节点，洗掉之前所有绑定的乱七八糟的监听器
     const newSelect = presetSelect.cloneNode(true);
     presetSelect.parentNode.replaceChild(newSelect, presetSelect);
     
@@ -24244,29 +24246,19 @@ setTimeout(() => {
         const cur = data.list.find(x => x.id === data.currentId);
         if(cur) {
           const newMe = { name: cur.name, persona: cur.persona, avatar: cur.avatar, note: '' };
+          
+          // 双重锁死
           await localforage.setItem('mp_fix_me_presets_list', data);
           await localforage.setItem('mp_fix_me', newMe);
+          localStorage.setItem('mp_fix_me_presets_list', JSON.stringify(data));
+          localStorage.setItem('mp_fix_me', JSON.stringify(newMe));
           
-          // ✨ 最优解：切换完立刻重启，绝不给系统弄丢头像和串戏的机会！
+          alert('✨ 身份已切换为：' + cur.name + '！即将重启以同步全宇宙！');
+          // 💥 终极核爆
           location.reload();
         }
       }
     });
-  }
-
-  // 3. 🛡️ 修复导入角色不显示：监听保存联系人按钮，保存后强制重启！
-  const saveContactBtn = document.getElementById('saveCreateBtn');
-  if (saveContactBtn && !saveContactBtn.dataset.blueHookedRefresh) {
-    saveContactBtn.dataset.blueHookedRefresh = '1';
-    const originalOnClick = saveContactBtn.onclick;
-    
-    saveContactBtn.onclick = async (e) => {
-      // 先让原系统把角色存进硬盘
-      if (originalOnClick) await originalOnClick(e);
-      
-      // ✨ 角色保存进硬盘后，强制刷新页面，让通讯录重新睁开眼睛！
-      setTimeout(() => { location.reload(); }, 200);
-    };
   }
 }, 1500);
 </script>
