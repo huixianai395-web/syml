@@ -24178,36 +24178,67 @@ setTimeout(() => {
     will-change: auto !important;
   }
   </style>
- <!-- 🍓 绝对安全：量子拦截缝合补丁  🍓 -->
+ <!-- 🌟 蓝色高定：个人中心头像永固引擎 (绝对防丢版) -->
 <script>
-setTimeout(() => {
-  const realSaveBtn = document.getElementById('mePageSaveBtn');
-  if (realSaveBtn) {
-    // 🔪 核心魔法：使用 mousedown 配合 true(捕获阶段)，抢在 click 之前执行！
-    realSaveBtn.addEventListener('mousedown', function() {
-      const imgNode = document.getElementById('mePageAvatar');
-      
-      // 只要屏幕上有图，并且不是默认的占位图
-      if (imgNode && imgNode.src && !imgNode.src.includes('placeholder')) {
-         
-         // 1. 抢先一步，把真实的图片强行塞进那个瞎子全局变量里！
-         window.meAvatarDraftGlobal = imgNode.src; 
-         
-         // 2. 顺手直接写进底层外挂硬盘，做双重保险！
-         if(typeof window.getMePresets === 'function' && typeof window.setMePresets === 'function') {
-            try {
-              let p = window.getMePresets();
-              let c = p.list.find(x => x.id === p.currentId);
-              if(c) { 
-                c.avatar = imgNode.src; 
-                window.setMePresets(p); 
-              }
-            } catch(e) {}
-         }
+(function() {
+  // 1. 彻底粉碎容易裂图的 placeholder，换上海盐蓝高定初始头像！
+  if(window.renderMePresetsUI) {
+    const oldRender = window.renderMePresetsUI;
+    window.renderMePresetsUI = function() {
+      oldRender();
+      const curAvatarEl = document.getElementById('mePageAvatar');
+      if (curAvatarEl) {
+        let src = curAvatarEl.src;
+        if (!src || src.includes('undefined') || src.includes('null') || src.includes('placeholder')) {
+          const name = document.getElementById('mePageName')?.value || '我';
+          src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=eef4fa&textColor=5c7094`;
+          curAvatarEl.src = src;
+        }
+        window.meAvatarDraftGlobal = src;
       }
-    }, true); // 这里的 true 代表事件捕获阶段，拥有绝对的最高优先级！
+    };
   }
-}, 1000);
+
+  // 2. 劫持保存按钮，绕开 600ms 延迟，瞬间暴力写入外挂硬盘！
+  setTimeout(() => {
+    const saveBtn = document.getElementById('mePageSaveBtn');
+    if (saveBtn && !saveBtn.dataset.blueIronHook) {
+      saveBtn.dataset.blueIronHook = '1';
+      
+      saveBtn.addEventListener('click', async (e) => {
+        // 🔪 阻止原本慢吞吞的保存逻辑，我们亲自接管！
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        
+        const data = window.getMePresets();
+        const idx = data.list.findIndex(x => x.id === data.currentId);
+        if(idx > -1) {
+          data.list[idx].name = document.getElementById('mePageName').value.trim() || '未命名';
+          data.list[idx].wxid = document.getElementById('mePageWxID').value.trim() || 'zidingyi_baby';
+          data.list[idx].persona = document.getElementById('mePagePersona').value.trim();
+          
+          // 强行拿屏幕上最新显示的头像！
+          const imgNode = document.getElementById('mePageAvatar');
+          if (imgNode && imgNode.src) window.meAvatarDraftGlobal = imgNode.src;
+          data.list[idx].avatar = window.meAvatarDraftGlobal;
+          
+          window.setMePresets(data);
+          window.setMe({ name: data.list[idx].name, persona: data.list[idx].persona, avatar: data.list[idx].avatar, note: '' });
+          
+          // 🔪 核心杀招：不准等！立刻写进 localforage！
+          await localforage.setItem('mp_fix_me_presets_list', data);
+          await localforage.setItem('mp_fix_me', window.getMe());
+          
+          window.renderMePresetsUI();
+          alert('✨ 设定与头像已死死焊入外挂硬盘！就算立刻刷新也绝对不丢！');
+        }
+      }, true); 
+    }
+    
+    // 顺手触发一次，把现在已经裂开的图治好
+    if(window.renderMePresetsUI) window.renderMePresetsUI();
+  }, 1200);
+})();
 </script>
 </body>
   </html>
