@@ -24168,16 +24168,20 @@ setTimeout(() => {
     scroll-behavior: auto !important;
   }
 
-  /* 2. 拯救 IF 境打字卡顿：终极物理切割与冻结 */
+ /* 2. 拯救 IF 境打字卡顿与光标漂移：iOS 专属柔性护盾 */
   #ifReaderContent {
-    /* 彻底冻结上半部分，无论打多少字，大山绝对不重绘！ */
-    contain: strict !important; 
+    contain: layout size !important; 
   }
+  
   #ifReaderInput {
-    /* 切断输入框向外传递的排版波动 */
-    contain: strict !important; 
-    will-change: transform !important;
-    transform: translateZ(0) !important;
+    contain: none !important; 
+    will-change: auto !important;
+    transform: none !important;
+    -webkit-appearance: none !important;
+  }
+  
+  #ifReader > .page > div:last-child {
+    transform: none !important; 
   }
 </style>
 
