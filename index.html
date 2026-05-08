@@ -24178,5 +24178,69 @@ setTimeout(() => {
     will-change: auto !important;
   }
   </style>
+  <!-- 🍓 彻底砸碎作用域壁垒：重写保存设定按钮 (外挂内存绝对同步版) 🍓 -->
+<script>
+setTimeout(() => {
+  const saveBtn = document.getElementById('mePageSaveBtn');
+  if (saveBtn && !saveBtn.dataset.blueHookedV6) {
+    saveBtn.dataset.blueHookedV6 = 'true';
+    
+    // 🔪 暴力接管点击事件，剥夺原函数的执行权！
+    saveBtn.onclick = async () => {
+      const btn = saveBtn;
+      const oldText = btn.textContent;
+      btn.textContent = '正在焊死内存...';
+      btn.style.pointerEvents = 'none';
+
+      try {
+        // 1. 物理抓取：不管你变量里存了啥，我直接从屏幕的 img 标签上把图片硬生生扒下来！
+        const currentAvatar = document.getElementById('mePageAvatar').src;
+        const currentName = document.getElementById('mePageName').value.trim() || '未命名';
+        const currentWxID = document.getElementById('mePageWxID').value.trim() || 'zidingyi_baby';
+        const currentPersona = document.getElementById('mePagePersona').value.trim();
+
+        // 2. 调取外挂硬盘里的多重身份档案
+        if(window.getMePresets && window.setMePresets) {
+          const data = window.getMePresets();
+          const idx = data.list.findIndex(x => x.id === data.currentId);
+          
+          if(idx > -1) {
+            data.list[idx].name = currentName;
+            data.list[idx].wxid = currentWxID;
+            data.list[idx].persona = currentPersona;
+            
+            // 🔪 核心杀招：只认屏幕上的图！如果是默认占位图就清空，否则死死存入！
+            const finalAvatar = currentAvatar.includes('via.placeholder') ? '' : currentAvatar;
+            data.list[idx].avatar = finalAvatar;
+            
+            // 3. 盖上钢印，死死焊进外挂硬盘！
+            window.setMePresets(data);
+            
+            // 4. 同步更新当前正在使用的全局身份，绝对不留信息差！
+            if(window.setMe) {
+              window.setMe({ 
+                name: data.list[idx].name, 
+                persona: data.list[idx].persona, 
+                avatar: data.list[idx].avatar, 
+                note: '' 
+              });
+            }
+            
+            // 5. 顺手把那个瞎子变量也给强行同步了，以防万一
+            window.meAvatarDraftGlobal = finalAvatar;
+            
+            alert('✨ 设定与绝美头像已永久焊死在内存里啦！这次哪怕拔网线都不会丢！');
+          }
+        }
+      } catch(e) {
+        alert('保存失败了宝宝：' + e.message);
+      } finally {
+        btn.textContent = oldText;
+        btn.style.pointerEvents = 'auto';
+      }
+    };
+  }
+}, 2000); // 延迟2秒，确保在暗中埋伏好，一击必杀！
+</script>
 </body>
   </html>
