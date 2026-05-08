@@ -24178,89 +24178,80 @@ setTimeout(() => {
     will-change: auto !important;
   }
   </style>
- <!-- 🌟 蓝色高定：个人中心终极核爆同步引擎 (专治死锁与串戏，不讲武德版) -->
+ <!-- 🌟 蓝色高定：个人中心无感同步引擎 (绝对防丢 + 瞬间刷新微信，拒绝强制重启) -->
 <script>
-setTimeout(() => {
-  // 1. 🔪 终极接管保存按钮：写完直接强制重启！
-  const saveBtn = document.getElementById('mePageSaveBtn');
-  if (saveBtn) {
-    saveBtn.onclick = async (e) => {
-      e.preventDefault();
-      e.stopImmediatePropagation();
+(function() {
+  setTimeout(() => {
+    // 1. 无感接管保存按钮
+    const saveBtn = document.getElementById('mePageSaveBtn');
+    if (saveBtn && !saveBtn.dataset.blueSmoothHook) {
+      saveBtn.dataset.blueSmoothHook = '1';
       
-      saveBtn.textContent = '正在重写全宇宙...';
-      saveBtn.style.pointerEvents = 'none';
-      
-      try {
-        // 强行抓取屏幕上的输入
-        const nameVal = document.getElementById('mePageName').value.trim() || '未命名';
-        const wxidVal = document.getElementById('mePageWxID').value.trim() || 'zidingyi_baby';
-        const personaVal = document.getElementById('mePagePersona').value.trim();
+      // 【战术1：在原生保存之前，强行抓取头像】
+      saveBtn.addEventListener('click', () => {
         const imgNode = document.getElementById('mePageAvatar');
-        const finalAvatar = (imgNode && imgNode.src && !imgNode.src.includes('placeholder')) ? imgNode.src : '';
-
-        // 暴力抓取底层外挂硬盘
-        let data = await localforage.getItem('mp_fix_me_presets_list');
-        if(!data) data = { currentId: 'default', list: [{ id: 'default', name: '我', persona: '', avatar: '' }] };
-        
-        const idx = data.list.findIndex(x => x.id === data.currentId);
-        const targetIdx = idx > -1 ? idx : 0;
-
-        // 强行覆写数据
-        data.list[targetIdx].name = nameVal;
-        data.list[targetIdx].wxid = wxidVal;
-        data.list[targetIdx].persona = personaVal;
-        data.list[targetIdx].avatar = finalAvatar;
-
-        const newMe = { name: nameVal, persona: personaVal, avatar: finalAvatar, note: '' };
-
-        // 🔪 核心杀招：双重锁死外挂硬盘与浅层缓存！
-        await localforage.setItem('mp_fix_me_presets_list', data);
-        await localforage.setItem('mp_fix_me', newMe);
-        localStorage.setItem('mp_fix_me_presets_list', JSON.stringify(data));
-        localStorage.setItem('mp_fix_me', JSON.stringify(newMe));
-
-        alert('✨ 记忆已死死刻入底层！为了彻底生效，系统将瞬间重启！');
-        
-        // 💥 终极核爆：直接重启页面，让系统被迫从硬盘重新读取一切！
-        location.reload();
-      } catch(err) {
-        alert('保存失败了宝宝：' + err.message);
-        saveBtn.textContent = '保存设定';
-        saveBtn.style.pointerEvents = 'auto';
-      }
-    };
-  }
-
-  // 2. 🔪 终极接管下拉切换：切完直接强制重启！
-  const presetSelect = document.getElementById('mePresetSelect');
-  if (presetSelect) {
-    // 暴力克隆节点，洗掉之前所有绑定的乱七八糟的监听器
-    const newSelect = presetSelect.cloneNode(true);
-    presetSelect.parentNode.replaceChild(newSelect, presetSelect);
-    
-    newSelect.addEventListener('change', async (e) => {
-      let data = await localforage.getItem('mp_fix_me_presets_list');
-      if(data) {
-        data.currentId = e.target.value;
-        const cur = data.list.find(x => x.id === data.currentId);
-        if(cur) {
-          const newMe = { name: cur.name, persona: cur.persona, avatar: cur.avatar, note: '' };
-          
-          // 双重锁死
-          await localforage.setItem('mp_fix_me_presets_list', data);
-          await localforage.setItem('mp_fix_me', newMe);
-          localStorage.setItem('mp_fix_me_presets_list', JSON.stringify(data));
-          localStorage.setItem('mp_fix_me', JSON.stringify(newMe));
-          
-          alert('✨ 身份已切换为：' + cur.name + '！即将重启以同步全宇宙！');
-          // 💥 终极核爆
-          location.reload();
+        if (imgNode && imgNode.src && !imgNode.src.includes('placeholder')) {
+          window.meAvatarDraftGlobal = imgNode.src;
         }
-      }
-    });
-  }
-}, 1500);
+      }, true); // true = 捕获阶段，抢在原生事件前面！
+
+      // 【战术2：在原生保存之后，暴力写入硬盘并瞬间重绘微信】
+      saveBtn.addEventListener('click', () => {
+        setTimeout(async () => {
+          // 抓取当前输入框的数据
+          const nameVal = document.getElementById('mePageName').value.trim() || '未命名';
+          const wxidVal = document.getElementById('mePageWxID').value.trim() || 'zidingyi_baby';
+          const personaVal = document.getElementById('mePagePersona').value.trim();
+          const finalAvatar = window.meAvatarDraftGlobal || '';
+          const newMe = { name: nameVal, persona: personaVal, avatar: finalAvatar, note: '' };
+
+          // 越过 600ms 缓冲，强行死死钉入外挂硬盘
+          let data = await localforage.getItem('mp_fix_me_presets_list');
+          if (data) {
+            const idx = data.list.findIndex(x => x.id === data.currentId);
+            if (idx > -1) {
+              data.list[idx].name = nameVal;
+              data.list[idx].wxid = wxidVal;
+              data.list[idx].persona = personaVal;
+              data.list[idx].avatar = finalAvatar;
+              await localforage.setItem('mp_fix_me_presets_list', data);
+            }
+          }
+          await localforage.setItem('mp_fix_me', newMe);
+
+          // 瞬间通知微信重绘，绝不刷新网页！
+          if (window.renderChat) window.renderChat();
+          if (window.renderContacts) window.renderContacts(document.getElementById('searchInput')?.value || '');
+        }, 50); // 留出 50ms 让原生逻辑跑完
+      }, false);
+    }
+
+    // 2. 无感接管下拉切换菜单
+    const presetSelect = document.getElementById('mePresetSelect');
+    if (presetSelect && !presetSelect.dataset.blueSmoothHook) {
+      presetSelect.dataset.blueSmoothHook = '1';
+      
+      presetSelect.addEventListener('change', () => {
+        setTimeout(async () => {
+          // 瞬间通知微信重绘，绝不刷新网页！
+          if (window.renderChat) window.renderChat();
+          if (window.renderContacts) window.renderContacts(document.getElementById('searchInput')?.value || '');
+          
+          // 顺手越过缓冲，强行保存硬盘
+          let data = await localforage.getItem('mp_fix_me_presets_list');
+          if (data) {
+            data.currentId = presetSelect.value;
+            const cur = data.list.find(x => x.id === data.currentId);
+            if (cur) {
+              await localforage.setItem('mp_fix_me_presets_list', data);
+              await localforage.setItem('mp_fix_me', { name: cur.name, persona: cur.persona, avatar: cur.avatar, note: '' });
+            }
+          }
+        }, 50);
+      }, false);
+    }
+  }, 1000);
+})();
 </script>
 </body>
   </html>
