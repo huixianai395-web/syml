@@ -19851,14 +19851,18 @@ window._playAccSound = async function(type) {
 
     window._playAccSound(type);
 
+    // 🌟 蓝色高定：终极防串戏与代词边界护盾！绝不乱认亲戚！
     let aiEcho = '';
     const c = roleId ? window.getContactById(roleId) : null;
+    const globalMe = window.getMe ? window.getMe() : { name: '我' };
+    const stMeName = c?.settings?.meName || globalMe.name || '我';
 
     if(c) {
       const sysPrompt = `你现在是：${c.name}。人设：${c.persona}。
-玩家刚刚在账本里记了一笔：【${type === 'expense' ? '支出' : '收入'}】 ${amount} 元。
+玩家（${stMeName}）刚刚在她的专属账本里记了一笔：【${type === 'expense' ? '支出' : '收入'}】 ${amount} 元。
 分类是：${cate}，付款方式：${method}，备注：“${note || '无'}”。
-请以【第一人称视角】对这笔账单给出一句真实的吐槽、关心或调侃。
+【系统绝对铁律】：这是【玩家（${stMeName}）】的私人账本！备注里提到的“妈妈”、“爸爸”、“哥哥”、“朋友”等任何称呼，【全部都是指玩家的亲属或朋友】，绝对不是你的！严禁把玩家的妈妈当成你自己的妈妈（比如强行代入你人设里的长辈名字）！
+请以【第一人称视角】对玩家的这笔账单给出一句真实的吐槽、关心或调侃。
 要求：极具活人感，符合性格，字数在30字以内。绝对不要带名字前缀，直接输出纯文本。`;
       try {
         const out = await window.callApi([{ role: 'system', content: sysPrompt }, { role: 'user', content: '我刚记了一笔账，你有什么想说的？' }]);
