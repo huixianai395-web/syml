@@ -5199,6 +5199,8 @@ window._callHangup=()=>endCall();
     o.bilingual = !!s?.bilingual;
     o.bilingualLang = s?.bilingualLang || 'English';
     o.timeSense = s?.timeSense !== false;
+    o.summarySwitch = !!s?.summarySwitch;
+    o.summaryInterval = Number(s?.summaryInterval || 30);
     return o;
   }
   function getPref(){
@@ -6937,6 +6939,8 @@ if(document.getElementById('bilingualSwitch')) {
     $('innerVoiceSwitch').checked=!!st.innerVoice;
     if(document.getElementById('blockByMeSwitch')) document.getElementById('blockByMeSwitch').checked = !!st.isBlockedByMe;
     $('avatarHQSwitch').checked=!!p.avatarHQ; $('streamSwitch').checked=!!st.stream;
+    if(document.getElementById('summarySwitch')) document.getElementById('summarySwitch').checked = !!st.summarySwitch;
+    if(document.getElementById('summaryIntervalInput')) document.getElementById('summaryIntervalInput').value = st.summaryInterval || 30;
     refreshFontSizeUI(); refreshSettingUI(); show('chatSetting');
   }
 
@@ -6989,6 +6993,8 @@ $('fontSizeRange').oninput=e=>{$('fontSizeVal').textContent=e.target.value+'px';
         msgSound: window._tempRoleAudio.msgSound,
         voiceRing: window._tempRoleAudio.voiceRing,
         videoRing: window._tempRoleAudio.videoRing,
+        summarySwitch: document.getElementById('summarySwitch') ? !!document.getElementById('summarySwitch').checked : false,
+        summaryInterval: document.getElementById('summaryIntervalInput') ? Number(document.getElementById('summaryIntervalInput').value) : 30,
       });
 
       if(c.isGroup) {
